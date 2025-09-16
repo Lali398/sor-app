@@ -3,15 +3,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
     const adminForm = document.getElementById('adminForm');
-    const searchInput = document.getElementById('searchInput');
-    const searchOptions = document.getElementById('searchOptions'); // <-- ÚJ: Datalist
+    const liveSearchInput = document.getElementById('liveSearchInput');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    const searchResultsInfo = document.getElementById('searchResultsInfo');
+    const clearSearch = document.getElementById('clearSearch');
     const beerTableBody = document.getElementById('beerTableBody');
+    
     // ...többi elem...
     const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // --- ÁLLAPOT ---
     let beersData = [];
     let usersData = [];
+    let filteredBeers = [];
+    let selectedSuggestionIndex = -1;
 
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
@@ -35,8 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             beersData = result.beers || [];
             usersData = result.users || [];
-            
-            populateSearchOptions(); // <-- ÚJ: Keresési javaslatok feltöltése
+            filteredBeers = [...beersData]; // Kezdetben az összes sör
             
             showSuccess('Sikeres admin bejelentkezés!');
             setTimeout(() => {
@@ -53,70 +57,295 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ======================================================
-    // === KERESÉSI FUNKCIÓK (ÁTALAKÍTVA) ===
+    // === MODERN ÉLŐKERESÉSI FUNKCIÓK ===
     // ======================================================
 
-    /**
-     * Feltölti a keresőhöz tartozó datalist-et egyedi sörnevekkel, típusokkal és helyekkel.
-     */
-    function populateSearchOptions() {
-        searchOptions.innerHTML = ''; // Korábbi opciók törlése
-        const uniqueOptions = new Set();
-
-        beersData.forEach(beer => {
-            if (beer.beerName) uniqueOptions.add(beer.beerName);
-            if (beer.type) uniqueOptions.add(beer.type);
-            if (beer.location) uniqueOptions.add(beer.location);
-        });
-
-        uniqueOptions.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = option;
-            searchOptions.appendChild(optionElement);
-        });
+    function initializeLiveSearch() {
+        liveSearchInput.addEventListener('input', handleLiveSearch);
+        liveSearchInput.addEventListener('keydown', handleSearchKeyNavigation);
+        liveSearchInput.addEventListener('focus', showSearchSuggestions);
+        liveSearchInput.addEventListener('blur', hideSearchSuggestionsDelayed);
+        clearSearch.addEventListener('click', clearSearchInput);
+        
+        // Kattintás a javaslatokon
+        searchSuggestions.addEventListener('mousedown', handleSuggestionClick);
     }
 
-    /**
-     * Szűri a táblázatot a keresőmező értéke alapján.
-     */
-    function handleSearch() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const filteredBeers = beersData.filter(beer => {
-            return (beer.beerName?.toLowerCase() || '').includes(searchTerm) ||
-                   (beer.type?.toLowerCase() || '').includes(searchTerm) ||
-                   (beer.location?.toLowerCase() || '').includes(searchTerm);
+    function handleLiveSearch() {
+        const searchTerm = liveSearchInput.value.trim();
+        
+        // Clear gomb megjelenítése/elrejtése
+        clearSearch.style.display = searchTerm ? 'flex' : 'none';
+        
+        if (!searchTerm) {
+            filteredBeers = [...beersData];
+            hideSearchSuggestions();
+            updateSearchResultsInfo();
+            renderBeerTable(filteredBeers);
+            return;
+        }
+
+        // Keresés végrehajtása
+        performLiveSearch(searchTerm);
+        showSearchSuggestions();
+        updateSearchResultsInfo();
+    }
+
+    function performLiveSearch(searchTerm) {
+        const term = searchTerm.toLowerCase();
+        
+        filteredBeers = beersData.filter(beer => {
+            return (beer.beerName?.toLowerCase() || '').includes(term) ||
+                   (beer.type?.toLowerCase() || '').includes(term) ||
+                   (beer.location?.toLowerCase() || '').includes(term) ||
+                   (beer.ratedBy?.toLowerCase() || '').includes(term);
         });
+
+        // Súlyozott rangsorolás (sör név > típus > hely > értékelő)
+        filteredBeers.sort((a, b) => {
+            const aName = (a.beerName?.toLowerCase() || '').includes(term);
+            const bName = (b.beerName?.toLowerCase() || '').includes(term);
+            
+            if (aName && !bName) return -1;
+            if (!aName && bName) return 1;
+            
+            return 0;
+        });
+
         renderBeerTable(filteredBeers);
     }
-    
+
+    function generateSearchSuggestions(searchTerm) {
+        if (!searchTerm) return [];
+        
+        const term = searchTerm.toLowerCase();
+        const suggestions = new Set();
+        
+        beersData.forEach(beer => {
+            // Sör nevek
+            if (beer.beerName?.toLowerCase().includes(term)) {
+                suggestions.add({
+                    text: beer.beerName,
+                    type: 'beer',
+                    icon: '🍺'
+                });
+            }
+            
+            // Típusok
+            if (beer.type?.toLowerCase().includes(term)) {
+                suggestions.add({
+                    text: beer.type,
+                    type: 'type',
+                    icon: '🏷️'
+                });
+            }
+            
+            // Helyek
+            if (beer.location?.toLowerCase().includes(term)) {
+                suggestions.add({
+                    text: beer.location,
+                    type: 'location',
+                    icon: '📍'
+                });
+            }
+            
+            // Értékelők
+            if (beer.ratedBy?.toLowerCase().includes(term)) {
+                suggestions.add({
+                    text: beer.ratedBy,
+                    type: 'rater',
+                    icon: '👤'
+                });
+            }
+        });
+        
+        return Array.from(suggestions).slice(0, 6); // Max 6 javaslat
+    }
+
+    function showSearchSuggestions() {
+        const searchTerm = liveSearchInput.value.trim();
+        if (!searchTerm) {
+            hideSearchSuggestions();
+            return;
+        }
+        
+        const suggestions = generateSearchSuggestions(searchTerm);
+        
+        if (suggestions.length === 0) {
+            hideSearchSuggestions();
+            return;
+        }
+        
+        searchSuggestions.innerHTML = suggestions.map((suggestion, index) => `
+            <div class="suggestion-item ${index === selectedSuggestionIndex ? 'selected' : ''}" data-text="${suggestion.text}">
+                <span class="suggestion-icon">${suggestion.icon}</span>
+                <span class="suggestion-text">${highlightSearchTerm(suggestion.text, searchTerm)}</span>
+                <span class="suggestion-type">${getSuggestionTypeLabel(suggestion.type)}</span>
+            </div>
+        `).join('');
+        
+        searchSuggestions.style.display = 'block';
+    }
+
+    function hideSearchSuggestions() {
+        searchSuggestions.style.display = 'none';
+        selectedSuggestionIndex = -1;
+    }
+
+    function hideSearchSuggestionsDelayed() {
+        setTimeout(() => hideSearchSuggestions(), 150);
+    }
+
+    function handleSearchKeyNavigation(e) {
+        const suggestions = searchSuggestions.querySelectorAll('.suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+            updateSelectedSuggestion();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+            updateSelectedSuggestion();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                selectSuggestion(suggestions[selectedSuggestionIndex].dataset.text);
+            }
+        } else if (e.key === 'Escape') {
+            hideSearchSuggestions();
+            liveSearchInput.blur();
+        }
+    }
+
+    function updateSelectedSuggestion() {
+        const suggestions = searchSuggestions.querySelectorAll('.suggestion-item');
+        suggestions.forEach((item, index) => {
+            item.classList.toggle('selected', index === selectedSuggestionIndex);
+        });
+    }
+
+    function handleSuggestionClick(e) {
+        const suggestionItem = e.target.closest('.suggestion-item');
+        if (suggestionItem) {
+            selectSuggestion(suggestionItem.dataset.text);
+        }
+    }
+
+    function selectSuggestion(text) {
+        liveSearchInput.value = text;
+        hideSearchSuggestions();
+        handleLiveSearch();
+        liveSearchInput.focus();
+    }
+
+    function clearSearchInput() {
+        liveSearchInput.value = '';
+        clearSearch.style.display = 'none';
+        filteredBeers = [...beersData];
+        hideSearchSuggestions();
+        updateSearchResultsInfo();
+        renderBeerTable(filteredBeers);
+        liveSearchInput.focus();
+    }
+
+    function updateSearchResultsInfo() {
+        const total = beersData.length;
+        const filtered = filteredBeers.length;
+        const searchTerm = liveSearchInput.value.trim();
+        
+        if (!searchTerm) {
+            searchResultsInfo.textContent = `${total} sör összesen`;
+        } else if (filtered === 0) {
+            searchResultsInfo.textContent = `Nincs találat "${searchTerm}" keresésre`;
+            searchResultsInfo.style.color = '#e74c3c';
+        } else if (filtered === total) {
+            searchResultsInfo.textContent = `${total} sör megjelenítve`;
+            searchResultsInfo.style.color = '#27ae60';
+        } else {
+            searchResultsInfo.textContent = `${filtered} találat ${total} sörből`;
+            searchResultsInfo.style.color = '#3498db';
+        }
+    }
+
     // ======================================================
-    // === ADATMEGJELENÍTÉS (VÁLTOZATLAN) ===
+    // === SEGÉDFÜGGVÉNYEK A KERESÉSHEZ ===
+    // ======================================================
+
+    function highlightSearchTerm(text, searchTerm) {
+        if (!searchTerm) return text;
+        
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    function getSuggestionTypeLabel(type) {
+        const labels = {
+            'beer': 'Sör név',
+            'type': 'Típus',
+            'location': 'Hely',
+            'rater': 'Értékelő'
+        };
+        return labels[type] || '';
+    }
+
+    // ======================================================
+    // === ADATMEGJELENÍTÉS (FRISSÍTETT) ===
     // ======================================================
 
     function renderBeerTable(beersToRender) {
         beerTableBody.innerHTML = '';
+        
         if (!beersToRender || beersToRender.length === 0) {
-            beerTableBody.innerHTML = `<tr><td colspan="6">Nincs a keresésnek megfelelő sör.</td></tr>`;
+            const searchTerm = liveSearchInput.value.trim();
+            const message = searchTerm ? 
+                `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 
+                'Nincsenek sörök az adatbázisban.';
+            beerTableBody.innerHTML = `<tr><td colspan="6" class="no-results">${message}</td></tr>`;
             return;
         }
+
+        const searchTerm = liveSearchInput.value.trim().toLowerCase();
+        
         beersToRender.forEach(beer => {
             const row = document.createElement('tr');
+            
+            // Kiemelés a keresett kifejezésnek
+            const highlightText = (text) => {
+                if (!searchTerm || !text) return text || '';
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                return text.replace(regex, '<mark>$1</mark>');
+            };
+            
             row.innerHTML = `
-                <td>${beer.beerName || ''}</td>
-                <td>${beer.type || ''}</td>
-                <td>${beer.location || ''}</td>
+                <td>${highlightText(beer.beerName)}</td>
+                <td>${highlightText(beer.type)}</td>
+                <td>${highlightText(beer.location)}</td>
                 <td>${beer.beerPercentage || 0}%</td>
-                <td>${beer.score || 0}</td>
-                <td>${beer.ratedBy || ''}</td>
+                <td class="score-cell">${beer.score || 0}</td>
+                <td>${highlightText(beer.ratedBy)}</td>
             `;
+            
+            // Animáció a megjelenéshez
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(10px)';
             beerTableBody.appendChild(row);
+            
+            // Smooth megjelenés
+            setTimeout(() => {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, 50);
         });
     }
 
     function loadAdminData() {
         document.getElementById('userCount').textContent = usersData.length;
         document.getElementById('beerCount').textContent = beersData.length;
-        renderBeerTable(beersData);
+        filteredBeers = [...beersData];
+        renderBeerTable(filteredBeers);
+        updateSearchResultsInfo();
     }
     
     // ======================================================
@@ -128,18 +357,19 @@ document.addEventListener('DOMContentLoaded', function() {
         adminView.style.display = 'block';
         document.body.style.background = '#f8fafc';
         loadAdminData();
+        initializeLiveSearch();
     }
 
     function switchToGuestView() {
         guestView.style.display = 'block';
         adminView.style.display = 'none';
         document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        searchInput.value = '';
+        liveSearchInput.value = '';
+        hideSearchSuggestions();
     }
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
-    searchInput.addEventListener('input', handleSearch);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
@@ -160,5 +390,5 @@ document.addEventListener('DOMContentLoaded', function() {
     function showSuccess(message) { showNotification(message, 'success'); }
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 3000); }
     
-    console.log('🍺 Sör Táblázat alkalmazás betöltve! (Javaslatokkal működő keresővel)');
+    console.log('🍺 Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel)');
 });
