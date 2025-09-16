@@ -1,18 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     // --- NÉZETEK ÉS ELEMEK ---
-    const guestView = document.getElementById('guestView');
     const adminView = document.getElementById('adminView');
-    const loginCard = document.getElementById('loginCard');
-    const registerCard = document.getElementById('registerCard');
-    const switchAuthLinks = document.querySelectorAll('.switch-auth');
-    const adminBtn = document.getElementById('adminBtn');
-    const adminModal = document.getElementById('adminModal');
-    const modalClose = document.getElementById('modalClose');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
+    const guestView = document.getElementById('guestView');
     const adminForm = document.getElementById('adminForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchOptions = document.getElementById('searchOptions'); // <-- ÚJ: Datalist
     const beerTableBody = document.getElementById('beerTableBody');
-    const searchInput = document.getElementById('searchInput'); // <-- ÚJ: Keresőmező
+    // ...többi elem...
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // --- ÁLLAPOT ---
     let beersData = [];
@@ -29,23 +24,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = adminForm.querySelector('.auth-btn');
 
         setLoading(submitBtn, true);
-
         try {
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'GET_DATA',
-                    username: usernameInput,
-                    password: passwordInput
-                })
+                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
             });
-
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
             beersData = result.beers || [];
             usersData = result.users || [];
+            
+            populateSearchOptions(); // <-- ÚJ: Keresési javaslatok feltöltése
             
             showSuccess('Sikeres admin bejelentkezés!');
             setTimeout(() => {
@@ -62,48 +53,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ======================================================
-    // === ADATMEGJELENÍTÉS ÉS KERESÉS (ÚJ) ===
+    // === KERESÉSI FUNKCIÓK (ÁTALAKÍTVA) ===
     // ======================================================
-    
+
     /**
-     * Élő keresés a sörök között.
-     * Ez a függvény lefut minden alkalommal, amikor a keresőmezőbe írsz.
+     * Feltölti a keresőhöz tartozó datalist-et egyedi sörnevekkel, típusokkal és helyekkel.
      */
-    function handleSearch() {
-        const searchTerm = searchInput.value.toLowerCase();
+    function populateSearchOptions() {
+        searchOptions.innerHTML = ''; // Korábbi opciók törlése
+        const uniqueOptions = new Set();
 
-        if (!searchTerm) {
-            // Ha a kereső üres, megjelenítjük az összes sört
-            renderBeerTable(beersData);
-            return;
-        }
-
-        // Szűrjük a söröket a keresési kifejezés alapján
-        const filteredBeers = beersData.filter(beer => {
-            const name = beer.beerName ? beer.beerName.toLowerCase() : '';
-            const type = beer.type ? beer.type.toLowerCase() : '';
-            const location = beer.location ? beer.location.toLowerCase() : '';
-
-            // Akkor jelenítjük meg a sört, ha a név, típus vagy hely tartalmazza a keresett szót
-            return name.includes(searchTerm) || type.includes(searchTerm) || location.includes(searchTerm);
+        beersData.forEach(beer => {
+            if (beer.beerName) uniqueOptions.add(beer.beerName);
+            if (beer.type) uniqueOptions.add(beer.type);
+            if (beer.location) uniqueOptions.add(beer.location);
         });
 
-        // Kirajzoljuk a táblázatot a szűrt eredményekkel
-        renderBeerTable(filteredBeers);
+        uniqueOptions.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            searchOptions.appendChild(optionElement);
+        });
     }
 
     /**
-     * Kirajzolja a sörtáblázatot a kapott adatok alapján.
-     * @param {Array} beersToRender - A sörök listája, amit meg kell jeleníteni.
+     * Szűri a táblázatot a keresőmező értéke alapján.
      */
+    function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filteredBeers = beersData.filter(beer => {
+            return (beer.beerName?.toLowerCase() || '').includes(searchTerm) ||
+                   (beer.type?.toLowerCase() || '').includes(searchTerm) ||
+                   (beer.location?.toLowerCase() || '').includes(searchTerm);
+        });
+        renderBeerTable(filteredBeers);
+    }
+    
+    // ======================================================
+    // === ADATMEGJELENÍTÉS (VÁLTOZATLAN) ===
+    // ======================================================
+
     function renderBeerTable(beersToRender) {
         beerTableBody.innerHTML = '';
-
         if (!beersToRender || beersToRender.length === 0) {
             beerTableBody.innerHTML = `<tr><td colspan="6">Nincs a keresésnek megfelelő sör.</td></tr>`;
             return;
         }
-
         beersToRender.forEach(beer => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -119,15 +114,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadAdminData() {
-        updateStats();
-        renderBeerTable(beersData); // Az összes sört megjelenítjük
-    }
-
-    function updateStats() {
         document.getElementById('userCount').textContent = usersData.length;
         document.getElementById('beerCount').textContent = beersData.length;
+        renderBeerTable(beersData);
     }
-
+    
     // ======================================================
     // === NÉZETVÁLTÁS ÉS ESEMÉNYKEZELŐK ===
     // ======================================================
@@ -143,69 +134,31 @@ document.addEventListener('DOMContentLoaded', function() {
         guestView.style.display = 'block';
         adminView.style.display = 'none';
         document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        searchInput.value = ''; // Keresőmező kiürítése kijelentkezéskor
+        searchInput.value = '';
     }
 
-    // --- Eseménykezelők hozzárendelése ---
+    // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
-    searchInput.addEventListener('input', handleSearch); // <-- ÚJ: Kereső eseménykezelője
+    searchInput.addEventListener('input', handleSearch);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
     // ... a többi, változatlan eseménykezelő ...
-    adminBtn.addEventListener('click', () => {
-        adminModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
+    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
-    function closeAdminModal() {
-        adminModal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-    switchAuthLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (this.dataset.target === 'register') {
-                loginCard.classList.remove('active');
-                setTimeout(() => registerCard.classList.add('active'), 300);
-            } else {
-                registerCard.classList.remove('active');
-                setTimeout(() => loginCard.classList.add('active'), 300);
-            }
-        });
-    });
-    
-    // A vendég funkciók ideiglenesen inaktívak
+    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
     document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); showError('A vendég bejelentkezés jelenleg nem aktív.'); });
     document.getElementById('registerForm').addEventListener('submit', e => { e.preventDefault(); showError('A vendég regisztráció jelenleg nem aktív.'); });
     
     // ======================================================
     // === SEGÉDFÜGGVÉNYEK (VÁLTOZATLAN) ===
     // ======================================================
-    function setLoading(button, isLoading) {
-        button.classList.toggle('loading', isLoading);
-        button.disabled = isLoading;
-    }
+    function setLoading(button, isLoading) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; }
     function showError(message) { showNotification(message, 'error'); }
     function showSuccess(message) { showNotification(message, 'success'); }
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        Object.assign(notification.style, {
-            position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px',
-            color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)',
-            transition: 'transform 0.3s ease',
-            backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db')
-        });
-        document.body.appendChild(notification);
-        setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100);
-        setTimeout(() => {
-            notification.style.transform = 'translateX(400px)';
-            setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300);
-        }, 3000);
-    }
+    function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 3000); }
     
-    console.log('🍺 Sör Táblázat alkalmazás betöltve! (Keresővel frissített verzió)');
+    console.log('🍺 Sör Táblázat alkalmazás betöltve! (Javaslatokkal működő keresővel)');
 });
