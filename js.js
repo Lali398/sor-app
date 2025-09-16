@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let usersData = [];
 
     // Kezdeti állapot
-    loadSampleData();
+    // A loadSampleData() hívást eltávolítjuk innen, hogy ne azzal induljon az oldal.
     if(sheetsConfigForm) {
         sheetsConfigForm.closest('.config-section').style.display = 'none';
     }
@@ -94,7 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setLoading(submitBtn, true);
         try {
-            await simulateApiCall();
+            // Itt is le kellene kérni a felhasználókat, ha még nincsenek betöltve
+            if (usersData.length === 0) {
+                const { users } = await callSheetApi('GET_DATA');
+                usersData = users;
+            }
+            await simulateApiCall(); // Csak a UX miatt marad
             const user = usersData.find(u => u.email === email && u.password === password);
             if (user) {
                 currentUser = user;
@@ -180,6 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
     logoutBtn.addEventListener('click', () => {
         isAdmin = false;
         currentUser = null;
+        beersData = []; // Kiürítjük az adatokat kijelentkezéskor
+        usersData = [];
         switchToGuestView();
         showSuccess('Sikeres kijelentkezés!');
     });
@@ -229,8 +236,10 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoading(submitBtn, true);
         try {
             await simulateApiCall();
-            beersData.push(beerData);
+            
             await saveBeerToGoogleSheets(beerData);
+            beersData.push(beerData); // Hozzáadás a helyi listához API hívás után
+            
             showSuccess('Új sör sikeresen hozzáadva!');
             closeBeerModal();
             updateBeerTable();
@@ -254,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
         guestView.style.display = 'none';
         adminView.style.display = 'block';
         document.body.style.background = '#f8fafc';
-        loadAdminData();
+        loadAdminData(); // Itt hívjuk meg az adatbetöltést
     }
 
     function switchToUserDashboard() {
@@ -262,10 +271,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ADMIN ADATOK
-    function loadAdminData() {
-        updateStats();
-        updateBeerTable();
-        updateSheetsStatus();
+    async function loadAdminData() {
+        try {
+            showNotification('Adatok betöltése a Google Sheets-ből...', 'info');
+            const { beers, users } = await callSheetApi('GET_DATA');
+            beersData = beers || [];
+            usersData = users || [];
+            
+            updateStats();
+            updateBeerTable();
+            updateSheetsStatus(true);
+            showSuccess('Adatok sikeresen betöltve!');
+
+        } catch (error) {
+            showError('Hiba az adatok betöltésekor: ' + error.message);
+            updateSheetsStatus(false);
+            // Hiba esetén betölthetjük a mintaadatokat, hogy ne legyen üres az oldal
+            loadSampleData();
+            updateStats();
+            updateBeerTable();
+        }
     }
 
     function updateStats() {
@@ -277,19 +302,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.getElementById('beerTableBody');
         tbody.innerHTML = '';
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nincs a keresésnek megfelelő sör.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nincsenek megjeleníthető sörök.</td></tr>';
             return;
         }
         data.forEach(beer => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${beer.beerName}</td>
-                <td>${beer.type}</td>
-                <td>${beer.beerPercentage}%</td>
-                <td>${beer.look}/5</td>
-                <td>${beer.smell}/5</td>
-                <td>${beer.taste}/10</td>
-                <td>${beer.score}/10</td>
+                <td>${beer.beerName || ''}</td>
+                <td>${beer.type || ''}</td>
+                <td>${beer.beerPercentage || 0}%</td>
+                <td>${beer.look || 0}/5</td>
+                <td>${beer.smell || 0}/5</td>
+                <td>${beer.taste || 0}/10</td>
+                <td>${beer.score || 0}/10</td>
                 <td>
                     <button class="edit-btn" onclick="editBeer(${beer.id})">✏️ Szerkesztés</button>
                     <button class="delete-btn" onclick="deleteBeer(${beer.id})">🗑️ Törlés</button>
@@ -299,21 +324,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateSheetsStatus() {
+    function updateSheetsStatus(isSuccess) {
         const status = document.getElementById('sheetsStatus');
-        status.textContent = 'Kapcsolódva';
-        status.style.color = '#27ae60';
+        if (isSuccess) {
+            status.textContent = 'Kapcsolódva';
+            status.style.color = '#27ae60';
+        } else {
+            status.textContent = 'Hiba';
+            status.style.color = '#e74c3c';
+        }
     }
 
     function loadSampleData() {
+        showNotification('Figyelem: Mintaadatok betöltve. A Google Sheets kapcsolat sikertelen.', 'error');
         usersData = [
             { id: 1, name: 'Teszt János', email: 'teszt@email.com', password: 'teszt123' },
             { id: 2, name: 'Minta Péter', email: 'minta@email.com', password: 'minta123' }
         ];
         beersData = [
-            { id: 1, beerName: 'Soproni', type: 'Világos lager', beerPercentage: 4.5, look: 4, smell: 3, taste: 6, score: 7 },
-            { id: 2, beerName: 'Dreher Classic', type: 'Világos lager', beerPercentage: 5.2, look: 5, smell: 4, taste: 7, score: 8 },
-            { id: 3, beerName: 'Arany Ászok', type: 'Világos lager', beerPercentage: 4.3, look: 3, smell: 3, taste: 5, score: 5 }
+            { id: 1, beerName: 'Soproni (Minta)', type: 'Világos lager', beerPercentage: 4.5, look: 4, smell: 3, taste: 6, score: 7 },
+            { id: 2, beerName: 'Dreher Classic (Minta)', type: 'Világos lager', beerPercentage: 5.2, look: 5, smell: 4, taste: 7, score: 8 },
+            { id: 3, beerName: 'Arany Ászok (Minta)', type: 'Világos lager', beerPercentage: 4.3, look: 3, smell: 3, taste: 5, score: 5 }
         ];
     }
 
@@ -321,11 +352,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return {
             beerName: document.getElementById('beerName').value,
             type: document.getElementById('beerType').value,
-            beerPercentage: parseFloat(document.getElementById('beerPercentage').value),
-            look: parseInt(document.getElementById('beerLook').value),
-            smell: parseInt(document.getElementById('beerSmell').value),
-            taste: parseInt(document.getElementById('beerTaste').value),
-            score: parseInt(document.getElementById('beerScore').value),
+            beerPercentage: parseFloat(document.getElementById('beerPercentage').value) || 0,
+            look: parseInt(document.getElementById('beerLook').value) || 0,
+            smell: parseInt(document.getElementById('beerSmell').value) || 0,
+            taste: parseInt(document.getElementById('beerTaste').value) || 0,
+            score: parseInt(document.getElementById('beerScore').value) || 0,
         };
     }
 
@@ -340,6 +371,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function exportBeersData() {
+        if (beersData.length === 0) {
+            showError('Nincs mit exportálni!');
+            return;
+        }
         const headers = ['Név', 'Típus', 'Alkohol %', 'Kinézet', 'Illat', 'Íz', 'Pontszám'];
         const dataToExport = beersData.map(b => [b.beerName, b.type, b.beerPercentage, b.look, b.smell, b.taste, b.score]);
         const csvData = [headers, ...dataToExport].map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -368,13 +403,16 @@ document.addEventListener('DOMContentLoaded', function() {
             beerForm.onsubmit = async function(e) {
                 e.preventDefault();
                 const updatedData = getBeerDataFromForm();
-                Object.assign(beer, updatedData); // frissíti a meglévő objektumot
                 
                 const submitBtn = beerForm.querySelector('.auth-btn');
                 setLoading(submitBtn, true);
                 try {
                     await simulateApiCall();
-                    await updateBeerInGoogleSheets(beer);
+                    await updateBeerInGoogleSheets({ ...updatedData, id: beer.id });
+                    
+                    // Helyi adat frissítése
+                    Object.assign(beer, updatedData);
+                    
                     showSuccess('Sör sikeresen módosítva!');
                     closeBeerModal();
                     updateBeerTable();
@@ -451,11 +489,11 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        }, 4000); // Kicsit több idő, hogy el lehessen olvasni
     }
 
     function simulateApiCall() {
-        return new Promise(resolve => setTimeout(resolve, 500));
+        return new Promise(resolve => setTimeout(resolve, 300));
     }
 
     document.querySelectorAll('.input-group input').forEach(input => {
@@ -482,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .notification.show { transform: translateX(0); }
         .notification.error { background-color: #e74c3c; }
         .notification.success { background-color: #27ae60; }
+        .notification.info { background-color: #3498db; }
     `;
     document.head.appendChild(style);
 
