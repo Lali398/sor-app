@@ -1,0 +1,295 @@
+!DOCTYPE html
+html lang=hu
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0
+    titleSör Táblázattitle
+    link rel=stylesheet href=styles.css
+    link href=httpsfonts.googleapis.comcss2family=Poppinswght@300;400;500;600;700&display=swap rel=stylesheet
+head
+body
+    !-- Vendég felület --
+    div class=guest-view id=guestView
+        div class=container
+            !-- Animált háttér --
+            div class=animated-bg
+                div class=bubblediv
+                div class=bubblediv
+                div class=bubblediv
+                div class=bubblediv
+                div class=bubblediv
+            div
+
+            !-- Fő tartalom --
+            div class=main-content
+                div class=logo-section
+                    div class=beer-icon🍺div
+                    h1 class=app-titleSör Táblázath1
+                    p class=app-subtitleKezelje sör készletét professzionálisanp
+                div
+
+                !-- BejelentkezésiRegisztrációs kártyák --
+                div class=auth-container
+                    !-- Bejelentkezés --
+                    div class=auth-card login-card active id=loginCard
+                        div class=card-header
+                            h2Bejelentkezésh2
+                        div
+                        form class=auth-form id=loginForm
+                            div class=input-group
+                                input type=email id=loginEmail required
+                                label for=loginEmailEmail címlabel
+                                span class=input-highlightspan
+                            div
+                            div class=input-group
+                                input type=password id=loginPassword required
+                                label for=loginPasswordJelszólabel
+                                span class=input-highlightspan
+                            div
+                            button type=submit class=auth-btn
+                                span class=btn-textBejelentkezésspan
+                                span class=btn-loading
+                                    div class=spinnerdiv
+                                span
+                            button
+                        form
+                        div class=card-footer
+                            pNincs még fiókja a href=# class=switch-auth data-target=registerRegisztráljon ittap
+                        div
+                    div
+
+                    !-- Regisztráció --
+                    div class=auth-card register-card id=registerCard
+                        div class=card-header
+                            h2Regisztrációh2
+                        div
+                        form class=auth-form id=registerForm
+                            div class=input-group
+                                input type=text id=registerName required
+                                label for=registerNameTeljes névlabel
+                                span class=input-highlightspan
+                            div
+                            div class=input-group
+                                input type=email id=registerEmail required
+                                label for=registerEmailEmail címlabel
+                                span class=input-highlightspan
+                            div
+                            div class=input-group
+                                input type=password id=registerPassword required
+                                label for=registerPasswordJelszólabel
+                                span class=input-highlightspan
+                            div
+                            div class=input-group
+                                input type=password id=registerPasswordConfirm required
+                                label for=registerPasswordConfirmJelszó megerősítéslabel
+                                span class=input-highlightspan
+                            div
+                            button type=submit class=auth-btn
+                                span class=btn-textRegisztrációspan
+                                span class=btn-loading
+                                    div class=spinnerdiv
+                                span
+                            button
+                        form
+                        div class=card-footer
+                            pVan már fiókja a href=# class=switch-auth data-target=loginJelentkezzen be ittap
+                        div
+                    div
+                div
+
+                !-- Admin belépés gomb --
+                div class=admin-section
+                    button class=admin-btn id=adminBtn
+                        span class=admin-icon👑span
+                        span class=admin-textAdmin Belépésspan
+                        div class=admin-shinediv
+                    button
+                div
+            div
+        div
+    div
+
+    !-- Admin felület --
+    div class=admin-view id=adminView style=display none;
+        div class=admin-container
+            header class=admin-header
+                div class=header-content
+                    div class=logo
+                        span class=beer-icon🍺span
+                        h1Sör Táblázat Adminh1
+                    div
+                    div class=admin-actions
+                        button class=refresh-btn id=refreshBtn
+                            span🔄span Frissítés
+                        button
+                        button class=logout-btn id=logoutBtn
+                            span🚪span Kilépés
+                        button
+                    div
+                div
+            header
+
+            main class=admin-main
+                div class=dashboard-grid
+                    !-- Stats kártyák --
+                    div class=stats-section
+                        div class=stat-card
+                            div class=stat-icon👥div
+                            div class=stat-info
+                                h3Felhasználókh3
+                                p class=stat-number id=userCount0p
+                            div
+                        div
+                        div class=stat-card
+                            div class=stat-icon🍺div
+                            div class=stat-info
+                                h3Sörök számah3
+                                p class=stat-number id=beerCount0p
+                            div
+                        div
+                        div class=stat-card
+                            div class=stat-icon📊div
+                            div class=stat-info
+                                h3Google Sheetsh3
+                                p class=stat-status id=sheetsStatusKapcsolódvap
+                            div
+                        div
+                    div
+
+                    !-- Google Sheets konfiguráció --
+                    div class=config-section
+                        div class=config-card
+                            h3Google Sheets Konfigurációh3
+                            form class=config-form id=sheetsConfigForm
+                                div class=input-group
+                                    input type=text id=spreadsheetId required
+                                    label for=spreadsheetIdSpreadsheet IDlabel
+                                    span class=input-highlightspan
+                                div
+                                div class=input-group
+                                    input type=text id=apiKey required
+                                    label for=apiKeyAPI Kulcslabel
+                                    span class=input-highlightspan
+                                div
+                                div class=input-group
+                                    input type=text id=sheetRange value=Sheet1!AZ required
+                                    label for=sheetRangeTartománylabel
+                                    span class=input-highlightspan
+                                div
+                                button type=submit class=config-btn
+                                    span💾span Konfiguráció mentése
+                                button
+                            form
+                        div
+                    div
+
+                    !-- Sör adatok kezelése --
+                    div class=beer-section
+                        div class=beer-card
+                            h3Sör adatokh3
+                            div class=beer-actions
+                                button class=action-btn id=addBeerBtn
+                                    span➕span Új sör hozzáadása
+                                button
+                                button class=action-btn id=exportBtn
+                                    span📥span Adatok exportálása
+                                button
+                            div
+                            div class=beer-table-container
+                                table class=beer-table id=beerTable
+                                    thead
+                                        tr
+                                            thNévth
+                                            thTípusth
+                                            thAlkohol %th
+                                            thÁrth
+                                            thKészletth
+                                            thMűveletekth
+                                        tr
+                                    thead
+                                    tbody id=beerTableBody
+                                        !-- Dinamikus tartalom --
+                                    tbody
+                                table
+                            div
+                        div
+                    div
+                div
+            main
+        div
+    div
+
+    !-- Admin modal --
+    div class=modal-overlay id=adminModal
+        div class=modal-content
+            div class=modal-header
+                h3Admin Bejelentkezésh3
+                button class=modal-close id=modalClose&times;button
+            div
+            form class=auth-form id=adminForm
+                div class=input-group
+                    input type=text id=adminUsername required
+                    label for=adminUsernameAdmin felhasználónévlabel
+                    span class=input-highlightspan
+                div
+                div class=input-group
+                    input type=password id=adminPassword required
+                    label for=adminPasswordAdmin jelszólabel
+                    span class=input-highlightspan
+                div
+                button type=submit class=auth-btn admin-submit-btn
+                    span class=btn-textAdmin Belépésspan
+                    span class=btn-loading
+                        div class=spinnerdiv
+                    span
+                button
+            form
+        div
+    div
+
+    !-- Sör hozzáadása modal --
+    div class=modal-overlay id=beerModal
+        div class=modal-content
+            div class=modal-header
+                h3Új sör hozzáadásah3
+                button class=modal-close id=beerModalClose&times;button
+            div
+            form class=auth-form id=beerForm
+                div class=input-group
+                    input type=text id=beerName required
+                    label for=beerNameSör nevelabel
+                    span class=input-highlightspan
+                div
+                div class=input-group
+                    input type=text id=beerType required
+                    label for=beerTypeTípuslabel
+                    span class=input-highlightspan
+                div
+                div class=input-group
+                    input type=number id=beerAlcohol step=0.1 required
+                    label for=beerAlcoholAlkohol %label
+                    span class=input-highlightspan
+                div
+                div class=input-group
+                    input type=number id=beerPrice step=0.01 required
+                    label for=beerPriceÁr (Ft)label
+                    span class=input-highlightspan
+                div
+                div class=input-group
+                    input type=number id=beerStock required
+                    label for=beerStockKészlet (db)label
+                    span class=input-highlightspan
+                div
+                button type=submit class=auth-btn
+                    span class=btn-textSör hozzáadásaspan
+                    span class=btn-loading
+                        div class=spinnerdiv
+                    span
+                button
+            form
+        div
+    div
+
+    script src=js.jsscript
+body
+html
