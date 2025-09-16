@@ -5,27 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sör Táblázat</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Vendég felület (Szép bejelentkezővel) -->
+    <div class="guest-view" id="guestView">
+        <div class="container">
+            <!-- Animált háttér -->
+            <div class="animated-bg">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+            </div>
 
-    <!-- Vendég felület -->
-    <div id="guestView">
-        <header class="guest-header">
-            <h1>Sör Táblázat</h1>
-            <p>Jelentkezz be a sörök megtekintéséhez és kezeléséhez.</p>
-            <button id="adminBtn" class="admin-btn">Gabz és Lajos</button>
-        </header>
-        <main class="guest-main">
-            <!-- Auth kártyák... -->
-            <div class="auth-card active" id="loginCard"><h2>Bejelentkezés</h2><form id="loginForm"></form><p class="switch-auth-text">Nincs fiókod? <a href="#" class="switch-auth" data-target="register">Regisztrálj itt!</a></p></div>
-            <div class="auth-card" id="registerCard"><h2>Regisztráció</h2><form id="registerForm"></form><p class="switch-auth-text">Már van fiókod? <a href="#" class="switch-auth" data-target="login">Jelentkezz be!</a></p></div>
-        </main>
+            <!-- Fő tartalom -->
+            <div class="main-content">
+                <div class="logo-section">
+                    <div class="beer-icon">🍺</div>
+                    <h1 class="app-title">Sör Táblázat</h1>
+                    <p class="app-subtitle">Gabz és Lajos sör értékelő rendszere</p>
+                </div>
+
+                <!-- Bejelentkezési/Regisztrációs kártyák -->
+                <div class="auth-container">
+                    <!-- Bejelentkezés -->
+                    <div class="auth-card login-card active" id="loginCard">
+                        <div class="card-header">
+                            <h2>Bejelentkezés</h2>
+                        </div>
+                        <form class="auth-form" id="loginForm">
+                            <div class="input-group">
+                                <input type="email" id="loginEmail" required>
+                                <label for="loginEmail">Email cím</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="loginPassword" required>
+                                <label for="loginPassword">Jelszó</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Bejelentkezés</span>
+                                <span class="btn-loading">
+                                    <div class="spinner"></div>
+                                </span>
+                            </button>
+                        </form>
+                        <div class="card-footer">
+                            <p>Nincs még fiókja? <a href="#" class="switch-auth" data-target="register">Regisztráljon itt</a></p>
+                        </div>
+                    </div>
+
+                    <!-- Regisztráció -->
+                    <div class="auth-card register-card" id="registerCard">
+                        <div class="card-header">
+                            <h2>Regisztráció</h2>
+                        </div>
+                        <form class="auth-form" id="registerForm">
+                            <div class="input-group">
+                                <input type="text" id="registerName" required>
+                                <label for="registerName">Teljes név</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="email" id="registerEmail" required>
+                                <label for="registerEmail">Email cím</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="registerPassword" required>
+                                <label for="registerPassword">Jelszó</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="registerPasswordConfirm" required>
+                                <label for="registerPasswordConfirm">Jelszó megerősítés</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Regisztráció</span>
+                                <span class="btn-loading">
+                                    <div class="spinner"></div>
+                                </span>
+                            </button>
+                        </form>
+                        <div class="card-footer">
+                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezzen be itt</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gabz és Lajos belépés gomb -->
+                <div class="admin-section">
+                    <button class="admin-btn" id="adminBtn">
+                        <span class="admin-icon">👑</span>
+                        <span class="admin-text">Gabz és Lajos</span>
+                        <div class="admin-shine"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Admin felület (Javított élőkereséssel és átlagponttal) -->
+    <!-- Admin felület (Javított élőkereséssel és indexelt átlaggal) -->
     <div id="adminView" style="display: none;">
         <header class="admin-header">
             <div class="header-content">
@@ -38,7 +122,7 @@
         </header>
 
         <main class="admin-main">
-            <!-- Statisztika kártyák (Átlagponttal bővítve) -->
+            <!-- Statisztika kártyák (Átlagponttal és indexelt átlaggal) -->
             <section class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon users">👥</div>
@@ -57,8 +141,8 @@
                 <div class="stat-card">
                     <div class="stat-icon average">⭐</div>
                     <div class="stat-info">
-                        <p>Átlagpont</p>
-                        <h3 id="averageScore">0.0</h3>
+                        <p>Indexelt Átlag</p>
+                        <h3 id="indexedAverage">0.0</h3>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -94,7 +178,8 @@
                                 <th>Hely</th>
                                 <th>Alkohol %</th>
                                 <th>Pontszám</th>
-                                <th>Értékelte</th>
+                                <th>Indexelt Átlag</th>
+                                <th>Ki tesztelte</th>
                             </tr>
                         </thead>
                         <tbody id="beerTableBody"></tbody>
