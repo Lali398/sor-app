@@ -471,12 +471,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ======================================================
-    // === ÚJ GOOGLE SHEETS INTEGRÁCIÓ (NETLIFY FUNCTIONS) ===
+    // === GOOGLE SHEETS INTEGRÁCIÓ (VERCEL/NETLIFY FUNCTIONS) ===
     // ======================================================
 
-    // Központi függvény, ami a Netlify backenddel kommunikál
+    // Központi függvény, ami a backenddel kommunikál
     async function callSheetApi(action, payload) {
-        const response = await fetch('/.netlify/functions/sheet', {
+        // ---- EZ A SOR LETT JAVÍTVA ----
+        const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
