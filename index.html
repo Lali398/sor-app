@@ -11,12 +11,12 @@
 </head>
 <body>
 
-    <!-- Vendég felület (Változatlan) -->
+    <!-- Vendég felület -->
     <div id="guestView">
         <header class="guest-header">
             <h1>Sör Táblázat</h1>
             <p>Jelentkezz be a sörök megtekintéséhez és kezeléséhez.</p>
-            <button id="adminBtn" class="admin-btn">Admin</button>
+            <button id="adminBtn" class="admin-btn">Gabz és Lajos</button>
         </header>
         <main class="guest-main">
             <!-- Auth kártyák... -->
@@ -25,11 +25,11 @@
         </main>
     </div>
 
-    <!-- Admin felület (Javított élőkereséssel) -->
+    <!-- Admin felület (Javított élőkereséssel és átlagponttal) -->
     <div id="adminView" style="display: none;">
         <header class="admin-header">
             <div class="header-content">
-                <h2>Admin Felület</h2>
+                <h2>Gabz és Lajos Sör Felülete</h2>
                 <div class="header-actions">
                     <button id="refreshBtn" class="header-btn">🔄 Frissítés</button>
                     <button id="logoutBtn" class="header-btn logout">Kilépés</button>
@@ -38,11 +38,36 @@
         </header>
 
         <main class="admin-main">
-            <!-- Statisztika kártyák (Változatlan) -->
+            <!-- Statisztika kártyák (Átlagponttal bővítve) -->
             <section class="stats-grid">
-                <div class="stat-card"><div class="stat-icon users">👥</div><div class="stat-info"><p>Felhasználók</p><h3 id="userCount">0</h3></div></div>
-                <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Sörök száma</p><h3 id="beerCount">0</h3></div></div>
-                <div class="stat-card"><div class="stat-icon sheets">📊</div><div class="stat-info"><p>Google Sheets</p><h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3></div></div>
+                <div class="stat-card">
+                    <div class="stat-icon users">👥</div>
+                    <div class="stat-info">
+                        <p>Felhasználók</p>
+                        <h3 id="userCount">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon beers">🍺</div>
+                    <div class="stat-info">
+                        <p>Sörök száma</p>
+                        <h3 id="beerCount">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon average">⭐</div>
+                    <div class="stat-info">
+                        <p>Átlagpont</p>
+                        <h3 id="averageScore">0.0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon sheets">📊</div>
+                    <div class="stat-info">
+                        <p>Google Sheets</p>
+                        <h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3>
+                    </div>
+                </div>
             </section>
 
             <!-- Sörök listája kártya, most már menő élőkereséssel -->
@@ -79,10 +104,10 @@
         </main>
     </div>
 
-    <!-- Admin bejelentkezési ablak (Változatlan) -->
+    <!-- Admin bejelentkezési ablak -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
-            <header class="modal-header"><h3>Admin bejelentkezés</h3><button id="modalClose" class="modal-close">&times;</button></header>
+            <header class="modal-header"><h3>Gabz és Lajos bejelentkezés</h3><button id="modalClose" class="modal-close">&times;</button></header>
             <form id="adminForm">
                 <div class="input-group"><input type="text" id="adminUsername" required><label for="adminUsername">Felhasználónév</label></div>
                 <div class="input-group"><input type="password" id="adminPassword" required><label for="adminPassword">Jelszó</label></div>
