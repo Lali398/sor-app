@@ -370,12 +370,12 @@ body {
     font-weight: 600;
 }
 
-.admin-actions {
+.admin-actions, .header-actions {
     display: flex;
     gap: 15px;
 }
 
-.refresh-btn, .logout-btn {
+.refresh-btn, .logout-btn, .header-btn {
     padding: 10px 20px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.1);
@@ -389,7 +389,7 @@ body {
     font-weight: 500;
 }
 
-.refresh-btn:hover, .logout-btn:hover {
+.refresh-btn:hover, .logout-btn:hover, .header-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
 }
@@ -405,10 +405,11 @@ body {
 }
 
 /* Stats szekció */
-.stats-section {
+.stats-section, .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
+    margin-bottom: 30px;
 }
 
 .stat-card {
@@ -435,6 +436,7 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
+    color: white;
 }
 
 .stat-number {
@@ -458,19 +460,164 @@ body {
     margin-bottom: 5px;
 }
 
+/* ======================================================
+   === MODERN ÉLŐKERESÉS STÍLUSOK ===
+   ====================================================== */
+
+.live-search-container {
+    flex-grow: 1;
+    max-width: 500px;
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#liveSearchInput {
+    width: 100%;
+    padding: 12px 50px 12px 45px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#liveSearchInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    font-size: 18px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.clear-search {
+    position: absolute;
+    right: 15px;
+    width: 24px;
+    height: 24px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+    background: #f1f5f9;
+    color: #334155;
+    transform: scale(1.1);
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 5px;
+    border: 1px solid #e2e8f0;
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.suggestion-item:hover .suggestion-type,
+.suggestion-item.selected .suggestion-type {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.suggestion-icon {
+    font-size: 16px;
+    min-width: 20px;
+}
+
+.suggestion-text {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.suggestion-text mark {
+    background: rgba(255, 255, 255, 0.3);
+    color: inherit;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.suggestion-type {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.search-results-info {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
 /* Config szekció */
-.config-section, .beer-section {
+.config-section, .beer-section, .card {
     background: white;
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.config-card h3, .beer-card h3 {
+.config-card h3, .beer-card h3, .card-header h3 {
     font-size: 1.5rem;
     color: #333;
     margin-bottom: 25px;
     font-weight: 600;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
 .config-form {
@@ -535,19 +682,19 @@ body {
     flex-wrap: wrap;
 }
 
-.beer-table-container {
+.table-container, .beer-table-container {
     overflow-x: auto;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
 }
 
-.beer-table {
+.beer-table, table {
     width: 100%;
     border-collapse: collapse;
     background: white;
 }
 
-.beer-table th {
+.beer-table th, table th {
     background: #f8fafc;
     padding: 15px;
     text-align: left;
@@ -556,14 +703,36 @@ body {
     border-bottom: 1px solid #e2e8f0;
 }
 
-.beer-table td {
+.beer-table td, table td {
     padding: 15px;
     border-bottom: 1px solid #e2e8f0;
     color: #334155;
+    transition: all 0.3s ease;
 }
 
-.beer-table tr:hover {
+.beer-table tr:hover, table tr:hover {
     background: #f8fafc;
+}
+
+/* Highlighted search results */
+table td mark {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.score-cell {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.no-results {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 40px 15px !important;
 }
 
 .edit-btn, .delete-btn {
@@ -734,17 +903,25 @@ body {
         text-align: center;
     }
     
-    .stats-section {
+    .stats-section, .stats-grid {
         grid-template-columns: 1fr;
     }
 
-    .beer-controls {
+    .beer-controls, .card-header {
         flex-direction: column;
         align-items: stretch;
     }
     
     .beer-actions {
         flex-direction: column;
+    }
+    
+    .live-search-container {
+        max-width: 100%;
+    }
+
+    #liveSearchInput {
+        font-size: 16px; /* Prevents zoom on iOS */
     }
 }
 
@@ -765,5 +942,13 @@ body {
         padding: 20px;
         flex-direction: column;
         text-align: center;
+    }
+    
+    .search-suggestions {
+        border-radius: 10px;
+    }
+    
+    .suggestion-item {
+        padding: 10px 12px;
     }
 }
