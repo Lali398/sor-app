@@ -1,4 +1,4 @@
-// api/sheet.js - Javítva a munkalap neve
+// api/sheet.js - Végleges, javított verzió
 import { google } from 'googleapis';
 
 const COL_INDEXES = {
@@ -19,28 +19,20 @@ const transformRowToBeer = (row, userIndexes, ratedBy) => {
 };
 
 export default async function handler(req, res) {
-    console.log("1. Függvény elindult.");
-
     if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    console.log("2. POST kérés fogadva.");
     const { action } = req.body;
-    console.log(`3. Action beolvasva: ${action}`);
-
     const { SPREADSHEET_ID, GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL } = process.env;
-    
-    // ... (a környezeti változók ellenőrzése marad)
+
     if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
-        console.error("FATALIS HIBA: Hiányzó környezeti változók!");
-        return res.status(500).json({ error: "Konfigurációs hiba: Hiányzó környezeti változók." });
+        console.error("Szerverhiba: Hiányzó környezeti változók!");
+        return res.status(500).json({ error: "Szerveroldali konfigurációs hiba." });
     }
-    console.log("4-6. Környezeti változók rendben.");
-
-
+    
     try {
-        console.log("7. Try-catch blokk elindult, auth objektum létrehozása következik.");
         const auth = new google.auth.GoogleAuth({
             credentials: {
                 client_email: GOOGLE_CLIENT_EMAIL,
@@ -48,18 +40,14 @@ export default async function handler(req, res) {
             },
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
-        console.log("9. Auth objektum sikeresen létrehozva.");
 
         const sheets = google.sheets({ version: 'v4', auth });
-        console.log("10. Sheets kliens sikeresen létrehozva.");
 
         if (action === 'GET_DATA') {
-            console.log("11. GET_DATA action, API hívás a Google felé.");
-            
-            // JAVÍTÁS ITT: A 'Sörök' átírva "'Sör táblázat'"-ra
             const sörökPromise = sheets.spreadsheets.values.get({
                 spreadsheetId: SPREADSHEET_ID,
-                range: "'Sör táblázat'!A4:V", // <-- EZ VOLT A HIBA
+                // ITT A JAVÍTÁS:
+                range: "'Sör táblázat'!A4:V",
             });
             
             const usersPromise = sheets.spreadsheets.values.get({
@@ -68,37 +56,28 @@ export default async function handler(req, res) {
             });
 
             const [sörökResponse, usersResponse] = await Promise.all([sörökPromise, usersPromise]);
-            console.log("12. Google API válasz megérkezett.");
             
             const allRows = sörökResponse.data.values || [];
             const allBeers = [];
             allRows.forEach(row => {
                 const gabzBeer = transformRowToBeer(row, COL_INDEXES.gabz, 'gabz');
                 if (gabzBeer) allBeers.push(gabzBeer);
+
                 const lajosBeer = transformRowToBeer(row, COL_INDEXES.lajos, 'lajos');
                 if (lajosBeer) allBeers.push(lajosBeer);
             });
-            console.log(`13. Feldolgozva ${allBeers.length} sör.`);
 
             const usersData = (usersResponse.data.values || []).map(row => ({
                 id: row[0], name: row[1], email: row[2]
             })).filter(u => u.name && u.email);
-            console.log(`14. Feldolgozva ${usersData.length} felhasználó.`);
 
-            return res.status(200).json({
-                beers: allBeers,
-                users: usersData
-            });
+            return res.status(200).json({ beers: allBeers, users: usersData });
         } else {
-            // ... (a többi rész változatlan)
+            return res.status(400).json({ error: `Ismeretlen művelet: ${action}` });
         }
 
     } catch (error) {
-        console.error("!!! KIVÉTELKEZELÉSI BLOKK !!!");
-        console.error("Részletes hiba:", error);
-        return res.status(500).json({ 
-            error: "Hiba a Google Sheets API-val való kommunikáció során.", 
-            details: error.message
-        });
+        console.error("Google Sheets API hiba:", error);
+        return res.status(500).json({ error: "Hiba a Google Sheets API-val való kommunikáció során.", details: error.message });
     }
 }
