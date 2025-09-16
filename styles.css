@@ -499,10 +499,39 @@ body {
 }
 
 /* Sör szekció */
+.beer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    flex-grow: 1;
+}
+
+#beerSearchInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+}
+
+#beerSearchInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
 .beer-actions {
     display: flex;
     gap: 15px;
-    margin-bottom: 25px;
     flex-wrap: wrap;
 }
 
@@ -707,6 +736,11 @@ body {
     
     .stats-section {
         grid-template-columns: 1fr;
+    }
+
+    .beer-controls {
+        flex-direction: column;
+        align-items: stretch;
     }
     
     .beer-actions {
