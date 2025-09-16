@@ -172,7 +172,7 @@
                                     <span class="input-highlight"></span>
                                 </div>
                                 <div class="input-group">
-                                    <input type="text" id="sheetRange" value="Sheet1!A:Z" required>
+                                    <input type="text" id="sheetRange" value="Sheet1!A4:Z" required>
                                     <label for="sheetRange">Tartomány</label>
                                     <span class="input-highlight"></span>
                                 </div>
@@ -187,13 +187,18 @@
                     <div class="beer-section">
                         <div class="beer-card">
                             <h3>Sör adatok</h3>
-                            <div class="beer-actions">
-                                <button class="action-btn" id="addBeerBtn">
-                                    <span>➕</span> Új sör hozzáadása
-                                </button>
-                                <button class="action-btn" id="exportBtn">
-                                    <span>📥</span> Adatok exportálása
-                                </button>
+                            <div class="beer-controls">
+                                <div class="search-container">
+                                    <input type="text" id="beerSearchInput" placeholder="🔍 Keress sörökre...">
+                                </div>
+                                <div class="beer-actions">
+                                    <button class="action-btn" id="addBeerBtn">
+                                        <span>➕</span> Új sör hozzáadása
+                                    </button>
+                                    <button class="action-btn" id="exportBtn">
+                                        <span>📥</span> Adatok exportálása
+                                    </button>
+                                </div>
                             </div>
                             <div class="beer-table-container">
                                 <table class="beer-table" id="beerTable">
@@ -202,8 +207,10 @@
                                             <th>Név</th>
                                             <th>Típus</th>
                                             <th>Alkohol %</th>
-                                            <th>Ár</th>
-                                            <th>Készlet</th>
+                                            <th>Kinézet</th>
+                                            <th>Illat</th>
+                                            <th>Íz</th>
+                                            <th>Pontszám</th>
                                             <th>Műveletek</th>
                                         </tr>
                                     </thead>
@@ -251,7 +258,7 @@
     <div class="modal-overlay" id="beerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Új sör hozzáadása</h3>
+                <h3 id="beerModalTitle">Új sör hozzáadása</h3>
                 <button class="modal-close" id="beerModalClose">&times;</button>
             </div>
             <form class="auth-form" id="beerForm">
@@ -266,22 +273,32 @@
                     <span class="input-highlight"></span>
                 </div>
                 <div class="input-group">
-                    <input type="number" id="beerAlcohol" step="0.1" required>
-                    <label for="beerAlcohol">Alkohol %</label>
+                    <input type="number" id="beerPercentage" step="0.1" required>
+                    <label for="beerPercentage">Alkohol %</label>
                     <span class="input-highlight"></span>
                 </div>
                 <div class="input-group">
-                    <input type="number" id="beerPrice" step="0.01" required>
-                    <label for="beerPrice">Ár (Ft)</label>
+                    <input type="number" id="beerLook" step="1" min="1" max="5" required>
+                    <label for="beerLook">Kinézet (1-5)</label>
                     <span class="input-highlight"></span>
                 </div>
                 <div class="input-group">
-                    <input type="number" id="beerStock" required>
-                    <label for="beerStock">Készlet (db)</label>
+                    <input type="number" id="beerSmell" step="1" min="1" max="5" required>
+                    <label for="beerSmell">Illat (1-5)</label>
+                    <span class="input-highlight"></span>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="beerTaste" step="1" min="1" max="10" required>
+                    <label for="beerTaste">Íz (1-10)</label>
+                    <span class="input-highlight"></span>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="beerScore" step="1" min="1" max="10" required>
+                    <label for="beerScore">Pontszám (1-10)</label>
                     <span class="input-highlight"></span>
                 </div>
                 <button type="submit" class="auth-btn">
-                    <span class="btn-text">Sör hozzáadása</span>
+                    <span class="btn-text" id="beerSubmitBtnText">Sör hozzáadása</span>
                     <span class="btn-loading">
                         <div class="spinner"></div>
                     </span>
@@ -290,6 +307,6 @@
         </div>
     </div>
 
-    <script src="js.js"></script>
+    <script src="js.jsscript"></script>
 </body>
 </html>
