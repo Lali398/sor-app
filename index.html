@@ -11,33 +11,21 @@
 </head>
 <body>
 
-    <!-- Vendég felület (Bejelentkezés / Regisztráció) -->
+    <!-- Vendég felület (Változatlan) -->
     <div id="guestView">
         <header class="guest-header">
             <h1>Sör Táblázat</h1>
             <p>Jelentkezz be a sörök megtekintéséhez és kezeléséhez.</p>
             <button id="adminBtn" class="admin-btn">Admin</button>
         </header>
-
         <main class="guest-main">
-            <div class="auth-card active" id="loginCard">
-                <h2>Bejelentkezés</h2>
-                <form id="loginForm">
-                    <!-- A vendég bejelentkezés tartalma... -->
-                </form>
-                <p class="switch-auth-text">Nincs fiókod? <a href="#" class="switch-auth" data-target="register">Regisztrálj itt!</a></p>
-            </div>
-            <div class="auth-card" id="registerCard">
-                <h2>Regisztráció</h2>
-                <form id="registerForm">
-                    <!-- A vendég regisztráció tartalma... -->
-                </form>
-                <p class="switch-auth-text">Már van fiókod? <a href="#" class="switch-auth" data-target="login">Jelentkezz be!</a></p>
-            </div>
+            <!-- Auth kártyák... -->
+            <div class="auth-card active" id="loginCard"><h2>Bejelentkezés</h2><form id="loginForm"></form><p class="switch-auth-text">Nincs fiókod? <a href="#" class="switch-auth" data-target="register">Regisztrálj itt!</a></p></div>
+            <div class="auth-card" id="registerCard"><h2>Regisztráció</h2><form id="registerForm"></form><p class="switch-auth-text">Már van fiókod? <a href="#" class="switch-auth" data-target="login">Jelentkezz be!</a></p></div>
         </main>
     </div>
 
-    <!-- Admin felület (Bejelentkezés után) -->
+    <!-- Admin felület (Javított elrendezéssel) -->
     <div id="adminView" style="display: none;">
         <header class="admin-header">
             <div class="header-content">
@@ -50,40 +38,24 @@
         </header>
 
         <main class="admin-main">
+            <!-- Statisztika kártyák (Változatlan) -->
             <section class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon users">👥</div>
-                    <div class="stat-info">
-                        <p>Felhasználók</p>
-                        <h3 id="userCount">0</h3>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon beers">🍺</div>
-                    <div class="stat-info">
-                        <p>Sörök száma</p>
-                        <h3 id="beerCount">0</h3>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon sheets">📊</div>
-                    <div class="stat-info">
-                        <p>Google Sheets</p>
-                        <h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3>
-                    </div>
-                </div>
+                <div class="stat-card"><div class="stat-icon users">👥</div><div class="stat-info"><p>Felhasználók</p><h3 id="userCount">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Sörök száma</p><h3 id="beerCount">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon sheets">📊</div><div class="stat-info"><p>Google Sheets</p><h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3></div></div>
             </section>
 
-            <!-- === KERESŐ MEZŐ HOZZÁADVA === -->
-            <section class="card">
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Keresés a sörök között (név, típus, hely)...">
-                </div>
-            </section>
+            <!-- A felesleges konfigurációs kártya eltávolítva -->
 
+            <!-- Sörök listája kártya, most már a keresővel -->
             <section class="card">
                 <header class="card-header">
                     <h3>Sörök listája</h3>
+                    <!-- === KERESŐ MEZŐ ÚJ HELYEN === -->
+                    <div class="search-container">
+                        <input type="text" id="searchInput" list="searchOptions" placeholder="Keresés...">
+                        <datalist id="searchOptions"></datalist>
+                    </div>
                 </header>
                 <div class="table-container">
                     <table>
@@ -97,31 +69,20 @@
                                 <th>Értékelte</th>
                             </tr>
                         </thead>
-                        <tbody id="beerTableBody">
-                            <!-- A sör adatok ide kerülnek dinamikusan -->
-                        </tbody>
+                        <tbody id="beerTableBody"></tbody>
                     </table>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Admin bejelentkezési ablak (Modal) -->
+    <!-- Admin bejelentkezési ablak (Változatlan) -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
-            <header class="modal-header">
-                <h3>Admin bejelentkezés</h3>
-                <button id="modalClose" class="modal-close">&times;</button>
-            </header>
+            <header class="modal-header"><h3>Admin bejelentkezés</h3><button id="modalClose" class="modal-close">&times;</button></header>
             <form id="adminForm">
-                <div class="input-group">
-                    <input type="text" id="adminUsername" required>
-                    <label for="adminUsername">Felhasználónév</label>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="adminPassword" required>
-                    <label for="adminPassword">Jelszó</label>
-                </div>
+                <div class="input-group"><input type="text" id="adminUsername" required><label for="adminUsername">Felhasználónév</label></div>
+                <div class="input-group"><input type="password" id="adminPassword" required><label for="adminPassword">Jelszó</label></div>
                 <button type="submit" class="auth-btn">Bejelentkezés</button>
             </form>
         </div>
@@ -130,4 +91,3 @@
     <script src="js.js"></script>
 </body>
 </html>
-
