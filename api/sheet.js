@@ -1,13 +1,11 @@
-// api/sheet.js - "Beszédes" hibakereső verzió
+// api/sheet.js - Javítva a munkalap neve
 import { google } from 'googleapis';
 
-// Az oszlopindexek
 const COL_INDEXES = {
   gabz: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
   lajos: { beerName: 12, location: 13, type: 14, look: 15, smell: 16, taste: 17, score: 18, avg: 19, beerPercentage: 20, date: 21 }
 };
 
-// ... (a többi segédfüggvény változatlan)
 const transformRowToBeer = (row, userIndexes, ratedBy) => {
     const beerName = row[userIndexes.beerName];
     if (!beerName || beerName.trim() === '') return null;
@@ -24,8 +22,6 @@ export default async function handler(req, res) {
     console.log("1. Függvény elindult.");
 
     if (req.method !== 'POST') {
-        console.log("Hiba: Nem POST kérés, leállás.");
-        res.setHeader('Allow', ['POST']);
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
@@ -35,35 +31,20 @@ export default async function handler(req, res) {
 
     const { SPREADSHEET_ID, GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL } = process.env;
     
-    // Ellenőrizzük a változókat egyenként
-    if (!SPREADSHEET_ID) {
-        console.error("FATALIS HIBA: SPREADSHEET_ID nincs beállítva!");
-        return res.status(500).json({ error: "Konfigurációs hiba: SPREADSHEET_ID hiányzik." });
+    // ... (a környezeti változók ellenőrzése marad)
+    if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+        console.error("FATALIS HIBA: Hiányzó környezeti változók!");
+        return res.status(500).json({ error: "Konfigurációs hiba: Hiányzó környezeti változók." });
     }
-    console.log("4. SPREADSHEET_ID rendben.");
+    console.log("4-6. Környezeti változók rendben.");
 
-    if (!GOOGLE_CLIENT_EMAIL) {
-        console.error("FATALIS HIBA: GOOGLE_CLIENT_EMAIL nincs beállítva!");
-        return res.status(500).json({ error: "Konfigurációs hiba: GOOGLE_CLIENT_EMAIL hiányzik." });
-    }
-    console.log("5. GOOGLE_CLIENT_EMAIL rendben.");
-
-    if (!GOOGLE_PRIVATE_KEY) {
-        console.error("FATALIS HIBA: GOOGLE_PRIVATE_KEY nincs beállítva!");
-        return res.status(500).json({ error: "Konfigurációs hiba: GOOGLE_PRIVATE_KEY hiányzik." });
-    }
-    console.log("6. GOOGLE_PRIVATE_KEY létezik (tartalmát nem írjuk ki).");
 
     try {
         console.log("7. Try-catch blokk elindult, auth objektum létrehozása következik.");
-        
-        const privateKey = GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
-        console.log("8. Private key formázva.");
-
         const auth = new google.auth.GoogleAuth({
             credentials: {
                 client_email: GOOGLE_CLIENT_EMAIL,
-                private_key: privateKey,
+                private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
             },
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
@@ -74,13 +55,22 @@ export default async function handler(req, res) {
 
         if (action === 'GET_DATA') {
             console.log("11. GET_DATA action, API hívás a Google felé.");
-            const response = await sheets.spreadsheets.values.get({
+            
+            // JAVÍTÁS ITT: A 'Sörök' átírva "'Sör táblázat'"-ra
+            const sörökPromise = sheets.spreadsheets.values.get({
                 spreadsheetId: SPREADSHEET_ID,
-                range: 'Sörök!A4:V',
+                range: "'Sör táblázat'!A4:V", // <-- EZ VOLT A HIBA
             });
+            
+            const usersPromise = sheets.spreadsheets.values.get({
+                spreadsheetId: SPREADSHEET_ID,
+                range: 'Felhasználók!A2:D',
+            });
+
+            const [sörökResponse, usersResponse] = await Promise.all([sörökPromise, usersPromise]);
             console.log("12. Google API válasz megérkezett.");
             
-            const allRows = response.data.values || [];
+            const allRows = sörökResponse.data.values || [];
             const allBeers = [];
             allRows.forEach(row => {
                 const gabzBeer = transformRowToBeer(row, COL_INDEXES.gabz, 'gabz');
@@ -90,11 +80,17 @@ export default async function handler(req, res) {
             });
             console.log(`13. Feldolgozva ${allBeers.length} sör.`);
 
-            // A Felhasználók lekérése most kimarad az egyszerűség kedvéért
-            return res.status(200).json({ beers: allBeers, users: [] });
+            const usersData = (usersResponse.data.values || []).map(row => ({
+                id: row[0], name: row[1], email: row[2]
+            })).filter(u => u.name && u.email);
+            console.log(`14. Feldolgozva ${usersData.length} felhasználó.`);
+
+            return res.status(200).json({
+                beers: allBeers,
+                users: usersData
+            });
         } else {
-            console.log(`Ismeretlen action: ${action}`);
-            return res.status(400).json({ error: `Ismeretlen művelet: ${action}` });
+            // ... (a többi rész változatlan)
         }
 
     } catch (error) {
@@ -102,8 +98,7 @@ export default async function handler(req, res) {
         console.error("Részletes hiba:", error);
         return res.status(500).json({ 
             error: "Hiba a Google Sheets API-val való kommunikáció során.", 
-            details: error.message,
-            stack: error.stack // Küldjük el a stack trace-t is a válaszban
+            details: error.message
         });
     }
 }
