@@ -404,10 +404,10 @@ body {
     grid-template-columns: 1fr;
 }
 
-/* Stats szekció */
+/* Stats szekció (4 kártyával: Users, Beers, Average Score, Sheets) */
 .stats-section, .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -439,6 +439,11 @@ body {
     color: white;
 }
 
+/* Átlagpont ikon speciális színezése */
+.stat-icon.average {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
@@ -458,6 +463,13 @@ body {
     font-size: 1rem;
     font-weight: 500;
     margin-bottom: 5px;
+}
+
+#averageScore {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    transition: color 0.3s ease;
 }
 
 /* ======================================================
@@ -904,7 +916,7 @@ table td mark {
     }
     
     .stats-section, .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 
     .beer-controls, .card-header {
@@ -950,5 +962,9 @@ table td mark {
     
     .suggestion-item {
         padding: 10px 12px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }
