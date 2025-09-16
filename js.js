@@ -42,17 +42,53 @@ document.addEventListener('DOMContentLoaded', function() {
             usersData = result.users || [];
             filteredBeers = [...beersData]; // Kezdetben az összes sör
             
-            showSuccess('Sikeres admin bejelentkezés!');
+            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
             setTimeout(() => {
                 closeAdminModal();
                 switchToAdminView();
             }, 1000);
 
         } catch (error) {
-            console.error("Admin bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás admin felhasználónév vagy jelszó!');
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
         } finally {
             setLoading(submitBtn, false);
+        }
+    }
+
+    // ======================================================
+    // === ÁTLAGPONT SZÁMÍTÁS ===
+    // ======================================================
+
+    function calculateAverageScore(beers = beersData) {
+        if (!beers || beers.length === 0) return 0;
+        
+        const validScores = beers
+            .map(beer => parseFloat(beer.score) || 0)
+            .filter(score => score > 0);
+        
+        if (validScores.length === 0) return 0;
+        
+        const sum = validScores.reduce((total, score) => total + score, 0);
+        return (sum / validScores.length).toFixed(1);
+    }
+
+    function updateAverageScore() {
+        const average = calculateAverageScore(filteredBeers.length > 0 ? filteredBeers : beersData);
+        document.getElementById('averageScore').textContent = average;
+        
+        // Színek az átlag alapján
+        const avgElement = document.getElementById('averageScore');
+        const avgValue = parseFloat(average);
+        
+        if (avgValue >= 4.0) {
+            avgElement.style.color = '#27ae60'; // Zöld - kiváló
+        } else if (avgValue >= 3.0) {
+            avgElement.style.color = '#f39c12'; // Sárga - jó
+        } else if (avgValue >= 2.0) {
+            avgElement.style.color = '#e67e22'; // Narancs - közepes
+        } else {
+            avgElement.style.color = '#e74c3c'; // Piros - gyenge
         }
     }
 
@@ -81,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filteredBeers = [...beersData];
             hideSearchSuggestions();
             updateSearchResultsInfo();
+            updateAverageScore();
             renderBeerTable(filteredBeers);
             return;
         }
@@ -89,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         performLiveSearch(searchTerm);
         showSearchSuggestions();
         updateSearchResultsInfo();
+        updateAverageScore();
     }
 
     function performLiveSearch(searchTerm) {
@@ -245,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredBeers = [...beersData];
         hideSearchSuggestions();
         updateSearchResultsInfo();
+        updateAverageScore();
         renderBeerTable(filteredBeers);
         liveSearchInput.focus();
     }
@@ -346,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredBeers = [...beersData];
         renderBeerTable(filteredBeers);
         updateSearchResultsInfo();
+        updateAverageScore();
     }
     
     // ======================================================
@@ -390,5 +430,5 @@ document.addEventListener('DOMContentLoaded', function() {
     function showSuccess(message) { showNotification(message, 'success'); }
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 3000); }
     
-    console.log('🍺 Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel)');
+    console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és átlagponttal)');
 });
