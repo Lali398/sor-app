@@ -1,5 +1,5 @@
-// netlify/functions/sheet.js
-const { google } = require('googleapis');
+// api/sheet.js - Vercel-kompatibilis verzió
+import { google } from 'googleapis';
 
 // Az oszlopindexek, amiket megadtál
 const COL_INDEXES = {
@@ -11,19 +11,11 @@ const COL_INDEXES = {
   }
 };
 
-/**
- * Segédfüggvény, ami egy sort és egy felhasználói index-objektumot felhasználva
- * megpróbál egy sör-értékelés objektumot létrehozni.
- */
 const transformRowToBeer = (row, userIndexes, ratedBy) => {
     const beerName = row[userIndexes.beerName];
-    // Csak akkor dolgozzuk fel, ha van sörnév az adott oszlopban
-    if (!beerName || beerName.trim() === '') {
-        return null;
-    }
+    if (!beerName || beerName.trim() === '') return null;
 
     return {
-        // Egyedi ID generálása a sör neve, a felhasználó és a dátum alapján
         id: `${ratedBy}-${beerName.replace(/\s+/g, '-')}-${row[userIndexes.date] || ''}`,
         beerName: beerName,
         type: row[userIndexes.type] || 'N/A',
@@ -34,94 +26,80 @@ const transformRowToBeer = (row, userIndexes, ratedBy) => {
         score: parseInt(row[userIndexes.score]) || 0,
         location: row[userIndexes.location] || '',
         date: row[userIndexes.date] || '',
-        ratedBy: ratedBy // Hozzáadjuk, hogy ki értékelte
+        ratedBy: ratedBy
     };
 };
 
-
-exports.handler = async function(event) {
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+// A Vercel számára megfelelő handler függvény
+export default async function handler(req, res) {
+    // Csak a POST kéréseket engedélyezzük
+    if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    const { action, payload } = JSON.parse(event.body);
+    const { action, payload } = req.body;
 
     const { SPREADSHEET_ID, GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL } = process.env;
 
     if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Szerveroldali konfigurációs hiba: Hiányzó környezeti változók." }),
-        };
+        return res.status(500).json({ error: "Szerveroldali konfigurációs hiba: Hiányzó környezeti változók." });
     }
     
-    const auth = new google.auth.GoogleAuth({
-        credentials: {
-            client_email: GOOGLE_CLIENT_EMAIL,
-            private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        },
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
-
-    const sheets = google.sheets({ version: 'v4', auth });
-
     try {
+        const auth = new google.auth.GoogleAuth({
+            credentials: {
+                client_email: GOOGLE_CLIENT_EMAIL,
+                private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            },
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const sheets = google.sheets({ version: 'v4', auth });
+
         switch (action) {
             case 'GET_DATA':
-                // Lekérjük a 'Sörök' munkalapot, A4-től V oszlopig, ami mindkét felhasználó adatait tartalmazza
-                const response = await sheets.spreadsheets.values.get({
+                const sörökPromise = sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: 'Sörök!A4:V', // Elég széles tartomány, hogy lefedje a 21. indexű oszlopot is
+                    range: 'Sörök!A4:V',
                 });
                 
-                const allRows = response.data.values || [];
-                const allBeers = [];
-
-                // Végigmegyünk minden soron és megpróbáljuk mindkét felhasználó értékelését kiolvasni
-                allRows.forEach(row => {
-                    const gabzBeer = transformRowToBeer(row, COL_INDEXES.gabz, 'gabz');
-                    if (gabzBeer) {
-                        allBeers.push(gabzBeer);
-                    }
-
-                    const lajosBeer = transformRowToBeer(row, COL_INDEXES.lajos, 'lajos');
-                    if (lajosBeer) {
-                        allBeers.push(lajosBeer);
-                    }
-                });
-
-                // A felhasználók lekérése egy másik munkalapról
-                const usersResponse = await sheets.spreadsheets.values.get({
+                const usersPromise = sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
                     range: 'Felhasználók!A2:D',
                 });
+
+                const [sörökResponse, usersResponse] = await Promise.all([sörökPromise, usersPromise]);
+                
+                const allRows = sörökResponse.data.values || [];
+                const allBeers = [];
+
+                allRows.forEach(row => {
+                    const gabzBeer = transformRowToBeer(row, COL_INDEXES.gabz, 'gabz');
+                    if (gabzBeer) allBeers.push(gabzBeer);
+
+                    const lajosBeer = transformRowToBeer(row, COL_INDEXES.lajos, 'lajos');
+                    if (lajosBeer) allBeers.push(lajosBeer);
+                });
+
                 const usersData = (usersResponse.data.values || []).map(row => ({
                     id: row[0], name: row[1], email: row[2]
                 })).filter(u => u.name && u.email);
 
-                return {
-                    statusCode: 200,
-                    body: JSON.stringify({
-                        beers: allBeers,
-                        users: usersData
-                    }),
-                };
+                return res.status(200).json({
+                    beers: allBeers,
+                    users: usersData
+                });
 
             // Itt lehetne a többi action, pl. APPEND_BEER, UPDATE_BEER, stb.
-            // Ezeket is frissíteni kellene, hogy a megfelelő oszlopokba írjanak!
-
+            // Ezeket is át kellene írni a Vercel szintaxisára, ha használni akarod őket.
+            
             default:
-                return {
-                    statusCode: 400,
-                    body: JSON.stringify({ error: `Ismeretlen művelet: ${action}` }),
-                };
+                return res.status(400).json({ error: `Ismeretlen művelet: ${action}` });
         }
 
     } catch (error) {
         console.error("Google Sheets API hiba:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "Hiba a Google Sheets API-val való kommunikáció során.", details: error.message }),
-        };
+        return res.status(500).json({ error: "Hiba a Google Sheets API-val való kommunikáció során.", details: error.message });
     }
-};
+}
