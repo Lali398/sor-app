@@ -57,28 +57,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ======================================================
-    // === ÁTLAGPONT SZÁMÍTÁS ===
+    // === INDEXELT ÁTLAG SZÁMÍTÁS ===
     // ======================================================
 
-    function calculateAverageScore(beers = beersData) {
+    function calculateIndexedAverage(beers = beersData) {
         if (!beers || beers.length === 0) return 0;
         
-        const validScores = beers
-            .map(beer => parseFloat(beer.score) || 0)
-            .filter(score => score > 0);
+        // Az indexelt átlag az "avg" mezőből jön a sheet.js alapján
+        const validAverages = beers
+            .map(beer => parseFloat(beer.avg) || 0)
+            .filter(avg => avg > 0);
         
-        if (validScores.length === 0) return 0;
+        if (validAverages.length === 0) return 0;
         
-        const sum = validScores.reduce((total, score) => total + score, 0);
-        return (sum / validScores.length).toFixed(1);
+        const sum = validAverages.reduce((total, avg) => total + avg, 0);
+        return (sum / validAverages.length).toFixed(1);
     }
 
-    function updateAverageScore() {
-        const average = calculateAverageScore(filteredBeers.length > 0 ? filteredBeers : beersData);
-        document.getElementById('averageScore').textContent = average;
+    function updateIndexedAverage() {
+        const average = calculateIndexedAverage(filteredBeers.length > 0 ? filteredBeers : beersData);
+        document.getElementById('indexedAverage').textContent = average;
         
         // Színek az átlag alapján
-        const avgElement = document.getElementById('averageScore');
+        const avgElement = document.getElementById('indexedAverage');
         const avgValue = parseFloat(average);
         
         if (avgValue >= 4.0) {
@@ -117,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filteredBeers = [...beersData];
             hideSearchSuggestions();
             updateSearchResultsInfo();
-            updateAverageScore();
+            updateIndexedAverage();
             renderBeerTable(filteredBeers);
             return;
         }
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         performLiveSearch(searchTerm);
         showSearchSuggestions();
         updateSearchResultsInfo();
-        updateAverageScore();
+        updateIndexedAverage();
     }
 
     function performLiveSearch(searchTerm) {
@@ -283,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredBeers = [...beersData];
         hideSearchSuggestions();
         updateSearchResultsInfo();
-        updateAverageScore();
+        updateIndexedAverage();
         renderBeerTable(filteredBeers);
         liveSearchInput.focus();
     }
@@ -329,6 +330,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ======================================================
+    // === KI TESZTELTE FUNKCIÓ ===
+    // ======================================================
+
+    function getTestedBy(ratedBy) {
+        const testers = {
+            'admin1': 'Gabz',
+            'admin2': 'Lajos'
+        };
+        return testers[ratedBy] || ratedBy;
+    }
+
+    // ======================================================
     // === ADATMEGJELENÍTÉS (FRISSÍTETT) ===
     // ======================================================
 
@@ -340,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = searchTerm ? 
                 `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 
                 'Nincsenek sörök az adatbázisban.';
-            beerTableBody.innerHTML = `<tr><td colspan="6" class="no-results">${message}</td></tr>`;
+            beerTableBody.innerHTML = `<tr><td colspan="7" class="no-results">${message}</td></tr>`;
             return;
         }
 
@@ -362,7 +375,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${highlightText(beer.location)}</td>
                 <td>${beer.beerPercentage || 0}%</td>
                 <td class="score-cell">${beer.score || 0}</td>
-                <td>${highlightText(beer.ratedBy)}</td>
+                <td class="indexed-avg-cell">${beer.avg || 0}</td>
+                <td class="tester-cell">${highlightText(getTestedBy(beer.ratedBy))}</td>
             `;
             
             // Animáció a megjelenéshez
@@ -385,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredBeers = [...beersData];
         renderBeerTable(filteredBeers);
         updateSearchResultsInfo();
-        updateAverageScore();
+        updateIndexedAverage();
     }
     
     // ======================================================
@@ -430,5 +444,5 @@ document.addEventListener('DOMContentLoaded', function() {
     function showSuccess(message) { showNotification(message, 'success'); }
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 3000); }
     
-    console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és átlagponttal)');
+    console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és indexelt átlaggal)');
 });
