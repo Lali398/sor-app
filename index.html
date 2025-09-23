@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+
+    
     <!-- Vendég felület (Szép bejelentkezővel) -->
     <div class="guest-view" id="guestView">
         <div class="container">
@@ -97,6 +100,9 @@
                     </div>
                 </div>
 
+
+                
+
                 <!-- Gabz és Lajos belépés gomb -->
                 <div class="admin-section">
                     <button class="admin-btn" id="adminBtn">
@@ -109,6 +115,74 @@
         </div>
     </div>
 
+
+
+<div id="userView" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <h2 id="userWelcomeMessage">Szia, Vendég!</h2>
+                <div class="header-actions">
+                    <button id="userLogoutBtn" class="header-btn logout">Kilépés</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon beers">🍺</div>
+                    <div class="stat-info">
+                        <p>Értékelt söreid</p>
+                        <h3 id="userBeerCount">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon average">⭐</div>
+                    <div class="stat-info">
+                        <p>Söreid átlaga</p>
+                        <h3 id="userAverageScore">0.0</h3>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="card">
+                 <header class="card-header">
+                    <h3>Új sör tesztelése</h3>
+                </header>
+                <form id="addBeerForm" class="config-form" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="input-group"><input type="text" id="beerName" required><label for="beerName">Sör neve</label></div>
+                    <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
+                    <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Beszerzési hely</label></div>
+                    <div class="input-group"><input type="number" id="beerPercentage" step="0.1" required><label for="beerPercentage">Alkohol %</label></div>
+                    <div class="input-group"><input type="number" id="beerScore" step="0.1" min="1" max="5" required><label for="beerScore">Pontszám (1-5)</label></div>
+                    <button type="submit" class="auth-btn" style="grid-column: 1 / -1;">Sör hozzáadása</button>
+                </form>
+            </section>
+
+            <section class="card" style="margin-top: 30px;">
+                <header class="card-header">
+                    <h3>Saját sörjeid</h3>
+                </header>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Név</th>
+                                <th>Típus</th>
+                                <th>Hely</th>
+                                <th>Alkohol %</th>
+                                <th>Pontszám</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userBeerTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+
+    
     <!-- Admin felület (Javított élőkereséssel és indexelt átlaggal) -->
     <div id="adminView" style="display: none;">
         <header class="admin-header">
@@ -204,4 +278,5 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
