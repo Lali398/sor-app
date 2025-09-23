@@ -679,4 +679,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
-
