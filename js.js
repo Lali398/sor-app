@@ -632,8 +632,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function loadAdminData() { document.getElementById('userCount').textContent = usersData.length; document.getElementById('beerCount').textContent = beersData.length; filteredBeers = [...beersData]; renderBeerTable(filteredBeers); updateSearchResultsInfo(); updateIndexedAverage(); }
-    function switchToAdminView() { guestView.style.display = 'none'; adminView.style.display = 'block'; document.body.style.background = '#f8fafc'; loadAdminData(); initializeLiveSearch(); }
+    function loadAdminData() {
+        document.getElementById('userCount').textContent = usersData.length;
+        document.getElementById('beerCount').textContent = beersData.length;
+        filteredBeers = [...beersData];
+        renderBeerTable(filteredBeers);
+        updateSearchResultsInfo();
+        updateIndexedAverage();
+        renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
+    }
+    function switchToAdminView() {
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+    }
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -663,4 +679,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
