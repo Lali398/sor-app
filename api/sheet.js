@@ -166,6 +166,7 @@ case 'ADD_USER_BEER': {
     });
     return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
 }
+        }
 
     } catch (error) {
         console.error("API hiba:", error);
@@ -176,4 +177,5 @@ case 'ADD_USER_BEER': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
