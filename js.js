@@ -137,6 +137,7 @@ async function handleAddBeer(e) {
         const password = document.getElementById('registerPassword').value;
         const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
         const submitBtn = registerForm.querySelector('.auth-btn');
+        const termsAccepted = document.getElementById('registerTerms').checked;
 
         if (password !== passwordConfirm) {
             showError("A két jelszó nem egyezik!");
@@ -663,6 +664,7 @@ async function handleAddBeer(e) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és indexelt átlaggal)');
 });
+
 
 
 
