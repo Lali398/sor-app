@@ -21,13 +21,177 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteUserBtn = document.getElementById('deleteUserBtn');
     
     const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+    const statsView = document.getElementById('statsView');
+    const statTabButtons = document.getElementById('statTabButtons');
+    const statPanes = document.querySelectorAll('.stat-pane');
+    
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // --- ÁLLAPOT ---
     let beersData = [];
     let usersData = [];
     let filteredBeers = [];
     let selectedSuggestionIndex = -1;
+    let charts = {};
 
+
+
+// ======================================================
+    // === ÚJ: STATISZTIKA FUNKCIÓK ===
+    // ======================================================
+
+    function setupStatistics() {
+        statTabButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const targetTab = e.target.dataset.tab;
+                switchStatTab(targetTab);
+            }
+        });
+    }
+
+    function switchStatTab(tabName) {
+        statTabButtons.querySelectorAll('.stat-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        statPanes.forEach(pane => {
+            pane.classList.toggle('active', pane.id === `${tabName}-stats`);
+        });
+    }
+
+    function destroyAllCharts() {
+        Object.values(charts).forEach(chart => chart.destroy());
+        charts = {};
+    }
+
+    function renderAllCharts(beers) {
+        destroyAllCharts(); // Előző grafikonok törlése újrarajzolás előtt
+
+        const gabzBeers = beers.filter(b => b.ratedBy === 'admin1');
+        const lajosBeers = beers.filter(b => b.ratedBy === 'admin2');
+
+        // Közös statisztikák
+        renderKpis('common', beers);
+        renderTypeChart('common-type-chart', 'Sörök típus szerint (Közös)', beers);
+        renderScoreDistributionChart('common-score-dist-chart', 'Pontszámok eloszlása (Közös)', beers);
+        renderMonthlyAverageChart('common-monthly-avg-chart', 'Havi átlagpontszám alakulása (Közös)', beers);
+
+        // Gabz statisztikák
+        renderKpis('gabz', gabzBeers);
+        renderTypeChart('gabz-type-chart', 'Sörök típus szerint (Gabz)', gabzBeers);
+        renderScoreDistributionChart('gabz-score-dist-chart', 'Pontszámok eloszlása (Gabz)', gabzBeers);
+
+        // Lajos statisztikák
+        renderKpis('lajos', lajosBeers);
+        renderTypeChart('lajos-type-chart', 'Sörök típus szerint (Lajos)', lajosBeers);
+        renderScoreDistributionChart('lajos-score-dist-chart', 'Pontszámok eloszlása (Lajos)', lajosBeers);
+    }
+
+    function renderKpis(prefix, beers) {
+        if (beers.length === 0) return;
+
+        // Legjobb sör
+        const bestBeer = beers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), beers[0]);
+        document.getElementById(`${prefix}-best-beer`).textContent = `${bestBeer.beerName} (${bestBeer.totalScore} pont)`;
+
+        // Kedvenc típus
+        const typeCounts = beers.reduce((acc, beer) => { acc[beer.type] = (acc[beer.type] || 0) + 1; return acc; }, {});
+        const favType = Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b);
+        document.getElementById(`${prefix}-fav-type`).textContent = favType;
+        
+        if (prefix === 'common') {
+             // Leggyakoribb hely
+            const locationCounts = beers.reduce((acc, beer) => { acc[beer.location] = (acc[beer.location] || 0) + 1; return acc; }, {});
+            const favLocation = Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b);
+            document.getElementById(`common-fav-location`).textContent = favLocation;
+        } else {
+            // Személyes átlag
+            const avgScore = (beers.reduce((sum, b) => sum + b.totalScore, 0) / beers.length).toFixed(1);
+            document.getElementById(`${prefix}-avg-score`).textContent = `${avgScore} pont`;
+        }
+    }
+
+    function renderTypeChart(canvasId, title, beers) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const typeCounts = beers.reduce((acc, beer) => {
+            const type = beer.type || 'Ismeretlen';
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+        }, {});
+        
+        charts[canvasId] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(typeCounts),
+                datasets: [{
+                    label: 'Sörök száma',
+                    data: Object.values(typeCounts),
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#f39c12', '#27ae60', '#3498db'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: title, font: { size: 16 } } } }
+        });
+    }
+
+    function renderScoreDistributionChart(canvasId, title, beers) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const scoreCounts = beers.reduce((acc, beer) => {
+            const score = beer.totalScore || 0;
+            acc[score] = (acc[score] || 0) + 1;
+            return acc;
+        }, {});
+
+        charts[canvasId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(scoreCounts).sort((a,b) => a-b),
+                datasets: [{
+                    label: 'Értékelések száma',
+                    data: Object.values(scoreCounts),
+                    backgroundColor: 'rgba(118, 75, 162, 0.7)',
+                    borderColor: 'rgba(118, 75, 162, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { title: { display: true, text: title, font: { size: 16 } } } }
+        });
+    }
+    
+    function renderMonthlyAverageChart(canvasId, title, beers) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const monthlyData = beers.reduce((acc, beer) => {
+            if (!beer.date) return acc;
+            const month = new Date(beer.date).toISOString().slice(0, 7); // YYYY-MM
+            if (!acc[month]) {
+                acc[month] = { sum: 0, count: 0 };
+            }
+            acc[month].sum += beer.totalScore;
+            acc[month].count++;
+            return acc;
+        }, {});
+
+        const sortedMonths = Object.keys(monthlyData).sort();
+        const labels = sortedMonths.map(m => new Date(m + '-02').toLocaleString('hu-HU', { year:'numeric', month: 'short' }));
+        const data = sortedMonths.map(m => monthlyData[m].sum / monthlyData[m].count);
+
+        charts[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Átlagpontszám',
+                    data: data,
+                    fill: true,
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: title, font: { size: 16 } } } }
+        });
+    }
+    
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
@@ -472,7 +636,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadAdminData() { document.getElementById('userCount').textContent = usersData.length; document.getElementById('beerCount').textContent = beersData.length; filteredBeers = [...beersData]; renderBeerTable(filteredBeers); updateSearchResultsInfo(); updateIndexedAverage(); }
-    function switchToAdminView() { guestView.style.display = 'none'; adminView.style.display = 'block'; document.body.style.background = '#f8fafc'; loadAdminData(); initializeLiveSearch(); }
+   function switchToAdminView() {
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+    }
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -502,3 +674,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
