@@ -21,13 +21,24 @@ const COL_INDEXES = {
 const transformRowToBeer = (row, userIndexes, ratedBy) => {
     const beerName = row[userIndexes.beerName];
     if (!beerName || beerName.trim() === '') return null;
+
+    // Fontos: Az "összpontszám" nálad a 'score' indexen van.
+    // A megjegyzésnek nincs dedikált indexe, tegyük fel, hogy a dátum utáni oszlopban van.
+    // Ha máshol van, az indexet módosítani kell!
+    const notesIndex = userIndexes.date + 1;
+
     return {
         id: `${ratedBy}-${beerName.replace(/\s+/g, '-')}-${row[userIndexes.date] || ''}`,
         beerName,
         type: row[userIndexes.type] || 'N/A',
-        beerPercentage: parseFloat(row[userIndexes.beerPercentage]) || 0,
-        score: parseInt(row[userIndexes.score]) || 0,
         location: row[userIndexes.location] || '',
+        beerPercentage: parseFloat(row[userIndexes.beerPercentage]) || 0,
+        look: parseInt(row[userIndexes.look]) || 0,
+        smell: parseInt(row[userIndexes.smell]) || 0,
+        taste: parseInt(row[userIndexes.taste]) || 0,
+        totalScore: parseInt(row[userIndexes.score]) || 0, // 'score' itt az összpontszám
+        avg: parseFloat(row[userIndexes.avg]) || 0,
+        date: row[userIndexes.date] || null,
         ratedBy
     };
 };
@@ -120,19 +131,25 @@ export default async function handler(req, res) {
 
             // --- BEJELENTKEZETT VENDÉG SÖREINEK LEKÉRÉSE ---
             case 'GET_USER_BEERS': {
-                const userData = verifyUser(req); // Ellenőrizzük a tokent
-                const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
-                const userBeers = beersResponse.data.values
-                    ?.filter(row => row[1] === userData.name) // Szűrés a beküldő nevére
-                    .map(row => ({ // Átalakítás objektummá
-                        date: row[0],
-                        beerName: row[2],
-                        type: row[3],
-                        location: row[4],
-                        score: row[7] // Feltételezve, hogy az "Íz" a fő pontszám
-                    })) || [];
-                return res.status(200).json(userBeers);
-            }
+    const userData = verifyUser(req);
+    const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+    const userBeers = beersResponse.data.values
+        ?.filter(row => row[1] === userData.name) // Szűrés a beküldő nevére
+        .map(row => ({ // Átalakítás objektummá a kép alapján
+            date: row[0],
+            beerName: row[2],
+            type: row[3],
+            location: row[4],
+            look: row[5] || 0,           // Külalak (F oszlop)
+            smell: row[6] || 0,          // Illat (G oszlop)
+            taste: row[7] || 0,          // Íz (H oszlop)
+            beerPercentage: row[8] || 0, // Ez egy új oszlop lehet, feltételezzük, hogy az F
+            totalScore: row[9] || 0,     // Összpontszám (I oszlop)
+            avg: row[10] || 0,            // Átlag (J oszlop)
+            notes: row[11] || ''         // Megjegyzés (K oszlop)
+        })) || [];
+    return res.status(200).json(userBeers);
+}
 
             // --- ÚJ SÖR HOZZÁADÁSA VENDÉGKÉNT ---
             // CSERÉLD LE A TELJES ADD_USER_BEER BLOKKOT ERRE A sheet.js-BEN
@@ -177,5 +194,6 @@ case 'ADD_USER_BEER': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
