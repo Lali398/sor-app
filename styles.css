@@ -968,3 +968,13 @@ table td mark {
         grid-template-columns: 1fr 1fr;
     }
 }
+.average-cell {
+    font-weight: 700;
+    background-color: #f0f9ff; /* Világoskék háttér */
+    color: #0c4a6e; /* Sötétkék szöveg */
+}
+
+table tr:hover .average-cell {
+    background-color: #e0f2fe; /* Kicsit sötétebb kék hover esetén */
+}
+
