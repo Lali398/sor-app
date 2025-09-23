@@ -2,12 +2,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- NÉZETEK ÉS ELEMEK ---
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView')
     const adminForm = document.getElementById('adminForm');
     const liveSearchInput = document.getElementById('liveSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const searchResultsInfo = document.getElementById('searchResultsInfo');
     const clearSearch = document.getElementById('clearSearch');
     const beerTableBody = document.getElementById('beerTableBody');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const userLogoutBtn = document.getElementById('userLogoutBtn');
+    const addBeerForm = document.getElementById('addBeerForm');
+    const userBeerTableBody = document.getElementById('userBeerTableBody');
+    const userWelcomeMessage = document.getElementById('userWelcomeMessage');
     
     // ...többi elem...
     const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
@@ -54,6 +61,168 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             setLoading(submitBtn, false);
         }
+    }
+    // ======================================================
+    // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
+    // ======================================================
+
+    async function handleGuestRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+        const submitBtn = registerForm.querySelector('.auth-btn');
+
+        if (password !== passwordConfirm) {
+            showError("A két jelszó nem egyezik!");
+            return;
+        }
+
+        setLoading(submitBtn, true);
+        try {
+            // A backendet kell megvalósítani, hogy kezelje ezt a kérést!
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'REGISTER_USER', name, email, password })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+
+            showSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
+            // Váltás a bejelentkezési kártyára
+            registerCard.classList.remove('active');
+            setTimeout(() => loginCard.classList.add('active'), 300);
+
+        } catch (error) {
+            console.error("Regisztrációs hiba:", error);
+            showError(error.message || 'A regisztráció sikertelen.');
+        } finally {
+            setLoading(submitBtn, false);
+        }
+    }
+
+    async function handleGuestLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const submitBtn = loginForm.querySelector('.auth-btn');
+
+        setLoading(submitBtn, true);
+        try {
+            // A backendet kell megvalósítani, hogy kezelje ezt a kérést!
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'LOGIN_USER', email, password })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+            
+            // Mentsük el a session tokent és a felhasználó adatait
+            // A localStorage egy egyszerű példa, de biztonságosabb a httpOnly cookie.
+            localStorage.setItem('userToken', result.token);
+            localStorage.setItem('userData', JSON.stringify(result.user));
+
+            showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
+            setTimeout(switchToUserView, 1000);
+
+        } catch (error) {
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás e-mail cím vagy jelszó!');
+        } finally {
+            setLoading(submitBtn, false);
+        }
+    }
+    // ======================================================
+    // === NÉZETVÁLTÁS ÉS ADATKEZELÉS (KIEGÉSZÍTVE) ===
+    // ======================================================
+
+    function switchToUserView() {
+        guestView.style.display = 'none';
+        adminView.style.display = 'none';
+        userView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
+        loadUserData();
+    }
+
+    function switchToGuestView() {
+        // Kijelentkezéskor töröljük a felhasználói adatokat
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+
+        guestView.style.display = 'block';
+        adminView.style.display = 'none';
+        userView.style.display = 'none';
+        document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        liveSearchInput.value = '';
+        hideSearchSuggestions();
+    }
+
+    async function loadUserData() {
+        const user = JSON.parse(localStorage.getItem('userData'));
+        if (!user) {
+            showError('Nem vagy bejelentkezve.');
+            switchToGuestView();
+            return;
+        }
+
+        userWelcomeMessage.textContent = `Szia, ${user.name}!`;
+
+        try {
+            // A backendet kell megvalósítani, hogy kezelje ezt a kérést!
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // A tokent a headerben küldjük a hitelesítéshez
+                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                },
+                body: JSON.stringify({ action: 'GET_USER_BEERS' })
+            });
+            const beers = await response.json();
+            if (!response.ok) throw new Error(beers.error || 'Szerverhiba');
+            
+            renderUserBeers(beers);
+            updateUserStats(beers);
+
+        } catch (error) {
+            console.error("Hiba a felhasználói adatok betöltésekor:", error);
+            showError(error.message || "Nem sikerült betölteni a söreidet.");
+        }
+    }
+
+    function renderUserBeers(beers) {
+        userBeerTableBody.innerHTML = '';
+        if (!beers || beers.length === 0) {
+            userBeerTableBody.innerHTML = `<tr><td colspan="5" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+            return;
+        }
+
+        beers.forEach(beer => {
+            const row = `
+                <tr>
+                    <td>${beer.beerName}</td>
+                    <td>${beer.type}</td>
+                    <td>${beer.location}</td>
+                    <td>${beer.beerPercentage || 0}%</td>
+                    <td class="score-cell">${beer.score || 0}</td>
+                </tr>
+            `;
+            userBeerTableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+    
+    function updateUserStats(beers) {
+        document.getElementById('userBeerCount').textContent = beers.length;
+        if (beers.length === 0) {
+            document.getElementById('userAverageScore').textContent = '0.0';
+            return;
+        }
+        const sum = beers.reduce((total, beer) => total + (parseFloat(beer.score) || 0), 0);
+        const average = (sum / beers.length).toFixed(1);
+        document.getElementById('userAverageScore').textContent = average;
     }
 
     // ======================================================
@@ -433,8 +602,9 @@ document.addEventListener('DOMContentLoaded', function() {
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
-    document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); showError('A vendég bejelentkezés jelenleg nem aktív.'); });
-    document.getElementById('registerForm').addEventListener('submit', e => { e.preventDefault(); showError('A vendég regisztráció jelenleg nem aktív.'); });
+    loginForm.addEventListener('submit', handleGuestLogin);
+    registerForm.addEventListener('submit', handleGuestRegister);
+    userLogoutBtn.addEventListener('click', switchToGuestView); // Kijelentkezés
     
     // ======================================================
     // === SEGÉDFÜGGVÉNYEK (VÁLTOZATLAN) ===
@@ -446,3 +616,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és indexelt átlaggal)');
 });
+
