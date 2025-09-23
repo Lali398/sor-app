@@ -146,18 +146,23 @@
             </section>
             
             <section class="card">
-                 <header class="card-header">
-                    <h3>Új sör tesztelése</h3>
-                </header>
-                <form id="addBeerForm" class="config-form" style="grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="input-group"><input type="text" id="beerName" required><label for="beerName">Sör neve</label></div>
-                    <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
-                    <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Beszerzési hely</label></div>
-                    <div class="input-group"><input type="number" id="beerPercentage" step="0.1" required><label for="beerPercentage">Alkohol %</label></div>
-                    <div class="input-group"><input type="number" id="beerScore" step="0.1" min="1" max="5" required><label for="beerScore">Pontszám (1-5)</label></div>
-                    <button type="submit" class="auth-btn" style="grid-column: 1 / -1;">Sör hozzáadása</button>
-                </form>
-            </section>
+    <header class="card-header">
+        <h3>Új sör tesztelése</h3>
+    </header>
+    <form id="addBeerForm" class="config-form" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="input-group" style="grid-column: 1 / -1;"><input type="text" id="beerName" required><label for="beerName">Sör neve</label></div>
+        <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
+        <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Beszerzési hely</label></div>
+        <div class="input-group"><input type="number" id="beerLook" step="1" min="1" max="5" required><label for="beerLook">Külalak (1-5)</label></div>
+        <div class="input-group"><input type="number" id="beerSmell" step="1" min="1" max="5" required><label for="beerSmell">Illat (1-5)</label></div>
+        <div class="input-group"><input type="number" id="beerTaste" step="1" min="1" max="5" required><label for="beerTaste">Íz (1-5)</label></div>
+        <div class="input-group"><input type="text" id="beerNotes"><label for="beerNotes">Megjegyzés (opcionális)</label></div>
+        <button type="submit" class="auth-btn" style="grid-column: 1 / -1;">
+             <span class="btn-text">Sör hozzáadása</span>
+             <span class="btn-loading"><div class="spinner"></div></span>
+        </button>
+    </form>
+</section>
 
             <section class="card" style="margin-top: 30px;">
                 <header class="card-header">
@@ -278,5 +283,6 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
