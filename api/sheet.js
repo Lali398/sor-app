@@ -135,35 +135,37 @@ export default async function handler(req, res) {
             }
 
             // --- ÚJ SÖR HOZZÁADÁSA VENDÉGKÉNT ---
-            case 'ADD_USER_BEER': {
-                const userData = verifyUser(req); // Ellenőrizzük a tokent
-                const { beerName, type, location, percentage, score } = req.body;
-                
-                const newRow = [
-                    new Date().toISOString(), // Dátum
-                    userData.name,            // Beküldő Neve
-                    beerName,                 // Sör Neve
-                    type,                     // Típus
-                    location,                 // Hely
-                    '',                       // Külalak (ezt a frontendről kell bekérni)
-                    '',                       // Illat (ezt a frontendről kell bekérni)
-                    score,                    // Íz (pontszám)
-                    '',                       // Megjegyzés (ezt a frontendről kell bekérni)
-                    'Nem'                     // Tesztelve (alapértelmezett)
-                ];
+            // CSERÉLD LE A TELJES ADD_USER_BEER BLOKKOT ERRE A sheet.js-BEN
+case 'ADD_USER_BEER': {
+    const userData = verifyUser(req); // Ellenőrizzük a tokent
+    
+    // Az új adatok fogadása a frontendről
+    const { beerName, type, location, look, smell, taste, notes } = req.body;
+    
+    // A sorok összeállítása a Google Sheet oszlopainak sorrendjében
+    // A képed alapján: Dátum, Név, Sör Neve, Típus, Hely, Külalak, Illat, Íz, Megjegyzés, Tesztelve, Email
+    const newRow = [
+        new Date().toISOString().replace('T', ' ').substring(0, 19), // Dátum (szebb formátumban)
+        userData.name,      // Beküldő Neve (tokenből)
+        beerName,           // Sör Neve
+        type,               // Típus
+        location,           // Hely
+        look,               // Külalak (új)
+        smell,              // Illat (új)
+        taste,              // Íz (új)
+        notes || '',        // Megjegyzés (új, ha üres, akkor üres string)
+        'Nem',              // Tesztelve (alapértelmezett)
+        userData.email      // Beküldő Email-ja (tokenből)
+    ];
 
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: GUEST_BEERS_SHEET,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [newRow] },
-                });
-                return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
-            }
-
-            default:
-                return res.status(400).json({ error: `Ismeretlen művelet: ${action}` });
-        }
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: GUEST_BEERS_SHEET,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [newRow] },
+    });
+    return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
+}
 
     } catch (error) {
         console.error("API hiba:", error);
@@ -174,3 +176,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
