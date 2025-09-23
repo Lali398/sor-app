@@ -977,4 +977,30 @@ table td mark {
 table tr:hover .average-cell {
     background-color: #e0f2fe; /* Kicsit sötétebb kék hover esetén */
 }
+/* EZT ADD A styles.css VÉGÉRE */
+
+.terms-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.terms-group input[type="checkbox"] {
+    width: auto;
+    flex-shrink: 0;
+}
+
+.terms-group label {
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.terms-group label a {
+    text-decoration: underline;
+}
+
 
