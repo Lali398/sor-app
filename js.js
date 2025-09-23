@@ -579,52 +579,43 @@ async function handleAddBeer(e) {
     // ======================================================
 
     function renderBeerTable(beersToRender) {
-        beerTableBody.innerHTML = '';
-        
-        if (!beersToRender || beersToRender.length === 0) {
-            const searchTerm = liveSearchInput.value.trim();
-            const message = searchTerm ? 
-                `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 
-                'Nincsenek sörök az adatbázisban.';
-            beerTableBody.innerHTML = `<tr><td colspan="7" class="no-results">${message}</td></tr>`;
-            return;
-        }
-
-        const searchTerm = liveSearchInput.value.trim().toLowerCase();
-        
-        beersToRender.forEach(beer => {
-            const row = document.createElement('tr');
-            
-            // Kiemelés a keresett kifejezésnek
-            const highlightText = (text) => {
-                if (!searchTerm || !text) return text || '';
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                return text.replace(regex, '<mark>$1</mark>');
-            };
-            
-            row.innerHTML = `
-                <td>${highlightText(beer.beerName)}</td>
-                <td>${highlightText(beer.type)}</td>
-                <td>${highlightText(beer.location)}</td>
-                <td>${beer.beerPercentage || 0}%</td>
-                <td class="score-cell">${beer.score || 0}</td>
-                <td class="indexed-avg-cell">${beer.avg || 0}</td>
-                <td class="tester-cell">${highlightText(getTestedBy(beer.ratedBy))}</td>
-            `;
-            
-            // Animáció a megjelenéshez
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(10px)';
-            beerTableBody.appendChild(row);
-            
-            // Smooth megjelenés
-            setTimeout(() => {
-                row.style.transition = 'all 0.3s ease';
-                row.style.opacity = '1';
-                row.style.transform = 'translateY(0)';
-            }, 50);
-        });
+    beerTableBody.innerHTML = '';
+    
+    if (!beersToRender || beersToRender.length === 0) {
+        const searchTerm = liveSearchInput.value.trim();
+        const message = searchTerm ? 
+            `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 
+            'Nincsenek sörök az adatbázisban.';
+        beerTableBody.innerHTML = `<tr><td colspan="11" class="no-results">${message}</td></tr>`;
+        return;
     }
+
+    beersToRender.forEach(beer => {
+        const row = document.createElement('tr');
+        
+        // Dátum formázása (csak Év. Hónap. Nap.)
+        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
+        
+        // Átlag formázása 2 tizedesjegyre
+        const formattedAvg = beer.avg ? parseFloat(beer.avg).toFixed(2) : '0.00';
+
+        row.innerHTML = `
+            <td>${formattedDate}</td>
+            <td>${beer.beerName || ''}</td>
+            <td>${beer.location || ''}</td>
+            <td>${beer.beerPercentage || 0}%</td>
+            <td>${beer.look || 0}</td>
+            <td>${beer.smell || 0}</td>
+            <td>${beer.taste || 0}</td>
+            <td>${beer.totalScore || 0}</td>
+            <td class="average-cell">${formattedAvg}</td>
+            <td>${beer.notes || ''}</td>
+            <td>${getTestedBy(beer.ratedBy)}</td>
+        `;
+        
+        beerTableBody.appendChild(row);
+    });
+}
 
     function loadAdminData() {
         document.getElementById('userCount').textContent = usersData.length;
