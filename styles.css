@@ -1002,5 +1002,50 @@ table tr:hover .average-cell {
 .terms-group label a {
     text-decoration: underline;
 }
+/* EZT ADD A styles.css VÉGÉRE */
 
+.delete-btn-user {
+    background: #e74c3c; /* Vörös háttér */
+    justify-self: start; /* Igazítás a többi gombhoz */
+}
 
+.delete-btn-user:hover {
+    background: #c0392b; /* Sötétebb vörös hover-re */
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+.terms-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+    margin-bottom: 25px;
+}
+
+.terms-group input[type="checkbox"] {
+    width: auto;
+    flex-shrink: 0;
+    height: 18px;
+    width: 18px;
+}
+
+.terms-group label {
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1.4;
+    position: static; /* felülírja az input-group-os pozícionálást */
+    font-weight: 400;
+}
+
+.terms-group label a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.terms-group label a:hover {
+    text-decoration: underline;
+    color: #764ba2;
+}
