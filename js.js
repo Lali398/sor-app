@@ -66,6 +66,70 @@ document.addEventListener('DOMContentLoaded', function() {
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
     // ======================================================
 
+// CSERÉLD LE A TELJES handleAddBeer FUNKCIÓT ERRE A js.js-BEN
+
+// Győződj meg róla, hogy ez a sor létezik a többi eseménykezelő között
+addBeerForm.addEventListener('submit', handleAddBeer);
+
+async function handleAddBeer(e) {
+    e.preventDefault();
+    
+    // Új mezők kinyerése
+    const beerName = document.getElementById('beerName').value;
+    const type = document.getElementById('beerType').value;
+    const location = document.getElementById('beerLocation').value;
+    const look = document.getElementById('beerLook').value;
+    const smell = document.getElementById('beerSmell').value;
+    const taste = document.getElementById('beerTaste').value;
+    const notes = document.getElementById('beerNotes').value;
+    
+    const submitBtn = addBeerForm.querySelector('.auth-btn');
+
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({
+                action: 'ADD_USER_BEER',
+                beerName,
+                type,
+                location,
+                look,
+                smell,
+                taste,
+                notes
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            // Ha a token lejárt vagy érvénytelen, a szerver 401-et küld
+            if (response.status === 401) {
+                 showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
+                 setTimeout(switchToGuestView, 2000); // Kidobjuk a loginhoz
+                 return; // Fontos, hogy itt megálljon a futás
+            }
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        
+        showSuccess('Sör sikeresen hozzáadva!');
+        addBeerForm.reset(); // Űrlap törlése
+        loadUserData(); // Táblázat frissítése a felhasználói felületen
+
+    } catch (error) {
+        console.error("Hiba sör hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült a sört hozzáadni.");
+    } finally {
+        setLoading(submitBtn, false);
+    }
+}
+
+
+    
     async function handleGuestRegister(e) {
         e.preventDefault();
         const name = document.getElementById('registerName').value;
@@ -616,4 +680,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és indexelt átlaggal)');
 });
+
 
