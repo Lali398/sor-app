@@ -647,14 +647,6 @@ async function handleAddBeer(e) {
         initializeLiveSearch();
     }
 
-    function switchToGuestView() {
-        guestView.style.display = 'block';
-        adminView.style.display = 'none';
-        document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        liveSearchInput.value = '';
-        hideSearchSuggestions();
-    }
-
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
@@ -680,5 +672,6 @@ async function handleAddBeer(e) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve! (Modern élőkereséssel és indexelt átlaggal)');
 });
+
 
 
