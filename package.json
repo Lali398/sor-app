@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
-    "googleapis": "^159.0.0"
+    "bcryptjs": "^3.0.2",
+    "googleapis": "^159.0.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }
