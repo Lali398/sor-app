@@ -218,29 +218,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    async function handleDeleteUser() {
-        const confirmation = prompt("Biztosan törölni szeretnéd a fiókodat? Ez végleges és nem vonható vissza. Ha biztos vagy, írd be ide: TÖRLÉS");
-        if (confirmation !== "TÖRLÉS") {
-            showNotification("Fiók törlése megszakítva.", "info");
-            return;
+   case 'DELETE_USER': {
+                const userData = verifyUser(req);
+
+                // Munkalapok azonosítóinak lekérése (szükséges a batchUpdate-hez)
+                const spreadsheetMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+                const usersSheetId = spreadsheetMeta.data.sheets.find(s => s.properties.title === USERS_SHEET)?.properties.sheetId;
+                const guestBeersSheetId = spreadsheetMeta.data.sheets.find(s => s.properties.title === GUEST_BEERS_SHEET)?.properties.sheetId;
+
+                if (usersSheetId === undefined || guestBeersSheetId === undefined) {
+                    return res.status(500).json({ error: "A szükséges munkalapok nem találhatók." });
+                }
+
+                // 1. Felhasználói adatok és sörök lekérése
+                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${USERS_SHEET}!A:C` });
+                const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${GUEST_BEERS_SHEET}!A:K` });
+
+                const allUsers = usersResponse.data.values || [];
+                const allBeers = beersResponse.data.values || [];
+
+                // 2. Törlendő sorok indexeinek összegyűjtése (0-alapú indexelés)
+                const userRowToDelete = allUsers.findIndex(row => row[1] === userData.email);
+                
+                const beerRowsToDelete = allBeers.reduce((acc, row, index) => {
+                    // Az email a 11. oszlopban (K) van, ami a 10-es index
+                    if (row[10] === userData.email) {
+                        acc.push(index);
+                    }
+                    return acc;
+                }, []);
+
+                // 3. batchUpdate kérések összeállítása
+                const requests = [];
+
+                // Fontos: a sorindexeket csökkenő sorrendbe rendezzük,
+                // hogy a törlések ne befolyásolják a soron következő törlések indexét.
+                beerRowsToDelete.sort((a, b) => b - a).forEach(rowIndex => {
+                    requests.push({
+                        deleteDimension: {
+                            range: {
+                                sheetId: guestBeersSheetId,
+                                dimension: 'ROWS',
+                                startIndex: rowIndex,
+                                endIndex: rowIndex + 1
+                            }
+                        }
+                    });
+                });
+
+                if (userRowToDelete !== -1) {
+                     requests.push({
+                        deleteDimension: {
+                            range: {
+                                sheetId: usersSheetId,
+                                dimension: 'ROWS',
+                                startIndex: userRowToDelete,
+                                endIndex: userRowToDelete + 1
+                            }
+                        }
+                    });
+                }
+                
+                // 4. A kérések végrehajtása, csak ha van mit törölni
+                if (requests.length > 0) {
+                    await sheets.spreadsheets.batchUpdate({
+                        spreadsheetId: SPREADSHEET_ID,
+                        resource: { requests }
+                    });
+                }
+
+                return res.status(200).json({ message: "A fiókod és a hozzá tartozó minden adat sikeresen törölve." });
+            }
         }
 
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                body: JSON.stringify({ action: 'DELETE_USER' })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Szerverhiba");
-
-            showSuccess("A fiókodat sikeresen töröltük. Viszlát!");
-            setTimeout(switchToGuestView, 2000);
-
-        } catch (error) {
-            showError(error.message || "A fiók törlése nem sikerült.");
+    } catch (error) {
+        console.error("API hiba:", error);
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: "Érvénytelen vagy lejárt token. Jelentkezz be újra!" });
         }
+        return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
+}
 
 // ======================================================
     // === ÚJ: STATISZTIKA FUNKCIÓK ===
@@ -679,5 +737,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
