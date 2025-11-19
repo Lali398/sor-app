@@ -913,7 +913,8 @@ function renderRecap(data, containerElement) {
     }
 
     // Ha van adat, kirajzoljuk a kártyákat
-    const html = 
+    // JAVÍTVA: A HTML-t backtick (`) jelek közé tettük!
+    const html = `
         <div class="kpi-grid">
             <div class="kpi-card">
                 <h4>Értékelt sörök</h4>
@@ -936,7 +937,7 @@ function renderRecap(data, containerElement) {
                 <p>${data.favoriteLocation}</p>
             </div>
         </div>
-    ;
+    `;
     containerElement.innerHTML = html;
 }
 
@@ -951,6 +952,7 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
 
