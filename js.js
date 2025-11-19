@@ -291,6 +291,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 switchStatTab(targetTab);
             }
         });
+        statsView.addEventListener('click', handleAdminRecapClick);
+}
     }
 
     function switchStatTab(tabName) {
@@ -728,20 +730,136 @@ document.addEventListener('DOMContentLoaded', function() {
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
 
 
-    // --- ÚJ: RECAP FUNKCIÓK ---
+   // --- ÚJ: RECAP FUNKCIÓK (FELHASZNÁLÓI ÉS ADMIN) ---
+
+// --- ADMIN RECAP SEGÉDFÜGGVÉNYEK ---
+
+/**
+ * Visszaadja a kezdő dátumot a megadott időszak alapján.
+ */
+function getStartDateForPeriod(period) {
+    const now = new Date();
+    let startDate = new Date();
+    switch (period) {
+        case 'weekly': startDate.setDate(now.getDate() - 7); break;
+        case 'monthly': startDate.setMonth(now.getMonth() - 1); break;
+        case 'quarterly': startDate.setMonth(now.getMonth() - 3); break;
+        case 'yearly': startDate.setFullYear(now.getFullYear() - 1); break;
+    }
+    return startDate;
+}
+
+/**
+ * Kiszámolja a statisztikákat egy adott sörlistából.
+ * (Ezt a logikát a sheet.js-ből másoltuk és adaptáltuk)
+ */
+function calculateRecapStats(beers) {
+    if (beers.length === 0) {
+        return { message: "Nincs értékelt sör ebben az időszakban." };
+    }
+
+    const totalBeers = beers.length;
+    // Biztosítjuk, hogy a totalScore szám legyen
+    const validBeers = beers.map(b => ({ ...b, totalScore: parseFloat(b.totalScore) || 0 }));
+
+    const averageScore = (validBeers.reduce((sum, b) => sum + b.totalScore, 0) / totalBeers).toFixed(1);
+    const bestBeer = validBeers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), validBeers[0]);
+
+    const countOccurrences = (arr, key) => arr.reduce((acc, beer) => {
+        const val = beer[key] || 'N/A';
+        acc[val] = (acc[val] || 0) + 1;
+        return acc;
+    }, {});
+
+    const typeCounts = countOccurrences(validBeers, 'type');
+    const favoriteType = Object.keys(typeCounts).length > 0 ? 
+                         Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b) : 'N/A';
+
+    const locationCounts = countOccurrences(validBeers, 'location');
+    const favoriteLocation = Object.keys(locationCounts).length > 0 ?
+                             Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b) : 'N/A';
+
+    return {
+        totalBeers,
+        averageScore,
+        bestBeer: { name: bestBeer.beerName, score: bestBeer.totalScore },
+        favoriteType,
+        favoriteLocation,
+    };
+}
+
+// --- ADMIN RECAP KEZELÉSE (KLIENS OLDALI) ---
+
+async function handleAdminRecapClick(e) {
+    const button = e.target.closest('.recap-btn');
+    // Csak azokra a gombokra reagálunk, amik az admin statisztika panelen vannak
+    if (!button || !e.target.closest('.admin-recap-controls')) return;
+
+    e.preventDefault(); 
+
+    const period = button.dataset.period;
+    const adminPane = button.closest('.admin-recap-controls').dataset.adminPane;
+    const resultsContainer = document.getElementById(`${adminPane}-recap-results`);
+
+    // Gombok állapotának kezelése (csak ezen a panelen belül)
+    const allButtons = button.closest('.admin-recap-controls').querySelectorAll('.recap-btn');
+    allButtons.forEach(btn => btn.classList.remove('loading'));
+    button.classList.add('loading');
+
+    // Spinner
+    resultsContainer.innerHTML = '<div class="recap-spinner"></div>';
+
+    // Késleltetjük a számítást, hogy a spinnernek legyen ideje megjelenni
+    setTimeout(() => {
+        try {
+            // 1. Adatok szűrése "ratedBy" alapján (a globális 'beersData'-ból)
+            let adminFilteredBeers = [];
+            if (adminPane === 'common') {
+                adminFilteredBeers = [...beersData];
+            } else {
+                const filterKey = (adminPane === 'gabz') ? 'admin1' : 'admin2';
+                adminFilteredBeers = beersData.filter(b => b.ratedBy === filterKey);
+            }
+
+            // 2. Dátum alapú szűrés
+            const startDate = getStartDateForPeriod(period);
+            const now = new Date();
+
+            const periodFilteredBeers = adminFilteredBeers.filter(beer => {
+                if (!beer.date) return false;
+                // A 'sheet.js' ADD_USER_BEER formátumát (pl. '2025-11-19 18:00:00')
+                // átalakítjuk ISO-kompatibilissé, ahogy a GET_USER_RECAP is teszi.
+                const isoDateStr = beer.date.replace(' ', 'T') + 'Z';
+                const beerDate = new Date(isoDateStr); 
+                return beerDate >= startDate && beerDate <= now;
+            });
+
+            // 3. Statisztika számítása és renderelés
+            const stats = calculateRecapStats(periodFilteredBeers);
+            renderRecap(stats, resultsContainer); // Az általános renderRecap funkciót hívjuk
+
+        } catch (error) {
+            console.error("Hiba az admin visszatekintő számításakor:", error);
+            renderRecap({ message: "Hiba történt a számítás során." }, resultsContainer);
+        } finally {
+            button.classList.remove('loading');
+        }
+    }, 100); // 100ms késleltetés a spinner megjelenítéséhez
+}
+
+
+// --- FELHASZNÁLÓI RECAP KEZELÉSE (API HÍVÁS) ---
 
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
-    if (!button) return;
+    // Biztosítjuk, hogy ez ne fusson le az admin gombokra
+    if (!button || e.target.closest('.admin-recap-controls')) return;
 
     const period = button.dataset.period;
     const allButtons = recapControls.querySelectorAll('.recap-btn');
 
-    // Összes gomb visszaállítása, majd az aktív beállítása
     allButtons.forEach(btn => btn.classList.remove('loading'));
     button.classList.add('loading');
-
-    // Spinner megjelenítése
     recapResultsContainer.innerHTML = '<div class="recap-spinner"></div>';
 
     try {
@@ -765,26 +883,37 @@ async function handleRecapPeriodClick(e) {
             throw new Error(result.error || 'Szerverhiba');
         }
 
-        renderRecap(result);
+        // MÓDOSÍTVA: Átadjuk a cél konténert
+        renderRecap(result, recapResultsContainer);
 
     } catch (error) {
         console.error("Hiba a visszatekintő lekérésekor:", error);
         showError(error.message || "Nem sikerült lekérni a statisztikát.");
-        recapResultsContainer.innerHTML = '<p class="recap-no-results">Hiba történt a lekérés során.</p>';
+        // MÓDOSÍTVA: Átadjuk a cél konténert
+        renderRecap({ message: "Hiba történt a lekérés során." }, recapResultsContainer);
     } finally {
         button.classList.remove('loading');
     }
 }
 
-function renderRecap(data) {
+/**
+ * MÓDOSÍTOTT ÁLTALÁNOS FUNKCIÓ:
+ * Bármelyik recap eredményt képes renderelni egy adott konténerbe.
+ */
+function renderRecap(data, containerElement) {
+    if (!containerElement) {
+         console.error("RenderRecap: Nincs megadva cél konténer!");
+         return;
+    }
+
     if (data.message) {
         // Ha az API azt írja, hogy "Nincs sör"
-        recapResultsContainer.innerHTML = `<p class="recap-no-results">${data.message}</p>`;
+        containerElement.innerHTML = `<p class="recap-no-results">${data.message}</p>`;
         return;
     }
 
     // Ha van adat, kirajzoljuk a kártyákat
-    const html = `
+    const html = 
         <div class="kpi-grid">
             <div class="kpi-card">
                 <h4>Értékelt sörök</h4>
@@ -807,9 +936,12 @@ function renderRecap(data) {
                 <p>${data.favoriteLocation}</p>
             </div>
         </div>
-    `;
-    recapResultsContainer.innerHTML = html;
+    ;
+    containerElement.innerHTML = html;
 }
+
+// --- SEGÉDFÜGGVÉNYEK ---
+// ... (a fájl többi része változatlan) ...
     
     // --- SEGÉDFÜGGVÉNYEK ---
     function setLoading(button, isLoading) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; }
@@ -819,6 +951,7 @@ function renderRecap(data) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
 
