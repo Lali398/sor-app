@@ -826,45 +826,34 @@ function calculateRecapStats(beers) {
 
 // --- ADMIN RECAP KEZELÉSE (KLIENS OLDALI) ---
 
+// CSERÉLD ERRE A TELJES FUNKCIÓT:
 async function handleAdminRecapGenerate(period, button) {
-    const button = e.target.closest('.recap-btn');
-    // Csak azokra a gombokra reagálunk, amik az admin statisztika panelen vannak
-    if (!button || !e.target.closest('.admin-recap-controls')) return;
-
-    e.preventDefault(); 
-
-    const period = button.dataset.period;
-    const adminPane = button.closest('.admin-recap-controls').dataset.adminPane;
-    const resultsContainer = document.getElementById(`${adminPane}-recap-results`);
-
-    // Gombok állapotának kezelése (csak ezen a panelen belül)
-    const allButtons = button.closest('.admin-recap-controls').querySelectorAll('.recap-btn');
+    const resultsContainer = document.getElementById('adminRecapResultsContainer');
+    
+    // Gombok állapotának kezelése
+    const allButtons = button.closest('.recap-controls').querySelectorAll('.recap-btn');
     allButtons.forEach(btn => btn.classList.remove('loading'));
     button.classList.add('loading');
 
-    // Spinner
     resultsContainer.innerHTML = '<div class="recap-spinner"></div>';
 
-    // Késleltetjük a számítást, hogy a spinnernek legyen ideje megjelenni
     setTimeout(() => {
         try {
-            // 1. Adatok szűrése "ratedBy" alapján (a globális 'beersData'-ból)
+            // 1. Adatok szűrése a globális 'currentAdminRecapView' alapján
             let adminFilteredBeers = [];
-            if (adminPane === 'common') {
+            if (currentAdminRecapView === 'common') {
                 adminFilteredBeers = [...beersData];
             } else {
-                const filterKey = (adminPane === 'gabz') ? 'admin1' : 'admin2';
+                const filterKey = (currentAdminRecapView === 'gabz') ? 'admin1' : 'admin2';
                 adminFilteredBeers = beersData.filter(b => b.ratedBy === filterKey);
             }
 
-            // 2. Dátum alapú szűrés
+            // 2. Dátum alapú szűrés (ez a logika változatlan)
             const startDate = getStartDateForPeriod(period);
             const now = new Date();
 
             const periodFilteredBeers = adminFilteredBeers.filter(beer => {
                 if (!beer.date) return false;
-                // A 'sheet.js' ADD_USER_BEER formátumát (pl. '2025-11-19 18:00:00')
-                // átalakítjuk ISO-kompatibilissé, ahogy a GET_USER_RECAP is teszi.
                 const isoDateStr = beer.date.replace(' ', 'T') + 'Z';
                 const beerDate = new Date(isoDateStr); 
                 return beerDate >= startDate && beerDate <= now;
@@ -872,6 +861,11 @@ async function handleAdminRecapGenerate(period, button) {
 
             // 3. Statisztika számítása és renderelés
             const stats = calculateRecapStats(periodFilteredBeers);
+            
+            // Kiegészítjük a stats objektumot az új renderRecap számára
+            stats.period = period; // Heti, Havi...
+            stats.user = currentAdminRecapView; // common, gabz, lajos
+
             renderRecap(stats, resultsContainer); // Az általános renderRecap funkciót hívjuk
 
         } catch (error) {
@@ -1026,6 +1020,7 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
 
