@@ -94,7 +94,7 @@
                             </button>
                         </form>
                         <div class="card-footer">
-                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezz be itt</a></p>
+                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezzen be itt</a></p>
                         </div>
                     </div>
                 </div>
@@ -110,15 +110,14 @@
         </div>
     </div>
 
-    <div class="user-view" id="userView" style="display: none;">
+    <div class="admin-view" id="userView" style="display: none;">
         <header class="admin-header">
             <div class="header-content">
                 <div class="logo">
-                    <span class="beer-icon">🍺</span>
-                    <h1>Sör Táblázat</h1>
+                    <span class="logo-icon">🍺</span>
+                    <h1 id="userWelcomeMessage">Szia!</h1>
                 </div>
                 <div class="header-actions">
-                    <h2 id="userWelcomeMessage" style="font-size: 1.2rem; font-weight: 500;">Szia, ...!</h2>
                     <button id="userLogoutBtn" class="logout-btn">Kijelentkezés</button>
                 </div>
             </div>
@@ -132,35 +131,26 @@
             </nav>
 
             <div class="main-tab-content-container">
-                
                 <div class="main-tab-pane active" id="user-rating-content">
                     <section class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon beers">🍺</div>
-                            <div class="stat-info"><p>Értékelt sörök</p><h3 id="userBeerCount">0</h3></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon average">⭐</div>
-                            <div class="stat-info"><p>Átlagpontszám</p><h3 id="userAverageScore">0.0</h3></div>
-                        </div>
+                        <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Értékelt sörök</p><h3 id="userBeerCount">0</h3></div></div>
+                        <div class="stat-card"><div class="stat-icon average">⭐</div><div class="stat-info"><p>Átlagpontszám</p><h3 id="userAverageScore">0.0</h3></div></div>
                     </section>
-
+                    
                     <section class="card" style="margin-top: 30px;">
                         <header class="card-header">
                             <h3>Új sör értékelése</h3>
                         </header>
-                        <form id="addBeerForm" class="config-form" style="grid-template-columns: 1fr 1fr; gap: 20px;">
-                             <div class="input-group" style="grid-column: 1 / -1;">
-                                <input type="text" id="beerName" required>
-                                <label for="beerName">Sör neve</label>
-                    <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
-                    <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Főzési hely</label></div>
-                    <div class="input-group"><input type="number" id="beerLook" step="1" min="1" max="10" required><label for="beerLook">Külalak (1-10)</label></div>
-                    <div class="input-group"><input type="number" id="beerSmell" step="1" min="1" max="10" required><label for="beerSmell">Illat (1-10)</label></div>
-                    <div class="input-group"><input type="number" id="beerTaste" step="1" min="1" max="10" required><label for="beerTaste">Íz (1-10)</label></div>
-                    <div class="input-group"><input type="text" id="beerNotes"><label for="beerNotes">Megjegyzés (opcionális)</label></div>
-                    <button type="submit" class="auth-btn" style="grid-column: 1 / -1;">
-                        <span class="btn-text">Sör hozzáadása</span>
+                        <form id="addBeerForm" class="config-form">
+                            <div class="input-group"><input type="text" id="beerName" required><label for="beerName">Sör neve</label></div>
+                            <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
+                            <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Főzde / Hely</label></div>
+                            <div class="input-group"><input type="number" id="beerLook" min="1" max="5" required><label for="beerLook">Külalak (1-5)</label></div>
+                            <div class="input-group"><input type="number" id="beerSmell" min="1" max="5" required><label for="beerSmell">Illat (1-5)</label></div>
+                            <div class="input-group"><input type="number" id="beerTaste" min="1" max="10" required><label for="beerTaste">Íz (1-10)</label></div>
+                            <div class="input-group"><input type="text" id="beerNotes"><label for="beerNotes">Megjegyzés (opcionális)</label></div>
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Sör hozzáadása</span>
                         <span class="btn-loading"><div class="spinner"></div></span>
                     </button>
                 </form>
@@ -219,7 +209,6 @@
                 </p>
                 <button id="deleteUserBtn" class="action-btn delete-btn-user" style="margin-top: 15px;">Fiókom végleges törlése</button>
             </section>
-        </main>
     </div>
     
     <div id="adminView" style="display: none;">
@@ -335,7 +324,7 @@
             </form>
         </div>
     </div>
-    
     <script src="js.js"></script>
 </body>
 </html>
+
