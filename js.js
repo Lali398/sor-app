@@ -34,8 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
-    // --- ÁLLAPOT ---
+    // ---(globális) ÁLLAPOT ---
+    
     let beersData = [];
+    let currentAdminRecapView = 'common';
     let usersData = [];
     let filteredBeers = [];
     let selectedSuggestionIndex = -1;
@@ -291,7 +293,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 switchStatTab(targetTab);
             }
         });
-        statsView.addEventListener('click', handleAdminRecapClick);
+
+}
+    // js.js (ÚJ FUNKCIÓ)
+function setupAdminRecap() {
+    const recapTabContainer = document.getElementById('admin-recap-content');
+    if (!recapTabContainer) return; // Csak akkor fut, ha létezik a konténer
+
+    const tabButtons = document.getElementById('adminRecapTabButtons');
+    const controls = document.getElementById('adminRecapControls');
+    const resultsContainer = document.getElementById('adminRecapResultsContainer');
+    
+    // 1. Belső fül váltó (Közös, Gabz, Lajos)
+    tabButtons.addEventListener('click', (e) => {
+        const clickedButton = e.target.closest('.stat-tab-btn');
+        if (!clickedButton) return;
+        
+        currentAdminRecapView = clickedButton.dataset.tab;
+        
+        // Gombok aktív állapotának frissítése
+        tabButtons.querySelectorAll('.stat-tab-btn').forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+        
+        // Eredmény törlése váltáskor
+        resultsContainer.innerHTML = '<p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>';
+    });
+
+    // 2. Időszak gomb (Heti, Havi...)
+    controls.addEventListener('click', (e) => {
+        const button = e.target.closest('.recap-btn');
+        if (!button) return;
+        
+        const period = button.dataset.period;
+        // Átadjuk a gombot és a periódust az új generáló funkciónak
+        handleAdminRecapGenerate(period, button);
+    });
 }
 
     function switchStatTab(tabName) {
@@ -705,6 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAdminData();
         initializeLiveSearch();
         setupStatistics(); // Statisztika fül inicializálása
+        setupAdminRecap();
     }
 
     // --- Eseménykezelők ---
@@ -789,7 +826,7 @@ function calculateRecapStats(beers) {
 
 // --- ADMIN RECAP KEZELÉSE (KLIENS OLDALI) ---
 
-async function handleAdminRecapClick(e) {
+async function handleAdminRecapGenerate(period, button) {
     const button = e.target.closest('.recap-btn');
     // Csak azokra a gombokra reagálunk, amik az admin statisztika panelen vannak
     if (!button || !e.target.closest('.admin-recap-controls')) return;
@@ -881,6 +918,9 @@ async function handleRecapPeriodClick(e) {
             }
             throw new Error(result.error || 'Szerverhiba');
         }
+        result.period = period; 
+
+        renderRecap(result, recapResultsContainer);
 
         // MÓDOSÍTVA: Átadjuk a cél konténert
         renderRecap(result, recapResultsContainer);
@@ -899,6 +939,7 @@ async function handleRecapPeriodClick(e) {
  * MÓDOSÍTOTT ÁLTALÁNOS FUNKCIÓ:
  * Bármelyik recap eredményt képes renderelni egy adott konténerbe.
  */
+// js.js (TELJES renderRecap FUNKCIÓ CSERÉJE)
 function renderRecap(data, containerElement) {
     if (!containerElement) {
          console.error("RenderRecap: Nincs megadva cél konténer!");
@@ -906,34 +947,68 @@ function renderRecap(data, containerElement) {
     }
 
     if (data.message) {
-        // Ha az API azt írja, hogy "Nincs sör"
         containerElement.innerHTML = `<p class="recap-no-results">${data.message}</p>`;
         return;
     }
 
-    // Ha van adat, kirajzoljuk a kártyákat
-    // JAVÍTVA: A HTML-t backtick (`) jelek közé tettük!
+    // Címek generálása a Spotify-stílusú kártyához
+    const periodNames = {
+        'weekly': 'Heti', 'monthly': 'Havi', 'quarterly': 'Negyedéves', 'yearly': 'Éves'
+    };
+    const userNames = {
+        'common': 'Közös', 'gabz': 'Gabz', 'lajos': 'Lajos'
+    };
+    
+    // A 'data.user' csak admin recapnél van (kliens oldali), 'data.period' mindkettőnél
+    const titleUser = data.user ? userNames[data.user] : 'Személyes';
+    const titlePeriod = periodNames[data.period] || 'Időszaki';
+    
+    // Dátum generálása
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ÚJ "SPOTIFY-STÍLUSÚ" HTML
     const html = `
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <h4>Értékelt sörök</h4>
-                <p>${data.totalBeers} db</p>
+        <div class="recap-card-spotify">
+            <div class="recap-card-header">
+                <div>
+                    <h2>${titleUser} Sör-Visszatekintő</h2>
+                    <h3>${titlePeriod} összegzés</h3>
+                </div>
+                <span class="recap-card-icon">🍻</span>
             </div>
-            <div class="kpi-card">
-                <h4>Átlagpontszám</h4>
-                <p>${data.averageScore} ⭐</p>
+            
+            <div class="recap-card-body">
+                <div class="recap-stat-main">
+                    <span class="recap-stat-value">${data.totalBeers}</span>
+                    <span class="recap-stat-label">értékelt sör</span>
+                </div>
+                <div class="recap-stat-main">
+                    <span class="recap-stat-value">${data.averageScore} ⭐</span>
+                    <span class="recap-stat-label">átlagpontszám</span>
+                </div>
             </div>
-            <div class="kpi-card">
-                <h4>Legjobb söröd</h4>
-                <p>${data.bestBeer.name} (${data.bestBeer.score} pont)</p>
+
+            <div class="recap-card-grid">
+                <div class="recap-stat-sub">
+                    <h4>A Legjobb Sör</h4>
+                    <p>${data.bestBeer.name}</p>
+                    <span>${data.bestBeer.score} pont</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>Kedvenc Típus</h4>
+                    <p>${data.favoriteType}</p>
+                    <span>Leggyakrabban ivott</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>Kedvenc Hely</h4>
+                    <p>${data.favoriteLocation}</p>
+                    <span>Legtöbbször itt</span>
+                </div>
             </div>
-            <div class="kpi-card">
-                <h4>Kedvenc típusod</h4>
-                <p>${data.favoriteType}</p>
-            </div>
-            <div class="kpi-card">
-                <h4>Leggyakoribb hely</h4>
-                <p>${data.favoriteLocation}</p>
+            
+            <div class="recap-card-footer">
+                <span>Sör Táblázat • Létrehozva: ${formattedDate}</span>
             </div>
         </div>
     `;
@@ -951,6 +1026,7 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
 
