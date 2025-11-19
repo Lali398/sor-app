@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
+    }
+    
     // --- NÉZETEK ÉS ELEMEK ---
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
@@ -440,11 +446,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.background = '#f8fafc';
 
         // Fő fülek inicializálása a felhasználói nézeten
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+
+        // Fő fülek inicializálása a felhasználói nézeten
         initializeMainTabs(userView);
 
         loadUserData();
     }
-
     function switchToGuestView() {
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
@@ -452,6 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
         adminView.style.display = 'none';
         userView.style.display = 'none';
         document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+        
         liveSearchInput.value = '';
         hideSearchSuggestions();
     }
@@ -680,6 +692,9 @@ document.addEventListener('DOMContentLoaded', function() {
         adminView.style.display = 'block';
         document.body.style.background = '#f8fafc';
 
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+
         // Fő fülek inicializálása az admin nézeten
         initializeMainTabs(adminView);
 
@@ -716,4 +731,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
