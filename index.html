@@ -412,21 +412,9 @@
                 </section>
             </div>
             
-            </div> </main> </div> ```
+            </div> </main> </div> 
 
----
 
-### 2. Javítás: `adminView` (Admin nézet)
-
-Itt két hiba is volt:
-1.  A fő fülek (`admin-beers-content` és `admin-recap-content`) egymásba voltak ágyazva, ahelyett, hogy testvérek lennének.
-2.  A statisztika nézeten belül (`#statsView`) a fülek (`common`, `gabz`, `lajos`) div-jei teljesen szét voltak csúszva. A "Lajos" fülnek nem volt saját `div`-je, és a "Közös" fül tartalma is összeomlott.
-
-#### A) Fő fülek javítása
-
-A `main.admin-main` struktúrája az admin nézeten:
-
-```html
 <div class="admin-view" id="adminView" style="display: none;">
     <header class="admin-header">
         </header>
@@ -464,15 +452,8 @@ A `main.admin-main` struktúrája az admin nézeten:
                     </section>
             </div>
             
-        </div> </main> </div> ```
+        </div> </main> </div> 
 
-#### B) Statisztika fülek javítása (`section#statsView`)
-
-Ez volt a leginkább szétcsúszott rész. A `kpi-grid` és `chart-grid` elemek kiestek a `stat-pane` tárolókból, és a "Lajos" fülnek (`lajos-stats`) hiányzott a nyitó `div`-je.
-
-Itt a helyes struktúrája a `section#statsView`-nek:
-
-```html
 <section id="statsView" class="card" style="margin-top: 30px;">
     <header class="card-header">
         <h3>Statisztikák</h3>
