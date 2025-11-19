@@ -242,6 +242,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
+
+    // ======================================================
+    // === ÚJ: FŐ NAVIGÁCIÓS FÜLEK KEZELÉSE ===
+    // ======================================================
+
+    function initializeMainTabs(viewElement) {
+        const tabsContainer = viewElement.querySelector('.main-tabs');
+        if (!tabsContainer) return; // Nincs is fül ezen a nézeten
+
+        const tabButtons = tabsContainer.querySelectorAll('.main-tab-btn');
+        const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
+
+        tabsContainer.addEventListener('click', (e) => {
+            const clickedButton = e.target.closest('.main-tab-btn');
+            if (!clickedButton) return;
+
+            // Gombok állapotának frissítése
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            // Tartalmi panelek frissítése
+            const targetPaneId = clickedButton.dataset.tabContent;
+            tabPanes.forEach(pane => {
+                pane.classList.toggle('active', pane.id === targetPaneId);
+            });
+        });
+    }
+
 // ======================================================
     // === ÚJ: STATISZTIKA FUNKCIÓK ===
     // ======================================================
@@ -409,6 +438,10 @@ document.addEventListener('DOMContentLoaded', function() {
         adminView.style.display = 'none';
         userView.style.display = 'block';
         document.body.style.background = '#f8fafc';
+
+        // Fő fülek inicializálása a felhasználói nézeten
+        initializeMainTabs(userView);
+
         loadUserData();
     }
 
@@ -646,6 +679,10 @@ document.addEventListener('DOMContentLoaded', function() {
         userView.style.display = 'none';
         adminView.style.display = 'block';
         document.body.style.background = '#f8fafc';
+
+        // Fő fülek inicializálása az admin nézeten
+        initializeMainTabs(adminView);
+
         loadAdminData();
         initializeLiveSearch();
         setupStatistics(); // Statisztika fül inicializálása
@@ -679,3 +716,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
