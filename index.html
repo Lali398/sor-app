@@ -10,8 +10,6 @@
 </head>
 <body>
 
-
-    
     <div class="guest-view" id="guestView">
         <div class="container">
             <div class="animated-bg">
@@ -96,7 +94,7 @@
                             </button>
                         </form>
                         <div class="card-footer">
-                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezzen be itt</a></p>
+                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezz be itt</a></p>
                         </div>
                     </div>
                 </div>
@@ -112,93 +110,184 @@
         </div>
     </div>
 
-         </header>
- 
-         <main class="admin-main">
-         <nav class="main-tabs">
-               <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
-              <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-              <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+    <div class="user-view" id="userView" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="beer-icon">🍺</span>
+                    <h1>Sör Táblázat</h1>
+                </div>
+                <div class="header-actions">
+                    <h2 id="userWelcomeMessage" style="font-size: 1.2rem; font-weight: 500;">Szia, ...!</h2>
+                    <button id="userLogoutBtn" class="logout-btn">Kijelentkezés</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <nav class="main-tabs">
+                <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+                <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+                <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
             </nav>
 
             <div class="main-tab-content-container">
-            <div class="main-tab-pane active" id="user-rating-content">
-             <section class="stats-grid">
-                 <div class="stat-card">
-                     <div class="stat-icon beers">🍺</div>
+                
+                <div class="main-tab-pane active" id="user-rating-content">
+                    <section class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon beers">🍺</div>
+                            <div class="stat-info"><p>Értékelt sörök</p><h3 id="userBeerCount">0</h3></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon average">⭐</div>
+                            <div class="stat-info"><p>Átlagpontszám</p><h3 id="userAverageScore">0.0</h3></div>
+                        </div>
+                    </section>
 
-                     </button>
-                 </form>
-             </section>
+                    <section class="card" style="margin-top: 30px;">
+                        <header class="card-header">
+                            <h3>Új sör értékelése</h3>
+                        </header>
+                        <form id="addBeerForm" class="config-form" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                             <div class="input-group" style="grid-column: 1 / -1;">
+                                <input type="text" id="beerName" required>
+                                <label for="beerName">Sör neve</label>
+                    <div class="input-group"><input type="text" id="beerType" required><label for="beerType">Típus (pl. IPA, Lager)</label></div>
+                    <div class="input-group"><input type="text" id="beerLocation" required><label for="beerLocation">Főzési hely</label></div>
+                    <div class="input-group"><input type="number" id="beerLook" step="1" min="1" max="10" required><label for="beerLook">Külalak (1-10)</label></div>
+                    <div class="input-group"><input type="number" id="beerSmell" step="1" min="1" max="10" required><label for="beerSmell">Illat (1-10)</label></div>
+                    <div class="input-group"><input type="number" id="beerTaste" step="1" min="1" max="10" required><label for="beerTaste">Íz (1-10)</label></div>
+                    <div class="input-group"><input type="text" id="beerNotes"><label for="beerNotes">Megjegyzés (opcionális)</label></div>
+                    <button type="submit" class="auth-btn" style="grid-column: 1 / -1;">
+                        <span class="btn-text">Sör hozzáadása</span>
+                        <span class="btn-loading"><div class="spinner"></div></span>
+                    </button>
+                </form>
+            </section>
 
+            <section class="card" style="margin-top: 30px;">
+                <header class="card-header">
+                    <h3>Saját sörjeid</h3>
+                </header>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Név</th>
+                                <th>Típus</th>
+                                <th>Hely</th>
+                                <th>Alkohol %</th>
+                                <th>Pontszám</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userBeerTableBody"></tbody>
+                    </table>
                 </div>
+            </section>
+            
+            <section class="card" style="margin-top: 30px;">
+                <header class="card-header">
+                    <h3>Fiók kezelése</h3>
+                </header>
 
-                                <div class="main-tab-pane" id="user-beers-content">
-            <section class="card">
-                 <header class="card-header">
-                   <h3>Saját sörjeid listája</h3>
-                 </header>
-                 <div class="table-container">
-                     <table>
+                <h4>Jelszó módosítása</h4>
+                <form id="changePasswordForm" class="config-form" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <input type="password" id="currentPassword" required>
+                        <label for="currentPassword">Jelenlegi jelszó</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="newPassword" required>
+                        <label for="newPassword">Új jelszó</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="newPasswordConfirm" required>
+                        <label for="newPasswordConfirm">Új jelszó megerősítése</label>
+                    </div>
+                    <button type="submit" class="action-btn">
+                        <span class="btn-text">Jelszó frissítése</span>
+                        <span class="btn-loading"><div class="spinner"></div></span>
+                    </button>
+                </form>
 
-                     </table>
-                 </div>
-             </section>
-                </div>
+                <hr style="margin: 30px 0; border: 1px solid #f1f5f9;">
 
-                                <div class="main-tab-pane" id="user-account-content">
-            <section class="card">
-                 <header class="card-header">
-                     <h3>Fiók kezelése</h3>
-                 </header>
-
-                 </p>
-                 <button id="deleteUserBtn" class="action-btn delete-btn-user" style="margin-top: 15px;">Fiókom végleges törlése</button>
-             </section>
+                <h4>Fiók törlése</h4>
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                    <strong>Figyelem!</strong> A fiók törlése végleges és nem vonható vissza. Minden adatod, beleértve a sörértékeléseidet is, elvész.
+                </p>
+                <button id="deleteUserBtn" class="action-btn delete-btn-user" style="margin-top: 15px;">Fiókom végleges törlése</button>
+            </section>
+        </main>
+    </div>
+    
+    <div id="adminView" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <h2>Gabz és Lajos Sör Felülete</h2>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="header-btn">🔄 Frissítés</button>
+                    <button id="logoutBtn" class="header-btn logout">Kilépés</button>
                 </div>
             </div>
-         </main>
-     </div>
-     
+        </header>
 
-         </header>
- 
-         <main class="admin-main">
-                        <nav class="main-tabs">
-               <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
-                <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
-            </nav>
-            
-            <div class="main-tab-content-container">
-            <div class="main-tab-pane active" id="admin-dashboard-content">
-             <section class="stats-grid">
-                 <div class="stat-card"><div class="stat-icon users">👥</div><div class="stat-info"><p>Felhasználók</p><h3 id="userCount">0</h3></div></div>
-                 <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Sörök száma</p><h3 id="beerCount">0</h3></div></div>
+        <main class="admin-main">
+            <section class="stats-grid">
+                <div class="stat-card"><div class="stat-icon users">👥</div><div class="stat-info"><p>Felhasználók</p><h3 id="userCount">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Sörök száma</p><h3 id="beerCount">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon average">⭐</div><div class="stat-info"><p>Indexelt Átlag</p><h3 id="indexedAverage">0.0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon sheets">📊</div><div class="stat-info"><p>Google Sheets</p><h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3></div></div>
+            </section>
 
-                 <div class="stat-card"><div class="stat-icon sheets">📊</div><div class="stat-info"><p>Google Sheets</p><h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3></div></div>
-             </section>
-            <section id="statsView" class="card" style="margin-top: 30px;">
-                 <header class="card-header">
-                     <h3>Statisztikák</h3>
-                     <div class="stats-tabs" id="statTabButtons">
-            </div>
-             </section>
+            <section id="statsView" class="card">
+                <header class="card-header">
+                    <h3>Statisztikák</h3>
+                    <div class="stats-tabs" id="statTabButtons">
+                        <button class="stat-tab-btn active" data-tab="common">Közös</button>
+                        <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
+                        <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
+                    </div>
+                </header>
+
+                <div class="stats-content">
+                    <div class="stat-pane active" id="common-stats">
+                        <div class="kpi-grid">
+                            <div class="kpi-card"><h4>Legjobbra értékelt sör</h4><p id="common-best-beer">-</p></div>
+                            <div class="kpi-card"><h4>Kedvenc sörtípus</h4><p id="common-fav-type">-</p></div>
+                            <div class="kpi-card"><h4>Leggyakoribb főzde</h4><p id="common-fav-location">-</p></div>
+                        </div>
+                        <div class="chart-grid">
+                            <div class="chart-container"><canvas id="common-type-chart"></canvas></div>
+                            <div class="chart-container"><canvas id="common-score-dist-chart"></canvas></div>
+                            <div class="chart-container full-width"><canvas id="common-monthly-avg-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="stat-pane" id="gabz-stats">
+                        <div class="kpi-grid">
+                            <div class="kpi-card"><h4>Legjobbra értékelt söre</h4><p id="gabz-best-beer">-</p></div>
+                            <div class="kpi-card"><h4>Kedvenc sörtípusa</h4><p id="gabz-fav-type">-</p></div>
+                            <div class="kpi-card"><h4>Átlagpontszáma</h4><p id="gabz-avg-score">-</p></div>
+                        </div>
+                        <div class="chart-grid">
+                           <div class="chart-container"><canvas id="gabz-type-chart"></canvas></div>
+                           <div class="chart-container"><canvas id="gabz-score-dist-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="stat-pane" id="lajos-stats">
+                        <div class="kpi-grid">
+                           <div class="kpi-card"><h4>Legjobbra értékelt söre</h4><p id="lajos-best-beer">-</p></div>
+                           <div class="kpi-card"><h4>Kedvenc sörtípusa</h4><p id="lajos-fav-type">-</p></div>
+                           <div class="kpi-card"><h4>Átlagpontszáma</h4><p id="lajos-avg-score">-</p></div>
+                        </div>
+                        <div class="chart-grid">
+                           <div class="chart-container"><canvas id="lajos-type-chart"></canvas></div>
+                           <div class="chart-container"><canvas id="lajos-score-dist-chart"></canvas></div>
+                        </div>
+                    </div>
                 </div>
-
-                               <div class="main-tab-pane" id="admin-beers-content">
-            
-            <section class="card">
-                 <header class="card-header">
-                     <h3>Sörök listája</h3>
-                     <div class="live-search-container">
-
-                     </table>
-                 </div>
-             </section>
-                </div>
-               </div>
-         </main>
-     </div>
+            </section>
 
             <section class="card">
                 <header class="card-header">
@@ -246,10 +335,7 @@
             </form>
         </div>
     </div>
+    
     <script src="js.js"></script>
 </body>
 </html>
-
-
-
-
