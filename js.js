@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // --- NÉZETEK ÉS ELEMEK ---
+    
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
     const userView = document.getElementById('userView')
@@ -23,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const userWelcomeMessage = document.getElementById('userWelcomeMessage');
     const changePasswordForm = document.getElementById('changePasswordForm');
     const deleteUserBtn = document.getElementById('deleteUserBtn');
+    const recapControls = document.getElementById('recapControls');
+    const recapResultsContainer = document.getElementById('recapResultsContainer');
     
     // STATISZTIKA ELEMEK
     const statsView = document.getElementById('statsView');
@@ -716,12 +719,97 @@ document.addEventListener('DOMContentLoaded', function() {
     addBeerForm.addEventListener('submit', handleAddBeer);
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
+    recapControls.addEventListener('click', handleRecapPeriodClick);
 
     adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
+
+
+    // --- ÚJ: RECAP FUNKCIÓK ---
+
+async function handleRecapPeriodClick(e) {
+    const button = e.target.closest('.recap-btn');
+    if (!button) return;
+
+    const period = button.dataset.period;
+    const allButtons = recapControls.querySelectorAll('.recap-btn');
+
+    // Összes gomb visszaállítása, majd az aktív beállítása
+    allButtons.forEach(btn => btn.classList.remove('loading'));
+    button.classList.add('loading');
+
+    // Spinner megjelenítése
+    recapResultsContainer.innerHTML = '<div class="recap-spinner"></div>';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ action: 'GET_USER_RECAP', period: period })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+             if (response.status === 401) {
+                showError("A munkameneted lejárt, jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
+            }
+            throw new Error(result.error || 'Szerverhiba');
+        }
+
+        renderRecap(result);
+
+    } catch (error) {
+        console.error("Hiba a visszatekintő lekérésekor:", error);
+        showError(error.message || "Nem sikerült lekérni a statisztikát.");
+        recapResultsContainer.innerHTML = '<p class="recap-no-results">Hiba történt a lekérés során.</p>';
+    } finally {
+        button.classList.remove('loading');
+    }
+}
+
+function renderRecap(data) {
+    if (data.message) {
+        // Ha az API azt írja, hogy "Nincs sör"
+        recapResultsContainer.innerHTML = `<p class="recap-no-results">${data.message}</p>`;
+        return;
+    }
+
+    // Ha van adat, kirajzoljuk a kártyákat
+    const html = `
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h4>Értékelt sörök</h4>
+                <p>${data.totalBeers} db</p>
+            </div>
+            <div class="kpi-card">
+                <h4>Átlagpontszám</h4>
+                <p>${data.averageScore} ⭐</p>
+            </div>
+            <div class="kpi-card">
+                <h4>Legjobb söröd</h4>
+                <p>${data.bestBeer.name} (${data.bestBeer.score} pont)</p>
+            </div>
+            <div class="kpi-card">
+                <h4>Kedvenc típusod</h4>
+                <p>${data.favoriteType}</p>
+            </div>
+            <div class="kpi-card">
+                <h4>Leggyakoribb hely</h4>
+                <p>${data.favoriteLocation}</p>
+            </div>
+        </div>
+    `;
+    recapResultsContainer.innerHTML = html;
+}
     
     // --- SEGÉDFÜGGVÉNYEK ---
     function setLoading(button, isLoading) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; }
@@ -731,5 +819,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
