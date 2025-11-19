@@ -293,7 +293,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         statsView.addEventListener('click', handleAdminRecapClick);
 }
-    }
 
     function switchStatTab(tabName) {
         statTabButtons.querySelectorAll('.stat-tab-btn').forEach(btn => {
@@ -952,6 +951,7 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+
 
 
 
