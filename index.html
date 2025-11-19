@@ -368,6 +368,7 @@
             <nav class="main-tabs">
                 <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
                 <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
+                <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
             </nav>
             
             <div class="main-tab-content-container">
@@ -423,10 +424,7 @@
                            <hr>
                         <h4>Időszaki Visszatekintő</h4>
                         <div class="recap-controls admin-recap-controls" data-admin-pane="common">
-                            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
-                            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
-                            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
-                            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+                            
                         </div>
                         <div class="recap-results-container" id="common-recap-results">
                             <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
@@ -464,10 +462,7 @@
                                 <hr>
                         <h4>Időszaki Visszatekintő</h4>
                         <div class="recap-controls admin-recap-controls" data-admin-pane="gabz">
-                            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
-                            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
-                            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
-                            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+                            
                         </div>
                         <div class="recap-results-container" id="gabz-recap-results">
                             <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
@@ -501,10 +496,7 @@
                                <hr>
                         <h4>Időszaki Visszatekintő</h4>
                         <div class="recap-controls admin-recap-controls" data-admin-pane="lajos">
-                            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
-                            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
-                            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
-                            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+                            
                         </div>
                         <div class="recap-results-container" id="lajos-recap-results">
                             <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
@@ -552,6 +544,33 @@
                                 <div class="search-results-info" id="searchResultsInfo"></div>
                             </div>
                         </header>
+                        <div class="main-tab-pane" id="admin-recap-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Admin Visszatekintő</h3>
+            <div class="stats-tabs" id="adminRecapTabButtons">
+                <button class="stat-tab-btn active" data-tab="common">Közös</button>
+                <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
+                <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
+            </div>
+        </header>
+
+        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+            Válassz egy időszakot a statisztika generálásához. A kártya a "Közös", "Gabz" vagy "Lajos" füleken kiválasztott adatok alapján jön létre.
+        </p>
+
+        <div class="recap-controls" id="adminRecapControls">
+            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
+            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
+            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
+            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+        </div>
+        
+        <div class="recap-results-container" id="adminRecapResultsContainer">
+            <p class="recap-placeholder">Válassz egy admint és egy időszakot a kezdéshez.</p>
+        </div>
+    </section>
+</div>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -607,6 +626,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
