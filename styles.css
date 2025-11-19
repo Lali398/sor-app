@@ -1149,4 +1149,58 @@ table tr:hover .average-cell {
         grid-template-columns: 1fr;
     }
 }
+/* === FŐ NAVIGÁCIÓS FÜLEK (Tabs) === */
+.main-tabs {
+    display: flex;
+    gap: 10px;
+    background-color: #f1f5f9; /* Világos szürke háttér */
+    padding: 8px;
+    border-radius: 30px; /* Teljesen lekerekített */
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.main-tab-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 25px; /* Lekerekített "pill" forma */
+    font-weight: 600;
+    font-size: 16px;
+    color: #475569; /* Sötétebb szöveg */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.main-tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
+
+.main-tab-btn:not(.active):hover {
+    background-color: #e2e8f0;
+}
+
+.main-tab-content-container {
+    position: relative;
+}
+
+.main-tab-pane {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out; /* Újrahasznosítjuk a meglévő fadeIn animációt */
+}
+
+.main-tab-pane.active {
+    display: block;
+}
+
+/* Eltávolítjuk a feleslegessé vált felső margókat a kártyákról,
+   mivel most már külön fülön vannak */
+.main-tab-pane > .card {
+    margin-top: 0;
+}
+
 
