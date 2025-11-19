@@ -713,7 +713,17 @@ table tr:hover .average-cell {
     animation: spin 1s linear infinite;
     margin: 40px auto;
 }
-
-
-
-
+/* Statisztika szekción belüli elválasztó */
+.stats-content hr {
+    border: none;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 30px 0;
+}
+/* Statisztika szekción belüli alcím */
+.stats-content h4 {
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
