@@ -638,6 +638,82 @@ table tr:hover .average-cell {
 .chart-container.full-width { grid-column: 1 / -1; }
 
 @media (max-width: 992px) { .chart-grid { grid-template-columns: 1fr; } }
+/* === ÚJ: VISSZATEKINTŐ (RECAP) STÍLUSOK === */
+.recap-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.recap-btn {
+    padding: 15px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    color: #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.recap-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.recap-btn.loading {
+    background: rgba(102, 126, 234, 0.3);
+    color: #ffffff;
+    pointer-events: none;
+}
+
+.recap-results-container .kpi-grid {
+    /* Újrahasznosítjuk az admin kpi-grid stílusát */
+    margin-bottom: 0; /* Nincs szükség alsó margóra */
+}
+
+.recap-results-container .kpi-card h4 {
+    font-size: 1rem;
+    color: #b0b0b0;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.recap-results-container .kpi-card p {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    word-wrap: break-word; /* Hosszú sörnevek tördelése */
+}
+
+.recap-placeholder,
+.recap-no-results {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 40px 15px;
+    font-size: 1.1rem;
+}
+
+.recap-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
 
 
 
