@@ -224,6 +224,78 @@ export default async function handler(req, res) {
 
                 return res.status(200).json({ message: "A fiókod és a hozzá tartozó minden adat sikeresen törölve." });
             }
+   // --- ÚJ: FELHASZNÁLÓI RECAP GENERÁLÁS ---
+        case 'GET_USER_RECAP': {
+            const userData = verifyUser(req);
+            const { period } = req.body; // 'weekly', 'monthly', 'quarterly', 'yearly'
+
+            // 1. Dátumhatárok meghatározása
+            const now = new Date();
+            let startDate = new Date();
+            switch (period) {
+                case 'weekly':
+                    startDate.setDate(now.getDate() - 7);
+                    break;
+                case 'monthly':
+                    startDate.setMonth(now.getMonth() - 1);
+                    break;
+                case 'quarterly':
+                    startDate.setMonth(now.getMonth() - 3);
+                    break;
+                case 'yearly':
+                    startDate.setFullYear(now.getFullYear() - 1);
+                    break;
+                default:
+                    return res.status(400).json({ error: "Érvénytelen időszak" });
+            }
+
+            // 2. Felhasználó összes sörének lekérése
+            const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+            const userBeers = beersResponse.data.values
+                ?.filter(row => row[10] === userData.email) // Email alapján szűrünk (K oszlop)
+                .map(row => ({
+                    date: new Date(row[0].replace(' ', 'T') + 'Z'), // Dátum objektummá alakítás (feltételezzük UTC)
+                    beerName: row[2],
+                    type: row[3] || 'N/A',
+                    location: row[4] || 'N/A',
+                    totalScore: parseFloat(row[9]) || 0,
+                })) || [];
+
+            // 3. Sörök szűrése az időszak alapján
+            const filteredBeers = userBeers.filter(beer => beer.date >= startDate && beer.date <= now);
+
+            if (filteredBeers.length === 0) {
+                return res.status(200).json({ message: "Nincs értékelt sör ebben az időszakban." });
+            }
+
+            // 4. Statisztikák számítása
+            const totalBeers = filteredBeers.length;
+            const averageScore = (filteredBeers.reduce((sum, b) => sum + b.totalScore, 0) / totalBeers).toFixed(1);
+            const bestBeer = filteredBeers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), filteredBeers[0]);
+
+            const countOccurrences = (arr, key) => arr.reduce((acc, beer) => {
+                const val = beer[key] || 'N/A';
+                acc[val] = (acc[val] || 0) + 1;
+                return acc;
+            }, {});
+
+            const typeCounts = countOccurrences(filteredBeers, 'type');
+            const favoriteType = Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b);
+
+            const locationCounts = countOccurrences(filteredBeers, 'location');
+            const favoriteLocation = Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b);
+
+            // 5. Válasz küldése
+            return res.status(200).json({
+                totalBeers,
+                averageScore,
+                bestBeer: { name: bestBeer.beerName, score: bestBeer.totalScore },
+                favoriteType,
+                favoriteLocation,
+            });
+        }
+        }
+
     } catch (error) {
         console.error("API hiba:", error);
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
@@ -232,6 +304,3 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
-
