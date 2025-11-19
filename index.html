@@ -130,10 +130,11 @@
  
         <main class="admin-main">
             <nav class="main-tabs">
-                <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
-                <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-                <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
-            </nav>
+            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+            <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
+            <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+        </nav>
 
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
@@ -207,6 +208,43 @@
 
                 <!-- SÖREIM TAB -->
                 <div class="main-tab-pane" id="user-beers-content">
+                    <div class="main-tab-pane" id="user-recap-content">
+                <section class="card">
+                    <header class="card-header">
+                        <h3>Sör Visszatekintő</h3>
+                    </header>
+
+                    <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                        Válaszd ki, melyik időszakra vagy kíváncsi. A rendszer dinamikusan összegzi az adott időszakban értékelt söreidet.
+                    </p>
+
+                    <div class="recap-controls" id="recapControls">
+                        <button class="recap-btn" data-period="weekly">
+                            <span>📅</span>
+                            <span>Heti</span>
+                        </button>
+                        <button class="recap-btn" data-period="monthly">
+                            <span>🗓️</span>
+                            <span>Havi</span>
+                        </button>
+                        <button class="recap-btn" data-period="quarterly">
+                            <span>📊</span>
+                            <span>Negyedéves</span>
+                        </button>
+                        <button class="recap-btn" data-period="yearly">
+                            <span>🎆</span>
+                            <span>Éves</span>
+                        </button>
+                    </div>
+
+                    <div class="recap-results-container" id="recapResultsContainer">
+                        <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                    </div>
+                </section>
+            </div>
+
+            <div class="main-tab-pane" id="user-account-content">
+                 </div>
                     <section class="card">
                         <header class="card-header">
                             <h3>Saját sörjeid listája</h3>
@@ -500,3 +538,4 @@
     <script src="js.js"></script>
 </body>
 </html>
+
