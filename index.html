@@ -112,94 +112,91 @@
         </div>
     </div>
 
-@@ -148,6 +148,13 @@
          </header>
  
          <main class="admin-main">
-+            +            <nav class="main-tabs">
-+                <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
-+                <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-+                <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
-+            </nav>
-+
-+            <div class="main-tab-content-container">
-+                +                <div class="main-tab-pane active" id="user-rating-content">
+         <nav class="main-tabs">
+               <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+              <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+              <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+            </nav>
+
+            <div class="main-tab-content-container">
+            <div class="main-tab-pane active" id="user-rating-content">
              <section class="stats-grid">
                  <div class="stat-card">
                      <div class="stat-icon beers">🍺</div>
-@@ -194,10 +201,13 @@
+
                      </button>
                  </form>
              </section>
 
-+                </div>
-+
-+                +                <div class="main-tab-pane" id="user-beers-content">
-+            <section class="card">
+                </div>
+
+                                <div class="main-tab-pane" id="user-beers-content">
+            <section class="card">
                  <header class="card-header">
-+                    <h3>Saját sörjeid listája</h3>
+                   <h3>Saját sörjeid listája</h3>
                  </header>
                  <div class="table-container">
                      <table>
-@@ -214,10 +224,13 @@
+
                      </table>
                  </div>
              </section>
-+                </div>
-+
-+                +                <div class="main-tab-pane" id="user-account-content">
-+            <section class="card">
+                </div>
+
+                                <div class="main-tab-pane" id="user-account-content">
+            <section class="card">
                  <header class="card-header">
                      <h3>Fiók kezelése</h3>
                  </header>
-@@ -259,6 +272,8 @@
+
                  </p>
                  <button id="deleteUserBtn" class="action-btn delete-btn-user" style="margin-top: 15px;">Fiókom végleges törlése</button>
              </section>
-+                </div>
-+            </div>
+                </div>
+            </div>
          </main>
      </div>
      
-@@ -273,6 +288,13 @@
+
          </header>
  
          <main class="admin-main">
-+            +            <nav class="main-tabs">
-+                <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
-+                <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
-+            </nav>
-+            
-+            <div class="main-tab-content-container">
-+                +                <div class="main-tab-pane active" id="admin-dashboard-content">
+                        <nav class="main-tabs">
+               <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
+                <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
+            </nav>
+            
+            <div class="main-tab-content-container">
+            <div class="main-tab-pane active" id="admin-dashboard-content">
              <section class="stats-grid">
                  <div class="stat-card"><div class="stat-icon users">👥</div><div class="stat-info"><p>Felhasználók</p><h3 id="userCount">0</h3></div></div>
                  <div class="stat-card"><div class="stat-icon beers">🍺</div><div class="stat-info"><p>Sörök száma</p><h3 id="beerCount">0</h3></div></div>
-@@ -280,7 +302,7 @@
+
                  <div class="stat-card"><div class="stat-icon sheets">📊</div><div class="stat-info"><p>Google Sheets</p><h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3></div></div>
              </section>
-+            <section id="statsView" class="card" style="margin-top: 30px;">
+            <section id="statsView" class="card" style="margin-top: 30px;">
                  <header class="card-header">
                      <h3>Statisztikák</h3>
                      <div class="stats-tabs" id="statTabButtons">
-@@ -334,8 +356,12 @@
-                     </div>
-                 </div>
+            </div>
              </section>
-+                </div>
-+
-+                +                <div class="main-tab-pane" id="admin-beers-content">
-+            
-+            <section class="card">
+                </div>
+
+                               <div class="main-tab-pane" id="admin-beers-content">
+            
+            <section class="card">
                  <header class="card-header">
                      <h3>Sörök listája</h3>
                      <div class="live-search-container">
-@@ -370,6 +396,8 @@
+
                      </table>
                  </div>
              </section>
-+                </div>
-+            </div>
+                </div>
+               </div>
          </main>
      </div>
 
@@ -252,6 +249,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
