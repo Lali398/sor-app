@@ -138,13 +138,33 @@ export default async function handler(req, res) {
             case 'ADD_USER_BEER': {
                 const userData = verifyUser(req);
                 const { beerName, type, location, look, smell, taste, notes } = req.body;
+                
+                // Pontszámok biztosítása számként
+                const numLook = parseFloat(look) || 0;
+                const numSmell = parseFloat(smell) || 0;
+                const numTaste = parseFloat(taste) || 0;
+                
+                // Számítások elvégzése (Összpontszám és Átlag)
+                const totalScore = numLook + numSmell + numTaste;
+                const avgScore = (totalScore / 3).toFixed(1).replace('.', ','); // Magyar formátum (opcionális)
+
                 const newRow = [
-                    new Date().toISOString().replace('T', ' ').substring(0, 19),
-                    userData.name,
-                    beerName, type, location, look, smell, taste, notes || '',
-                    'Nem',
-                    userData.email
+                    new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
+                    userData.name,                                               // B: Beküldő Neve
+                    beerName,                                                    // C: Sör Neve
+                    type,                                                        // D: Típus
+                    location,                                                    // E: Hely
+                    look,                                                        // F: Külalak
+                    smell,                                                       // G: Illat
+                    taste,                                                       // H: Íz
+                    "",                                                          // I: Alkohol% (Üres, mert az űrlapon nincs ilyen mező [cite: 37])
+                    totalScore,                                                  // J: Összpontszám (Kiszámolva)
+                    avgScore,                                                    // K: Átlag (Kiszámolva)
+                    notes || '',                                                 // L: Megjegyzés (Ide kell kerülnie a szövegnek)
+                    'Nem',                                                       // M: Tesztelve
+                    userData.email                                               // N: Beküldő Email-ja
                 ];
+
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: GUEST_BEERS_SHEET,
@@ -234,3 +254,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
