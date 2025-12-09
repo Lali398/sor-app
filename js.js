@@ -885,47 +885,56 @@ async function handleAdminRecapGenerate(period, button) {
 }
 
 
+    
 // --- FELHASZNÁLÓI RECAP KEZELÉSE (API HÍVÁS) ---
 
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
     
-    // JAVÍTÁS: Ellenőrizzük, hogy NEM admin recap gomb-e
+    // Ha nincs gomb vagy admin recap területen van, ne fusson le
     if (!button) return;
-    
-    // Ha az admin recap konténerben van, ne fusson le
-    const isAdminRecap = button.closest('#adminRecapControls');
-    if (isAdminRecap) return;
+    if (button.closest('#adminRecapControls')) return;
     
     const period = button.dataset.period;
     const allButtons = recapControls.querySelectorAll('.recap-btn');
+
+    console.log('Recap kérés indítása:', period); // Debug log
 
     allButtons.forEach(btn => btn.classList.remove('loading'));
     button.classList.add('loading');
     recapResultsContainer.innerHTML = '<div class="recap-spinner"></div>';
 
     try {
+        const token = localStorage.getItem('userToken');
+        console.log('Token:', token ? 'van' : 'nincs'); // Debug log
+
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+                'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ action: 'GET_USER_RECAP', period: period })
+            body: JSON.stringify({ 
+                action: 'GET_USER_RECAP', 
+                period: period 
+            })
         });
 
+        console.log('Response status:', response.status); // Debug log
+
         const result = await response.json();
+        console.log('Response data:', result); // Debug log
 
         if (!response.ok) {
-             if (response.status === 401) {
+            if (response.status === 401) {
                 showError("A munkameneted lejárt, jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(result.error || 'Szerverhiba');
         }
-        result.period = period; 
-
+        
+        result.period = period;
         renderRecap(result, recapResultsContainer);
 
     } catch (error) {
@@ -1061,6 +1070,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
