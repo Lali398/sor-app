@@ -86,42 +86,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAddBeer(e) {
-        e.preventDefault();
-        const beerName = document.getElementById('beerName').value;
-        const type = document.getElementById('beerType').value;
-        const location = document.getElementById('beerLocation').value;
-        const look = document.getElementById('beerLook').value;
-        const smell = document.getElementById('beerSmell').value;
-        const taste = document.getElementById('beerTaste').value;
-        const notes = document.getElementById('beerNotes').value;
-        const submitBtn = addBeerForm.querySelector('.auth-btn');
+    e.preventDefault();
+    const beerName = document.getElementById('beerName').value;
+    const type = document.getElementById('beerType').value;
+    const location = document.getElementById('beerLocation').value;
+    const beerPercentage = document.getElementById('beerPercentage').value;
+    const look = document.getElementById('beerLook').value;
+    const smell = document.getElementById('beerSmell').value;
+    const taste = document.getElementById('beerTaste').value;
+    const notes = document.getElementById('beerNotes').value;
+    const submitBtn = addBeerForm.querySelector('.auth-btn');
 
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, look, smell, taste, notes })
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                if (response.status === 401) {
-                    showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
-                    setTimeout(switchToGuestView, 2000);
-                    return;
-                }
-                throw new Error(result.error || 'Szerverhiba');
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            if (response.status === 401) {
+                showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
             }
-            showSuccess('Sör sikeresen hozzáadva!');
-            addBeerForm.reset();
-            loadUserData();
-        } catch (error) {
-            console.error("Hiba sör hozzáadásakor:", error);
-            showError(error.message || "Nem sikerült a sört hozzáadni.");
-        } finally {
-            setLoading(submitBtn, false);
+            throw new Error(result.error || 'Szerverhiba');
         }
+        showSuccess('Sör sikeresen hozzáadva!');
+        addBeerForm.reset();
+        loadUserData();
+    } catch (error) {
+        console.error("Hiba sör hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült a sört hozzáadni.");
+    } finally {
+        setLoading(submitBtn, false);
     }
+}
     
     async function handleGuestRegister(e) {
         e.preventDefault();
@@ -541,24 +542,30 @@ function setupAdminRecap() {
     }
 
     function renderUserBeers(beers) {
-        userBeerTableBody.innerHTML = '';
-        if (!beers || beers.length === 0) {
-            userBeerTableBody.innerHTML = `<tr><td colspan="5" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
-            return;
-        }
-        beers.forEach(beer => {
-            const row = `
-                <tr>
-                    <td>${beer.beerName}</td>
-                    <td>${beer.type}</td>
-                    <td>${beer.location}</td>
-                    <td>${beer.beerPercentage || 0}%</td>
-                    <td class="score-cell">${beer.totalScore || 0}</td>
-                </tr>
-            `;
-            userBeerTableBody.insertAdjacentHTML('beforeend', row);
-        });
+    userBeerTableBody.innerHTML = '';
+    if (!beers || beers.length === 0) {
+        userBeerTableBody.innerHTML = `<tr><td colspan="9" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        return;
     }
+    beers.forEach(beer => {
+        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
+        const formattedAvg = beer.avg ? parseFloat(beer.avg).toFixed(2) : '0.00';
+        const row = `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${beer.beerName}</td>
+                <td>${beer.location}</td>
+                <td>${beer.beerPercentage || 0}%</td>
+                <td>${beer.look || 0}</td>
+                <td>${beer.smell || 0}</td>
+                <td>${beer.taste || 0}</td>
+                <td>${beer.totalScore || 0}</td>
+                <td class="average-cell">${formattedAvg}</td>
+            </tr>
+        `;
+        userBeerTableBody.insertAdjacentHTML('beforeend', row);
+    });
+}
     
     function updateUserStats(beers) {
         document.getElementById('userBeerCount').textContent = beers.length;
@@ -1053,6 +1060,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
