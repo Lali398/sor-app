@@ -177,6 +177,10 @@
                                 <span class="input-highlight"></span>
                             </div>
                             <div class="input-group">
+                                <input type="number" id="beerPercentage" min="0" max="100" step="0.1" required>
+                                <label for="beerPercentage">Alkohol % (0-100)</label>
+                                <span class="input-highlight"></span>
+                            <div class="input-group">
                                 <input type="number" id="beerLook" min="0" max="10" step="0.1" required>
                                 <label for="beerLook">Külalak (0-10)</label>
                                 <span class="input-highlight"></span>
@@ -216,11 +220,15 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>Dátum</th>
                                         <th>Sör neve</th>
-                                        <th>Típus</th>
                                         <th>Főzési hely</th>
                                         <th>Alkohol %</th>
+                                        <th>Külalak</th>
+                                        <th>Illat</th>
+                                        <th>Íz</th>
                                         <th>Összpontszám</th>
+                                        <th>Átlag</th>
                                     </tr>
                                 </thead>
                                 <tbody id="userBeerTableBody">
@@ -586,3 +594,4 @@
     <script src="js.js"></script>
 </body>
 </html>
+
