@@ -108,7 +108,7 @@ body {
 
 .input-group { 
     position: relative; 
-    margin-bottom: 35px; /* 25px-ről 35px-re növelve */
+    margin-bottom: 55px; /* 25px-ről 35px-re növelve */
 }
 
 .input-group input {
@@ -883,6 +883,7 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
+
 
 
 
