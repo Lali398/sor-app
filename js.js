@@ -1020,6 +1020,37 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
+// === DINAMIKUS FEJLÉC SCROLL KEZELÉS ===
+let lastScrollTop = 0;
+let scrollTimeout;
+
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('.admin-header');
+    if (!header) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
+    
+    // Sör feltöltés animáció
+    if (scrollPercent > 0) {
+        header.style.setProperty('--fill-height', (scrollPercent * 100) + '%');
+        if (scrollPercent >= 1) {
+            header.classList.add('filled');
+        } else {
+            header.classList.remove('filled');
+        }
+    }
+    
+    // Fejléc elrejtése lefelé görgetéskor (ha megtelt)
+    if (scrollTop > lastScrollTop && scrollTop > 350) {
+        header.classList.add('hidden');
+    } else if (scrollTop < lastScrollTop || scrollTop < 100) {
+        header.classList.remove('hidden');
+    }
+    
+    lastScrollTop = scrollTop;
+});
+
 
 
 
