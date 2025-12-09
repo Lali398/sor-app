@@ -130,11 +130,11 @@
  
         <main class="admin-main">
             <nav class="main-tabs">
-            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
-            <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-            <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
-            <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
-        </nav>
+                <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+                <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+                <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
+                <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+            </nav>
 
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
@@ -207,14 +207,6 @@
                 </div>
 
                 <!-- SÖREIM TAB -->
-                <div class="main-tab-content-container">
-                <div class="main-tab-pane active" id="user-rating-content">
-                    <section class="stats-grid">
-                        </section>
-                    <section class="card" style="margin-top: 30px;">
-                        </section>
-                </div>
-
                 <div class="main-tab-pane" id="user-beers-content">
                     <section class="card">
                         <header class="card-header">
@@ -241,6 +233,7 @@
                     </section>
                 </div>
 
+                <!-- VISSZATEKINTŐ TAB -->
                 <div class="main-tab-pane" id="user-recap-content">
                     <section class="card">
                         <header class="card-header">
@@ -268,35 +261,8 @@
                             </button>
                         </div>
                         
-                    <div class="recap-results-container" id="recapResultsContainer">
-                        <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
-                    </div>
-                </section>
-            </div>
-
-            <div class="main-tab-pane" id="user-account-content">
-                 </div>
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>Saját sörjeid listája</h3>
-                        </header>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Sör neve</th>
-                                        <th>Típus</th>
-                                        <th>Főzési hely</th>
-                                        <th>Alkohol %</th>
-                                        <th>Összpontszám</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userBeerTableBody">
-                                    <tr>
-                                        <td colspan="5" class="no-results">Betöltés...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="recap-results-container" id="recapResultsContainer">
+                            <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
                         </div>
                     </section>
                 </div>
@@ -370,10 +336,9 @@
                 <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
                 <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
             </nav>
-            <!-- DASHBOARD TAB -->
 
-            
             <div class="main-tab-content-container">
+                <!-- DASHBOARD TAB -->
                 <div class="main-tab-pane active" id="admin-dashboard-content">
                     <section class="stats-grid">
                         <div class="stat-card">
@@ -419,18 +384,13 @@
                         <div class="stats-content">
                             <!-- KÖZÖS STATISZTIKÁK -->
                             <div class="stat-pane active" id="common-stats">
-                            <div class="chart-grid">
+                                <hr>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="common">
                                 </div>
-
-                           <hr>
-                        <h4>Időszaki Visszatekintő</h4>
-                        <div class="recap-controls admin-recap-controls" data-admin-pane="common">
-                            
-                        </div>
-                        <div class="recap-results-container" id="common-recap-results">
-                            <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
-                        </div>
-                            </div>
+                                <div class="recap-results-container" id="common-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
                                 <div class="kpi-grid">
                                     <div class="kpi-card">
                                         <h4>Legjobb sör</h4>
@@ -461,13 +421,12 @@
                             <!-- GABZ STATISZTIKÁK -->
                             <div class="stat-pane" id="gabz-stats">
                                 <hr>
-                        <h4>Időszaki Visszatekintő</h4>
-                        <div class="recap-controls admin-recap-controls" data-admin-pane="gabz">
-                            
-                        </div>
-                        <div class="recap-results-container" id="gabz-recap-results">
-                            <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
-                        </div>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="gabz">
+                                </div>
+                                <div class="recap-results-container" id="gabz-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
                                 <div class="kpi-grid">
                                     <div class="kpi-card">
                                         <h4>Legjobb sör</h4>
@@ -494,15 +453,13 @@
 
                             <!-- LAJOS STATISZTIKÁK -->
                             <div class="stat-pane" id="lajos-stats">
-                               <hr>
-                        <h4>Időszaki Visszatekintő</h4>
-                        <div class="recap-controls admin-recap-controls" data-admin-pane="lajos">
-                            
-                        </div>
-                        <div class="recap-results-container" id="lajos-recap-results">
-                            <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
-                        </div>
-                        
+                                <hr>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="lajos">
+                                </div>
+                                <div class="recap-results-container" id="lajos-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
                                 <div class="kpi-grid">
                                     <div class="kpi-card">
                                         <h4>Legjobb sör</h4>
@@ -545,33 +502,6 @@
                                 <div class="search-results-info" id="searchResultsInfo"></div>
                             </div>
                         </header>
-                        <div class="main-tab-pane" id="admin-recap-content">
-    <section class="card">
-        <header class="card-header">
-            <h3>Admin Visszatekintő</h3>
-            <div class="stats-tabs" id="adminRecapTabButtons">
-                <button class="stat-tab-btn active" data-tab="common">Közös</button>
-                <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
-                <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
-            </div>
-        </header>
-
-        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
-            Válassz egy időszakot a statisztika generálásához. A kártya a "Közös", "Gabz" vagy "Lajos" füleken kiválasztott adatok alapján jön létre.
-        </p>
-
-        <div class="recap-controls" id="adminRecapControls">
-            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
-            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
-            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
-            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
-        </div>
-        
-        <div class="recap-results-container" id="adminRecapResultsContainer">
-            <p class="recap-placeholder">Válassz egy admint és egy időszakot a kezdéshez.</p>
-        </div>
-    </section>
-</div>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -594,6 +524,35 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- VISSZATEKINTŐ TAB -->
+                <div class="main-tab-pane" id="admin-recap-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Admin Visszatekintő</h3>
+                            <div class="stats-tabs" id="adminRecapTabButtons">
+                                <button class="stat-tab-btn active" data-tab="common">Közös</button>
+                                <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
+                                <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
+                            </div>
+                        </header>
+
+                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                            Válassz egy időszakot a statisztika generálásához. A kártya a "Közös", "Gabz" vagy "Lajos" füleken kiválasztott adatok alapján jön létre.
+                        </p>
+
+                        <div class="recap-controls" id="adminRecapControls">
+                            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
+                            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
+                            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
+                            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+                        </div>
+                        
+                        <div class="recap-results-container" id="adminRecapResultsContainer">
+                            <p class="recap-placeholder">Válassz egy admint és egy időszakot a kezdéshez.</p>
                         </div>
                     </section>
                 </div>
@@ -627,6 +586,3 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
-
