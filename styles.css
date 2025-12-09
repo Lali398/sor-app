@@ -135,7 +135,7 @@ body {
 
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
-    top: -25px; /* -20px-ről -25px-re */
+    top: -50px; /* -20px-ről -25px-re */
     font-size: 12px;
     color: #8a73ff;
     font-weight: 500;
@@ -883,6 +883,7 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
+
 
 
 
