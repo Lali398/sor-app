@@ -337,8 +337,6 @@ export default async function handler(req, res) {
                 }
             }
 
-        }
-
     } catch (error) {
         console.error("API hiba:", error);
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
@@ -347,6 +345,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
