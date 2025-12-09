@@ -205,6 +205,98 @@ export default async function handler(req, res) {
                 
                 return res.status(200).json({ message: "Jelszó sikeresen módosítva!" });
             }
+            // --- ÚJ: FELHASZNÁLÓI VISSZATEKINTŐ ---
+            case 'GET_USER_RECAP': {
+                try {
+                    const userData = verifyUser(req);
+                    const { period } = req.body;
+
+                    console.log('Recap kérés:', userData.name, period); // Debug log
+
+                    // Időszak kezdő dátumának meghatározása
+                    const now = new Date();
+                    let startDate = new Date();
+                    
+                    switch (period) {
+                        case 'weekly': startDate.setDate(now.getDate() - 7); break;
+                        case 'monthly': startDate.setMonth(now.getMonth() - 1); break;
+                        case 'quarterly': startDate.setMonth(now.getMonth() - 3); break;
+                        case 'yearly': startDate.setFullYear(now.getFullYear() - 1); break;
+                        default: startDate.setMonth(now.getMonth() - 1);
+                    }
+
+                    // Felhasználó söreinek lekérése
+                    const beersResponse = await sheets.spreadsheets.values.get({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: GUEST_BEERS_SHEET 
+                    });
+
+                    const allBeers = beersResponse.data.values || [];
+                    console.log('Összes sör:', allBeers.length); // Debug log
+                    
+                    // Szűrés: csak a bejelentkezett felhasználó sörei az adott időszakból
+                    const filteredBeers = allBeers
+                        .filter(row => row[1] === userData.name) // B oszlop: Beküldő Neve
+                        .filter(row => {
+                            if (!row[0]) return false; // A oszlop: Dátum
+                            const beerDate = new Date(row[0]);
+                            return beerDate >= startDate && beerDate <= now;
+                        })
+                        .map(row => ({
+                            beerName: row[2] || 'N/A',
+                            type: row[3] || 'N/A',
+                            location: row[4] || 'N/A',
+                            totalScore: parseFloat(row[9]) || 0
+                        }));
+
+                    console.log('Szűrt sörök:', filteredBeers.length); // Debug log
+
+                    if (filteredBeers.length === 0) {
+                        return res.status(200).json({ 
+                            message: "Nincs értékelt sör ebben az időszakban." 
+                        });
+                    }
+
+                    // Statisztikák számítása
+                    const totalBeers = filteredBeers.length;
+                    const averageScore = (filteredBeers.reduce((sum, b) => sum + b.totalScore, 0) / totalBeers).toFixed(1);
+                    const bestBeer = filteredBeers.reduce((max, beer) => 
+                        (beer.totalScore > max.totalScore ? beer : max), filteredBeers[0]);
+
+                    // Típus gyakorisága
+                    const typeCounts = filteredBeers.reduce((acc, beer) => {
+                        const type = beer.type || 'N/A';
+                        acc[type] = (acc[type] || 0) + 1;
+                        return acc;
+                    }, {});
+                    const favoriteType = Object.keys(typeCounts).length > 0 
+                        ? Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b)
+                        : 'N/A';
+
+                    // Hely gyakorisága
+                    const locationCounts = filteredBeers.reduce((acc, beer) => {
+                        const loc = beer.location || 'N/A';
+                        acc[loc] = (acc[loc] || 0) + 1;
+                        return acc;
+                    }, {});
+                    const favoriteLocation = Object.keys(locationCounts).length > 0
+                        ? Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b)
+                        : 'N/A';
+
+                    return res.status(200).json({
+                        totalBeers,
+                        averageScore,
+                        bestBeer: { name: bestBeer.beerName, score: bestBeer.totalScore },
+                        favoriteType,
+                        favoriteLocation
+                    });
+                } catch (error) {
+                    console.error('GET_USER_RECAP hiba:', error);
+                    throw error;
+                }
+            }
+
+        }
             
             // --- ÚJ: FELHASZNÁLÓI FIÓK TÖRLÉSE ---
             case 'DELETE_USER': {
@@ -246,7 +338,6 @@ export default async function handler(req, res) {
                 return res.status(200).json({ message: "A fiókod és a hozzá tartozó minden adat sikeresen törölve." });
             }
         }
-    }
 
     } catch (error) {
         console.error("API hiba:", error);
@@ -256,12 +347,3 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
-
-
-
-
-
-
-
