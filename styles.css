@@ -106,18 +106,21 @@ body {
 /* Form stilizálás (sötét téma) */
 .auth-form { text-align: left; }
 
-.input-group { position: relative; margin-bottom: 25px; }
+.input-group { 
+    position: relative; 
+    margin-bottom: 35px; /* 25px-ről 35px-re növelve */
+}
 
 .input-group input {
     width: 100%;
     padding: 15px 0;
     font-size: 16px;
     border: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3); /* Világosabb border */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     background: transparent;
     outline: none;
     transition: all 0.3s ease;
-    color: #ffffff; /* Bemeneti szöveg színe */
+    color: #ffffff;
 }
 
 .input-group label {
@@ -125,35 +128,17 @@ body {
     top: 15px;
     left: 0;
     font-size: 16px;
-    color: #d0d0d0; /* Világosabb label */
+    color: #d0d0d0;
     pointer-events: none;
     transition: all 0.3s ease;
 }
 
 .input-group input:focus ~ label,
 .input-group input:valid ~ label {
-    top: -20px;
+    top: -25px; /* -20px-ről -25px-re */
     font-size: 12px;
-    color: #8a73ff; /* Világosabb lila kiemelés */
+    color: #8a73ff;
     font-weight: 500;
-}
-
-.input-group input:focus {
-    border-bottom-color: #8a73ff; /* Világosabb lila kiemelés */
-}
-
-.input-highlight {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(135deg, #8a73ff, #c3aaff); /* Világosabb lila kiemelés */
-    transition: width 0.3s ease;
-}
-
-.input-group input:focus ~ .input-highlight {
-    width: 100%;
 }
 
 /* Auth gomb (változatlan, jól mutat) */
@@ -898,6 +883,7 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
+
 
 
 
