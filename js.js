@@ -1022,7 +1022,6 @@ function renderRecap(data, containerElement) {
 });
 // === DINAMIKUS FEJLÉC SCROLL KEZELÉS ===
 let lastScrollTop = 0;
-let scrollTimeout;
 
 window.addEventListener('scroll', function() {
     const header = document.querySelector('.admin-header');
@@ -1031,14 +1030,13 @@ window.addEventListener('scroll', function() {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
     
-    // Sör feltöltés animáció
-    if (scrollPercent > 0) {
-        header.style.setProperty('--fill-height', (scrollPercent * 100) + '%');
-        if (scrollPercent >= 1) {
-            header.classList.add('filled');
-        } else {
-            header.classList.remove('filled');
-        }
+    // Sör feltöltés animáció - inline style-lal állítjuk be
+    header.style.setProperty('--fill-percent', scrollPercent);
+    
+    if (scrollPercent >= 1) {
+        header.classList.add('filled');
+    } else {
+        header.classList.remove('filled');
     }
     
     // Fejléc elrejtése lefelé görgetéskor (ha megtelt)
@@ -1050,6 +1048,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
