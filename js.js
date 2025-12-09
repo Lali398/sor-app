@@ -889,9 +889,14 @@ async function handleAdminRecapGenerate(period, button) {
 
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
-    // Biztosítjuk, hogy ez ne fusson le az admin gombokra
-    if (!button || e.target.closest('.admin-recap-controls')) return;
-
+    
+    // JAVÍTÁS: Ellenőrizzük, hogy NEM admin recap gomb-e
+    if (!button) return;
+    
+    // Ha az admin recap konténerben van, ne fusson le
+    const isAdminRecap = button.closest('#adminRecapControls');
+    if (isAdminRecap) return;
+    
     const period = button.dataset.period;
     const allButtons = recapControls.querySelectorAll('.recap-btn');
 
@@ -923,13 +928,9 @@ async function handleRecapPeriodClick(e) {
 
         renderRecap(result, recapResultsContainer);
 
-        // MÓDOSÍTVA: Átadjuk a cél konténert
-        renderRecap(result, recapResultsContainer);
-
     } catch (error) {
         console.error("Hiba a visszatekintő lekérésekor:", error);
         showError(error.message || "Nem sikerült lekérni a statisztikát.");
-        // MÓDOSÍTVA: Átadjuk a cél konténert
         renderRecap({ message: "Hiba történt a lekérés során." }, recapResultsContainer);
     } finally {
         button.classList.remove('loading');
@@ -1060,6 +1061,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
