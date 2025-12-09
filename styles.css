@@ -833,4 +833,70 @@ table tr:hover .average-cell {
 .recap-results-container .recap-spinner {
     margin: 40px auto;
 }
+/* === DINAMIKUS FEJLÉC "SÖR FELTÖLTÉS" ANIMÁCIÓVAL === */
+.admin-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    color: white;
+    padding: 20px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+
+/* Sör feltöltés effekt */
+.admin-header::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, 
+        rgba(255, 193, 7, 0.3) 0%,
+        rgba(255, 160, 0, 0.4) 50%,
+        rgba(255, 140, 0, 0.5) 100%);
+    transition: height 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Fejléc elrejtése görgetéskor */
+.admin-header.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+/* Fejléc "megtelt" állapot */
+.admin-header.filled::before {
+    height: 100%;
+}
+
+/* Hab effekt a tetején */
+.admin-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0px,
+        rgba(255, 255, 255, 0.2) 10px,
+        rgba(255, 255, 255, 0.1) 20px
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.admin-header.filled::after {
+    opacity: 1;
+}
+
 
