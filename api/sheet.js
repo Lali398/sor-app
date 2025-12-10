@@ -137,6 +137,7 @@ export default async function handler(req, res) {
                       notes: row[11] || ''
                   })) || [];
               return res.status(200).json(userBeers);
+            }
 
             case 'ADD_USER_BEER': {
                 const userData = verifyUser(req);
@@ -257,4 +258,5 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
