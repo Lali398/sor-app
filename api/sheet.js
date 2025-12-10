@@ -205,7 +205,6 @@ export default async function handler(req, res) {
                 
                 return res.status(200).json({ message: "Jelszó sikeresen módosítva!" });
             }
-          
             
             // --- ÚJ: FELHASZNÁLÓI FIÓK TÖRLÉSE ---
             case 'DELETE_USER': {
@@ -247,6 +246,7 @@ export default async function handler(req, res) {
                 return res.status(200).json({ message: "A fiókod és a hozzá tartozó minden adat sikeresen törölve." });
             }
         }
+    }
 
     } catch (error) {
         console.error("API hiba:", error);
@@ -256,5 +256,11 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
+
+
+
+
+
 
 
