@@ -118,19 +118,19 @@ export default async function handler(req, res) {
                 const userData = verifyUser(req);
                 const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
                 const userBeers = beersResponse.data.values
-                    ?.filter(row => row[1] === userData.name) 
+                    ?.filter(row => row[13] === userData.email) // N oszlop: Email alapján szűrés
                     .map(row => ({
-                        date: row[0],
-                        beerName: row[2],
-                        type: row[3],
-                        location: row[4],
-                        look: row[5] || 0,
-                        smell: row[6] || 0,
-                        taste: row[7] || 0,
-                        beerPercentage: row[8] || 0,
-                        totalScore: row[9] || 0,
-                        avg: row[10] || 0,
-                        notes: row[11] || ''
+                        date: row[0],           // A
+                        beerName: row[2],       // C
+                        type: row[3],           // D
+                        location: row[4],       // E
+                        look: row[5] || 0,      // F
+                        smell: row[6] || 0,     // G
+                        taste: row[7] || 0,     // H
+                        beerPercentage: row[8] || 0,  // I
+                        totalScore: row[9] || 0,      // J
+                        avg: row[10] || 0,      // K
+                        notes: row[11] || ''    // L
                     })) || [];
                 return res.status(200).json(userBeers);
             }
