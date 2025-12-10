@@ -118,22 +118,25 @@ export default async function handler(req, res) {
                 const userData = verifyUser(req);
                 const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
                 const userBeers = beersResponse.data.values
-                    ?.filter(row => row[13] === userData.email) // N oszlop: Email alapján szűrés
-                    .map(row => ({
-                        date: row[0],           // A
-                        beerName: row[2],       // C
-                        type: row[3],           // D
-                        location: row[4],       // E
-                        look: row[5] || 0,      // F
-                        smell: row[6] || 0,     // G
-                        taste: row[7] || 0,     // H
-                        beerPercentage: row[8] || 0,  // I
-                        totalScore: row[9] || 0,      // J
-                        avg: row[10] || 0,      // K
-                        notes: row[11] || ''    // L
-                    })) || [];
-                return res.status(200).json(userBeers);
-            }
+                  ?.filter(row => row[13] === userData.email) 
+                  .map(row => ({
+                      date: row[0],
+                      beerName: row[2],
+                      
+                      // JAVÍTOTT INDEXEK:
+                      location: row[3],       // D oszlop (volt 4)
+                      type: row[4],           // E oszlop (volt 3)
+                      look: row[5] || 0,
+                      smell: row[6] || 0,
+                      taste: row[7] || 0,
+                      
+                      totalScore: row[8] || 0,      // I oszlop (volt 9)
+                      avg: row[9] || 0,             // J oszlop (volt 10)
+                      beerPercentage: row[10] || 0, // K oszlop (volt 8)
+                      
+                      notes: row[11] || ''
+                  })) || [];
+              return res.status(200).json(userBeers);
 
             case 'ADD_USER_BEER': {
                 const userData = verifyUser(req);
@@ -146,24 +149,25 @@ export default async function handler(req, res) {
                 
                 const totalScore = numLook + numSmell + numTaste;
                 const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
-            
+                
+                // JAVÍTOTT SORREND:
                 const newRow = [
-                    new Date().toISOString().replace('T', ' ').substring(0, 19),
-                    userData.name,
-                    beerName,
-                    type,
-                    location,
-                    look,
-                    smell,
-                    taste,
-                    numPercentage,
-                    totalScore,
-                    avgScore,
-                    notes || '',
-                    'Nem',
-                    userData.email
+                    new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
+                    userData.name,   // B: Név
+                    beerName,        // C: Sör neve
+                    location,        // D: Főzési hely (Megcserélve a típussal)
+                    type,            // E: Típus
+                    look,            // F: Külalak
+                    smell,           // G: Illat
+                    taste,           // H: Íz
+                    totalScore,      // I: Összpontszám (Alkohol % helyett)
+                    avgScore,        // J: Átlag (Összpontszám helyett)
+                    numPercentage,   // K: Alkohol % (Átlag helyett)
+                    notes || '',     // L: Jegyzetek
+                    'Nem',           // M: Jóváhagyva?
+                    userData.email   // N: Email
                 ];
-            
+                
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: GUEST_BEERS_SHEET,
@@ -253,3 +257,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
