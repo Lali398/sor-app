@@ -1,4 +1,4 @@
-// api/sheet.js - Kiegészítve vendég regisztrációval és adatkezeléssel
+// api/sheet.js - Javított verzió
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -139,31 +139,29 @@ export default async function handler(req, res) {
                 const userData = verifyUser(req);
                 const { beerName, type, location, beerPercentage, look, smell, taste, notes } = req.body;
                 
-                // Pontszámok biztosítása számként
                 const numLook = parseFloat(look) || 0;
                 const numSmell = parseFloat(smell) || 0;
                 const numTaste = parseFloat(taste) || 0;
                 const numPercentage = parseFloat(beerPercentage) || 0;
                 
-                // Számítások elvégzése (Összpontszám és Átlag)
                 const totalScore = numLook + numSmell + numTaste;
                 const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
             
                 const newRow = [
-                    new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
-                    userData.name,                                               // B: Beküldő Neve
-                    beerName,                                                    // C: Sör Neve
-                    type,                                                        // D: Típus
-                    location,                                                    // E: Hely
-                    look,                                                        // F: Külalak
-                    smell,                                                       // G: Illat
-                    taste,                                                       // H: Íz
-                    numPercentage,                                               // I: Alkohol%
-                    totalScore,                                                  // J: Összpontszám
-                    avgScore,                                                    // K: Átlag
-                    notes || '',                                                 // L: Megjegyzés
-                    'Nem',                                                       // M: Tesztelve
-                    userData.email                                               // N: Beküldő Email-ja
+                    new Date().toISOString().replace('T', ' ').substring(0, 19),
+                    userData.name,
+                    beerName,
+                    type,
+                    location,
+                    look,
+                    smell,
+                    taste,
+                    numPercentage,
+                    totalScore,
+                    avgScore,
+                    notes || '',
+                    'Nem',
+                    userData.email
                 ];
             
                 await sheets.spreadsheets.values.append({
@@ -175,7 +173,6 @@ export default async function handler(req, res) {
                 return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
             }
 
-            // --- ÚJ: JELSZÓ VÁLTOZTATÁS ---
             case 'CHANGE_PASSWORD': {
                 const userData = verifyUser(req);
                 const { oldPassword, newPassword } = req.body;
@@ -192,8 +189,6 @@ export default async function handler(req, res) {
                 if (!isPasswordValid) return res.status(401).json({ error: "A jelenlegi jelszó hibás." });
 
                 const newHashedPassword = await bcrypt.hash(newPassword, 10);
-                
-                // A sor indexe 1-től kezdődik, ezért userIndex + 1
                 const updateRange = `${USERS_SHEET}!C${userIndex + 1}`;
 
                 await sheets.spreadsheets.values.update({
@@ -206,7 +201,6 @@ export default async function handler(req, res) {
                 return res.status(200).json({ message: "Jelszó sikeresen módosítva!" });
             }
             
-            // --- ÚJ: FELHASZNÁLÓI FIÓK TÖRLÉSE ---
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
 
@@ -219,7 +213,8 @@ export default async function handler(req, res) {
                 
                 // 2. Törlendő sorok azonosítása
                 const remainingUsers = allUsers.filter(row => row[1] !== userData.email);
-                const remainingBeers = allBeers.filter(row => row[10] !== userData.email); // Feltételezzük, az email a 11. oszlop (K)
+                // JAVÍTÁS: Az email a 13. oszlop (N oszlop, index: 13)
+                const remainingBeers = allBeers.filter(row => row[13] !== userData.email);
 
                 // 3. Munkalapok ürítése
                 await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
@@ -235,7 +230,7 @@ export default async function handler(req, res) {
                     });
                 }
                 if (remainingBeers.length > 0) {
-                     await sheets.spreadsheets.values.update({
+                    await sheets.spreadsheets.values.update({
                         spreadsheetId: SPREADSHEET_ID,
                         range: GUEST_BEERS_SHEET,
                         valueInputOption: 'USER_ENTERED',
@@ -245,8 +240,10 @@ export default async function handler(req, res) {
 
                 return res.status(200).json({ message: "A fiókod és a hozzá tartozó minden adat sikeresen törölve." });
             }
+
+            default:
+                return res.status(400).json({ error: "Ismeretlen action." });
         }
-    }
 
     } catch (error) {
         console.error("API hiba:", error);
@@ -256,11 +253,3 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
-
-
-
-
-
-
