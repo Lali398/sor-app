@@ -130,13 +130,34 @@
             </div>
         </header>
  
-        <main class="admin-main">
-            <nav class="main-tabs">
-                <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
-                <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-                <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
-                <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
-            </nav>
+               <nav class="main-tabs">
+            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+            <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
+            <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+            <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
+        </nav>
+        
+        <div class="main-tab-pane" id="user-settings-content">
+            <section class="card">
+                <header class="card-header">
+                    <h3>Személyre Szabás</h3>
+                </header>
+                
+                <div class="settings-group">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Sörös Kurzor 🍺</h4>
+                            <p>Egyedi söröskorsó kurzor használata az oldalon.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userCursorToggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
 
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
@@ -340,12 +361,33 @@
             </div>
         </header>
  
-        <main class="admin-main">
-            <nav class="main-tabs">
-                <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
-                <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
-                <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
-            </nav>
+       <nav class="main-tabs">
+    <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
+    <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
+    <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
+    <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
+</nav>
+
+<div class="main-tab-pane" id="admin-settings-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Admin Személyre Szabás</h3>
+        </header>
+        
+        <div class="settings-group">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Sörös Kurzor 🍺</h4>
+                    <p>Legyen söröskorsó a kurzor az admin felületen is.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="adminCursorToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+</div>
 
             <div class="main-tab-content-container">
                 <!-- DASHBOARD TAB -->
@@ -596,6 +638,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
