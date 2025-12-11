@@ -4,6 +4,31 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
+    // Ezt a függvényt hagytad ki, ezért dob hibát kattintáskor:
+function createBeerBubbles(x, y) {
+    const bubbleCount = 8;
+    for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('beer-bubble');
+        
+        // Véletlenszerű irány és távolság
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 20 + Math.random() * 60;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        // CSS változók beállítása az animációhoz
+        bubble.style.setProperty('--tx', `${tx}px`);
+        bubble.style.setProperty('--ty', `${ty}px`);
+        bubble.style.left = `${x}px`;
+        bubble.style.top = `${y}px`;
+        
+        document.body.appendChild(bubble);
+        
+        // Törlés az animáció végén
+        setTimeout(() => bubble.remove(), 600);
+    }
+}
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -1732,6 +1757,7 @@ window.downloadRecap = function() {
     });
 }
 });
+
 
 
 
