@@ -883,17 +883,20 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
-/* --- EGYEDI SÖR KURZOR STÍLUSOK --- */
+/* --- EGYEDI SÖR KURZOR ÉS EFFEKTEK --- */
 .beer-cursor {
     position: fixed;
     top: 0;
     left: 0;
     pointer-events: none; /* Fontos! Hogy át lehessen kattintani rajta */
     z-index: 99999;
-    transform: translate(-50%, -50%); /* Középre igazítás */
-    display: none; /* Alapból rejtve */
-    transition: transform 0.1s ease-out; /* Opcionális: kis simítás a mozgáson */
-    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+    /* Döntött alapállapot (-15deg) és középre igazítás */
+    transform: translate(-50%, -50%) rotate(-15deg); 
+    display: none;
+    /* Finom átmenet a mozgáshoz és eltűnéshez */
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.2s ease;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    will-change: transform, left, top;
 }
 
 /* Ha a body-n rajta van a 'custom-cursor-active' class */
@@ -905,14 +908,42 @@ body.custom-cursor-active .beer-cursor {
     display: block; /* Egyedi kurzor megjelenítése */
 }
 
-/* Mobilon kapcsoljuk ki, mert ott nincs egér */
+/* --- ÚJ: Intelligens átváltás --- */
+/* Ha ezen az osztályon vagyunk, eltűnik a sör */
+body.hovering-clickable .beer-cursor {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) rotate(-15deg);
+}
+
+body.hovering-clickable {
+    cursor: pointer !important; /* Visszakapjuk a mutatóujjat */
+}
+
+/* --- ÚJ: Buborék / Hab effekt kattintáskor --- */
+.beer-bubble {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100000;
+    animation: bubblePop 0.6s ease-out forwards;
+}
+
+@keyframes bubblePop {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.9;
+    }
+    100% {
+        /* A --tx és --ty változókat JS adja meg */
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Mobilon kikapcsolva */
 @media (max-width: 768px) {
-    .beer-cursor {
-        display: none !important;
-    }
-    body.custom-cursor-active {
-        cursor: auto;
-    }
+    .beer-cursor { display: none !important; }
+    body.custom-cursor-active { cursor: auto; }
 }
 
 
