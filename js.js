@@ -6,6 +6,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // --- NÉZETEK ÉS ELEMEK ---
+    // --- KURZOR ELEMEK ---
+    const beerCursor = document.getElementById('beerCursor');
+    const beerLevelRect = document.getElementById('beerLevel');
+    const beerFoam = document.getElementById('beerFoam');
+
+    // Kurzor mozgatása
+    document.addEventListener('mousemove', (e) => {
+        // Csak akkor frissítjük, ha látható (teljesítmény miatt)
+        if (document.body.classList.contains('custom-cursor-active')) {
+            beerCursor.style.left = e.clientX + 'px';
+            beerCursor.style.top = e.clientY + 'px';
+        }
+    });
+
+    // Sör szintjének frissítése görgetéskor
+    window.addEventListener('scroll', () => {
+        if (!document.body.classList.contains('custom-cursor-active')) return;
+
+        // Kiszámoljuk, hol tartunk az oldalon (0% - 100%)
+        const scrollTop = window.scrollY;
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        let scrollPercent = scrollTop / docHeight;
+        
+        // Biztonsági határok
+        if (scrollPercent < 0) scrollPercent = 0;
+        if (scrollPercent > 1) scrollPercent = 1;
+
+        // Görgetés lefelé = Sör fogyása (fordított logika)
+        // 0% görgetés (tető) = 100% sör
+        // 100% görgetés (alja) = 0% sör
+        
+        const maxBeerHeight = 50; // SVG rect magassága
+        const currentHeight = maxBeerHeight * (1 - scrollPercent);
+        
+        // SVG attribútumok frissítése
+        // y pozíciót is mozgatni kell, mert az SVG rect fentről lefelé nő alapból
+        const yPos = 55 - currentHeight; 
+        
+        beerLevelRect.setAttribute('height', currentHeight);
+        beerLevelRect.setAttribute('y', yPos);
+
+        // Hab megjelenítése, ha van még sör (kb 5% felett)
+        beerFoam.style.opacity = currentHeight > 2 ? 1 : 0;
+        // A habot is mozgatjuk a sör tetejével
+        beerFoam.setAttribute('transform', `translate(0, ${yPos - 6})`);
+    });
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
@@ -481,6 +527,7 @@ function setupAdminRecap() {
     // ======================================================
 
     function switchToUserView() {
+        document.body.classList.add('custom-cursor-active');
         guestView.style.display = 'none';
         adminView.style.display = 'none';
         userView.style.display = 'block';
@@ -496,6 +543,7 @@ function setupAdminRecap() {
         loadUserData();
     }
     function switchToGuestView() {
+        document.body.classList.remove('custom-cursor-active');
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
         guestView.style.display = 'block';
@@ -734,6 +782,7 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
+        document.body.classList.add('custom-cursor-active');
         guestView.style.display = 'none';
         userView.style.display = 'none';
         adminView.style.display = 'block';
@@ -1070,6 +1119,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
