@@ -883,43 +883,41 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
-/* --- EGYEDI SÖR KURZOR ÉS EFFEKTEK --- */
+/* --- EGYEDI SÖR KURZOR ÉS EFFEKTEK (JAVÍTOTT: MINDIG SÖR MARAD) --- */
 .beer-cursor {
     position: fixed;
     top: 0;
     left: 0;
-    pointer-events: none; /* Fontos! Hogy át lehessen kattintani rajta */
+    pointer-events: none; /* Fontos: át lehessen kattintani rajta */
     z-index: 99999;
-    /* Döntött alapállapot (-15deg) és középre igazítás */
+    /* Alapállapot: kicsit döntve (-15deg) */
     transform: translate(-50%, -50%) rotate(-15deg); 
     display: none;
-    /* Finom átmenet a mozgáshoz és eltűnéshez */
+    /* Simább mozgás */
     transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.2s ease;
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
     will-change: transform, left, top;
 }
 
-/* Ha a body-n rajta van a 'custom-cursor-active' class */
-body.custom-cursor-active {
-    cursor: none; /* Rendszer kurzor elrejtése */
+/* Ha be van kapcsolva a sör kurzor */
+body.custom-cursor-active,
+body.custom-cursor-active * {
+    cursor: none !important; /* MINDENHOL elrejtjük a Windows egeret (még a gombokon is) */
 }
 
 body.custom-cursor-active .beer-cursor {
-    display: block; /* Egyedi kurzor megjelenítése */
+    display: block; /* Megjelenítjük a sört */
 }
 
-/* --- ÚJ: Intelligens átváltás --- */
-/* Ha ezen az osztályon vagyunk, eltűnik a sör */
+/* --- INTERAKCIÓ: Ha kattintható elem fölé érsz --- */
+/* Itt NEM rejtjük el a sört, hanem csak animáljuk, hogy tudd: kattinthatsz! */
 body.hovering-clickable .beer-cursor {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5) rotate(-15deg);
+    opacity: 1; /* MARAD LÁTHATÓ */
+    /* Effekt: kicsit nagyobbra nő és jobban megdől, mintha önteni akarnál */
+    transform: translate(-50%, -50%) rotate(-35deg) scale(1.2); 
 }
 
-body.hovering-clickable {
-    cursor: pointer !important; /* Visszakapjuk a mutatóujjat */
-}
-
-/* --- ÚJ: Buborék / Hab effekt kattintáskor --- */
+/* --- KATTINTÁS EFFEKT (Sörhab buborékok) --- */
 .beer-bubble {
     position: fixed;
     border-radius: 50%;
@@ -934,16 +932,16 @@ body.hovering-clickable {
         opacity: 0.9;
     }
     100% {
-        /* A --tx és --ty változókat JS adja meg */
+        /* A --tx és --ty változókat a JS adja meg */
         transform: translate(var(--tx), var(--ty)) scale(0);
         opacity: 0;
     }
 }
 
-/* Mobilon kikapcsolva */
+/* Mobilon kikapcsoljuk, mert ott zavaró */
 @media (max-width: 768px) {
     .beer-cursor { display: none !important; }
-    body.custom-cursor-active { cursor: auto; }
+    body.custom-cursor-active, body.custom-cursor-active * { cursor: auto !important; }
 }
 
 
