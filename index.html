@@ -10,6 +10,21 @@
 </head>
 <body>
 
+
+   <div id="beerCursor" class="beer-cursor">
+    <svg viewBox="0 0 50 60" width="40" height="48">
+        <path d="M35,15 C42,15 45,20 45,30 C45,40 42,45 35,45" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round" />
+        <path d="M10,5 L40,5 L38,55 L12,55 Z" fill="rgba(255,255,255,0.8)" stroke="#333" stroke-width="3" stroke-linejoin="round" />
+        <clipPath id="beerClip">
+            <rect id="beerLevel" x="0" y="55" width="50" height="0" />
+        </clipPath>
+        <path d="M11,6 L39,6 L37,54 L13,54 Z" fill="#f39c12" clip-path="url(#beerClip)" />
+        <path id="beerFoam" d="M11,6 Q15,2 18,6 T25,6 T32,6 T39,6" fill="#fff" style="opacity: 0;" />
+        <path d="M14,10 L14,45" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" />
+    </svg>
+</div>
+
+    
     <!-- VENDÉG NÉZET -->
     <div class="guest-view" id="guestView">
         <div class="container">
@@ -594,5 +609,6 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
