@@ -1162,7 +1162,103 @@ window.addEventListener('scroll', function() {
     });
     
     lastScrollTop = scrollTop;
+    // ======================================================
+    // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) ===
+    // ======================================================
+
+    const userCursorToggle = document.getElementById('userCursorToggle');
+    const adminCursorToggle = document.getElementById('adminCursorToggle');
+
+    // Beállítás betöltése (Login után hívjuk meg)
+    function loadUserPreferences(userEmail) {
+        if (!userEmail) return;
+
+        // Egyedi kulcs a felhasználóhoz (pl: cursor_pref_gabz@gmail.com)
+        const storageKey = `cursor_pref_${userEmail}`;
+        const savedPref = localStorage.getItem(storageKey);
+
+        // Alapértelmezés: BEKAPCSOLVA (ha nincs mentve semmi, akkor 'true')
+        const isCursorActive = savedPref === null ? true : (savedPref === 'true');
+
+        // Kapcsolók beállítása
+        if (userCursorToggle) userCursorToggle.checked = isCursorActive;
+        if (adminCursorToggle) adminCursorToggle.checked = isCursorActive;
+
+        // Kurzor alkalmazása
+        toggleCustomCursor(isCursorActive);
+    }
+
+    // Kurzor be/kikapcsoló segédfüggvény
+    function toggleCustomCursor(isActive) {
+        if (isActive) {
+            document.body.classList.add('custom-cursor-active');
+        } else {
+            document.body.classList.remove('custom-cursor-active');
+        }
+    }
+
+    // Beállítás mentése
+    function saveCursorPreference(isActive) {
+        // Megnézzük ki van bejelentkezve (User vagy Admin)
+        let currentUserEmail = null;
+        
+        // 1. Megnézzük a User adatokat
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData && userData.email) {
+            currentUserEmail = userData.email;
+        } 
+        // 2. Ha nincs user, megnézzük hátha Admin (az admin formból)
+        else if (document.getElementById('adminView').style.display !== 'none') {
+            // Adminnál fix kulcsot használunk vagy a beírt nevet
+            currentUserEmail = 'admin_user'; 
+        }
+
+        if (currentUserEmail) {
+            const storageKey = `cursor_pref_${currentUserEmail}`;
+            localStorage.setItem(storageKey, isActive);
+            toggleCustomCursor(isActive);
+            showNotification(isActive ? "Sör kurzor bekapcsolva! 🍺" : "Sör kurzor kikapcsolva.", "success");
+        }
+    }
+
+    // Eseményfigyelők a kapcsolókra
+    if (userCursorToggle) {
+        userCursorToggle.addEventListener('change', (e) => {
+            saveCursorPreference(e.target.checked);
+        });
+    }
+
+    if (adminCursorToggle) {
+        adminCursorToggle.addEventListener('change', (e) => {
+            saveCursorPreference(e.target.checked);
+        });
+    }
+
+    // --- INTEGRÁCIÓ A BEJELENTKEZÉSHEZ ---
+    
+    // Ezt a sort keresd meg a 'switchToUserView' függvényben és egészítsd ki:
+    const originalSwitchToUserView = switchToUserView;
+    switchToUserView = function() {
+        originalSwitchToUserView(); // Lefuttatjuk az eredetit
+        
+        // Betöltjük a beállításokat
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            loadUserPreferences(userData.email);
+        }
+    };
+
+    // Ezt a sort keresd meg a 'switchToAdminView' függvényben és egészítsd ki:
+    const originalSwitchToAdminView = switchToAdminView;
+    switchToAdminView = function() {
+        originalSwitchToAdminView(); // Lefuttatjuk az eredetit
+        
+        // Betöltjük a beállításokat (Adminnak fix kulcs)
+        loadUserPreferences('admin_user');
+    };
 });
+
+
 
 
 
