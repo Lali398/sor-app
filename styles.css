@@ -886,29 +886,26 @@ table tr:hover .average-cell {
 /* --- EGYEDI SÖR KURZOR (KÉP ALAPÚ) --- */
 .beer-cursor-img {
     position: fixed;
-    top: 0;
+    top: 0; 
     left: 0;
-    width: 35px;  /* Sör mérete - állítsd át, ha nagyobbat szeretnél */
+    width: 35px;
     height: 35px;
-    
-    /* ITT A LÉNYEG: A feltöltött képedet használjuk */
-    background-image: url('sorkurzor.png'); 
+    background-image: url('image_1d7f93.png'); 
     background-size: contain;
     background-repeat: no-repeat;
-    
-    pointer-events: none; /* Fontos: át lehessen kattintani rajta */
+    pointer-events: none;
     z-index: 99999;
     
-    /* Alap dőlés (-15deg) és középre igazítás a mutatóhoz */
-    transform: translate(-50%, -50%) rotate(-15deg); 
+    /* TÖRÖLD KI INNEN A TRANSFORM SOROKAT! 
+       Mert a JS fogja kezelni a pozíciót és a forgatást is. 
+       Csak ez maradjon: */
     
-    display: none; /* JS kapcsolja be */
+    display: none;
+    will-change: transform; /* Segít a böngészőnek optimalizálni */
     
-    /* Finom mozgás */
-    transition: transform 0.1s ease, opacity 0.2s ease;
-    will-change: transform, left, top;
+    /* Csak az opacity-t animáljuk CSS-ből, a mozgást a JS intézi */
+    transition: opacity 0.2s ease; 
 }
-
 /* Ha aktív a sör mód, eltüntetjük az összes rendszer kurzort */
 body.custom-cursor-active,
 body.custom-cursor-active * {
@@ -945,3 +942,4 @@ body.hovering-clickable .beer-cursor-img {
     .beer-cursor-img { display: none !important; }
     body.custom-cursor-active, body.custom-cursor-active * { cursor: auto !important; }
 }
+
