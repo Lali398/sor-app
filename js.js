@@ -990,37 +990,60 @@ async function handleRecapPeriodClick(e) {
     if (button.closest('#adminRecapControls')) return; // Admin panelen ne fusson ez
     
     const period = button.dataset.period;
-    
+    console.log(`User Recap indítása: ${period}`); // Debug info
+
     // UI visszajelzés
     const container = document.getElementById('recapResultsContainer');
     container.innerHTML = '<div class="recap-spinner"></div>';
 
-    // Kis késleltetés a UX miatt
     setTimeout(() => {
-        // 1. Dátum szűrés
-        const startDate = getStartDateForPeriod(period);
-        const now = new Date();
+        try {
+            // 1. Dátum szűrés
+            const startDate = getStartDateForPeriod(period);
+            const now = new Date();
 
-        const periodFilteredBeers = currentUserBeers.filter(beer => {
-            if (!beer.date) return false;
-            // Dátum konverzió (formátumtól függően lehet finomítani kell)
-            const isoDateStr = beer.date.replace(' ', 'T') + 'Z'; 
-            const beerDate = new Date(isoDateStr); 
-            // Ha érvénytelen a dátum, próbáljuk meg simán
-            const validDate = isNaN(beerDate.getTime()) ? new Date(beer.date) : beerDate;
-            return validDate >= startDate && validDate <= now;
-        });
+            if (!currentUserBeers || currentUserBeers.length === 0) {
+                container.innerHTML = `<p class="recap-no-results">Még nem töltöttél fel söröket. 🍺</p>`;
+                return;
+            }
 
-        if (periodFilteredBeers.length === 0) {
-             container.innerHTML = `<p class="recap-no-results">Ebben az időszakban (${period}) még nem ittál sört. 🍺</p>`;
-             return;
+            const periodFilteredBeers = currentUserBeers.filter(beer => {
+                if (!beer.date) return false;
+                
+                // Biztonságos dátum konverzió
+                let beerDate;
+                try {
+                    // Megpróbáljuk ISO-ként
+                    beerDate = new Date(beer.date.replace(' ', 'T'));
+                    // Ha érvénytelen (NaN), akkor megpróbáljuk simán
+                    if (isNaN(beerDate.getTime())) {
+                        beerDate = new Date(beer.date);
+                    }
+                } catch (err) {
+                    console.warn("Hibás dátum formátum:", beer.date);
+                    return false;
+                }
+
+                return beerDate >= startDate && beerDate <= now;
+            });
+
+            console.log(`Talált sörök száma: ${periodFilteredBeers.length}`);
+
+            if (periodFilteredBeers.length === 0) {
+                 container.innerHTML = `<p class="recap-no-results">Ebben az időszakban (${period}) még nem ittál sört. 🍺</p>`;
+                 return;
+            }
+
+            // 2. Adatok generálása a Storyhoz
+            const storyData = generateStoryData(periodFilteredBeers, period);
+            
+            // 3. Renderelés (Story indítása)
+            renderStoryMode(storyData, container);
+
+        } catch (error) {
+            console.error("Hiba a Story generálása közben:", error);
+            container.innerHTML = `<p class="recap-no-results">Hiba történt a visszatekintő generálásakor. :(</p>`;
         }
-
-        // 2. Adatok generálása a Storyhoz
-        const storyData = generateStoryData(periodFilteredBeers, period);
-        
-        // 3. Renderelés (Story indítása)
-        renderStoryMode(storyData, container);
 
     }, 500);
 }
@@ -1284,30 +1307,46 @@ window.addEventListener('scroll', function() {
     // === SPOTIFY STORY LOGIKA ===
 
 function generateStoryData(beers, period) {
-    // Alap statisztikák számolása (újrafelhasználva a logikát)
+    // Alap statisztikák számolása
     const stats = calculateRecapStats(beers);
     
-    // Extrák számolása
-    const dates = beers.map(b => new Date(b.date.replace(' ', 'T')).getHours());
-    const avgHour = dates.length ? Math.floor(dates.reduce((a,b)=>a+b,0)/dates.length) : 0;
+    // Átlagos ivási időpont számítása (Biztonságos módon)
+    let avgHour = 18; // Alapértelmezett: este 6
+    try {
+        const hours = beers
+            .map(b => {
+                if(!b.date) return null;
+                const d = new Date(b.date.replace(' ', 'T'));
+                return isNaN(d.getTime()) ? null : d.getHours();
+            })
+            .filter(h => h !== null);
+            
+        if (hours.length > 0) {
+            avgHour = Math.floor(hours.reduce((a,b)=>a+b,0) / hours.length);
+        }
+    } catch (e) {
+        console.warn("Nem sikerült kiszámolni az időpontot", e);
+    }
     
-    // Címkék
-    const periodNames = { 'weekly': 'A heted', 'monthly': 'A hónapod', 'quarterly': 'A negyedéved', 'yearly': 'Az éved' };
+    // Időszak nevek magyarul
+    const periodNames = { 
+        'weekly': 'A heted', 
+        'monthly': 'A hónapod', 
+        'quarterly': 'A negyedéved', 
+        'yearly': 'Az éved' 
+    };
     
     return {
         periodName: periodNames[period] || 'Összesítőd',
         count: stats.totalBeers,
         avg: stats.averageScore,
-        topBeer: stats.bestBeer.name,
-        topScore: stats.bestBeer.score,
-        favType: stats.favoriteType,
-        favPlace: stats.favoriteLocation,
+        topBeer: stats.bestBeer.name || 'Ismeretlen sör', // Fallback ha nincs név
+        topScore: stats.bestBeer.score || 0,
+        favType: stats.favoriteType || 'Nincs adat',
+        favPlace: stats.favoriteLocation || 'Nincs adat',
         drinkingTime: `${avgHour}:00`
     };
 }
-
-let storyInterval;
-
 function renderStoryMode(data, container) {
     // HTML Struktúra
     const html = `
@@ -1468,6 +1507,7 @@ window.downloadRecap = function() {
     });
 }
 });
+
 
 
 
