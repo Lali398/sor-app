@@ -898,40 +898,30 @@ function getStartDateForPeriod(period) {
     return startDate;
 }
 
-// Segédfüggvény: Bővített statisztikák számolása (15 slide-hoz)
+// Segédfüggvény: Statisztikák számolása (Közös logika)
 function calculateRecapStats(beers) {
     if (!beers || beers.length === 0) return null;
 
     const totalBeers = beers.length;
-    // Adattisztítás
-    const validBeers = beers.map(b => ({
-        ...b,
-        totalScore: parseFloat(b.totalScore) || 0,
-        beerPercentage: parseFloat(b.beerPercentage) || 0
-    }));
+    // Pontszámok biztosítása
+    const validBeers = beers.map(b => ({ ...b, totalScore: parseFloat(b.totalScore) || 0 }));
     
-    // 1. Átlag pontszám
+    // Átlag
     const sumScore = validBeers.reduce((sum, b) => sum + b.totalScore, 0);
     const averageScore = (sumScore / totalBeers).toFixed(2);
     
-    // 2. Legjobb és Legrosszabb
+    // Legjobb sör
     const bestBeer = validBeers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), validBeers[0]);
-    const worstBeer = validBeers.reduce((min, beer) => (beer.totalScore < min.totalScore ? beer : min), validBeers[0]);
-    const strongestBeer = validBeers.reduce((max, beer) => (beer.beerPercentage > max.beerPercentage ? beer : max), validBeers[0]);
     
-    // 3. Mennyiségi becslés (0.5L / sörrel számolva)
-    const totalLiters = (totalBeers * 0.5).toFixed(1);
-
-    // 4. Típus statisztikák
+    // Kedvenc típus
     const typeCounts = validBeers.reduce((acc, beer) => {
         const val = beer.type || 'Egyéb';
         acc[val] = (acc[val] || 0) + 1;
         return acc;
     }, {});
-    const uniqueTypes = Object.keys(typeCounts).length;
     const favoriteType = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a])[0] || '-';
 
-    // 5. Helyszín statisztikák
+    // Kedvenc hely
     const locCounts = validBeers.reduce((acc, beer) => {
         const val = beer.location || 'Ismeretlen';
         acc[val] = (acc[val] || 0) + 1;
@@ -939,57 +929,28 @@ function calculateRecapStats(beers) {
     }, {});
     const favoriteLocation = Object.keys(locCounts).sort((a,b) => locCounts[b] - locCounts[a])[0] || '-';
 
-    // 6. Időbeli szokások
-    let avgHour = 18;
-    const dayCounts = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0}; 
-    const hours = [];
-    
-    validBeers.forEach(b => {
+    // Átlagos ivási idő (óra)
+    let avgHour = 18; // Default
+    const hours = validBeers.map(b => {
         const d = parseBeerDate(b.date);
-        if (d) {
-            hours.push(d.getHours());
-            dayCounts[d.getDay()]++;
-        }
-    });
+        return d ? d.getHours() : null;
+    }).filter(h => h !== null);
     
     if (hours.length > 0) {
         avgHour = Math.floor(hours.reduce((a,b)=>a+b,0) / hours.length);
     }
-    
-    const daysHu = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
-    const busiestDayIndex = Object.keys(dayCounts).reduce((a, b) => dayCounts[a] > dayCounts[b] ? a : b);
-    const busiestDay = daysHu[busiestDayIndex];
-
-    // 7. Átlag ABV
-    const avgAbv = (validBeers.reduce((sum, b) => sum + b.beerPercentage, 0) / totalBeers).toFixed(1);
-
-    // 8. Személyiség
-    let personality = "A Kiegyensúlyozott";
-    if (averageScore >= 8.5) personality = "A Jószívű Pontozó";
-    else if (averageScore <= 4.5) personality = "A Szigorú Kritikus";
-    else if (parseFloat(avgAbv) > 7.5) personality = "Az Erős Idezetű";
-    else if (uniqueTypes > 10) personality = "A Felfedező";
-    else if (totalBeers > 30) personality = "A Sörszakértő";
 
     return {
         count: totalBeers,
-        liters: totalLiters,
         avg: averageScore,
         topBeer: bestBeer.beerName,
         topScore: bestBeer.totalScore,
-        worstBeer: worstBeer.beerName,
-        worstScore: worstBeer.totalScore,
-        strongestBeer: strongestBeer.beerName,
-        strongestAbv: strongestBeer.beerPercentage,
         favType: favoriteType,
-        uniqueTypes: uniqueTypes,
         favPlace: favoriteLocation,
-        drinkingTime: `${avgHour}:00`,
-        busiestDay: busiestDay,
-        avgAbv: avgAbv,
-        personality: personality
+        drinkingTime: `${avgHour}:00`
     };
 }
+
 // === 1. USER OLDALI KEZELŐ ===
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
@@ -1093,147 +1054,61 @@ function getPeriodName(period) {
 // === STORY MODE RENDERER (ANIMÁCIÓ & HTML) ===
 let storyInterval;
 
-// === STORY MODE RENDERER (15 SLIDE + FULLSCREEN) ===
-let storyInterval;
-
 function renderStoryMode(data, container) {
-    const totalSlides = 15;
-    
-    // Progress barok generálása dinamikusan (hogy ne kelljen 15 sort írni)
-    let progressBarsHtml = '';
-    for(let i = 0; i < totalSlides; i++) {
-        progressBarsHtml += `<div class="story-progress-bar" id="bar-${i}"><div class="story-progress-fill"></div></div>`;
-    }
-
     // HTML Struktúra
     const html = `
     <div class="recap-story-container" id="storyContainer">
-        <button class="story-fullscreen-btn" onclick="toggleStoryFullscreen()" title="Teljes képernyő">⛶</button>
-
-        <div class="story-progress-container" style="gap: 2px;">
-            ${progressBarsHtml}
+        <div class="story-progress-container">
+            <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
         </div>
 
         <div class="story-nav-left" onclick="prevSlide()"></div>
         <div class="story-nav-right" onclick="nextSlide()"></div>
 
         <div class="story-slide active" id="slide-0">
-            <h3 class="story-title">Szia!</h3>
-            <p class="story-text">Készülj fel...</p>
-            <p class="story-text">Így telt a ${data.periodName} a sörök világában.</p>
-            <span style="font-size: 4rem; margin-top: 20px;">👋</span>
+            <h3 class="story-title">${data.periodName}</h3>
+            <p class="story-text">Nem voltál szomjas!</p>
+            <div class="story-big-number">${data.count}</div>
+            <p class="story-text">sört kóstoltál meg.</p>
+            <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
         </div>
 
         <div class="story-slide" id="slide-1">
-            <h3 class="story-title">Mennyiség</h3>
-            <p class="story-text">Nem voltál szomjas:</p>
-            <div class="story-big-number">${data.count}</div>
-            <p class="story-text">sört értékeltél.</p>
+            <h3 class="story-title">Az abszolút kedvenc</h3>
+            <p class="story-text">Ez vitte a prímet:</p>
+            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${data.topBeer}</span>
+            <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
         </div>
 
         <div class="story-slide" id="slide-2">
-            <h3 class="story-title">Folyadékpótlás</h3>
-            <p class="story-text">Ez nagyjából ennyi folyadékot jelent:</p>
-            <span class="story-highlight" style="font-size: 3rem;">~${data.liters} liter</span>
-            <p class="story-text" style="font-size: 0.9rem; margin-top:10px;">(Ha 0.5 literrel számolunk)</p>
-            <span style="font-size: 3rem;">🚰</span>
+            <h3 class="story-title">Így szereted</h3>
+            <p class="story-text">Kedvenc típus:</p>
+            <span class="story-highlight">${data.favType}</span>
+            <br>
+            <p class="story-text">Legtöbbször itt:</p>
+            <span class="story-highlight">${data.favPlace}</span>
+            <br>
+            <p class="story-text">Átlagos időpont:</p>
+            <span class="story-highlight">${data.drinkingTime}</span>
         </div>
 
-        <div class="story-slide" id="slide-3">
-            <h3 class="story-title">A Felfedező</h3>
-            <p class="story-text">Ennyi különböző stílust próbáltál ki:</p>
-            <div class="story-big-number" style="font-size: 4rem;">${data.uniqueTypes}</div>
-            <p class="story-text">fajta</p>
-        </div>
-
-        <div class="story-slide" id="slide-4">
-            <h3 class="story-title">A Nagy Kedvenc</h3>
-            <p class="story-text">Mindig visszatérsz ehhez:</p>
-            <span class="story-highlight" style="font-size: 2rem;">${data.favType}</span>
-            <span style="font-size: 3rem; margin-top: 20px;">❤️</span>
-        </div>
-
-        <div class="story-slide" id="slide-5">
-            <h3 class="story-title">Erősség</h3>
-            <p class="story-text">Átlagos alkoholfok (ABV):</p>
-            <div class="story-big-number" style="font-size: 3.5rem;">${data.avgAbv}%</div>
-            <p class="story-text">Közepesen erős!</p>
-        </div>
-
-        <div class="story-slide" id="slide-6">
-            <h3 class="story-title">Az Ütős Darab</h3>
-            <p class="story-text">A legerősebb söröd:</p>
-            <span class="story-highlight">${data.strongestBeer}</span>
-            <div class="recap-stat-value" style="color: #ff6b6b; margin-top: 10px;">${data.strongestAbv}% ABV 💀</div>
-        </div>
-
-        <div class="story-slide" id="slide-7">
-            <h3 class="story-title">Mikor?</h3>
-            <p class="story-text">A legaktívabb napod:</p>
-            <span class="story-highlight" style="font-size: 2.5rem;">${data.busiestDay}</span>
-            <span style="font-size: 3rem; margin-top: 20px;">📅</span>
-        </div>
-
-        <div class="story-slide" id="slide-8">
-            <h3 class="story-title">Hány órakor?</h3>
-            <p class="story-text">A "happy hour" nálad:</p>
-            <div class="story-big-number" style="font-size: 3.5rem;">${data.drinkingTime}</div>
-            <p class="story-text">Egészségedre!</p>
-        </div>
-
-        <div class="story-slide" id="slide-9">
-            <h3 class="story-title">Törzshely</h3>
-            <p class="story-text">Itt ittad a legtöbbet:</p>
-            <span class="story-highlight" style="font-size: 2rem;">${data.favPlace}</span>
-            <span style="font-size: 3rem; margin-top: 20px;">📍</span>
-        </div>
-
-        <div class="story-slide" id="slide-10">
-            <h3 class="story-title">A Kritikus</h3>
-            <p class="story-text">Az átlagos pontszámod:</p>
-            <div class="story-big-number">${data.avg}</div>
-            <p class="story-text">/ 10</p>
-        </div>
-
-        <div class="story-slide" id="slide-11">
-            <h3 class="story-title" style="color: #51cf66;">A Csúcs 🏆</h3>
-            <p class="story-text">A legjobbra értékelt sör:</p>
-            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0;">${data.topBeer}</span>
-            <div class="recap-stat-value">${data.topScore} pont</div>
-        </div>
-
-        <div class="story-slide" id="slide-12">
-            <h3 class="story-title" style="color: #ff6b6b;">A Mélypont 📉</h3>
-            <p class="story-text">Ezt inkább hagytad volna:</p>
-            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; color: #ff6b6b;">${data.worstBeer}</span>
-            <div class="recap-stat-value">${data.worstScore} pont</div>
-        </div>
-
-        <div class="story-slide" id="slide-13">
-            <h3 class="story-title">Sör-Személyiség</h3>
-            <p class="story-text">Az adataid alapján:</p>
-            <span class="story-highlight" style="font-size: 2rem; margin-top: 20px;">"${data.personality}"</span>
-            <span style="font-size: 4rem; margin-top: 20px;">😎</span>
-        </div>
-
-        <div class="story-slide" id="slide-14" style="z-index: 30;"> 
+        <div class="story-slide" id="slide-3" style="z-index: 30;"> 
             <h3 class="story-title">Összegzés</h3>
             <div class="story-summary-grid" id="captureTarget">
                 <div class="summary-item">
-                    <span class="summary-label">Sörök</span>
+                    <span class="summary-label">Összes sör</span>
                     <span class="summary-value">${data.count} db</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Liters</span>
-                    <span class="summary-value">~${data.liters} L</span>
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-value">${data.avg}</span>
                 </div>
-                <div class="summary-item">
+                <div class="summary-item" style="grid-column: 1/-1">
                     <span class="summary-label">Top Sör</span>
                     <span class="summary-value">${data.topBeer}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Személyiség</span>
-                    <span class="summary-value">${data.personality}</span>
                 </div>
             </div>
             
@@ -1249,8 +1124,29 @@ function renderStoryMode(data, container) {
     
     // Indítás
     window.currentSlide = 0;
-    window.totalSlides = totalSlides;
+    window.totalSlides = 4;
     startStory(0);
+}
+
+// Globális függvények (hogy a HTML gombok elérjék őket)
+window.startStory = function(slideIndex) {
+    if(storyInterval) clearInterval(storyInterval);
+    window.currentSlide = slideIndex;
+    showSlide(window.currentSlide);
+}
+
+window.nextSlide = function() {
+    if (window.currentSlide < window.totalSlides - 1) {
+        window.currentSlide++;
+        showSlide(window.currentSlide);
+    }
+}
+
+window.prevSlide = function() {
+    if (window.currentSlide > 0) {
+        window.currentSlide--;
+        showSlide(window.currentSlide);
+    }
 }
 
 function showSlide(index) {
@@ -1549,92 +1445,57 @@ function generateStoryData(beers, period) {
         drinkingTime: `${avgHour}:00`
     };
 }
-// === STORY MODE RENDERER (5 SLIDE + FULLSCREEN) ===
-let storyInterval;
-
 function renderStoryMode(data, container) {
-    // HTML Struktúra - 5 Slide-ra bővítve
+    // HTML Struktúra
     const html = `
     <div class="recap-story-container" id="storyContainer">
-        <button class="story-fullscreen-btn" onclick="toggleStoryFullscreen()" title="Teljes képernyő">⛶</button>
-
         <div class="story-progress-container">
             <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
             <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
             <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
             <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-4"><div class="story-progress-fill"></div></div>
         </div>
 
         <div class="story-nav-left" onclick="prevSlide()"></div>
         <div class="story-nav-right" onclick="nextSlide()"></div>
 
         <div class="story-slide active" id="slide-0">
-            <h3 class="story-title">${data.periodName}</h3>
-            <p class="story-text">Söripari teljesítményed:</p>
+            <h3 class="story-title">${data.periodName} sörökben...</h3>
+            <p class="story-text">Nem voltál szomjas!</p>
             <div class="story-big-number">${data.count}</div>
-            <p class="story-text">sör csúszott le.</p>
-            <br>
-            <p class="story-text" style="color: #aaa; font-size: 0.9rem;">Az értékeléseid alapján Te vagy:</p>
-            <span class="story-highlight" style="font-size: 1.6rem;">"${data.personality}"</span>
+            <p class="story-text">sört kóstoltál meg.</p>
+            <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
         </div>
 
         <div class="story-slide" id="slide-1">
-            <h3 class="story-title">Menny és Pokol</h3>
-            <p class="story-text">A skála két vége:</p>
-            
-            <div class="story-compare-grid">
-                <div class="story-compare-item">
-                    <span class="compare-label">A CSÚCS 🏆</span>
-                    <div class="compare-val-good">${data.topBeer}</div>
-                    <span>${data.topScore} pont</span>
-                </div>
-                <div class="story-compare-item">
-                    <span class="compare-label">A MÉLYPONT 💀</span>
-                    <div class="compare-val-bad">${data.worstBeer}</div>
-                    <span>${data.worstScore} pont</span>
-                </div>
-            </div>
-            <p class="story-text" style="margin-top: 20px;">Az átlagod: <strong>${data.avg}</strong></p>
+            <h3 class="story-title">Az abszolút kedvenc</h3>
+            <p class="story-text">Ez vitte a prímet nálad:</p>
+            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0;">${data.topBeer}</span>
+            <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
         </div>
 
         <div class="story-slide" id="slide-2">
-            <h3 class="story-title">Ízlésvilág</h3>
-            <p class="story-text">Amiből a legtöbb fogyott:</p>
+            <h3 class="story-title">Így szereted</h3>
+            <p class="story-text">A kedvenc típusod:</p>
             <span class="story-highlight">${data.favType}</span>
-            <div style="font-size: 3rem; margin: 10px 0;">🍺</div>
-            <p class="story-text">Átlagos erősség (ABV):</p>
-            <span class="story-highlight">${data.avgAbv}%</span>
-        </div>
-
-        <div class="story-slide" id="slide-3">
-            <h3 class="story-title">Mikor & Hol?</h3>
-            <p class="story-text">Legtöbbször itt:</p>
+            <br>
+            <p class="story-text">Itt ittál a legtöbbet:</p>
             <span class="story-highlight">${data.favPlace}</span>
-            <hr style="width: 50%; opacity: 0.3; margin: 20px 0;">
-            <p class="story-text">A kedvenc napod:</p>
-            <span class="story-highlight">${data.busiestDay}</span>
-            <p class="story-text">Átlagos időpont: <strong>${data.drinkingTime}</strong></p>
         </div>
 
-        <div class="story-slide" id="slide-4" style="z-index: 30;"> 
-            <h3 class="story-title">Összegzés</h3>
+        <div class="story-slide" id="slide-3" style="z-index: 30;"> <h3 class="story-title">Összegzés</h3>
             <div class="story-summary-grid" id="captureTarget">
                 <div class="summary-item">
-                    <span class="summary-label">Sörök száma</span>
+                    <span class="summary-label">Összes sör</span>
                     <span class="summary-value">${data.count} db</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Átlag ABV</span>
-                    <span class="summary-value">${data.avgAbv}%</span>
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-value">${data.avg}</span>
                 </div>
-                <div class="summary-item">
+                <div class="summary-item" style="grid-column: 1/-1">
                     <span class="summary-label">Top Sör</span>
                     <span class="summary-value">${data.topBeer}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Kedvenc Nap</span>
-                    <span class="summary-value">${data.busiestDay}</span>
                 </div>
             </div>
             
@@ -1650,19 +1511,28 @@ function renderStoryMode(data, container) {
     
     // Indítás
     window.currentSlide = 0;
-    window.totalSlides = 5; // Most már 5 slide van!
+    window.totalSlides = 4;
     startStory(0);
 }
 
-// === ÚJ: Fullscreen kezelő függvény ===
-window.toggleStoryFullscreen = function() {
-    const elem = document.getElementById('storyContainer');
-    if (!document.fullscreenElement) {
-        elem.requestFullscreen().catch(err => {
-            alert(`Hiba a teljes képernyőnél: ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen();
+// Globális függvények a HTML onclick miatt
+window.startStory = function(slideIndex) {
+    if(storyInterval) clearInterval(storyInterval);
+    window.currentSlide = slideIndex;
+    showSlide(window.currentSlide);
+}
+
+window.nextSlide = function() {
+    if (window.currentSlide < window.totalSlides - 1) {
+        window.currentSlide++;
+        showSlide(window.currentSlide);
+    }
+}
+
+window.prevSlide = function() {
+    if (window.currentSlide > 0) {
+        window.currentSlide--;
+        showSlide(window.currentSlide);
     }
 }
 
@@ -1735,7 +1605,6 @@ window.downloadRecap = function() {
     });
 }
 });
-
 
 
 
