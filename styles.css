@@ -942,6 +942,98 @@ body.hovering-clickable .beer-cursor-img {
     .beer-cursor-img { display: none !important; }
     body.custom-cursor-active, body.custom-cursor-active * { cursor: auto !important; }
 }
+/* === BEÁLLÍTÁSOK / KAPCSOLÓK STÍLUSA === */
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setting-info h4 {
+    color: #fff;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.setting-info p {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Toggle Switch (Csúszka) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    flex-shrink: 0; /* Ne nyomódjon össze */
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+/* Bekapcsolt állapot (lila/kék gradient) */
+input:checked + .slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #667eea;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Kerekített csúszka */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
 
 
 
