@@ -6,127 +6,96 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // --- NÉZETEK ÉS ELEMEK ---
-    // --- KURZOR ELEMEK ---
+    // --- KURZOR ELEMEK ÉS LOGIKA ---
     const beerCursor = document.getElementById('beerCursor');
-    const beerLevelRect = document.getElementById('beerLevel');
-    const beerFoam = document.getElementById('beerFoam');
 
-    // Kurzor mozgatása
+    // 1. Kurzor mozgatása + Scroll effekt változók
+    let currentScrollRotate = -15; // Alap dőlés
+
+    function updateCursorPosition(x, y) {
+        if (!document.body.classList.contains('custom-cursor-active')) return;
+        
+        // Itt kombináljuk a pozíciót a görgetésből számolt dőléssel
+        // Fontos: a 'translate' és 'rotate' sorrendje számít!
+        beerCursor.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${currentScrollRotate}deg)`;
+    }
+
+    // Egérmozgás figyelése
     document.addEventListener('mousemove', (e) => {
-        // Csak akkor frissítjük, ha látható (teljesítmény miatt)
-        if (document.body.classList.contains('custom-cursor-active')) {
-            beerCursor.style.left = e.clientX + 'px';
-            beerCursor.style.top = e.clientY + 'px';
-        }
+        // requestAnimationFrame a simább mozgásért
+        requestAnimationFrame(() => {
+            // Elmentjük az aktuális egér pozíciót a stílusba (CSS változóként is lehetne, de így közvetlenebb)
+            // Viszont a transform felülírása miatt a rotate-et is mindig bele kell írnunk.
+            // Ezért egyszerűbb, ha globális változókban tároljuk az X, Y-t.
+            window.mouseX = e.clientX;
+            window.mouseY = e.clientY;
+            updateCursorPosition(e.clientX, e.clientY);
+        });
     });
 
-    // Sör szintjének frissítése görgetéskor
+    // 2. GÖRGETÉS EFFEKT (IVÁS / DŐLÉS)
     window.addEventListener('scroll', () => {
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
-        // Kiszámoljuk, hol tartunk az oldalon (0% - 100%)
         const scrollTop = window.scrollY;
         const docHeight = document.body.scrollHeight - window.innerHeight;
-        let scrollPercent = scrollTop / docHeight;
-        
-        // Biztonsági határok
-        if (scrollPercent < 0) scrollPercent = 0;
-        if (scrollPercent > 1) scrollPercent = 1;
+        let scrollPercent = scrollTop / docHeight; // 0-tól 1-ig megy
 
-        // Görgetés lefelé = Sör fogyása (fordított logika)
-        // 0% görgetés (tető) = 100% sör
-        // 100% görgetés (alja) = 0% sör
+        // Matek:
+        // 0% görgetésnél (fent): -15 fok (kicsit dől)
+        // 100% görgetésnél (lent): -70 fok (nagyon dől, mintha innád)
+        const startAngle = -15;
+        const endAngle = -70; 
         
-        const maxBeerHeight = 50; // SVG rect magassága
-        const currentHeight = maxBeerHeight * (1 - scrollPercent);
-        
-        // SVG attribútumok frissítése
-        // y pozíciót is mozgatni kell, mert az SVG rect fentről lefelé nő alapból
-        const yPos = 55 - currentHeight; 
-        
-        beerLevelRect.setAttribute('height', currentHeight);
-        beerLevelRect.setAttribute('y', yPos);
+        // Kiszámoljuk az új szöget
+        currentScrollRotate = startAngle + (scrollPercent * (endAngle - startAngle));
 
-        // Hab megjelenítése, ha van még sör (kb 5% felett)
-        beerFoam.style.opacity = currentHeight > 2 ? 1 : 0;
-        // A habot is mozgatjuk a sör tetejével
-        beerFoam.setAttribute('transform', `translate(0, ${yPos - 6})`);
+        // Frissítjük a kurzort az új szöggel (ha épp nem mozdul az egér, akkor is látszódjon)
+        if (window.mouseX !== undefined) {
+             updateCursorPosition(window.mouseX, window.mouseY);
+        }
     });
 
-    // 1. Intelligens váltás: Gombok és linkek figyelése
+    // 3. Intelligens váltás figyelése (Hover effekt)
     document.addEventListener('mouseover', (e) => {
-        // Csak akkor fusson, ha az egyedi kurzor aktív
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
         const target = e.target;
-        // Megnézzük, hogy az elem kattintható-e (a te osztályaid alapján)
         const isClickable = target.closest(`
             button, a, input, select, textarea, label,
             .auth-btn, .admin-btn, .header-btn, .stat-tab-btn, 
             .recap-btn, .suggestion-item, .switch-auth, 
-            .clear-search, .modal-close, .kpi-card
+            .clear-search, .modal-close, .kpi-card, .chart-container
         `);
 
         if (isClickable) {
             document.body.classList.add('hovering-clickable');
+            // Ha gomb felett vagyunk, kicsit "koccintósra" állítjuk
+            beerCursor.style.transform = `translate(${window.mouseX}px, ${window.mouseY}px) translate(-50%, -50%) rotate(-35deg) scale(1.2)`;
         } else {
             document.body.classList.remove('hovering-clickable');
+            // Visszaállunk a görgetés szerinti szögre
+            if (window.mouseX) updateCursorPosition(window.mouseX, window.mouseY);
         }
     });
 
-    // 2. Kattintás effekt (Sörhab buborékok & Koccintás)
+    // 4. Kattintás effekt
     document.addEventListener('click', (e) => {
-        // Csak ha aktív a sör kurzor
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
         createBeerBubbles(e.clientX, e.clientY);
         
-        // Kis "koccintás" animáció (ha épp látható a sör)
+        // Pici animáció kattintáskor
         if (!document.body.classList.contains('hovering-clickable')) {
-            beerCursor.style.transform = "translate(-50%, -50%) rotate(-45deg) scale(0.9)";
+            // Pillanatnyi "koccintás"
+            beerCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%) rotate(-90deg) scale(0.9)`;
+            
             setTimeout(() => {
-                beerCursor.style.transform = "translate(-50%, -50%) rotate(-15deg) scale(1)";
+                // Visszatérés a görgetés szerinti állapothoz
+                updateCursorPosition(e.clientX, e.clientY);
             }, 150);
         }
     });
-
-    function createBeerBubbles(x, y) {
-        const bubbleCount = 8; // Buborékok száma
-        const colors = ['#f39c12', '#ffffff', '#ffeb3b', '#ecf0f1']; // Sör és hab színek
-
-        for (let i = 0; i < bubbleCount; i++) {
-            const bubble = document.createElement('div');
-            bubble.classList.add('beer-bubble');
-            
-            // Véletlen megjelenés
-            bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            const size = Math.random() * 10 + 4; // 4-14px méret
-            bubble.style.width = size + 'px';
-            bubble.style.height = size + 'px';
-            
-            // Kezdőpozíció
-            bubble.style.left = x + 'px';
-            bubble.style.top = y + 'px';
-
-            // Véletlen irány kiszámolása
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = Math.random() * 60 + 20; // Távolság
-            
-            const tx = Math.cos(angle) * velocity + 'px';
-            const ty = Math.sin(angle) * velocity + 'px';
-            
-            // CSS változók átadása az animációnak
-            bubble.style.setProperty('--tx', tx);
-            bubble.style.setProperty('--ty', ty);
-
-            document.body.appendChild(bubble);
-
-            // Törlés az animáció végén
-            setTimeout(() => {
-                bubble.remove();
-            }, 600);
-        }
-    }
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
@@ -1194,6 +1163,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
