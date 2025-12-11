@@ -52,6 +52,81 @@ document.addEventListener('DOMContentLoaded', function() {
         // A habot is mozgatjuk a sör tetejével
         beerFoam.setAttribute('transform', `translate(0, ${yPos - 6})`);
     });
+
+    // 1. Intelligens váltás: Gombok és linkek figyelése
+    document.addEventListener('mouseover', (e) => {
+        // Csak akkor fusson, ha az egyedi kurzor aktív
+        if (!document.body.classList.contains('custom-cursor-active')) return;
+
+        const target = e.target;
+        // Megnézzük, hogy az elem kattintható-e (a te osztályaid alapján)
+        const isClickable = target.closest(`
+            button, a, input, select, textarea, label,
+            .auth-btn, .admin-btn, .header-btn, .stat-tab-btn, 
+            .recap-btn, .suggestion-item, .switch-auth, 
+            .clear-search, .modal-close, .kpi-card
+        `);
+
+        if (isClickable) {
+            document.body.classList.add('hovering-clickable');
+        } else {
+            document.body.classList.remove('hovering-clickable');
+        }
+    });
+
+    // 2. Kattintás effekt (Sörhab buborékok & Koccintás)
+    document.addEventListener('click', (e) => {
+        // Csak ha aktív a sör kurzor
+        if (!document.body.classList.contains('custom-cursor-active')) return;
+
+        createBeerBubbles(e.clientX, e.clientY);
+        
+        // Kis "koccintás" animáció (ha épp látható a sör)
+        if (!document.body.classList.contains('hovering-clickable')) {
+            beerCursor.style.transform = "translate(-50%, -50%) rotate(-45deg) scale(0.9)";
+            setTimeout(() => {
+                beerCursor.style.transform = "translate(-50%, -50%) rotate(-15deg) scale(1)";
+            }, 150);
+        }
+    });
+
+    function createBeerBubbles(x, y) {
+        const bubbleCount = 8; // Buborékok száma
+        const colors = ['#f39c12', '#ffffff', '#ffeb3b', '#ecf0f1']; // Sör és hab színek
+
+        for (let i = 0; i < bubbleCount; i++) {
+            const bubble = document.createElement('div');
+            bubble.classList.add('beer-bubble');
+            
+            // Véletlen megjelenés
+            bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            const size = Math.random() * 10 + 4; // 4-14px méret
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            
+            // Kezdőpozíció
+            bubble.style.left = x + 'px';
+            bubble.style.top = y + 'px';
+
+            // Véletlen irány kiszámolása
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 60 + 20; // Távolság
+            
+            const tx = Math.cos(angle) * velocity + 'px';
+            const ty = Math.sin(angle) * velocity + 'px';
+            
+            // CSS változók átadása az animációnak
+            bubble.style.setProperty('--tx', tx);
+            bubble.style.setProperty('--ty', ty);
+
+            document.body.appendChild(bubble);
+
+            // Törlés az animáció végén
+            setTimeout(() => {
+                bubble.remove();
+            }, 600);
+        }
+    }
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
@@ -1119,6 +1194,7 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
 });
+
 
 
 
