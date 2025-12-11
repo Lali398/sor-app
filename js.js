@@ -1118,10 +1118,13 @@ function getPeriodName(period) {
 // === STORY MODE RENDERER (15 SLIDE + FULLSCREEN) ===
 let storyInterval;
 
+// === STORY MODE RENDERER (15 SLIDE + FULLSCREEN) ===
+// Cseréld le a régi renderStoryMode függvényedet erre:
+
 function renderStoryMode(data, container) {
     const totalSlides = 15;
     
-    // Progress barok generálása dinamikusan (hogy ne kelljen 15 sort írni)
+    // Progress barok generálása dinamikusan (15 db)
     let progressBarsHtml = '';
     for(let i = 0; i < totalSlides; i++) {
         progressBarsHtml += `<div class="story-progress-bar" id="bar-${i}"><div class="story-progress-fill"></div></div>`;
@@ -1757,6 +1760,7 @@ window.downloadRecap = function() {
     });
 }
 });
+
 
 
 
