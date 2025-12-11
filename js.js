@@ -1090,9 +1090,6 @@ function getPeriodName(period) {
     return names[period] || 'Összesítő';
 }
 
-// === STORY MODE RENDERER (ANIMÁCIÓ & HTML) ===
-let storyInterval;
-
 // === STORY MODE RENDERER (15 SLIDE + FULLSCREEN) ===
 let storyInterval;
 
@@ -1735,6 +1732,7 @@ window.downloadRecap = function() {
     });
 }
 });
+
 
 
 
