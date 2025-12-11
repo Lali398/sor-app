@@ -883,6 +883,38 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
+/* --- EGYEDI SÖR KURZOR STÍLUSOK --- */
+.beer-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Fontos! Hogy át lehessen kattintani rajta */
+    z-index: 99999;
+    transform: translate(-50%, -50%); /* Középre igazítás */
+    display: none; /* Alapból rejtve */
+    transition: transform 0.1s ease-out; /* Opcionális: kis simítás a mozgáson */
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+}
+
+/* Ha a body-n rajta van a 'custom-cursor-active' class */
+body.custom-cursor-active {
+    cursor: none; /* Rendszer kurzor elrejtése */
+}
+
+body.custom-cursor-active .beer-cursor {
+    display: block; /* Egyedi kurzor megjelenítése */
+}
+
+/* Mobilon kapcsoljuk ki, mert ott nincs egér */
+@media (max-width: 768px) {
+    .beer-cursor {
+        display: none !important;
+    }
+    body.custom-cursor-active {
+        cursor: auto;
+    }
+}
+
 
 
 
