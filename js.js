@@ -1163,28 +1163,35 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
     // ======================================================
-    // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) ===
+    // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
 
-    const userCursorToggle = document.getElementById('userCursorToggle');
-    const adminCursorToggle = document.getElementById('adminCursorToggle');
-
-    // Beállítás betöltése (Login után hívjuk meg)
+    // Beállítás betöltése és szinkronizálása
     function loadUserPreferences(userEmail) {
         if (!userEmail) return;
 
-        // Egyedi kulcs a felhasználóhoz (pl: cursor_pref_gabz@gmail.com)
+        const userToggle = document.getElementById('userCursorToggle');
+        const adminToggle = document.getElementById('adminCursorToggle');
+
+        // Egyedi kulcs a felhasználóhoz
         const storageKey = `cursor_pref_${userEmail}`;
         const savedPref = localStorage.getItem(storageKey);
 
-        // Alapértelmezés: BEKAPCSOLVA (ha nincs mentve semmi, akkor 'true')
+        // Alapértelmezés: BEKAPCSOLVA (ha nincs mentve semmi, vagy 'true')
+        // Ha 'null', akkor is true legyen (default state)
         const isCursorActive = savedPref === null ? true : (savedPref === 'true');
 
-        // Kapcsolók beállítása
-        if (userCursorToggle) userCursorToggle.checked = isCursorActive;
-        if (adminCursorToggle) adminCursorToggle.checked = isCursorActive;
+        console.log(`Beállítás betöltése (${userEmail}):`, isCursorActive ? "BE" : "KI");
 
-        // Kurzor alkalmazása
+        // 1. Kapcsolók vizuális állapotának beállítása (SZINKRONIZÁLÁS)
+        if (userToggle) {
+            userToggle.checked = isCursorActive;
+        }
+        if (adminToggle) {
+            adminToggle.checked = isCursorActive;
+        }
+
+        // 2. A tényleges kurzor be/kikapcsolása
         toggleCustomCursor(isCursorActive);
     }
 
@@ -1197,19 +1204,19 @@ window.addEventListener('scroll', function() {
         }
     }
 
-    // Beállítás mentése
+    // Beállítás mentése gombnyomáskor
     function saveCursorPreference(isActive) {
-        // Megnézzük ki van bejelentkezve (User vagy Admin)
         let currentUserEmail = null;
         
-        // 1. Megnézzük a User adatokat
+        // Megnézzük ki van bejelentkezve
         const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData && userData.email) {
+        
+        // Ha a user nézet látható és van user adat
+        if (document.getElementById('userView').style.display !== 'none' && userData) {
             currentUserEmail = userData.email;
         } 
-        // 2. Ha nincs user, megnézzük hátha Admin (az admin formból)
+        // Ha az admin nézet látható
         else if (document.getElementById('adminView').style.display !== 'none') {
-            // Adminnál fix kulcsot használunk vagy a beírt nevet
             currentUserEmail = 'admin_user'; 
         }
 
@@ -1217,46 +1224,79 @@ window.addEventListener('scroll', function() {
             const storageKey = `cursor_pref_${currentUserEmail}`;
             localStorage.setItem(storageKey, isActive);
             toggleCustomCursor(isActive);
+            
+            // Szinkronizáljuk a másik gombot is (hogy ne legyen eltérés ha nézetet váltasz)
+            const userToggle = document.getElementById('userCursorToggle');
+            const adminToggle = document.getElementById('adminCursorToggle');
+            if(userToggle) userToggle.checked = isActive;
+            if(adminToggle) adminToggle.checked = isActive;
+
             showNotification(isActive ? "Sör kurzor bekapcsolva! 🍺" : "Sör kurzor kikapcsolva.", "success");
         }
     }
 
-    // Eseményfigyelők a kapcsolókra
-    if (userCursorToggle) {
-        userCursorToggle.addEventListener('change', (e) => {
+    // Eseményfigyelők csatolása
+    // (Újra lekérjük az elemeket, hogy biztosan meglegyenek)
+    const uToggle = document.getElementById('userCursorToggle');
+    const aToggle = document.getElementById('adminCursorToggle');
+
+    if (uToggle) {
+        uToggle.addEventListener('change', (e) => {
             saveCursorPreference(e.target.checked);
         });
     }
 
-    if (adminCursorToggle) {
-        adminCursorToggle.addEventListener('change', (e) => {
+    if (aToggle) {
+        aToggle.addEventListener('change', (e) => {
             saveCursorPreference(e.target.checked);
         });
     }
 
-    // --- INTEGRÁCIÓ A BEJELENTKEZÉSHEZ ---
+    // --- INTEGRÁCIÓ ---
     
-    // Ezt a sort keresd meg a 'switchToUserView' függvényben és egészítsd ki:
+    // User nézet váltásakor betöltjük a beállítást
     const originalSwitchToUserView = switchToUserView;
     switchToUserView = function() {
-        originalSwitchToUserView(); // Lefuttatjuk az eredetit
+        // Először futtatjuk az eredeti logikát
+        // Fontos: Az eredeti függvényben van a "document.body.classList.add('custom-cursor-active')"
+        // Ezt felül fogjuk írni a loadUserPreferences-szel, ami helyes.
         
-        // Betöltjük a beállításokat
+        // Hogy elkerüljük a körkörös hívást, manuálisan másoljuk a logikát, 
+        // VAGY hagyjuk lefutni és utána korrigálunk. A korrigálás a biztosabb:
+        guestView.style.display = 'none';
+        adminView.style.display = 'none';
+        userView.style.display = 'block';
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+        initializeMainTabs(userView);
+        loadUserData();
+
+        // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
         const userData = JSON.parse(localStorage.getItem('userData'));
         if (userData) {
             loadUserPreferences(userData.email);
         }
     };
 
-    // Ezt a sort keresd meg a 'switchToAdminView' függvényben és egészítsd ki:
+    // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
-        originalSwitchToAdminView(); // Lefuttatjuk az eredetit
-        
-        // Betöltjük a beállításokat (Adminnak fix kulcs)
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+        initializeMainTabs(adminView);
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics();
+        setupAdminRecap();
+
+        // Beállítások betöltése Adminnak
         loadUserPreferences('admin_user');
     };
 });
+
 
 
 
