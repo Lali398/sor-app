@@ -888,8 +888,8 @@ table tr:hover .average-cell {
     position: fixed;
     top: 0; 
     left: 0;
-    width: 35px;
-    height: 35px;
+    width: 60px;
+    height: 60px;
     background-image: url('sorkurzor.png'); 
     background-size: contain;
     background-repeat: no-repeat;
@@ -942,5 +942,6 @@ body.hovering-clickable .beer-cursor-img {
     .beer-cursor-img { display: none !important; }
     body.custom-cursor-active, body.custom-cursor-active * { cursor: auto !important; }
 }
+
 
 
