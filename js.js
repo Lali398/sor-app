@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let filteredBeers = [];
     let selectedSuggestionIndex = -1;
     let charts = {};
+    let currentUserBeers = [];
 
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
@@ -602,36 +603,38 @@ function setupAdminRecap() {
     }
 
     async function loadUserData() {
-        const user = JSON.parse(localStorage.getItem('userData'));
-        if (!user) {
-            showError('Nem vagy bejelentkezve.');
-            switchToGuestView();
-            return;
-        }
-        userWelcomeMessage.textContent = `Szia, ${user.name}!`;
-
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                body: JSON.stringify({ action: 'GET_USER_BEERS' })
-            });
-            const beers = await response.json();
-            if (!response.ok) {
-                 if (response.status === 401) {
-                    showError("A munkameneted lejárt, jelentkezz be újra.");
-                    setTimeout(switchToGuestView, 2000);
-                    return;
-                }
-                throw new Error(beers.error || 'Szerverhiba');
-            }
-            renderUserBeers(beers);
-            updateUserStats(beers);
-        } catch (error) {
-            console.error("Hiba a felhasználói adatok betöltésekor:", error);
-            showError(error.message || "Nem sikerült betölteni a söreidet.");
-        }
+    const user = JSON.parse(localStorage.getItem('userData'));
+    if (!user) {
+        showError('Nem vagy bejelentkezve.');
+        switchToGuestView();
+        return;
     }
+    userWelcomeMessage.textContent = `Szia, ${user.name}!`;
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_USER_BEERS' })
+        });
+        const beers = await response.json();
+        if (!response.ok) {
+                if (response.status === 401) {
+                showError("A munkameneted lejárt, jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
+            }
+            throw new Error(beers.error || 'Szerverhiba');
+        }
+        
+        currentUserBeers = beers; // <--- ITT MENTJÜK EL GLOBÁLISAN
+        
+        renderUserBeers(beers);
+        updateUserStats(beers);
+    } catch (error) {
+        console.error("Hiba a felhasználói adatok betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni a söreidet.");
+    }
+}
 
     function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
@@ -983,60 +986,43 @@ async function handleAdminRecapGenerate(period, button) {
 
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
-    
-    // Ha nincs gomb vagy admin recap területen van, ne fusson le
     if (!button) return;
-    if (button.closest('#adminRecapControls')) return;
+    if (button.closest('#adminRecapControls')) return; // Admin panelen ne fusson ez
     
     const period = button.dataset.period;
-    const allButtons = recapControls.querySelectorAll('.recap-btn');
+    
+    // UI visszajelzés
+    const container = document.getElementById('recapResultsContainer');
+    container.innerHTML = '<div class="recap-spinner"></div>';
 
-    console.log('Recap kérés indítása:', period); // Debug log
+    // Kis késleltetés a UX miatt
+    setTimeout(() => {
+        // 1. Dátum szűrés
+        const startDate = getStartDateForPeriod(period);
+        const now = new Date();
 
-    allButtons.forEach(btn => btn.classList.remove('loading'));
-    button.classList.add('loading');
-    recapResultsContainer.innerHTML = '<div class="recap-spinner"></div>';
-
-    try {
-        const token = localStorage.getItem('userToken');
-        console.log('Token:', token ? 'van' : 'nincs'); // Debug log
-
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({ 
-                action: 'GET_USER_RECAP', 
-                period: period 
-            })
+        const periodFilteredBeers = currentUserBeers.filter(beer => {
+            if (!beer.date) return false;
+            // Dátum konverzió (formátumtól függően lehet finomítani kell)
+            const isoDateStr = beer.date.replace(' ', 'T') + 'Z'; 
+            const beerDate = new Date(isoDateStr); 
+            // Ha érvénytelen a dátum, próbáljuk meg simán
+            const validDate = isNaN(beerDate.getTime()) ? new Date(beer.date) : beerDate;
+            return validDate >= startDate && validDate <= now;
         });
 
-        console.log('Response status:', response.status); // Debug log
-
-        const result = await response.json();
-        console.log('Response data:', result); // Debug log
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                showError("A munkameneted lejárt, jelentkezz be újra.");
-                setTimeout(switchToGuestView, 2000);
-                return;
-            }
-            throw new Error(result.error || 'Szerverhiba');
+        if (periodFilteredBeers.length === 0) {
+             container.innerHTML = `<p class="recap-no-results">Ebben az időszakban (${period}) még nem ittál sört. 🍺</p>`;
+             return;
         }
-        
-        result.period = period;
-        renderRecap(result, recapResultsContainer);
 
-    } catch (error) {
-        console.error("Hiba a visszatekintő lekérésekor:", error);
-        showError(error.message || "Nem sikerült lekérni a statisztikát.");
-        renderRecap({ message: "Hiba történt a lekérés során." }, recapResultsContainer);
-    } finally {
-        button.classList.remove('loading');
-    }
+        // 2. Adatok generálása a Storyhoz
+        const storyData = generateStoryData(periodFilteredBeers, period);
+        
+        // 3. Renderelés (Story indítása)
+        renderStoryMode(storyData, container);
+
+    }, 500);
 }
 
 /**
@@ -1295,7 +1281,194 @@ window.addEventListener('scroll', function() {
         // Beállítások betöltése Adminnak
         loadUserPreferences('admin_user');
     };
+    // === SPOTIFY STORY LOGIKA ===
+
+function generateStoryData(beers, period) {
+    // Alap statisztikák számolása (újrafelhasználva a logikát)
+    const stats = calculateRecapStats(beers);
+    
+    // Extrák számolása
+    const dates = beers.map(b => new Date(b.date.replace(' ', 'T')).getHours());
+    const avgHour = dates.length ? Math.floor(dates.reduce((a,b)=>a+b,0)/dates.length) : 0;
+    
+    // Címkék
+    const periodNames = { 'weekly': 'A heted', 'monthly': 'A hónapod', 'quarterly': 'A negyedéved', 'yearly': 'Az éved' };
+    
+    return {
+        periodName: periodNames[period] || 'Összesítőd',
+        count: stats.totalBeers,
+        avg: stats.averageScore,
+        topBeer: stats.bestBeer.name,
+        topScore: stats.bestBeer.score,
+        favType: stats.favoriteType,
+        favPlace: stats.favoriteLocation,
+        drinkingTime: `${avgHour}:00`
+    };
+}
+
+let storyInterval;
+
+function renderStoryMode(data, container) {
+    // HTML Struktúra
+    const html = `
+    <div class="recap-story-container" id="storyContainer">
+        <div class="story-progress-container">
+            <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
+            <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
+        </div>
+
+        <div class="story-nav-left" onclick="prevSlide()"></div>
+        <div class="story-nav-right" onclick="nextSlide()"></div>
+
+        <div class="story-slide active" id="slide-0">
+            <h3 class="story-title">${data.periodName} sörökben...</h3>
+            <p class="story-text">Nem voltál szomjas!</p>
+            <div class="story-big-number">${data.count}</div>
+            <p class="story-text">sört kóstoltál meg.</p>
+            <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
+        </div>
+
+        <div class="story-slide" id="slide-1">
+            <h3 class="story-title">Az abszolút kedvenc</h3>
+            <p class="story-text">Ez vitte a prímet nálad:</p>
+            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0;">${data.topBeer}</span>
+            <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
+        </div>
+
+        <div class="story-slide" id="slide-2">
+            <h3 class="story-title">Így szereted</h3>
+            <p class="story-text">A kedvenc típusod:</p>
+            <span class="story-highlight">${data.favType}</span>
+            <br>
+            <p class="story-text">Itt ittál a legtöbbet:</p>
+            <span class="story-highlight">${data.favPlace}</span>
+        </div>
+
+        <div class="story-slide" id="slide-3" style="z-index: 30;"> <h3 class="story-title">Összegzés</h3>
+            <div class="story-summary-grid" id="captureTarget">
+                <div class="summary-item">
+                    <span class="summary-label">Összes sör</span>
+                    <span class="summary-value">${data.count} db</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-value">${data.avg}</span>
+                </div>
+                <div class="summary-item" style="grid-column: 1/-1">
+                    <span class="summary-label">Top Sör</span>
+                    <span class="summary-value">${data.topBeer}</span>
+                </div>
+            </div>
+            
+            <div class="story-actions">
+                <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
+                <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    container.innerHTML = html;
+    
+    // Indítás
+    window.currentSlide = 0;
+    window.totalSlides = 4;
+    startStory(0);
+}
+
+// Globális függvények a HTML onclick miatt
+window.startStory = function(slideIndex) {
+    if(storyInterval) clearInterval(storyInterval);
+    window.currentSlide = slideIndex;
+    showSlide(window.currentSlide);
+}
+
+window.nextSlide = function() {
+    if (window.currentSlide < window.totalSlides - 1) {
+        window.currentSlide++;
+        showSlide(window.currentSlide);
+    }
+}
+
+window.prevSlide = function() {
+    if (window.currentSlide > 0) {
+        window.currentSlide--;
+        showSlide(window.currentSlide);
+    }
+}
+
+function showSlide(index) {
+    // Slide csere
+    document.querySelectorAll('.story-slide').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+    });
+
+    // Progress bar kezelés
+    document.querySelectorAll('.story-progress-bar').forEach((el, i) => {
+        el.classList.remove('active', 'completed');
+        el.querySelector('.story-progress-fill').style.width = '0%';
+        
+        if (i < index) {
+            el.classList.add('completed');
+            el.querySelector('.story-progress-fill').style.width = '100%';
+        } else if (i === index) {
+            el.classList.add('active');
+            animateProgress(el.querySelector('.story-progress-fill'));
+        }
+    });
+}
+
+function animateProgress(fillElement) {
+    if(storyInterval) clearInterval(storyInterval);
+    let width = 0;
+    
+    // Ha az utolsó slide, ne lapozzon automatikusan, csak teljen meg
+    const isLast = window.currentSlide === window.totalSlides - 1;
+    
+    storyInterval = setInterval(() => {
+        width += 1;
+        fillElement.style.width = width + '%';
+        
+        if (width >= 100) {
+            clearInterval(storyInterval);
+            if (!isLast) {
+                window.nextSlide();
+            }
+        }
+    }, 40); // 4 másodperc per slide
+}
+
+window.downloadRecap = function() {
+    const element = document.getElementById('storyContainer');
+    // Gombok elrejtése a képről
+    const actions = element.querySelector('.story-actions');
+    const navL = element.querySelector('.story-nav-left');
+    const navR = element.querySelector('.story-nav-right');
+    
+    actions.style.display = 'none';
+    navL.style.display = 'none';
+    navR.style.display = 'none';
+
+    html2canvas(element, { 
+        backgroundColor: '#10002b',
+        scale: 2 // Jobb minőség
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'sor-recap-2025.png';
+        link.href = canvas.toDataURL();
+        link.click();
+        
+        // Visszaállítás
+        actions.style.display = 'flex';
+        navL.style.display = 'block';
+        navR.style.display = 'block';
+        showSuccess("Sikeres letöltés!");
+    });
+}
 });
+
 
 
 
