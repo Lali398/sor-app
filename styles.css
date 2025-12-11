@@ -1033,6 +1033,167 @@ input:checked + .slider:before {
 .slider.round:before {
     border-radius: 50%;
 }
+/* === SPOTIFY WRAPPED / STORY MÓD === */
+
+/* A konténer, amiben a sztori fut */
+.recap-story-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px; /* Telefon méret imitálása */
+    height: 600px;
+    margin: 0 auto;
+    background: linear-gradient(180deg, #240046 0%, #10002b 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Felső csíkok (Progress bars) */
+.story-progress-container {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.story-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.story-progress-fill {
+    height: 100%;
+    background: white;
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+.story-progress-bar.completed .story-progress-fill { width: 100%; }
+.story-progress-bar.active .story-progress-fill { 
+    /* Ezt JS-sel fogjuk animálni */ 
+}
+
+/* Maga a slide tartalom */
+.story-slide {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    display: none; /* Alapból rejtett */
+    animation: fadeInSlide 0.5s ease-out;
+    position: relative;
+    z-index: 5;
+}
+
+.story-slide.active { display: flex; }
+
+/* Animációk */
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Tipográfia a sztoriban */
+.story-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #e0aaff;
+}
+
+.story-big-number {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 20px 0;
+    background: -webkit-linear-gradient(#e0aaff, #7b2cbf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 15px rgba(123, 44, 191, 0.3);
+}
+
+.story-text {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #e0e0e0;
+}
+
+.story-highlight {
+    color: #c77dff;
+    font-weight: 600;
+    font-size: 1.4rem;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Összesítő slide extra stílusa */
+.story-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+.summary-item {
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 10px;
+}
+.summary-label { font-size: 0.8rem; color: #aaa; display: block;}
+.summary-value { font-size: 1.1rem; font-weight: 700; color: white;}
+
+/* Gombok a végén */
+.story-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.story-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s;
+}
+.btn-download { background: #2ecc71; color: white; }
+.btn-restart { background: rgba(255,255,255,0.2); color: white; }
+.story-btn:hover { transform: scale(1.05); }
+
+/* Navigációs zónák (láthatatlan gombok jobb/bal oldalt) */
+.story-nav-left, .story-nav-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    z-index: 20;
+    cursor: pointer;
+}
+.story-nav-left { left: 0; }
+.story-nav-right { right: 0; }
+
+/* Képgeneráláshoz rejtett konténer */
+#captureArea {
+    background: #10002b; /* Fix háttér a letöltéshez */
+    padding: 20px;
+}
+
 
 
 
