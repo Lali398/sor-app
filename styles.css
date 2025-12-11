@@ -883,41 +883,50 @@ table tr:hover .average-cell {
 .admin-header.filled::after {
     opacity: 1;
 }
-/* --- EGYEDI SÖR KURZOR ÉS EFFEKTEK (JAVÍTOTT: MINDIG SÖR MARAD) --- */
-.beer-cursor {
+/* --- EGYEDI SÖR KURZOR (KÉP ALAPÚ) --- */
+.beer-cursor-img {
     position: fixed;
     top: 0;
     left: 0;
+    width: 35px;  /* Sör mérete - állítsd át, ha nagyobbat szeretnél */
+    height: 35px;
+    
+    /* ITT A LÉNYEG: A feltöltött képedet használjuk */
+    background-image: url('sorkurzor.png'); 
+    background-size: contain;
+    background-repeat: no-repeat;
+    
     pointer-events: none; /* Fontos: át lehessen kattintani rajta */
     z-index: 99999;
-    /* Alapállapot: kicsit döntve (-15deg) */
+    
+    /* Alap dőlés (-15deg) és középre igazítás a mutatóhoz */
     transform: translate(-50%, -50%) rotate(-15deg); 
-    display: none;
-    /* Simább mozgás */
-    transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.2s ease;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    
+    display: none; /* JS kapcsolja be */
+    
+    /* Finom mozgás */
+    transition: transform 0.1s ease, opacity 0.2s ease;
     will-change: transform, left, top;
 }
 
-/* Ha be van kapcsolva a sör kurzor */
+/* Ha aktív a sör mód, eltüntetjük az összes rendszer kurzort */
 body.custom-cursor-active,
 body.custom-cursor-active * {
-    cursor: none !important; /* MINDENHOL elrejtjük a Windows egeret (még a gombokon is) */
+    cursor: none !important;
 }
 
-body.custom-cursor-active .beer-cursor {
-    display: block; /* Megjelenítjük a sört */
+/* Megjelenítjük a saját képes kurzort */
+body.custom-cursor-active .beer-cursor-img {
+    display: block;
 }
 
-/* --- INTERAKCIÓ: Ha kattintható elem fölé érsz --- */
-/* Itt NEM rejtjük el a sört, hanem csak animáljuk, hogy tudd: kattinthatsz! */
-body.hovering-clickable .beer-cursor {
-    opacity: 1; /* MARAD LÁTHATÓ */
-    /* Effekt: kicsit nagyobbra nő és jobban megdől, mintha önteni akarnál */
-    transform: translate(-50%, -50%) rotate(-35deg) scale(1.2); 
+/* --- INTERAKCIÓ: Ha gomb fölé érsz --- */
+body.hovering-clickable .beer-cursor-img {
+    /* Effekt: kicsit nagyobbra nő és jobban megdől */
+    transform: translate(-50%, -50%) rotate(-35deg) scale(1.2);
 }
 
-/* --- KATTINTÁS EFFEKT (Sörhab buborékok) --- */
+/* --- KATTINTÁS EFFEKT (Buborékok) --- */
 .beer-bubble {
     position: fixed;
     border-radius: 50%;
@@ -927,26 +936,12 @@ body.hovering-clickable .beer-cursor {
 }
 
 @keyframes bubblePop {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 0.9;
-    }
-    100% {
-        /* A --tx és --ty változókat a JS adja meg */
-        transform: translate(var(--tx), var(--ty)) scale(0);
-        opacity: 0;
-    }
+    0% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
 }
 
-/* Mobilon kikapcsoljuk, mert ott zavaró */
+/* Mobilon kikapcsoljuk */
 @media (max-width: 768px) {
-    .beer-cursor { display: none !important; }
+    .beer-cursor-img { display: none !important; }
     body.custom-cursor-active, body.custom-cursor-active * { cursor: auto !important; }
 }
-
-
-
-
-
-
-
