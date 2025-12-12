@@ -141,8 +141,9 @@
  
                <nav class="main-tabs">
             <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Sör Értékelés</button>
-            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍹 Ital Étrékelés</button>
             <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍹 Ital Étrékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍸 Italjaim</button>
             <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
             <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
             <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
@@ -285,10 +286,26 @@
                     </section>
                 </div>
 
-                <!-- ITALOK TAB -->
-<div class="main-tab-pane" id="user-drinks-content">
-    <!-- Ital értékelés form -->
-    <section class="card">
+                <!-- ITAL ÉRTÉKELÉS TAB -->
+<div class="main-tab-pane" id="user-drink-rating-content">
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon beers">🍹</div>
+            <div class="stat-info">
+                <p>Értékelt italok</p>
+                <h3 id="userDrinkCount">0</h3>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon average">⭐</div>
+            <div class="stat-info">
+                <p>Átlag pontszám</p>
+                <h3 id="userDrinkAverageScore">0.0</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 30px;">
         <header class="card-header">
             <h3>Új ital értékelése</h3>
         </header>
@@ -369,9 +386,11 @@
             </button>
         </form>
     </section>
+</div>
 
-    <!-- Italok listája -->
-    <section class="card" style="margin-top: 30px;">
+<!-- ITALJAIM TAB -->
+<div class="main-tab-pane" id="user-drinks-content">
+    <section class="card">
         <header class="card-header">
             <h3>Saját italaid listája</h3>
         </header>
@@ -815,6 +834,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
