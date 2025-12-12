@@ -301,6 +301,7 @@ async function loadUserDrinks() {
         
         currentUserDrinks = drinks;
         renderUserDrinks(drinks);
+        updateUserDrinkStats(drinks); // ÚJ SOR!
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni az italokat.");
@@ -818,6 +819,17 @@ function setupAdminRecap() {
         const average = (totalScoreSum / beers.length).toFixed(1);
         document.getElementById('userAverageScore').textContent = average;
     }
+
+    function updateUserDrinkStats(drinks) {
+    document.getElementById('userDrinkCount').textContent = drinks.length;
+    if (drinks.length === 0) {
+        document.getElementById('userDrinkAverageScore').textContent = '0.0';
+        return;
+    }
+    const totalScoreSum = drinks.reduce((total, drink) => total + (parseFloat(drink.totalScore) || 0), 0);
+    const average = (totalScoreSum / drinks.length).toFixed(1);
+    document.getElementById('userDrinkAverageScore').textContent = average;
+}
 
     function calculateIndexedAverage(beers = beersData) {
         if (!beers || beers.length === 0) return 0;
@@ -1912,6 +1924,7 @@ switchToUserView = function() {
     updateSettingsUI();
 };
     });
+
 
 
 
