@@ -140,7 +140,8 @@
         </header>
  
                <nav class="main-tabs">
-            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Értékelés</button>
+            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Sör Értékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍹 Ital Étrékelés</button>
             <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
             <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
             <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
@@ -283,6 +284,123 @@
                         </div>
                     </section>
                 </div>
+
+                <!-- ITALOK TAB -->
+<div class="main-tab-pane" id="user-drinks-content">
+    <!-- Ital értékelés form -->
+    <section class="card">
+        <header class="card-header">
+            <h3>Új ital értékelése</h3>
+        </header>
+        <form id="addDrinkForm" class="config-form">
+            <div class="input-group">
+                <input type="text" id="drinkName" required>
+                <label for="drinkName">Ital neve</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <select id="drinkCategory" required style="width: 100%; padding: 15px 0; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none;">
+                    <option value="" disabled selected>Válassz kategóriát</option>
+                    <option value="Bor">🍷 Bor</option>
+                    <option value="Pezsgő">🥂 Pezsgő</option>
+                    <option value="Vermut">🍸 Vermut</option>
+                    <option value="Pálinka">🥃 Pálinka</option>
+                    <option value="Whisky">🥃 Whisky</option>
+                    <option value="Vodka">🍾 Vodka</option>
+                    <option value="Rum">🍹 Rum</option>
+                    <option value="Gin">🍸 Gin</option>
+                    <option value="Likőr">🍷 Likőr</option>
+                    <option value="Koktél">🍹 Koktél</option>
+                    <option value="Üdítő">🥤 Üdítő</option>
+                    <option value="Egyéb">❓ Egyéb</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <select id="drinkType" required style="width: 100%; padding: 15px 0; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none;">
+                    <option value="" disabled selected>Alkoholos vagy nem?</option>
+                    <option value="Alkoholos">🍺 Alkoholos</option>
+                    <option value="Nem alkoholos">🚫 Nem alkoholos</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="drinkLocation" required>
+                <label for="drinkLocation">Hely / Származás</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="drinkPercentage" min="0" max="100" step="0.1">
+                <label for="drinkPercentage">Alkohol % (opcionális)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="drinkLook" min="0" max="10" step="0.1" required>
+                <label for="drinkLook">Külalak (0-10)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="drinkSmell" min="0" max="10" step="0.1" required>
+                <label for="drinkSmell">Illat (0-10)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="drinkTaste" min="0" max="10" step="0.1" required>
+                <label for="drinkTaste">Íz (0-10)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="drinkNotes">
+                <label for="drinkNotes">Jegyzetek (opcionális)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Értékelés hozzáadása</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </section>
+
+    <!-- Italok listája -->
+    <section class="card" style="margin-top: 30px;">
+        <header class="card-header">
+            <h3>Saját italaid listája</h3>
+        </header>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dátum</th>
+                        <th>Ital neve</th>
+                        <th>Kategória</th>
+                        <th>Típus</th>
+                        <th>Hely</th>
+                        <th>Alkohol %</th>
+                        <th>Külalak</th>
+                        <th>Illat</th>
+                        <th>Íz</th>
+                        <th>Összpontszám</th>
+                        <th>Átlag</th>
+                    </tr>
+                </thead>
+                <tbody id="userDrinkTableBody">
+                    <tr>
+                        <td colspan="11" class="no-results">Betöltés...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
                 <!-- VISSZATEKINTŐ TAB -->
                 <div class="main-tab-pane" id="user-recap-content">
@@ -697,6 +815,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
