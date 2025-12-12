@@ -403,25 +403,27 @@ export default async function handler(req, res) {
     const numLook = parseFloat(look) || 0;
     const numSmell = parseFloat(smell) || 0;
     const numTaste = parseFloat(taste) || 0;
+    const numPercentage = parseFloat(beerPercentage) || 0;
+    
     const totalScore = numLook + numSmell + numTaste;
     const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
     
     const updatedRow = [
-    targetRow[0],      // A: Dátum
-    userData.name,     // B: Név
-    beerName,          // C: Sör neve
-    location,          // D: Főzési hely
-    type,              // E: Típus
-    look,              // F: Külalak
-    smell,             // G: Illat
-    taste,             // H: Íz
-    totalScore,        // I: Összpontszám ✅
-    avgScore,          // J: Átlag ✅
-    numPercentage,     // K: Alkohol % ✅
-    notes || '',       // L: Jegyzetek
-    targetRow[12],     // M: Jóváhagyva?
-    userData.email     // N: Email
-];
+        targetRow[0],       // A: Dátum (megtartjuk az eredetit)
+        userData.name,      // B: Név
+        beerName,           // C: Sör neve
+        location,           // D: Főzési hely
+        type,               // E: Típus
+        look,               // F: Külalak
+        smell,              // G: Illat
+        taste,              // H: Íz
+        totalScore,         // I: Összpontszám
+        avgScore,           // J: Átlag
+        numPercentage,      // K: Alkohol %
+        notes || '',        // L: Jegyzetek
+        targetRow[12],      // M: Jóváhagyva?
+        userData.email      // N: Email
+    ];
     
     const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
@@ -456,25 +458,27 @@ case 'EDIT_USER_DRINK': {
     const numLook = parseFloat(look) || 0;
     const numSmell = parseFloat(smell) || 0;
     const numTaste = parseFloat(taste) || 0;
+    const numPercentage = parseFloat(drinkPercentage) || 0;
+    
     const totalScore = numLook + numSmell + numTaste;
     const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
     
     const updatedRow = [
-    targetRow[0],      // A: Dátum
-    userData.name,     // B: Név
-    beerName,          // C: Sör neve
-    location,          // D: Főzési hely
-    type,              // E: Típus
-    look,              // F: Külalak
-    smell,             // G: Illat
-    taste,             // H: Íz
-    totalScore,        // I: Összpontszám ✅
-    avgScore,          // J: Átlag ✅
-    numPercentage,     // K: Alkohol % ✅
-    notes || '',       // L: Jegyzetek
-    targetRow[12],     // M: Jóváhagyva?
-    userData.email     // N: Email
-];
+        targetRow[0],       // A: Dátum (megtartjuk az eredetit)
+        userData.name,      // B: Beküldő Neve
+        drinkName,          // C: Ital Neve
+        category,           // D: Kategória
+        type,               // E: Típus
+        location,           // F: Hely
+        numPercentage,      // G: Alkohol %
+        look,               // H: Külalak
+        smell,              // I: Illat
+        taste,              // J: Íz
+        totalScore,         // K: Összpontszám
+        avgScore,           // L: Átlag
+        notes || '',        // M: Megjegyzés
+        userData.email      // N: Email
+    ];
     
     const range = `${GUEST_DRINKS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
@@ -539,6 +543,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
