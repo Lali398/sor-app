@@ -496,6 +496,56 @@
                     </section>
                 </div>
             </div>
+
+        <!-- ÖTLET AJÁNLÓ TAB -->
+                <div class="main-tab-pane" id="user-ideas-submit-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>💡 Ötlet Ajánló</h3>
+                        </header>
+                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                            Van egy szuper ötleted a sör- vagy italértékelő rendszerhez? Oszd meg velünk! 
+                            Ha elfogadjuk, felkerül a Dicsőségfalra! 🎉
+                        </p>
+                        
+                        <form id="submitIdeaForm" class="config-form">
+                            <div class="input-group">
+                                <textarea id="ideaText" required rows="6" style="width: 100%; padding: 15px; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none; resize: vertical; font-family: 'Poppins', sans-serif;"></textarea>
+                                <label for="ideaText" style="position: absolute; top: 15px; left: 0; color: #d0d0d0;">Írd le az ötleted...</label>
+                            </div>
+                            
+                            <div class="terms-group" style="margin-top: 20px;">
+                                <input type="checkbox" id="anonymousCheckbox">
+                                <label for="anonymousCheckbox">
+                                    🕶️ Anonim ötlet (a neved nem jelenik meg)
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Ötlet beküldése 🚀</span>
+                                <span class="btn-loading">
+                                    <div class="spinner"></div>
+                                </span>
+                            </button>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- DICSŐSÉGFAL TAB -->
+                <div class="main-tab-pane" id="user-ideas-wall-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>🏆 Dicsőségfal</h3>
+                        </header>
+                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                            Ezek az ötletek megvalósultak! Köszönjük a közösségünknek! 💖
+                        </p>
+                        
+                        <div id="ideasWallContainer" class="ideas-wall-grid">
+                            <p class="recap-placeholder">Betöltés...</p>
+                        </div>
+                    </section>
+                </div>
         </main>
     </div>
 
@@ -991,6 +1041,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
