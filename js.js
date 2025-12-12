@@ -2157,29 +2157,7 @@ function renderIdeasWall(ideas) {
     `).join('');
 }
 
-// === ADMIN - ÖTLETEK BETÖLTÉSE ===
-async function loadAdminIdeas() {
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-            },
-            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
-        });
-        
-        const ideas = await response.json();
-        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-        
-        renderAdminIdeas(ideas);
-        updateIdeasStats(ideas);
-        
-    } catch (error) {
-        console.error("Hiba az ötletek betöltésekor:", error);
-        showError(error.message || "Nem sikerült betölteni az ötleteket.");
-    }
-}
+
 
 function renderAdminIdeas(ideas) {
     const tbody = document.getElementById('adminIdeasTableBody');
@@ -2268,6 +2246,7 @@ if (refreshIdeasBtn) {
     refreshIdeasBtn.addEventListener('click', loadAdminIdeas);
 }
     });
+
 
 
 
