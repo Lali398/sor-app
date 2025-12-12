@@ -68,22 +68,30 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-                const { username, password } = req.body;
-                if (username !== 'admin' || password !== 'sor') {
-                    return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
-                }
-                const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
-                const allRows = sörökResponse.data.values || [];
-                const allBeers = [];
-                allRows.forEach(row => {
-                    const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
-                    if (beer1) allBeers.push(beer1);
-                    const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
-                    if (beer2) allBeers.push(beer2);
-                });
-                return res.status(200).json({ beers: allBeers, users: [] });
-            }
-
+    const { username, password } = req.body;
+    if (username !== 'admin' || password !== 'sor') {
+        return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
+    }
+    
+    // Admin token generálása
+    const adminToken = jwt.sign(
+        { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
+        JWT_SECRET, 
+        { expiresIn: '1d' }
+    );
+    
+    const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
+    const allRows = sörökResponse.data.values || [];
+    const allBeers = [];
+    allRows.forEach(row => {
+        const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
+        if (beer1) allBeers.push(beer1);
+        const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
+        if (beer2) allBeers.push(beer2);
+    });
+    
+    return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
+}
             case 'REGISTER_USER': {
                 const { name, email, password } = req.body;
                 if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
@@ -648,6 +656,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
