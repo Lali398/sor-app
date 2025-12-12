@@ -2290,6 +2290,8 @@ async function loadAdminIdeas() {
         }
     }
 }
+    });
+
 
 
 
