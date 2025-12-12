@@ -340,6 +340,184 @@ function renderUserDrinks(drinks) {
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
     });
 }
+
+    // === ÖTLET LÁDA FUNKCIÓK ===
+
+// 1. Ötlet beküldése
+async function handleIdeaSubmit(e) {
+    e.preventDefault();
+    const text = document.getElementById('ideaText').value;
+    const isAnon = document.getElementById('ideaAnonymous').checked;
+    const btn = e.target.querySelector('button');
+
+    setLoading(btn, true);
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'SUBMIT_IDEA', 
+                ideaText: text, 
+                isAnonymous: isAnon 
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+        showSuccess(result.message || "Ötlet sikeresen beküldve! Köszi! 💡");
+        document.getElementById('ideaText').value = ''; // Törlés
+        loadUserIdeas(); // Lista frissítése
+
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        setLoading(btn, false);
+    }
+}
+
+// 2. Ötletek betöltése (User oldal)
+async function loadUserIdeas() {
+    const hallContainer = document.getElementById('hallOfFameList');
+    const pendingContainer = document.getElementById('pendingIdeasList');
+    
+    // Töltésjelző
+    hallContainer.innerHTML = '<div class="recap-spinner"></div>';
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
+        });
+        
+        const ideas = await response.json();
+        if (!response.ok) throw new Error("Nem sikerült betölteni az ötleteket.");
+
+        // Takarítás
+        hallContainer.innerHTML = '';
+        pendingContainer.innerHTML = '';
+
+        if(ideas.length === 0) {
+            pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">Még nincsenek ötletek. Légy te az első!</p>';
+            return;
+        }
+
+        let hasFame = false;
+
+        ideas.forEach(item => {
+            const isDone = (item.status === 'Megcsinálva');
+            
+            if (isDone) {
+                // DICSŐSÉGFAL KÁRTYA
+                hasFame = true;
+                const card = `
+                <div class="fame-card">
+                    <div class="fame-user">
+                        <span class="fame-avatar">👑</span>
+                        <span class="fame-name">${item.submitter}</span>
+                    </div>
+                    <div class="fame-idea">"${item.idea}"</div>
+                    <div class="fame-footer">
+                        Köszönjük az ötletet! • ${item.date}
+                    </div>
+                </div>`;
+                hallContainer.insertAdjacentHTML('beforeend', card);
+            } else {
+                // VÁRAKOZÓ LISTA
+                const card = `
+                <div class="pending-idea-card">
+                    <div class="pending-content">
+                        <h4>${item.idea}</h4>
+                        <p>Beküldte: ${item.submitter} • ${item.date}</p>
+                    </div>
+                    <div class="pending-status">⏳ ${item.status}</div>
+                </div>`;
+                pendingContainer.insertAdjacentHTML('beforeend', card);
+            }
+        });
+
+        if(!hasFame) {
+            hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
+        }
+
+    } catch (error) {
+        console.error(error);
+        hallContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
+    }
+}
+
+// 3. Ötletek betöltése (Admin oldal)
+async function loadAllIdeasForAdmin() {
+    const tbody = document.getElementById('adminIdeasTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Betöltés...</td></tr>';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
+        });
+
+        const ideas = await response.json();
+        tbody.innerHTML = '';
+
+        if(ideas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="no-results">Nincsenek beküldött ötletek.</td></tr>';
+            return;
+        }
+
+        ideas.forEach(item => {
+            const isDone = (item.status === 'Megcsinálva');
+            const statusClass = isDone ? 'status-done' : 'status-waiting';
+            
+            // Gomb: Ha már kész, ne legyen gomb, vagy legyen inaktív
+            const actionBtn = isDone 
+                ? '✅ Kész' 
+                : `<button class="mark-done-btn" onclick="markIdeaAsDone(${item.index})">🏁 Kész</button>`;
+
+            const row = `
+            <tr>
+                <td>${item.date}</td>
+                <td>${item.submitter} <br><small style="color:#aaa;">${item.email}</small></td>
+                <td>${item.idea}</td>
+                <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                <td>${actionBtn}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+
+    } catch (error) {
+        showError("Hiba az admin lista betöltésekor.");
+    }
+}
+
+// 4. Státusz frissítése (Admin művelet)
+async function markIdeaAsDone(index) {
+    if(!confirm("Biztosan megjelölöd ezt az ötletet 'Megcsinálva' státusszal? Ezzel kikerül a Dicsőségfalra!")) return;
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'UPDATE_IDEA_STATUS', 
+                index: index, 
+                newStatus: 'Megcsinálva' 
+            })
+        });
+
+        if(response.ok) {
+            showSuccess("Státusz frissítve! Irány a dicsőségfal! 🏆");
+            loadAllIdeasForAdmin(); // Táblázat újratöltése
+        } else {
+            showError("Hiba a mentéskor.");
+        }
+    } catch (error) {
+        showError("Hálózati hiba.");
+    }
+}
     
     async function handleGuestRegister(e) {
         e.preventDefault();
@@ -1911,6 +2089,27 @@ function updateSettingsUI() {
         if (aToggle) aToggle.checked = isCursorActive;
     }
 }
+    // Eseménykezelő az ötlet űrlaphoz
+const submitIdeaForm = document.getElementById('submitIdeaForm');
+if(submitIdeaForm) {
+    submitIdeaForm.addEventListener('submit', handleIdeaSubmit);
+}
+
+// Fülek váltásakor töltsük be az adatokat
+document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const target = e.target.dataset.tabContent;
+        if(target === 'user-ideas-content') {
+            loadUserIdeas();
+        } else if(target === 'admin-ideas-content') {
+            loadAllIdeasForAdmin();
+        }
+    });
+});
+
+// Admin gomb globális elérése (hogy az onclick="markIdeaAsDone(..)" működjön)
+window.markIdeaAsDone = markIdeaAsDone;
+window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
 switchToUserView = function() {
@@ -2055,6 +2254,7 @@ editDrinkForm.addEventListener('submit', async (e) => {
     }
 });
     });
+
 
 
 
