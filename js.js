@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const guestView = document.getElementById('guestView');
     const userView = document.getElementById('userView')
     const adminForm = document.getElementById('adminForm');
+    const submitIdeaForm = document.getElementById('submitIdeaForm');
+    const refreshIdeasBtn = document.getElementById('refreshIdeasBtn');
     const liveSearchInput = document.getElementById('liveSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const searchResultsInfo = document.getElementById('searchResultsInfo');
@@ -1009,6 +1011,7 @@ function setupAdminRecap() {
         initializeLiveSearch();
         setupStatistics(); // Statisztika fül inicializálása
         setupAdminRecap();
+        loadAdminIdeas(); // Admin ötletek betöltése
     }
 
     // --- Eseménykezelők ---
@@ -1546,6 +1549,7 @@ window.addEventListener('scroll', function() {
         initializeMainTabs(userView);
         loadUserData();
         loadUserDrinks();
+        loadIdeasWall();
 
         // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
         const userData = JSON.parse(localStorage.getItem('userData'));
@@ -2054,7 +2058,212 @@ editDrinkForm.addEventListener('submit', async (e) => {
         setLoading(submitBtn, false);
     }
 });
+    // ======================================================
+// === ÖTLETAJÁNLÓ RENDSZER ===
+// ======================================================
+
+// === VENDÉG - ÖTLET BEKÜLDÉSE ===
+if (submitIdeaForm) {
+    submitIdeaForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const ideaText = document.getElementById('ideaText').value.trim();
+        const isAnonymous = document.getElementById('anonymousCheckbox').checked;
+        const submitBtn = submitIdeaForm.querySelector('.auth-btn');
+        
+        if (!ideaText) {
+            showError("Az ötlet nem lehet üres!");
+            return;
+        }
+        
+        setLoading(submitBtn, true);
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                },
+                body: JSON.stringify({ 
+                    action: 'SUBMIT_IDEA', 
+                    ideaText, 
+                    isAnonymous 
+                })
+            });
+            
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+            
+            showSuccess(result.message);
+            submitIdeaForm.reset();
+            
+        } catch (error) {
+            console.error("Hiba az ötlet beküldésekor:", error);
+            showError(error.message || "Nem sikerült beküldeni az ötletet.");
+        } finally {
+            setLoading(submitBtn, false);
+        }
     });
+}
+
+// === VENDÉG - DICSŐSÉGFAL BETÖLTÉSE ===
+async function loadIdeasWall() {
+    const container = document.getElementById('ideasWallContainer');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_COMPLETED_IDEAS' })
+        });
+        
+        const ideas = await response.json();
+        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
+        
+        renderIdeasWall(ideas);
+        
+    } catch (error) {
+        console.error("Hiba a dicsőségfal betöltésekor:", error);
+        container.innerHTML = '<p class="recap-no-results">Hiba történt a betöltés során.</p>';
+    }
+}
+
+function renderIdeasWall(ideas) {
+    const container = document.getElementById('ideasWallContainer');
+    
+    if (!ideas || ideas.length === 0) {
+        container.innerHTML = '<p class="recap-no-results">Még nincsenek elfogadott ötletek. 💡</p>';
+        return;
+    }
+    
+    container.innerHTML = ideas.map(idea => `
+        <div class="idea-card">
+            <div class="idea-submitter">
+                <span>${idea.submitter === 'Anonymous' ? '🕶️ Anonymous' : '👤 ' + idea.submitter}</span>
+            </div>
+            <div class="idea-text">${idea.idea}</div>
+            <div class="idea-date">📅 ${idea.date || 'N/A'}</div>
+            <span class="idea-badge">✅ Megvalósítva</span>
+        </div>
+    `).join('');
+}
+
+// === ADMIN - ÖTLETEK BETÖLTÉSE ===
+async function loadAdminIdeas() {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
+        });
+        
+        const ideas = await response.json();
+        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
+        
+        renderAdminIdeas(ideas);
+        updateIdeasStats(ideas);
+        
+    } catch (error) {
+        console.error("Hiba az ötletek betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni az ötleteket.");
+    }
+}
+
+function renderAdminIdeas(ideas) {
+    const tbody = document.getElementById('adminIdeasTableBody');
+    if (!tbody) return;
+    
+    if (!ideas || ideas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-results">Még nincsenek ötletek.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = ideas.map(idea => {
+        const isPending = idea.status === 'Megcsinálásra vár';
+        const statusClass = isPending ? 'status-pending' : 'status-completed';
+        const buttonHTML = isPending 
+            ? `<button class="idea-action-btn btn-complete" onclick="markIdeaComplete(${idea.index})">✅ Megcsinálva</button>`
+            : `<button class="idea-action-btn btn-revert" onclick="markIdeaPending(${idea.index})">↩️ Visszavonás</button>`;
+        
+        return `
+            <tr>
+                <td>${idea.submitter}</td>
+                <td class="idea-text-preview" title="${idea.idea}">${idea.idea}</td>
+                <td>${idea.date || 'N/A'}</td>
+                <td><span class="idea-status-badge ${statusClass}">${idea.status}</span></td>
+                <td>${buttonHTML}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateIdeasStats(ideas) {
+    const total = ideas.length;
+    const pending = ideas.filter(i => i.status === 'Megcsinálásra vár').length;
+    const completed = ideas.filter(i => i.status === 'Megcsinálva').length;
+    
+    const totalEl = document.getElementById('totalIdeasCount');
+    const pendingEl = document.getElementById('pendingIdeasCount');
+    const completedEl = document.getElementById('completedIdeasCount');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (pendingEl) pendingEl.textContent = pending;
+    if (completedEl) completedEl.textContent = completed;
+}
+
+// === ADMIN - ÖTLET STÁTUSZ MÓDOSÍTÁSA ===
+window.markIdeaComplete = async function(index) {
+    if (!confirm("Biztosan megvalósult ez az ötlet? A dicsőségfalra kerül! 🎉")) return;
+    
+    await updateIdeaStatus(index, 'Megcsinálva');
+};
+
+window.markIdeaPending = async function(index) {
+    if (!confirm("Vissza akarod vonni a megcsinálva státuszt?")) return;
+    
+    await updateIdeaStatus(index, 'Megcsinálásra vár');
+};
+
+async function updateIdeaStatus(index, newStatus) {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'UPDATE_IDEA_STATUS', 
+                index, 
+                newStatus 
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess(result.message);
+        loadAdminIdeas(); // Frissítjük a listát
+        
+    } catch (error) {
+        console.error("Hiba a státusz módosításakor:", error);
+        showError(error.message || "Nem sikerült módosítani a státuszt.");
+    }
+}
+
+// === FRISSÍTÉS GOMB (ADMIN) ===
+if (refreshIdeasBtn) {
+    refreshIdeasBtn.addEventListener('click', loadAdminIdeas);
+}
+    });
+
 
 
 
