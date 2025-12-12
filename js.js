@@ -1445,96 +1445,7 @@ function generateStoryData(beers, period) {
         drinkingTime: `${avgHour}:00`
     };
 }
-function renderStoryMode(data, container) {
-    // HTML Struktúra
-    const html = `
-    <div class="recap-story-container" id="storyContainer">
-        <div class="story-progress-container">
-            <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
-        </div>
 
-        <div class="story-nav-left" onclick="prevSlide()"></div>
-        <div class="story-nav-right" onclick="nextSlide()"></div>
-
-        <div class="story-slide active" id="slide-0">
-            <h3 class="story-title">${data.periodName} sörökben...</h3>
-            <p class="story-text">Nem voltál szomjas!</p>
-            <div class="story-big-number">${data.count}</div>
-            <p class="story-text">sört kóstoltál meg.</p>
-            <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
-        </div>
-
-        <div class="story-slide" id="slide-1">
-            <h3 class="story-title">Az abszolút kedvenc</h3>
-            <p class="story-text">Ez vitte a prímet nálad:</p>
-            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0;">${data.topBeer}</span>
-            <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
-        </div>
-
-        <div class="story-slide" id="slide-2">
-            <h3 class="story-title">Így szereted</h3>
-            <p class="story-text">A kedvenc típusod:</p>
-            <span class="story-highlight">${data.favType}</span>
-            <br>
-            <p class="story-text">Itt ittál a legtöbbet:</p>
-            <span class="story-highlight">${data.favPlace}</span>
-        </div>
-
-        <div class="story-slide" id="slide-3" style="z-index: 30;"> <h3 class="story-title">Összegzés</h3>
-            <div class="story-summary-grid" id="captureTarget">
-                <div class="summary-item">
-                    <span class="summary-label">Összes sör</span>
-                    <span class="summary-value">${data.count} db</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Átlag</span>
-                    <span class="summary-value">${data.avg}</span>
-                </div>
-                <div class="summary-item" style="grid-column: 1/-1">
-                    <span class="summary-label">Top Sör</span>
-                    <span class="summary-value">${data.topBeer}</span>
-                </div>
-            </div>
-            
-            <div class="story-actions">
-                <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
-                <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
-            </div>
-        </div>
-    </div>
-    `;
-
-    container.innerHTML = html;
-    
-    // Indítás
-    window.currentSlide = 0;
-    window.totalSlides = 4;
-    startStory(0);
-}
-
-// Globális függvények a HTML onclick miatt
-window.startStory = function(slideIndex) {
-    if(storyInterval) clearInterval(storyInterval);
-    window.currentSlide = slideIndex;
-    showSlide(window.currentSlide);
-}
-
-window.nextSlide = function() {
-    if (window.currentSlide < window.totalSlides - 1) {
-        window.currentSlide++;
-        showSlide(window.currentSlide);
-    }
-}
-
-window.prevSlide = function() {
-    if (window.currentSlide > 0) {
-        window.currentSlide--;
-        showSlide(window.currentSlide);
-    }
-}
 
 function showSlide(index) {
     // Slide csere
@@ -1605,6 +1516,7 @@ window.downloadRecap = function() {
     });
 }
 });
+
 
 
 
