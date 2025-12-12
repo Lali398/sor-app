@@ -100,50 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 150);
         }
     });
-    function createBeerBubbles(x, y) {
-    // 3-5 buborék generálása
-    const bubbleCount = Math.floor(Math.random() * 3) + 3;
-    
-    for (let i = 0; i < bubbleCount; i++) {
-        const bubble = document.createElement('div');
-        bubble.className = 'beer-bubble';
-        
-        // Véletlenszerű irány és távolság
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 30 + Math.random() * 50;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance;
-        
-        // Véletlenszerű méret
-        const size = 10 + Math.random() * 15;
-        
-        bubble.style.left = x + 'px';
-        bubble.style.top = y + 'px';
-        bubble.style.width = size + 'px';
-        bubble.style.height = size + 'px';
-        bubble.style.background = `rgba(255, 193, 7, ${Math.random() * 0.5 + 0.5})`;
-        
-        // CSS változók a buborék animációhoz
-        bubble.style.setProperty('--tx', tx + 'px');
-        bubble.style.setProperty('--ty', ty + 'px');
-        
-        document.body.appendChild(bubble);
-        
-        // Eltávolítás 600ms után
-        setTimeout(() => {
-            if (bubble.parentNode) {
-                bubble.parentNode.removeChild(bubble);
-            }
-        }, 600);
-    }
-}
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
     const userView = document.getElementById('userView')
     const adminForm = document.getElementById('adminForm');
-    const submitIdeaForm = document.getElementById('submitIdeaForm');
-    const refreshIdeasBtn = document.getElementById('refreshIdeasBtn');
     const liveSearchInput = document.getElementById('liveSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
     const searchResultsInfo = document.getElementById('searchResultsInfo');
@@ -195,43 +156,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAdminLogin(e) {
-    e.preventDefault();
-    const usernameInput = document.getElementById('adminUsername').value;
-    const passwordInput = document.getElementById('adminPassword').value;
-    const submitBtn = adminForm.querySelector('.auth-btn');
+        e.preventDefault();
+        const usernameInput = document.getElementById('adminUsername').value;
+        const passwordInput = document.getElementById('adminPassword').value;
+        const submitBtn = adminForm.querySelector('.auth-btn');
 
-    setLoading(submitBtn, true);
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
+        setLoading(submitBtn, true);
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
-        beersData = result.beers || [];
-        usersData = result.users || [];
-        filteredBeers = [...beersData]; 
-        
-        // ÚJ: Admin token mentése
-        if (result.adminToken) {
-            localStorage.setItem('adminToken', result.adminToken);
+            beersData = result.beers || [];
+            usersData = result.users || [];
+            filteredBeers = [...beersData]; 
+            
+            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
+            setTimeout(() => {
+                closeAdminModal();
+                switchToAdminView();
+            }, 1000);
+
+        } catch (error) {
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
+        } finally {
+            setLoading(submitBtn, false);
         }
-        
-        showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
-        setTimeout(() => {
-            closeAdminModal();
-            switchToAdminView();
-        }, 1000);
-
-    } catch (error) {
-        console.error("Bejelentkezési hiba:", error);
-        showError(error.message || 'Hibás felhasználónév vagy jelszó!');
-    } finally {
-        setLoading(submitBtn, false);
     }
-}
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -1053,7 +1009,6 @@ function setupAdminRecap() {
         initializeLiveSearch();
         setupStatistics(); // Statisztika fül inicializálása
         setupAdminRecap();
-        loadAdminIdeas(); // Admin ötletek betöltése
     }
 
     // --- Eseménykezelők ---
@@ -1591,7 +1546,6 @@ window.addEventListener('scroll', function() {
         initializeMainTabs(userView);
         loadUserData();
         loadUserDrinks();
-        loadIdeasWall();
 
         // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
         const userData = JSON.parse(localStorage.getItem('userData'));
@@ -2100,225 +2054,42 @@ editDrinkForm.addEventListener('submit', async (e) => {
         setLoading(submitBtn, false);
     }
 });
-    // ======================================================
-// === ÖTLETAJÁNLÓ RENDSZER ===
-// ======================================================
-
-// === VENDÉG - ÖTLET BEKÜLDÉSE ===
-if (submitIdeaForm) {
-    submitIdeaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const ideaText = document.getElementById('ideaText').value.trim();
-        const isAnonymous = document.getElementById('anonymousCheckbox').checked;
-        const submitBtn = submitIdeaForm.querySelector('.auth-btn');
-        
-        if (!ideaText) {
-            showError("Az ötlet nem lehet üres!");
-            return;
-        }
-        
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                },
-                body: JSON.stringify({ 
-                    action: 'SUBMIT_IDEA', 
-                    ideaText, 
-                    isAnonymous 
-                })
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
-            
-            showSuccess(result.message);
-            submitIdeaForm.reset();
-            
-        } catch (error) {
-            console.error("Hiba az ötlet beküldésekor:", error);
-            showError(error.message || "Nem sikerült beküldeni az ötletet.");
-        } finally {
-            setLoading(submitBtn, false);
-        }
     });
-}
-
-// === VENDÉG - DICSŐSÉGFAL BETÖLTÉSE ===
-async function loadIdeasWall() {
-    const container = document.getElementById('ideasWallContainer');
-    if (!container) return;
-    
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-            },
-            body: JSON.stringify({ action: 'GET_COMPLETED_IDEAS' })
-        });
-        
-        const ideas = await response.json();
-        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-        
-        renderIdeasWall(ideas);
-        
-    } catch (error) {
-        console.error("Hiba a dicsőségfal betöltésekor:", error);
-        container.innerHTML = '<p class="recap-no-results">Hiba történt a betöltés során.</p>';
-    }
-}
-
-function renderIdeasWall(ideas) {
-    const container = document.getElementById('ideasWallContainer');
-    
-    if (!ideas || ideas.length === 0) {
-        container.innerHTML = '<p class="recap-no-results">Még nincsenek elfogadott ötletek. 💡</p>';
-        return;
-    }
-    
-    container.innerHTML = ideas.map(idea => `
-        <div class="idea-card">
-            <div class="idea-submitter">
-                <span>${idea.submitter === 'Anonymous' ? '🕶️ Anonymous' : '👤 ' + idea.submitter}</span>
-            </div>
-            <div class="idea-text">${idea.idea}</div>
-            <div class="idea-date">📅 ${idea.date || 'N/A'}</div>
-            <span class="idea-badge">✅ Megvalósítva</span>
-        </div>
-    `).join('');
-}
 
 
 
-// js.js - renderAdminIdeas függvény
 
-function renderAdminIdeas(ideas) {
-    const tbody = document.getElementById('adminIdeasTableBody');
-    if (!tbody) return;
 
-    if (!ideas || ideas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-results">Még nincsenek ötletek.</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = ideas.map(idea => {
-        // FONTOS: Itt a státusz pontos szövegére figyelj!
-        // A backend most már garantáltan "Megcsinálásra vár"-t küld, ha üres volt a cella.
-        const isPending = idea.status === 'Megcsinálásra vár';
-        
-        const statusClass = isPending ? 'status-pending' : 'status-completed';
-        
-        // A gomboknál az idea.index-et használjuk
-        const buttonHTML = isPending 
-            ? `<button class="idea-action-btn btn-complete" onclick="markIdeaComplete(${idea.index})">✅ Megcsinálva</button>`
-            : `<button class="idea-action-btn btn-revert" onclick="markIdeaPending(${idea.index})">↩️ Visszavonás</button>`;
-        
-        return `
-            <tr>
-                <td>${idea.submitter}</td>
-                <td class="idea-text-preview" title="${idea.idea}">${idea.idea}</td>
-                <td>${idea.date || 'N/A'}</td>
-                <td><span class="idea-status-badge ${statusClass}">${idea.status}</span></td>
-                <td>${buttonHTML}</td>
-            </tr>
-        `;
-    }).join('');
-}
 
-function updateIdeasStats(ideas) {
-    const total = ideas.length;
-    const pending = ideas.filter(i => i.status === 'Megcsinálásra vár').length;
-    const completed = ideas.filter(i => i.status === 'Megcsinálva').length;
-    
-    const totalEl = document.getElementById('totalIdeasCount');
-    const pendingEl = document.getElementById('pendingIdeasCount');
-    const completedEl = document.getElementById('completedIdeasCount');
-    
-    if (totalEl) totalEl.textContent = total;
-    if (pendingEl) pendingEl.textContent = pending;
-    if (completedEl) completedEl.textContent = completed;
-}
 
-// === ADMIN - ÖTLET STÁTUSZ MÓDOSÍTÁSA ===
-window.markIdeaComplete = async function(index) {
-    if (!confirm("Biztosan megvalósult ez az ötlet? A dicsőségfalra kerül! 🎉")) return;
-    
-    await updateIdeaStatus(index, 'Megcsinálva');
-};
 
-window.markIdeaPending = async function(index) {
-    if (!confirm("Vissza akarod vonni a megcsinálva státuszt?")) return;
-    
-    await updateIdeaStatus(index, 'Megcsinálásra vár');
-};
 
-async function loadAdminIdeas() {
-    console.log("🔍 loadAdminIdeas() INDULT");
-    
-    // Token keresése
-    let token = localStorage.getItem('adminToken');
-    if (!token) {
-        token = localStorage.getItem('userToken');
-    }
 
-    const tbody = document.getElementById('adminIdeasTableBody');
 
-    if (!token) {
-        console.error("❌ Nincs elérhető token!");
-        if(tbody) tbody.innerHTML = '<tr><td colspan="5" class="no-results" style="color: #e74c3c">Nem vagy bejelentkezve!</td></tr>';
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
-        });
 
-        // Ha 401-et kapunk (lejárt token)
-        if (response.status === 401) {
-            console.error("⛔ Token lejárt vagy érvénytelen (401)");
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('userToken');
-            showError("A munkamenet lejárt. Kérlek, jelentkezz be újra!");
-            setTimeout(() => {
-                location.reload(); 
-            }, 1500);
-            return;
-        }
 
-        const ideas = await response.json();
-        
-        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-        
-        renderAdminIdeas(ideas);
-        updateIdeasStats(ideas);
 
-    } catch (error) {
-        console.error("❌ Hiba az ötletek betöltésekor:", error);
-        
-        // JAVÍTÁS: Hiba kiírása a táblázatba is, hogy ne ragadjon be a "Betöltés..."
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" class="no-results" style="color: #e74c3c">Hiba történt: ${error.message}</td></tr>`;
-        }
 
-        if (!error.message.includes('munkamenet lejárt')) {
-            showError(error.message || "Nem sikerült betölteni az ötleteket.");
-        }
-    }
-}
 
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
