@@ -2261,17 +2261,17 @@ window.markIdeaPending = async function(index) {
 async function loadAdminIdeas() {
     console.log("🔍 loadAdminIdeas() INDULT");
     
-    // Kifejezetten az admin tokent keressük először
+    // Token keresése
     let token = localStorage.getItem('adminToken');
-    
-    // Ha nincs admin token, megnézzük a sima user tokent (hátha csak user vagy)
     if (!token) {
         token = localStorage.getItem('userToken');
     }
 
+    const tbody = document.getElementById('adminIdeasTableBody');
+
     if (!token) {
         console.error("❌ Nincs elérhető token!");
-        showError("Nem vagy bejelentkezve!");
+        if(tbody) tbody.innerHTML = '<tr><td colspan="5" class="no-results" style="color: #e74c3c">Nem vagy bejelentkezve!</td></tr>';
         return;
     }
     
@@ -2284,15 +2284,15 @@ async function loadAdminIdeas() {
             },
             body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
         });
-        
-        // Ha 401-et kapunk, az azt jelenti, hogy lejárt a token -> Dobjuk ki a felhasználót
+
+        // Ha 401-et kapunk (lejárt token)
         if (response.status === 401) {
             console.error("⛔ Token lejárt vagy érvénytelen (401)");
-            localStorage.removeItem('adminToken'); // Töröljük a rossz tokent
+            localStorage.removeItem('adminToken');
             localStorage.removeItem('userToken');
             showError("A munkamenet lejárt. Kérlek, jelentkezz be újra!");
             setTimeout(() => {
-                location.reload(); // Frissítjük az oldalt, hogy visszadobjon a loginhoz
+                location.reload(); 
             }, 1500);
             return;
         }
@@ -2303,9 +2303,15 @@ async function loadAdminIdeas() {
         
         renderAdminIdeas(ideas);
         updateIdeasStats(ideas);
+
     } catch (error) {
         console.error("❌ Hiba az ötletek betöltésekor:", error);
-        // Csak akkor írjunk ki hibát, ha nem 401-es volt (azt már kezeltük fent)
+        
+        // JAVÍTÁS: Hiba kiírása a táblázatba is, hogy ne ragadjon be a "Betöltés..."
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" class="no-results" style="color: #e74c3c">Hiba történt: ${error.message}</td></tr>`;
+        }
+
         if (!error.message.includes('munkamenet lejárt')) {
             showError(error.message || "Nem sikerült betölteni az ötleteket.");
         }
@@ -2313,5 +2319,6 @@ async function loadAdminIdeas() {
 }
 
 });
+
 
 
