@@ -2196,18 +2196,25 @@ function renderIdeasWall(ideas) {
 
 
 
+// js.js - renderAdminIdeas függvény
+
 function renderAdminIdeas(ideas) {
     const tbody = document.getElementById('adminIdeasTableBody');
     if (!tbody) return;
-    
+
     if (!ideas || ideas.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="no-results">Még nincsenek ötletek.</td></tr>';
         return;
     }
     
     tbody.innerHTML = ideas.map(idea => {
+        // FONTOS: Itt a státusz pontos szövegére figyelj!
+        // A backend most már garantáltan "Megcsinálásra vár"-t küld, ha üres volt a cella.
         const isPending = idea.status === 'Megcsinálásra vár';
+        
         const statusClass = isPending ? 'status-pending' : 'status-completed';
+        
+        // A gomboknál az idea.index-et használjuk
         const buttonHTML = isPending 
             ? `<button class="idea-action-btn btn-complete" onclick="markIdeaComplete(${idea.index})">✅ Megcsinálva</button>`
             : `<button class="idea-action-btn btn-revert" onclick="markIdeaPending(${idea.index})">↩️ Visszavonás</button>`;
@@ -2306,4 +2313,5 @@ async function loadAdminIdeas() {
 }
 
 });
+
 
