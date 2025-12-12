@@ -2253,7 +2253,46 @@ editDrinkForm.addEventListener('submit', async (e) => {
         setLoading(submitBtn, false);
     }
 });
+    // === BUBOREK EFFEKT FÜGGVÉNY (Ezt másold be a js.js fájlba) ===
+function createBeerBubbles(x, y) {
+    const bubbleCount = 8; // Buborékok száma kattintásonként
+    
+    for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('beer-bubble');
+        
+        // Kezdő pozíció (az egér helye)
+        bubble.style.left = `${x}px`;
+        bubble.style.top = `${y}px`;
+        
+        // Véletlenszerű irány és távolság (CSS változókhoz)
+        // tx: vízszintes elmozdulás (-50px és +50px között)
+        // ty: függőleges elmozdulás (felfelé, -50px és -150px között)
+        const tx = (Math.random() - 0.5) * 100; 
+        const ty = -(50 + Math.random() * 100); 
+        
+        bubble.style.setProperty('--tx', `${tx}px`);
+        bubble.style.setProperty('--ty', `${ty}px`);
+        
+        // Véletlenszerű méret
+        const size = 5 + Math.random() * 10; 
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        
+        // Véletlenszerű sör-színek (sárgás-fehéres)
+        const colors = ['rgba(255, 255, 255, 0.8)', 'rgba(255, 198, 0, 0.6)', 'rgba(255, 255, 255, 0.5)'];
+        bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        document.body.appendChild(bubble);
+
+        // Törlés az animáció után (0.6s a CSS-ben)
+        setTimeout(() => {
+            bubble.remove();
+        }, 600);
+    }
+}
     });
+
 
 
 
