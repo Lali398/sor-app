@@ -573,6 +573,7 @@
        <nav class="main-tabs">
     <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
     <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
+    <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendégek Ötletei</button>
     <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
     <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
 </nav>
@@ -818,6 +819,61 @@
                     </section>
                 </div>
             </div>
+        <!-- VENDÉGEK ÖTLETEI TAB -->
+                <div class="main-tab-pane" id="admin-ideas-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>💡 Vendégek Ötletei</h3>
+                            <button class="config-btn" id="refreshIdeasBtn">
+                                <span>🔄</span>
+                                <span>Frissítés</span>
+                            </button>
+                        </header>
+                        
+                        <div class="stats-grid" style="margin-bottom: 30px;">
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">💡</div>
+                                <div class="stat-info">
+                                    <p>Összes ötlet</p>
+                                    <h3 id="totalIdeasCount">0</h3>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">⏳</div>
+                                <div class="stat-info">
+                                    <p>Várakozó</p>
+                                    <h3 id="pendingIdeasCount">0</h3>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: linear-gradient(135deg, #27ae60, #229954);">✅</div>
+                                <div class="stat-info">
+                                    <p>Megcsinálva</p>
+                                    <h3 id="completedIdeasCount">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Beküldő</th>
+                                        <th>Ötlet</th>
+                                        <th>Időpont</th>
+                                        <th>Státusz</th>
+                                        <th>Műveletek</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminIdeasTableBody">
+                                    <tr>
+                                        <td colspan="5" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
         </main>
     </div>
 
@@ -1041,6 +1097,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
