@@ -380,6 +380,112 @@ export default async function handler(req, res) {
         });
         return res.status(201).json({ message: "Ital sikeresen hozzáadva!" });
     }
+
+            case 'EDIT_USER_BEER': {
+    const userData = verifyUser(req);
+    const { index, beerName, type, location, beerPercentage, look, smell, taste, notes } = req.body;
+    
+    const beersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: GUEST_BEERS_SHEET 
+    });
+    
+    const allRows = beersResponse.data.values || [];
+    const userRows = allRows.filter(row => row[13] === userData.email);
+    
+    if (index < 0 || index >= userRows.length) {
+        return res.status(400).json({ error: "Érvénytelen index" });
+    }
+    
+    const targetRow = userRows[index];
+    const globalIndex = allRows.indexOf(targetRow);
+    
+    const numLook = parseFloat(look) || 0;
+    const numSmell = parseFloat(smell) || 0;
+    const numTaste = parseFloat(taste) || 0;
+    const totalScore = numLook + numSmell + numTaste;
+    const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+    
+    const updatedRow = [
+        targetRow[0], // Dátum
+        userData.name,
+        beerName,
+        location,
+        type,
+        look,
+        smell,
+        taste,
+        parseFloat(beerPercentage) || 0,
+        totalScore,
+        avgScore,
+        notes || '',
+        targetRow[12], // Jóváhagyva
+        userData.email
+    ];
+    
+    const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: range,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [updatedRow] }
+    });
+    
+    return res.status(200).json({ message: "Sör sikeresen módosítva!" });
+}
+
+case 'EDIT_USER_DRINK': {
+    const userData = verifyUser(req);
+    const { index, drinkName, category, type, location, drinkPercentage, look, smell, taste, notes } = req.body;
+    
+    const drinksResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: GUEST_DRINKS_SHEET 
+    });
+    
+    const allRows = drinksResponse.data.values || [];
+    const userRows = allRows.filter(row => row[13] === userData.email);
+    
+    if (index < 0 || index >= userRows.length) {
+        return res.status(400).json({ error: "Érvénytelen index" });
+    }
+    
+    const targetRow = userRows[index];
+    const globalIndex = allRows.indexOf(targetRow);
+    
+    const numLook = parseFloat(look) || 0;
+    const numSmell = parseFloat(smell) || 0;
+    const numTaste = parseFloat(taste) || 0;
+    const totalScore = numLook + numSmell + numTaste;
+    const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+    
+    const updatedRow = [
+        targetRow[0], // Dátum
+        userData.name,
+        drinkName,
+        location,
+        type,
+        look,
+        smell,
+        taste,
+        parseFloat(drinkPercentage) || 0,
+        totalScore,
+        avgScore,
+        notes || '',
+        targetRow[12], // Jóváhagyva
+        userData.email
+    ];
+    
+    const range = `${GUEST_DRINKS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: range,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [updatedRow] }
+    });
+    
+    return res.status(200).json({ message: "Ital sikeresen módosítva!" });
+}
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -433,6 +539,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
