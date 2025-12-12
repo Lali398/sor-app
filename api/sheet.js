@@ -10,6 +10,7 @@ const ADMIN_BEERS_SHEET = "'Sör táblázat'!A4:V";
 const USERS_SHEET = 'Felhasználók'; 
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
 const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
+const IDEAS_SHEET = 'Vendég ötletek';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -490,6 +491,110 @@ case 'EDIT_USER_DRINK': {
     
     return res.status(200).json({ message: "Ital sikeresen módosítva!" });
 }
+
+            // === ÖTLETAJÁNLÓ API ===
+            
+            case 'SUBMIT_IDEA': {
+                const userData = verifyUser(req);
+                const { ideaText, isAnonymous } = req.body;
+                
+                if (!ideaText || ideaText.trim() === '') {
+                    return res.status(400).json({ error: "Az ötlet nem lehet üres!" });
+                }
+                
+                const submitterName = isAnonymous ? 'Anonymous' : userData.name;
+                const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                const date = new Date().toLocaleDateString('hu-HU');
+                
+                const newRow = [
+                    submitterName,           // A: Ki javasolta?
+                    ideaText,                // B: Ötlet
+                    timestamp,               // C: Időpont
+                    'Megcsinálásra vár',     // D: Státusz
+                    date,                    // E: Dátum
+                    isAnonymous ? 'Anonymous' : userData.email  // F: Email Cím
+                ];
+                
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: IDEAS_SHEET,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [newRow] }
+                });
+                
+                return res.status(201).json({ message: "Köszönjük az ötleted! 💡" });
+            }
+
+            case 'GET_COMPLETED_IDEAS': {
+                const userData = verifyUser(req);
+                
+                const ideasResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: IDEAS_SHEET
+                });
+                
+                const allIdeas = ideasResponse.data.values || [];
+                
+                const completedIdeas = allIdeas
+                    .filter(row => row[3] === 'Megcsinálva')
+                    .map(row => ({
+                        submitter: row[0],
+                        idea: row[1],
+                        timestamp: row[2],
+                        date: row[4]
+                    }));
+                
+                return res.status(200).json(completedIdeas);
+            }
+
+            case 'GET_ALL_IDEAS': {
+                const userData = verifyUser(req);
+                
+                const ideasResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: IDEAS_SHEET
+                });
+                
+                const allIdeas = ideasResponse.data.values || [];
+                
+                const ideas = allIdeas.map((row, index) => ({
+                    index: index,
+                    submitter: row[0],
+                    idea: row[1],
+                    timestamp: row[2],
+                    status: row[3],
+                    date: row[4],
+                    email: row[5]
+                }));
+                
+                return res.status(200).json(ideas);
+            }
+
+            case 'UPDATE_IDEA_STATUS': {
+                const userData = verifyUser(req);
+                const { index, newStatus } = req.body;
+                
+                const ideasResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: IDEAS_SHEET
+                });
+                
+                const allIdeas = ideasResponse.data.values || [];
+                
+                if (index < 0 || index >= allIdeas.length) {
+                    return res.status(400).json({ error: "Érvénytelen index" });
+                }
+                
+                const range = `${IDEAS_SHEET}!D${index + 1}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[newStatus]] }
+                });
+                
+                return res.status(200).json({ message: "Ötlet státusza frissítve! ✅" });
+            }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -543,6 +648,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
