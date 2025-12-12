@@ -85,6 +85,15 @@ export default async function handler(req, res) {
             case 'REGISTER_USER': {
                 const { name, email, password } = req.body;
                 if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+                // Regex: legalább 1 szám, legalább 1 spec. karakter, min 8 hossz
+                const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+                
+                if (!passwordRegex.test(password)) {
+                    return res.status(400).json({ 
+                        error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
+                    });
+                }
+              
 
                 const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
                 const userExists = users.data.values?.some(row => row[1] === email);
@@ -258,5 +267,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
