@@ -125,6 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const user2FAToggle = document.getElementById('user2FAToggle');
     const setup2FAModal = document.getElementById('setup2FAModal');
     const login2FAModal = document.getElementById('login2FAModal');
+    const editBeerModal = document.getElementById('editBeerModal');
+    const editBeerForm = document.getElementById('editBeerForm');
+    const editDrinkModal = document.getElementById('editDrinkModal');
+    const editDrinkForm = document.getElementById('editDrinkForm');
     
     
     // STATISZTIKA ELEMEK
@@ -311,10 +315,10 @@ async function loadUserDrinks() {
 function renderUserDrinks(drinks) {
     userDrinkTableBody.innerHTML = '';
     if (!drinks || drinks.length === 0) {
-        userDrinkTableBody.innerHTML = `<tr><td colspan="11" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
+        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
         return;
     }
-    drinks.forEach(drink => {
+    drinks.forEach((drink, index) => {
         const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = drink.avg ? parseFloat(drink.avg).toFixed(2) : '0.00';
         const row = `
@@ -330,6 +334,7 @@ function renderUserDrinks(drinks) {
                 <td>${drink.taste || 0}</td>
                 <td>${drink.totalScore || 0}</td>
                 <td class="average-cell">${formattedAvg}</td>
+                <td><button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️</button></td>
             </tr>
         `;
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
@@ -786,10 +791,10 @@ function setupAdminRecap() {
     function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
     if (!beers || beers.length === 0) {
-        userBeerTableBody.innerHTML = `<tr><td colspan="9" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
         return;
     }
-    beers.forEach(beer => {
+    beers.forEach((beer, index) => {
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg).toFixed(2) : '0.00';
         const row = `
@@ -803,6 +808,7 @@ function setupAdminRecap() {
                 <td>${beer.taste || 0}</td>
                 <td>${beer.totalScore || 0}</td>
                 <td class="average-cell">${formattedAvg}</td>
+                <td><button class="edit-btn" onclick="openEditBeerModal(${index})">✏️</button></td>
             </tr>
         `;
         userBeerTableBody.insertAdjacentHTML('beforeend', row);
@@ -1923,7 +1929,133 @@ switchToUserView = function() {
     // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
 };
+    // === SÖR SZERKESZTÉS ===
+window.openEditBeerModal = function(index) {
+    const beer = currentUserBeers[index];
+    
+    document.getElementById('editBeerIndex').value = index;
+    document.getElementById('editBeerName').value = beer.beerName;
+    document.getElementById('editBeerType').value = beer.type || '';
+    document.getElementById('editBeerLocation').value = beer.location;
+    document.getElementById('editBeerPercentage').value = beer.beerPercentage || 0;
+    document.getElementById('editBeerLook').value = beer.look || 0;
+    document.getElementById('editBeerSmell').value = beer.smell || 0;
+    document.getElementById('editBeerTaste').value = beer.taste || 0;
+    document.getElementById('editBeerNotes').value = beer.notes || '';
+    
+    editBeerModal.classList.add('active');
+}
+
+window.closeEditBeerModal = function() {
+    editBeerModal.classList.remove('active');
+    editBeerForm.reset();
+}
+
+editBeerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const index = parseInt(document.getElementById('editBeerIndex').value);
+    const submitBtn = editBeerForm.querySelector('.auth-btn');
+    
+    const updatedBeer = {
+        beerName: document.getElementById('editBeerName').value,
+        type: document.getElementById('editBeerType').value,
+        location: document.getElementById('editBeerLocation').value,
+        beerPercentage: document.getElementById('editBeerPercentage').value,
+        look: document.getElementById('editBeerLook').value,
+        smell: document.getElementById('editBeerSmell').value,
+        taste: document.getElementById('editBeerTaste').value,
+        notes: document.getElementById('editBeerNotes').value
+    };
+    
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'EDIT_USER_BEER', 
+                index: index,
+                ...updatedBeer
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Sör sikeresen módosítva!');
+        closeEditBeerModal();
+        loadUserData(); // Újratöltés
+    } catch (error) {
+        showError(error.message || "Nem sikerült módosítani.");
+    } finally {
+        setLoading(submitBtn, false);
+    }
+});
+
+// === ITAL SZERKESZTÉS ===
+window.openEditDrinkModal = function(index) {
+    const drink = currentUserDrinks[index];
+    
+    document.getElementById('editDrinkIndex').value = index;
+    document.getElementById('editDrinkName').value = drink.drinkName;
+    document.getElementById('editDrinkCategory').value = drink.category || '';
+    document.getElementById('editDrinkType').value = drink.type || '';
+    document.getElementById('editDrinkLocation').value = drink.location;
+    document.getElementById('editDrinkPercentage').value = drink.drinkPercentage || '';
+    document.getElementById('editDrinkLook').value = drink.look || 0;
+    document.getElementById('editDrinkSmell').value = drink.smell || 0;
+    document.getElementById('editDrinkTaste').value = drink.taste || 0;
+    document.getElementById('editDrinkNotes').value = drink.notes || '';
+    
+    editDrinkModal.classList.add('active');
+}
+
+window.closeEditDrinkModal = function() {
+    editDrinkModal.classList.remove('active');
+    editDrinkForm.reset();
+}
+
+editDrinkForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const index = parseInt(document.getElementById('editDrinkIndex').value);
+    const submitBtn = editDrinkForm.querySelector('.auth-btn');
+    
+    const updatedDrink = {
+        drinkName: document.getElementById('editDrinkName').value,
+        category: document.getElementById('editDrinkCategory').value,
+        type: document.getElementById('editDrinkType').value,
+        location: document.getElementById('editDrinkLocation').value,
+        drinkPercentage: document.getElementById('editDrinkPercentage').value || 0,
+        look: document.getElementById('editDrinkLook').value,
+        smell: document.getElementById('editDrinkSmell').value,
+        taste: document.getElementById('editDrinkTaste').value,
+        notes: document.getElementById('editDrinkNotes').value
+    };
+    
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'EDIT_USER_DRINK', 
+                index: index,
+                ...updatedDrink
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Ital sikeresen módosítva!');
+        closeEditDrinkModal();
+        loadUserDrinks(); // Újratöltés
+    } catch (error) {
+        showError(error.message || "Nem sikerült módosítani.");
+    } finally {
+        setLoading(submitBtn, false);
+    }
+});
     });
+
 
 
 
