@@ -9,6 +9,7 @@ import QRCode from 'qrcode';
 const ADMIN_BEERS_SHEET = "'Sör táblázat'!A4:V";
 const USERS_SHEET = 'Felhasználók'; 
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
+const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -315,6 +316,70 @@ export default async function handler(req, res) {
                 
                 return res.status(200).json({ message: "Jelszó sikeresen módosítva!" });
             }
+
+
+                case 'GET_USER_DRINKS': {
+        const userData = verifyUser(req);
+        const drinksResponse = await sheets.spreadsheets.values.get({ 
+            spreadsheetId: SPREADSHEET_ID, 
+            range: GUEST_DRINKS_SHEET 
+        });
+        const userDrinks = drinksResponse.data.values
+            ?.filter(row => row[13] === userData.email) // N oszlop: Email
+            .map(row => ({
+                date: row[0],           // A: Dátum
+                drinkName: row[2],      // C: Ital Neve
+                category: row[3],       // D: Kategória
+                type: row[4],           // E: Típus
+                location: row[5],       // F: Hely
+                drinkPercentage: row[6] || 0, // G: Alkohol %
+                look: row[7] || 0,      // H: Külalak
+                smell: row[8] || 0,     // I: Illat
+                taste: row[9] || 0,     // J: Íz
+                totalScore: row[10] || 0, // K: Összpontszám
+                avg: row[11] || 0,      // L: Átlag
+                notes: row[12] || ''    // M: Megjegyzés
+            })) || [];
+        return res.status(200).json(userDrinks);
+    }
+    
+    case 'ADD_USER_DRINK': {
+        const userData = verifyUser(req);
+        const { drinkName, category, type, location, drinkPercentage, look, smell, taste, notes } = req.body;
+        
+        const numLook = parseFloat(look) || 0;
+        const numSmell = parseFloat(smell) || 0;
+        const numTaste = parseFloat(taste) || 0;
+        const numPercentage = parseFloat(drinkPercentage) || 0;
+        
+        const totalScore = numLook + numSmell + numTaste;
+        const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+        
+        const newRow = [
+            new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
+            userData.name,      // B: Beküldő Neve
+            drinkName,          // C: Ital Neve
+            category,           // D: Kategória
+            type,               // E: Típus
+            location,           // F: Hely
+            numPercentage,      // G: Alkohol %
+            look,               // H: Külalak
+            smell,              // I: Illat
+            taste,              // J: Íz
+            totalScore,         // K: Összpontszám
+            avgScore,           // L: Átlag
+            notes || '',        // M: Megjegyzés
+            userData.email      // N: Email
+        ];
+        
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: GUEST_DRINKS_SHEET,
+            valueInputOption: 'USER_ENTERED',
+            resource: { values: [newRow] },
+        });
+        return res.status(201).json({ message: "Ital sikeresen hozzáadva!" });
+    }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -368,6 +433,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
