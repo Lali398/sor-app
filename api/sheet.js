@@ -560,33 +560,36 @@ case 'EDIT_USER_DRINK': {
 // sheet.js - Cseréld le ezt a részt:
 
 case 'GET_ALL_IDEAS': {
-    const userData = verifyUser(req);
-    
-    const ideasResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${IDEAS_SHEET}!A:F` 
-    });
-    
-    const allIdeas = ideasResponse.data.values || [];
-    
-    // Mapeljük az adatokat objektumokká
-    const ideas = allIdeas.map((row, index) => {
-        // Ellenőrzés: Ha üres a sor, ugorjuk át (bár a filter lentebb kiveszi)
-        if (!row || row.length === 0) return null;
+                const userData = verifyUser(req);
+                // 1. Kényszerítjük, hogy csak az A-F oszlopokat olvassa be (így nem olvassa be a szemetet jobbról)
+                const ideasResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${IDEAS_SHEET}!A:F` 
+                });
+                
+                const allIdeas = ideasResponse.data.values || [];
+                
+                // 2. Adatok átalakítása objektummá
+                const ideas = allIdeas.map((row, index) => {
+                    // Ha a sor üres, vagy nincs benne adat, null-t adunk vissza
+                    if (!row || row.length === 0) return null;
 
-        return {
-            index: index, // Fontos: Ez kell a gombok működéséhez (jóváhagyás/törlés)
-            submitter: row[0] || 'Névtelen',
-            idea: row[1] || 'Nincs szöveg',
-            timestamp: row[2] || '',
-            status: row[3] || 'Megcsinálásra vár', // Ha üres, akkor várólistás
-            date: row[4] || '',
-            email: row[5] || ''
-        };
-    }).filter(item => item !== null && item.submitter !== 'Ki javasolta?'); // Kivesszük a null-okat és a fejlécet
+                    return {
+                        index: index, // Fontos: Ez kell a gombok működéséhez
+                        submitter: row[0] || 'Névtelen',
+                        idea: row[1] || 'Nincs szöveg',
+                        timestamp: row[2] || '',
+                        // KRITIKUS RÉSZ: Ha a státusz cella üres (undefined), akkor "Megcsinálásra vár" legyen!
+                        status: (row[3] && row[3].trim() !== '') ? row[3] : 'Megcsinálásra vár', 
+                        date: row[4] || '',
+                        email: row[5] || ''
+                    };
+                })
+                // 3. Szűrés: Kivesszük az üres sorokat (null) és a Fejlécet
+                .filter(item => item !== null && item.submitter !== 'Ki javasolta?');
 
-    return res.status(200).json(ideas);
-}
+                return res.status(200).json(ideas);
+            }
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
                 const { index, newStatus } = req.body;
@@ -665,6 +668,7 @@ case 'GET_ALL_IDEAS': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
