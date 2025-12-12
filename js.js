@@ -120,6 +120,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteUserBtn = document.getElementById('deleteUserBtn');
     const recapControls = document.getElementById('recapControls');
     const recapResultsContainer = document.getElementById('recapResultsContainer');
+    const user2FAToggle = document.getElementById('user2FAToggle');
+    const setup2FAModal = document.getElementById('setup2FAModal');
+    const login2FAModal = document.getElementById('login2FAModal');
+    
     
     // STATISZTIKA ELEMEK
     const statsView = document.getElementById('statsView');
@@ -137,6 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedSuggestionIndex = -1;
     let charts = {};
     let currentUserBeers = [];
+    let temp2FASecret = ''; // Ideiglenes tároló a setup közben
+    let tempLoginEmail = ''; // Ideiglenes tároló login közben
 
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
@@ -1581,6 +1587,190 @@ document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+// === 2FA KEZELÉS ===
+
+// Kapcsoló eseménykezelő
+if (user2FAToggle) {
+    user2FAToggle.addEventListener('change', async (e) => {
+        const isChecked = e.target.checked;
+        
+        if (isChecked) {
+            // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
+            e.target.checked = false; // Még ne kapcsoljuk be vizuálisan, amíg nincs kész
+            await start2FASetup();
+        } else {
+            // Kikapcsolás
+            if (confirm("Biztosan ki akarod kapcsolni a kétlépcsős azonosítást?")) {
+                await disable2FA();
+            } else {
+                e.target.checked = true; // Visszakapcsoljuk, ha mégsem
+            }
+        }
+    });
+}
+
+async function start2FASetup() {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'MANAGE_2FA', subAction: 'GENERATE' })
+        });
+        const result = await response.json();
+        
+        if (result.qrCode) {
+            document.getElementById('qrCodeImage').src = result.qrCode;
+            document.getElementById('manualSecret').textContent = result.secret;
+            temp2FASecret = result.secret;
+            
+            // Modal megjelenítése
+            setup2FAModal.classList.add('active');
+        }
+    } catch (error) {
+        showError("Hiba a 2FA generálásakor.");
+    }
+}
+
+// "Aktiválás" gomb a modalban
+document.getElementById('confirm2FABtn').addEventListener('click', async () => {
+    const code = document.getElementById('setup2FACode').value;
+    if (code.length < 6) { showError("Add meg a 6 jegyű kódot!"); return; }
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'MANAGE_2FA', subAction: 'ENABLE', code: code, secret: temp2FASecret })
+        });
+        
+        if (response.ok) {
+            showSuccess("2FA sikeresen bekapcsolva!");
+            setup2FAModal.classList.remove('active');
+            user2FAToggle.checked = true;
+            
+            // Frissítjük a lokális adatot is
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            userData.has2FA = true;
+            localStorage.setItem('userData', JSON.stringify(userData));
+        } else {
+            const res = await response.json();
+            showError(res.error || "Hibás kód!");
+        }
+    } catch (error) {
+        showError("Hiba az aktiváláskor.");
+    }
+});
+
+async function disable2FA() {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'MANAGE_2FA', subAction: 'DISABLE' })
+        });
+        
+        if (response.ok) {
+            showSuccess("2FA kikapcsolva.");
+            user2FAToggle.checked = false;
+            // Lokális adat frissítése
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            userData.has2FA = false;
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+    } catch (error) {
+        showError("Nem sikerült kikapcsolni.");
+        user2FAToggle.checked = true;
+    }
+}
+
+// Modal bezárás (globális)
+window.close2FAModal = function() {
+    setup2FAModal.classList.remove('active');
+    document.getElementById('setup2FACode').value = '';
+}
+
+// 2FA Login Form kezelése
+document.getElementById('verify2FALoginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('login2FACode').value;
+    const btn = e.target.querySelector('button');
+    
+    // Kis vizuális visszajelzés a gombon
+    const originalText = btn.innerText;
+    btn.innerText = "Ellenőrzés...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'VERIFY_2FA_LOGIN', 
+                email: tempLoginEmail, 
+                token: code 
+            })
+        });
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.error || "Hibás kód!");
+
+        // Sikeres belépés
+        localStorage.setItem('userToken', result.token);
+        localStorage.setItem('userData', JSON.stringify(result.user));
+        
+        login2FAModal.classList.remove('active');
+        showSuccess(`Sikeres belépés!`);
+        switchToUserView();
+
+    } catch (error) {
+        showError(error.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+        document.getElementById('login2FACode').value = '';
+    }
+});
+// === UI FRISSÍTÉSEK (Kurzor + 2FA) ===
+
+// Segédfüggvény a kapcsolók beállításához
+function updateSettingsUI() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const toggleZw = document.getElementById('user2FAToggle');
+    
+    // Ha van user adat és létezik a gomb a HTML-ben
+    if (userData && toggleZw) {
+        // Beállítjuk a gombot arra, ami a user adatban van (true vagy false)
+        toggleZw.checked = (userData.has2FA === true);
+    }
+}
+
+// A nézetváltó függvény kiegészítése
+// Ez felülírja az eredeti switchToUserView-t, hogy lefuttassa a beállításokat is
+const originalSwitchToUserView = switchToUserView;
+
+switchToUserView = function() {
+    // 1. Lefuttatjuk az eredeti logikát (megjelenítés, adatok betöltése)
+    guestView.style.display = 'none';
+    adminView.style.display = 'none';
+    userView.style.display = 'block';
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+    
+    initializeMainTabs(userView);
+    loadUserData();
+
+    // 2. Betöltjük a Kurzor beállításokat
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+        // Ez a függvény már létezik a kódodban a kurzorhoz
+        if (typeof loadUserPreferences === 'function') {
+            loadUserPreferences(userData.email);
+        }
+    }
+
+    // 3. Betöltjük a 2FA kapcsoló állapotát (EZ AZ ÚJ RÉSZ)
+    updateSettingsUI();
+};
+
 
 
 
