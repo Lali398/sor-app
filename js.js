@@ -158,38 +158,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAdminLogin(e) {
-        e.preventDefault();
-        const usernameInput = document.getElementById('adminUsername').value;
-        const passwordInput = document.getElementById('adminPassword').value;
-        const submitBtn = adminForm.querySelector('.auth-btn');
+    e.preventDefault();
+    const usernameInput = document.getElementById('adminUsername').value;
+    const passwordInput = document.getElementById('adminPassword').value;
+    const submitBtn = adminForm.querySelector('.auth-btn');
 
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
-            beersData = result.beers || [];
-            usersData = result.users || [];
-            filteredBeers = [...beersData]; 
-            
-            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
-            setTimeout(() => {
-                closeAdminModal();
-                switchToAdminView();
-            }, 1000);
-
-        } catch (error) {
-            console.error("Bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
-        } finally {
-            setLoading(submitBtn, false);
+        beersData = result.beers || [];
+        usersData = result.users || [];
+        filteredBeers = [...beersData]; 
+        
+        // ÚJ: Admin token mentése
+        if (result.adminToken) {
+            localStorage.setItem('adminToken', result.adminToken);
         }
+        
+        showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
+        setTimeout(() => {
+            closeAdminModal();
+            switchToAdminView();
+        }, 1000);
+
+    } catch (error) {
+        console.error("Bejelentkezési hiba:", error);
+        showError(error.message || 'Hibás felhasználónév vagy jelszó!');
+    } finally {
+        setLoading(submitBtn, false);
     }
+}
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -2263,6 +2268,7 @@ if (refreshIdeasBtn) {
     refreshIdeasBtn.addEventListener('click', loadAdminIdeas);
 }
     });
+
 
 
 
