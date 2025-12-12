@@ -624,21 +624,48 @@ function setupAdminRecap() {
     // ======================================================
 
     function switchToUserView() {
-        document.body.classList.add('custom-cursor-active');
+        // 1. Nézetek átváltása
         guestView.style.display = 'none';
         adminView.style.display = 'none';
         userView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        // Fő fülek inicializálása a felhasználói nézeten
+        
+        // Háttér beállítása
         document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása a felhasználói nézeten
+        document.body.style.backgroundAttachment = 'fixed';
+        
+        // Fülek és adatok betöltése
         initializeMainTabs(userView);
-
         loadUserData();
+        
+        // === JAVÍTÁS: BEÁLLÍTÁSOK SZINKRONIZÁLÁSA ===
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        
+        // 1. 2FA Kapcsoló beállítása az elmentett adat alapján
+        const toggle2FA = document.getElementById('user2FAToggle');
+        if (userData && toggle2FA) {
+            // Ha a has2FA értéke true, akkor bepipáljuk, különben kivesszük
+            toggle2FA.checked = (userData.has2FA === true);
+        }
+
+        // 2. Kurzor beállítás betöltése
+        const uToggle = document.getElementById('userCursorToggle');
+        if (userData && uToggle) {
+             const storageKey = `cursor_pref_${userData.email}`;
+             const savedPref = localStorage.getItem(storageKey);
+             // Alapból true, ha nincs mentve semmi
+             const isCursorActive = savedPref === null ? true : (savedPref === 'true');
+             
+             uToggle.checked = isCursorActive;
+             
+             if (isCursorActive) {
+                 document.body.classList.add('custom-cursor-active');
+             } else {
+                 document.body.classList.remove('custom-cursor-active');
+             }
+        }
     }
+
+    
     function switchToGuestView() {
         document.body.classList.remove('custom-cursor-active');
         localStorage.removeItem('userToken');
@@ -1793,6 +1820,7 @@ switchToUserView = function() {
     updateSettingsUI();
 };
     });
+
 
 
 
