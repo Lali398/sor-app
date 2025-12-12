@@ -2251,88 +2251,40 @@ window.markIdeaPending = async function(index) {
     await updateIdeaStatus(index, 'Megcsinálásra vár');
 };
 
-// js.js fájl vége
-
 async function loadAdminIdeas() {
-    console.log("🔍 loadAdminIdeas() INDULT");
-    
-    const adminToken = localStorage.getItem('adminToken');
-    const userToken = localStorage.getItem('userToken');
-    
-    // Ellenőrizzük, hogy van-e token, ha nincs, ne is indítsuk a kérést
-    if (!adminToken && !userToken) {
-        console.warn("Nincs elérhető token (sem admin, sem user).");
-        return;
-    }
+        console.log("🔍 loadAdminIdeas() INDULT");
+        const adminToken = localStorage.getItem('adminToken');
+        const userToken = localStorage.getItem('userToken');
 
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                // Fontos: Admin token előnyben
-                'Authorization': `Bearer ${adminToken || userToken}`
-            },
-            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
-        });
-        
-        const ideas = await response.json();
-        
-        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-        
-        renderAdminIdeas(ideas);
-        updateIdeasStats(ideas);
-    } catch (error) {
-        console.error("❌ Hiba az ötletek betöltésekor:", error);
-        // Csak akkor dobjunk toast hibát, ha tényleg admin nézetben vagyunk
-        if(document.getElementById('adminView').style.display !== 'none') {
-             showError(error.message || "Nem sikerült betölteni az ötleteket.");
+        if (!adminToken && !userToken) return;
+
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminToken || userToken}`
+                },
+                body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
+            });
+            
+            const ideas = await response.json();
+            if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
+            
+            if (typeof renderAdminIdeas === 'function') {
+                renderAdminIdeas(ideas);
+            }
+            if (typeof updateIdeasStats === 'function') {
+                updateIdeasStats(ideas);
+            }
+        } catch (error) {
+            console.error("Hiba az ötletek betöltésekor:", error);
         }
     }
-}
-    });
 
+    // Ez a sor indítja el az admin ötletek betöltését, ha épp admin nézetben vagyunk
+    if (document.getElementById('adminView').style.display !== 'none') {
+        loadAdminIdeas();
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+});
