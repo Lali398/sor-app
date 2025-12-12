@@ -78,16 +78,20 @@
                                 <input type="password" id="registerPassword" required>
                                 <label for="registerPassword">Jelszó</label>
                                 <span class="input-highlight"></span>
-                                <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
-                                    Min. 8 karakter, 1 szám, 1 spec. karakter.
-                                </small>
-                                <span class="input-highlight"></span>
                             </div>
                             <div class="input-group">
                                 <input type="password" id="registerPasswordConfirm" required>
                                 <label for="registerPasswordConfirm">Jelszó megerősítés</label>
                                 <span class="input-highlight"></span>
                             </div>
+                            <div class="input-group">
+                            <input type="password" id="registerPassword" required>
+                            <label for="registerPassword">Jelszó</label>
+                            <span class="input-highlight"></span>
+                            <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                                Min. 8 karakter, 1 szám, 1 spec. karakter.
+                            </small>
+                        </div>
                             <div class="terms-group">
                                 <input type="checkbox" id="registerTerms" required>
                                 <label for="registerTerms">
@@ -140,8 +144,6 @@
             <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
             <button class="main-tab-btn" data-tab-content="user-drink-rating-content">🍹 Ital Értékelés</button>
             <button class="main-tab-btn" data-tab-content="user-drinks-content">🍸 Italjaim</button>
-            <button class="main-tab-btn" data-tab-content="user-ideas-submit-content">💡 Ötlet Ajánló</button>
-            <button class="main-tab-btn" data-tab-content="user-ideas-wall-content">🏆 Dicsőségfal</button>
             <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
             <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
             <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
@@ -492,56 +494,6 @@
                     </section>
                 </div>
             </div>
-
-        <!-- ÖTLET AJÁNLÓ TAB -->
-                <div class="main-tab-pane" id="user-ideas-submit-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>💡 Ötlet Ajánló</h3>
-                        </header>
-                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
-                            Van egy szuper ötleted a sör- vagy italértékelő rendszerhez? Oszd meg velünk! 
-                            Ha elfogadjuk, felkerül a Dicsőségfalra! 🎉
-                        </p>
-                        
-                        <form id="submitIdeaForm" class="config-form">
-                            <div class="input-group">
-                                <textarea id="ideaText" required rows="6" style="width: 100%; padding: 15px; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none; resize: vertical; font-family: 'Poppins', sans-serif;"></textarea>
-                                <label for="ideaText" style="position: absolute; top: 15px; left: 0; color: #d0d0d0;">Írd le az ötleted...</label>
-                            </div>
-                            
-                            <div class="terms-group" style="margin-top: 20px;">
-                                <input type="checkbox" id="anonymousCheckbox">
-                                <label for="anonymousCheckbox">
-                                    🕶️ Anonim ötlet (a neved nem jelenik meg)
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="auth-btn">
-                                <span class="btn-text">Ötlet beküldése 🚀</span>
-                                <span class="btn-loading">
-                                    <div class="spinner"></div>
-                                </span>
-                            </button>
-                        </form>
-                    </section>
-                </div>
-
-                <!-- DICSŐSÉGFAL TAB -->
-                <div class="main-tab-pane" id="user-ideas-wall-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>🏆 Dicsőségfal</h3>
-                        </header>
-                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
-                            Ezek az ötletek megvalósultak! Köszönjük a közösségünknek! 💖
-                        </p>
-                        
-                        <div id="ideasWallContainer" class="ideas-wall-grid">
-                            <p class="recap-placeholder">Betöltés...</p>
-                        </div>
-                    </section>
-                </div>
         </main>
     </div>
 
@@ -569,7 +521,6 @@
        <nav class="main-tabs">
     <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
     <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
-    <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendégek Ötletei</button>
     <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
     <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
 </nav>
@@ -815,61 +766,6 @@
                     </section>
                 </div>
             </div>
-        <!-- VENDÉGEK ÖTLETEI TAB -->
-                <div class="main-tab-pane" id="admin-ideas-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>💡 Vendégek Ötletei</h3>
-                            <button class="config-btn" id="refreshIdeasBtn">
-                                <span>🔄</span>
-                                <span>Frissítés</span>
-                            </button>
-                        </header>
-                        
-                        <div class="stats-grid" style="margin-bottom: 30px;">
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">💡</div>
-                                <div class="stat-info">
-                                    <p>Összes ötlet</p>
-                                    <h3 id="totalIdeasCount">0</h3>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">⏳</div>
-                                <div class="stat-info">
-                                    <p>Várakozó</p>
-                                    <h3 id="pendingIdeasCount">0</h3>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon" style="background: linear-gradient(135deg, #27ae60, #229954);">✅</div>
-                                <div class="stat-info">
-                                    <p>Megcsinálva</p>
-                                    <h3 id="completedIdeasCount">0</h3>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Beküldő</th>
-                                        <th>Ötlet</th>
-                                        <th>Időpont</th>
-                                        <th>Státusz</th>
-                                        <th>Műveletek</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminIdeasTableBody">
-                                    <tr>
-                                        <td colspan="5" class="no-results">Betöltés...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
         </main>
     </div>
 
@@ -1093,10 +989,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
-
-
 
 
 
