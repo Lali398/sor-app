@@ -228,6 +228,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const termsAccepted = document.getElementById('registerTerms').checked;
         const submitBtn = registerForm.querySelector('.auth-btn');
 
+        // 1. Minimum 8 karakter ellenőrzése
+        if (password.length < 8) {
+            showError("A jelszónak legalább 8 karakter hosszúnak kell lennie!");
+            return;
+        }
+
+        // 2. Szám ellenőrzése (RegExp)
+        if (!/\d/.test(password)) {
+            showError("A jelszónak tartalmaznia kell legalább egy számot!");
+            return;
+        }
+
+        // 3. Speciális karakter ellenőrzése
+        // Ez a lista tartalmazza a gyakoribb speciális karaktereket: !@#$%^&*() stb.
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            showError("A jelszónak tartalmaznia kell legalább egy speciális karaktert!");
+            return;
+        }
+
         if (password !== passwordConfirm) {
             showError("A két jelszó nem egyezik!");
             return;
@@ -1562,6 +1581,7 @@ document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
 
 
 
