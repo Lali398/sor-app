@@ -2,6 +2,8 @@
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { authenticator } from 'otplib';
+import QRCode from 'qrcode';
 
 // === KONFIGURÁCIÓ ===
 const ADMIN_BEERS_SHEET = "'Sör táblázat'!A4:V";
@@ -45,9 +47,7 @@ const verifyUser = (req) => {
 
 // === FŐ HANDLER FÜGGVÉNY ===
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
-    }
+    if (req.method !== 'POST') return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
 
     const { action } = req.body;
     const { SPREADSHEET_ID, GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL, JWT_SECRET } = process.env;
@@ -112,15 +112,114 @@ export default async function handler(req, res) {
             case 'LOGIN_USER': {
                 const { email, password } = req.body;
                 const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const userRow = usersResponse.data.values?.find(row => row[1] === email);
-                if (!userRow) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-
+                
+                // Megkeressük a sort, ahol az email egyezik
+                const rows = usersResponse.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === email);
+                
+                if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+                
+                const userRow = rows[rowIndex];
                 const isPasswordValid = await bcrypt.compare(password, userRow[2]);
                 if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+
+                // 2FA ELLENŐRZÉS (E oszlop - index 4)
+                const is2FAEnabled = userRow[4] === 'TRUE';
+
+                if (is2FAEnabled) {
+                    // Ha be van kapcsolva, NEM adunk tokent, csak jelezzük a kliensnek
+                    return res.status(200).json({ 
+                        require2fa: true, 
+                        tempEmail: email // Ezt visszaküldjük, hogy a kliens tudja kinek kell a kódot küldeni
+                    });
+                }
                 
-                const user = { name: userRow[0], email: userRow[1] };
+                // Hagyományos belépés
+                const user = { name: userRow[0], email: userRow[1], has2FA: false };
                 const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
                 return res.status(200).json({ token, user });
+            }
+
+            case 'VERIFY_2FA_LOGIN': {
+                const { email, token: inputToken } = req.body;
+                
+                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                const rows = usersResponse.data.values || [];
+                const userRow = rows.find(row => row[1] === email);
+
+                if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
+
+                const secret = userRow[3]; // D oszlop: Secret
+                
+                // Kód ellenőrzése
+                const isValid = authenticator.check(inputToken, secret);
+
+                if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
+
+                // Sikeres belépés
+                const user = { name: userRow[0], email: userRow[1], has2FA: true };
+                const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+                return res.status(200).json({ token: jwtToken, user });
+            }
+
+            case 'MANAGE_2FA': {
+                const userData = verifyUser(req);
+                const { subAction, code, secret } = req.body; // subAction: 'GENERATE', 'ENABLE', 'DISABLE'
+
+                if (subAction === 'GENERATE') {
+                    const newSecret = authenticator.generateSecret();
+                    const otpauth = authenticator.keyuri(userData.email, 'SorTablazat', newSecret);
+                    const qrImageUrl = await QRCode.toDataURL(otpauth);
+                    return res.status(200).json({ secret: newSecret, qrCode: qrImageUrl });
+                }
+
+                if (subAction === 'ENABLE') {
+                    // Ellenőrizzük a kódot a mentés előtt
+                    const isValid = authenticator.check(code, secret);
+                    if (!isValid) return res.status(400).json({ error: "Hibás kód! Próbáld újra." });
+
+                    // Mentés a Sheet-be
+                    const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                    const rows = usersResponse.data.values || [];
+                    const rowIndex = rows.findIndex(row => row[1] === userData.email);
+
+                    if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+
+                    // D és E oszlop frissítése (index 3 és 4)
+                    // Megjegyzés: A sheets API update range-hez a sor indexét (rowIndex + 1) használjuk.
+                    // A range pl: Felhasználók!D2:E2
+                    const range = `${USERS_SHEET}!D${rowIndex + 1}:E${rowIndex + 1}`;
+                    
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: range,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: [[secret, 'TRUE']] }
+                    });
+
+                    return res.status(200).json({ message: "2FA sikeresen bekapcsolva!" });
+                }
+
+                if (subAction === 'DISABLE') {
+                     // Kikapcsolás a Sheet-ben
+                    const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                    const rows = usersResponse.data.values || [];
+                    const rowIndex = rows.findIndex(row => row[1] === userData.email);
+
+                    if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+
+                    const range = `${USERS_SHEET}!D${rowIndex + 1}:E${rowIndex + 1}`;
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: range,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: [['', 'FALSE']] } // Töröljük a kulcsot és FALSE
+                    });
+
+                    return res.status(200).json({ message: "2FA kikapcsolva." });
+                }
+                
+                return res.status(400).json({ error: "Ismeretlen művelet." });
             }
 
             case 'GET_USER_BEERS': {
@@ -138,10 +237,11 @@ export default async function handler(req, res) {
                       look: row[5] || 0,
                       smell: row[6] || 0,
                       taste: row[7] || 0,
+
+                      beerPercentage: row[8] || 0, // I oszlop (volt 8)
+                      totalScore: row[9] || 0,      // J oszlop (volt 9)
+                      avg: row[10] || 0,             // K oszlop (volt 10)
                       
-                      totalScore: row[8] || 0,      // I oszlop (volt 9)
-                      avg: row[9] || 0,             // J oszlop (volt 10)
-                      beerPercentage: row[10] || 0, // K oszlop (volt 8)
                       
                       notes: row[11] || ''
                   })) || [];
@@ -185,6 +285,7 @@ export default async function handler(req, res) {
                     resource: { values: [newRow] },
                 });
                 return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
+                return res.status(200).json([]);
             }
 
             case 'CHANGE_PASSWORD': {
@@ -267,6 +368,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
