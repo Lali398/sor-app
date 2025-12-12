@@ -300,6 +300,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
             
+            // --- ITT VOLT A HIÁNYZÓ RÉSZ ---
+            // Ha a szerver azt mondja, hogy 2FA kell:
+            if (result.require2fa) {
+                tempLoginEmail = result.tempEmail; // Elmentjük az emailt későbbre
+                login2FAModal.classList.add('active'); // Feldobjuk a kódkérő ablakot
+                
+                // Kis kényelem: fókuszáljunk a mezőre
+                setTimeout(() => {
+                    const input = document.getElementById('login2FACode');
+                    if(input) input.focus();
+                }, 100);
+                
+                // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
+                setLoading(submitBtn, false);
+                return; // KILÉPÜNK A FÜGGVÉNYBŐL!
+            }
+            // ---------------------------------
+
+            // Ez a rész csak akkor fut le, ha NINCS bekapcsolva a 2FA a usernél
             localStorage.setItem('userToken', result.token);
             localStorage.setItem('userData', JSON.stringify(result.user));
 
@@ -309,7 +328,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás e-mail cím vagy jelszó!');
         } finally {
-            setLoading(submitBtn, false);
+            // Csak akkor kapcsoljuk ki a töltést, ha nem nyílt meg a 2FA ablak
+            // (Ha megnyílt, ott már kikapcsoltuk a 'if' ágban)
+            if (!login2FAModal.classList.contains('active')) {
+                 setLoading(submitBtn, false);
+            }
         }
     }
 
@@ -1770,6 +1793,7 @@ switchToUserView = function() {
     updateSettingsUI();
 };
     });
+
 
 
 
