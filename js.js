@@ -114,6 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     const userLogoutBtn = document.getElementById('userLogoutBtn');
     const addBeerForm = document.getElementById('addBeerForm');
+    const addDrinkForm = document.getElementById('addDrinkForm');
+    const userDrinkTableBody = document.getElementById('userDrinkTableBody');
     const userBeerTableBody = document.getElementById('userBeerTableBody');
     const userWelcomeMessage = document.getElementById('userWelcomeMessage');
     const changePasswordForm = document.getElementById('changePasswordForm');
@@ -141,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedSuggestionIndex = -1;
     let charts = {};
     let currentUserBeers = [];
+    let currentUserDrinks = [];
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
 
@@ -223,6 +226,113 @@ document.addEventListener('DOMContentLoaded', function() {
     } finally {
         setLoading(submitBtn, false);
     }
+}
+
+    async function handleAddDrink(e) {
+    e.preventDefault();
+    const drinkName = document.getElementById('drinkName').value;
+    const category = document.getElementById('drinkCategory').value;
+    const type = document.getElementById('drinkType').value;
+    const location = document.getElementById('drinkLocation').value;
+    const drinkPercentage = document.getElementById('drinkPercentage').value || 0;
+    const look = document.getElementById('drinkLook').value;
+    const smell = document.getElementById('drinkSmell').value;
+    const taste = document.getElementById('drinkTaste').value;
+    const notes = document.getElementById('drinkNotes').value;
+    const submitBtn = addDrinkForm.querySelector('.auth-btn');
+
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'ADD_USER_DRINK', 
+                drinkName, 
+                category, 
+                type, 
+                location, 
+                drinkPercentage, 
+                look, 
+                smell, 
+                taste, 
+                notes 
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            if (response.status === 401) {
+                showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
+            }
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        showSuccess('Ital sikeresen hozzáadva!');
+        addDrinkForm.reset();
+        loadUserDrinks(); // Újratöltjük az italokat
+    } catch (error) {
+        console.error("Hiba ital hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült az italt hozzáadni.");
+    } finally {
+        setLoading(submitBtn, false);
+    }
+}
+
+async function loadUserDrinks() {
+    const user = JSON.parse(localStorage.getItem('userData'));
+    if (!user) return;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_USER_DRINKS' })
+        });
+        const drinks = await response.json();
+        if (!response.ok) {
+            if (response.status === 401) {
+                showError("A munkameneted lejárt, jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
+            }
+            throw new Error(drinks.error || 'Szerverhiba');
+        }
+        
+        currentUserDrinks = drinks;
+        renderUserDrinks(drinks);
+    } catch (error) {
+        console.error("Hiba az italok betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni az italokat.");
+    }
+}
+
+function renderUserDrinks(drinks) {
+    userDrinkTableBody.innerHTML = '';
+    if (!drinks || drinks.length === 0) {
+        userDrinkTableBody.innerHTML = `<tr><td colspan="11" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
+        return;
+    }
+    drinks.forEach(drink => {
+        const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
+        const formattedAvg = drink.avg ? parseFloat(drink.avg).toFixed(2) : '0.00';
+        const row = `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${drink.drinkName}</td>
+                <td>${drink.category}</td>
+                <td>${drink.type}</td>
+                <td>${drink.location}</td>
+                <td>${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
+                <td>${drink.look || 0}</td>
+                <td>${drink.smell || 0}</td>
+                <td>${drink.taste || 0}</td>
+                <td>${drink.totalScore || 0}</td>
+                <td class="average-cell">${formattedAvg}</td>
+            </tr>
+        `;
+        userDrinkTableBody.insertAdjacentHTML('beforeend', row);
+    });
 }
     
     async function handleGuestRegister(e) {
@@ -894,6 +1004,7 @@ function setupAdminRecap() {
     // Felhasználói nézet eseménykezelői
     userLogoutBtn.addEventListener('click', switchToGuestView);
     addBeerForm.addEventListener('submit', handleAddBeer);
+    addDrinkForm.addEventListener('submit', handleAddDrink);
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
@@ -1416,6 +1527,7 @@ window.addEventListener('scroll', function() {
         document.body.style.backgroundAttachment = 'fixed';
         initializeMainTabs(userView);
         loadUserData();
+        loadUserDrinks();
 
         // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
         const userData = JSON.parse(localStorage.getItem('userData'));
@@ -1800,6 +1912,7 @@ switchToUserView = function() {
     updateSettingsUI();
 };
     });
+
 
 
 
