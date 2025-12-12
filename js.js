@@ -1781,45 +1781,69 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
 // === UI FRISSÍTÉSEK (Kurzor + 2FA) ===
 
 // Segédfüggvény a kapcsolók beállításához
+// === JAVÍTOTT UI FRISSÍTÉS (KURZOR + 2FA EGYBEN) ===
+
 function updateSettingsUI() {
     const userData = JSON.parse(localStorage.getItem('userData'));
-    const toggleZw = document.getElementById('user2FAToggle');
     
-    // Ha van user adat és létezik a gomb a HTML-ben
-    if (userData && toggleZw) {
-        // Beállítjuk a gombot arra, ami a user adatban van (true vagy false)
-        toggleZw.checked = (userData.has2FA === true);
+    // --- 1. 2FA Kapcsoló beállítása ---
+    const toggle2FA = document.getElementById('user2FAToggle');
+    if (userData && toggle2FA) {
+        toggle2FA.checked = (userData.has2FA === true);
+    }
+
+    // --- 2. Kurzor beállítása (EZ HOZZA VISSZA A SÖRT) ---
+    let emailKey = null;
+    const userViewElem = document.getElementById('userView');
+    const adminViewElem = document.getElementById('adminView');
+
+    // Megnézzük, ki van épp bejelentkezve (User vagy Admin)
+    if (userData && userViewElem && userViewElem.style.display !== 'none') {
+        emailKey = userData.email;
+    } else if (adminViewElem && adminViewElem.style.display !== 'none') {
+        emailKey = 'admin_user';
+    }
+
+    if (emailKey) {
+        const storageKey = `cursor_pref_${emailKey}`;
+        const savedPref = localStorage.getItem(storageKey);
+        // Alapértelmezés: BEKAPCSOLVA (true), ha nincs még mentve semmi
+        const isCursorActive = savedPref === null ? true : (savedPref === 'true');
+        
+        // Itt kapcsoljuk be/ki a tényleges sörkurzort
+        if (isCursorActive) {
+            document.body.classList.add('custom-cursor-active');
+        } else {
+            document.body.classList.remove('custom-cursor-active');
+        }
+
+        // A kapcsolók vizuális állapotának frissítése
+        const uToggle = document.getElementById('userCursorToggle');
+        const aToggle = document.getElementById('adminCursorToggle');
+        if (uToggle) uToggle.checked = isCursorActive;
+        if (aToggle) aToggle.checked = isCursorActive;
     }
 }
 
-// A nézetváltó függvény kiegészítése
-// Ez felülírja az eredeti switchToUserView-t, hogy lefuttassa a beállításokat is
-const originalSwitchToUserView = switchToUserView;
-
+// A nézetváltó függvény, ami meghívja a fenti javított beállítót
 switchToUserView = function() {
-    // 1. Lefuttatjuk az eredeti logikát (megjelenítés, adatok betöltése)
-    guestView.style.display = 'none';
-    adminView.style.display = 'none';
-    userView.style.display = 'block';
+    // Nézetek kezelése
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
+    
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
     
-    initializeMainTabs(userView);
-    loadUserData();
+    // Adatok betöltése (ha léteznek a függvények a scope-ban)
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof loadUserData === 'function') loadUserData();
 
-    // 2. Betöltjük a Kurzor beállításokat
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (userData) {
-        // Ez a függvény már létezik a kódodban a kurzorhoz
-        if (typeof loadUserPreferences === 'function') {
-            loadUserPreferences(userData.email);
-        }
-    }
-
-    // 3. Betöltjük a 2FA kapcsoló állapotát (EZ AZ ÚJ RÉSZ)
+    // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
 };
     });
+
 
 
 
