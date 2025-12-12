@@ -175,12 +175,24 @@ document.addEventListener('DOMContentLoaded', function() {
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
             
+            // === JAVÍTÁS ITT: ADMIN TOKEN MENTÉSE ===
+            // Ez a rész hiányzott, ezért volt 401-es hiba
+            if (result.adminToken) {
+                localStorage.setItem('userToken', result.adminToken);
+                // Létrehozunk egy admin profilt is, hogy a rendszer ne dobjon hibát
+                localStorage.setItem('userData', JSON.stringify({ 
+                    name: 'Főnök', 
+                    email: 'admin@sortablazat.hu', 
+                    isAdmin: true 
+                }));
+            }
+            // ========================================
+            
             showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
             setTimeout(() => {
                 closeAdminModal();
                 switchToAdminView();
             }, 1000);
-
         } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás felhasználónév vagy jelszó!');
@@ -2292,6 +2304,7 @@ function createBeerBubbles(x, y) {
     }
 }
     });
+
 
 
 
