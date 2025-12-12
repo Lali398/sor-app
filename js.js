@@ -2251,42 +2251,45 @@ window.markIdeaPending = async function(index) {
     await updateIdeaStatus(index, 'Megcsinálásra vár');
 };
 
+// js.js fájl vége
+
 async function loadAdminIdeas() {
     console.log("🔍 loadAdminIdeas() INDULT");
     
     const adminToken = localStorage.getItem('adminToken');
     const userToken = localStorage.getItem('userToken');
     
-    console.log("🔑 Admin Token:", adminToken ? "VAN" : "NINCS");
-    console.log("🔑 User Token:", userToken ? "VAN" : "NINCS");
-    
+    // Ellenőrizzük, hogy van-e token, ha nincs, ne is indítsuk a kérést
+    if (!adminToken && !userToken) {
+        console.warn("Nincs elérhető token (sem admin, sem user).");
+        return;
+    }
+
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
+                // Fontos: Admin token előnyben
                 'Authorization': `Bearer ${adminToken || userToken}`
             },
             body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
         });
         
-        console.log("📡 Response status:", response.status);
-        
         const ideas = await response.json();
-        console.log("📦 Kapott adatok:", ideas);
         
         if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
         
         renderAdminIdeas(ideas);
         updateIdeasStats(ideas);
-        
     } catch (error) {
         console.error("❌ Hiba az ötletek betöltésekor:", error);
-        showError(error.message || "Nem sikerült betölteni az ötleteket.");
+        // Csak akkor dobjunk toast hibát, ha tényleg admin nézetben vagyunk
+        if(document.getElementById('adminView').style.display !== 'none') {
+             showError(error.message || "Nem sikerült betölteni az ötleteket.");
+        }
     }
 }
-    
-    });
 
 
 
