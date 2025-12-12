@@ -168,6 +168,20 @@
             </section>
         </div>
 
+
+        <div class="settings-group">
+    <div class="setting-item">
+        <div class="setting-info">
+            <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
+            <p>Google Authenticator használata a belépéshez.</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="user2FAToggle">
+            <span class="slider round"></span>
+        </label>
+    </div>
+</div>
+
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
                 <div class="main-tab-pane active" id="user-rating-content">
@@ -643,10 +657,50 @@
             </form>
         </div>
     </div>
+<div class="modal-overlay" id="setup2FAModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>2FA Beállítása</h3>
+            <button class="modal-close" onclick="close2FAModal()">&times;</button>
+        </header>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 15px; color: #ddd;">Olvasd be ezt a QR kódot a Google Authenticator alkalmazással:</p>
+            <img id="qrCodeImage" src="" alt="QR Kód" style="width: 200px; height: 200px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">Vagy írd be manuálisan: <span id="manualSecret" style="color: #fff; font-family: monospace;"></span></p>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <input type="text" id="setup2FACode" placeholder="Írd be a 6 jegyű kódot" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+            </div>
+            
+            <button id="confirm2FABtn" class="auth-btn" style="margin-top: 10px;">Aktiválás</button>
+        </div>
+    </div>
+</div>
 
+<div class="modal-overlay" id="login2FAModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Biztonsági ellenőrzés</h3>
+        </header>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 20px; color: #ddd;">Kérlek add meg a Google Authenticator kódot a belépéshez.</p>
+            <div class="beer-icon" style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
+            
+            <form id="verify2FALoginForm">
+                <div class="input-group">
+                    <input type="text" id="login2FACode" required placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; color: white;">
+                </div>
+                <button type="submit" class="auth-btn">Ellenőrzés</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+    
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
