@@ -68,30 +68,22 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-    const { username, password } = req.body;
-    if (username !== 'admin' || password !== 'sor') {
-        return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
-    }
-    
-    // Admin token generálása
-    const adminToken = jwt.sign(
-        { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
-        JWT_SECRET, 
-        { expiresIn: '1d' }
-    );
-    
-    const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
-    const allRows = sörökResponse.data.values || [];
-    const allBeers = [];
-    allRows.forEach(row => {
-        const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
-        if (beer1) allBeers.push(beer1);
-        const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
-        if (beer2) allBeers.push(beer2);
-    });
-    
-    return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
-}
+                const { username, password } = req.body;
+                if (username !== 'admin' || password !== 'sor') {
+                    return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
+                }
+                const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
+                const allRows = sörökResponse.data.values || [];
+                const allBeers = [];
+                allRows.forEach(row => {
+                    const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
+                    if (beer1) allBeers.push(beer1);
+                    const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
+                    if (beer2) allBeers.push(beer2);
+                });
+                return res.status(200).json({ beers: allBeers, users: [] });
+            }
+
             case 'REGISTER_USER': {
                 const { name, email, password } = req.body;
                 if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
@@ -525,7 +517,7 @@ case 'EDIT_USER_DRINK': {
                 
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${IDEAS_SHEET}!A:F`,
+                    range: IDEAS_SHEET,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
@@ -538,7 +530,7 @@ case 'EDIT_USER_DRINK': {
                 
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${IDEAS_SHEET}!A:F`
+                    range: IDEAS_SHEET
                 });
                 
                 const allIdeas = ideasResponse.data.values || [];
@@ -555,41 +547,29 @@ case 'EDIT_USER_DRINK': {
                 return res.status(200).json(completedIdeas);
             }
 
-            // sheet.js - GET_ALL_IDEAS módosítása
-
-// sheet.js - Cseréld le ezt a részt:
-
-case 'GET_ALL_IDEAS': {
+            case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
-                // 1. Kényszerítjük, hogy csak az A-F oszlopokat olvassa be (így nem olvassa be a szemetet jobbról)
+                
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${IDEAS_SHEET}!A:F` 
+                    range: IDEAS_SHEET
                 });
                 
                 const allIdeas = ideasResponse.data.values || [];
                 
-                // 2. Adatok átalakítása objektummá
-                const ideas = allIdeas.map((row, index) => {
-                    // Ha a sor üres, vagy nincs benne adat, null-t adunk vissza
-                    if (!row || row.length === 0) return null;
-
-                    return {
-                        index: index, // Fontos: Ez kell a gombok működéséhez
-                        submitter: row[0] || 'Névtelen',
-                        idea: row[1] || 'Nincs szöveg',
-                        timestamp: row[2] || '',
-                        // KRITIKUS RÉSZ: Ha a státusz cella üres (undefined), akkor "Megcsinálásra vár" legyen!
-                        status: (row[3] && row[3].trim() !== '') ? row[3] : 'Megcsinálásra vár', 
-                        date: row[4] || '',
-                        email: row[5] || ''
-                    };
-                })
-                // 3. Szűrés: Kivesszük az üres sorokat (null) és a Fejlécet
-                .filter(item => item !== null && item.submitter !== 'Ki javasolta?');
-
+                const ideas = allIdeas.map((row, index) => ({
+                    index: index,
+                    submitter: row[0],
+                    idea: row[1],
+                    timestamp: row[2],
+                    status: row[3],
+                    date: row[4],
+                    email: row[5]
+                }));
+                
                 return res.status(200).json(ideas);
             }
+
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
                 const { index, newStatus } = req.body;
@@ -668,13 +648,6 @@ case 'GET_ALL_IDEAS': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
-
-
-
-
-
 
 
 
