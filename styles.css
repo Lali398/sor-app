@@ -108,7 +108,7 @@ body {
 
 .input-group { 
     position: relative; 
-    margin-bottom: 55px; /* 25px-ről 35px-re növelve */
+    margin-bottom: 35px; /* 25px-ről 35px-re növelve */
 }
 
 .input-group input {
@@ -1406,6 +1406,7 @@ input:checked + .slider:before {
         grid-template-columns: 1fr;
     }
 }
+
 
 
 
