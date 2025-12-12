@@ -656,28 +656,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-async function loadAdminIdeas() {
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken') || localStorage.getItem('userToken')}`
-            },
-            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
-        });
-        
-        const ideas = await response.json();
-        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-        
-        renderAdminIdeas(ideas);
-        updateIdeasStats(ideas);
-        
-    } catch (error) {
-        console.error("Hiba az ötletek betöltésekor:", error);
-        showError(error.message || "Nem sikerült betölteni az ötleteket.");
-    }
-}
 
 
 
