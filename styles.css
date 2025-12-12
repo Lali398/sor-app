@@ -1272,6 +1272,182 @@ input:checked + .slider:before {
     background: #2980b9;
     transform: scale(1.1);
 }
+/* === ÖTLET DOBOZ & DICSŐSÉGFAL STÍLUSOK === */
+
+/* Textarea stílusa a glassmorphism formában */
+#ideaText {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 15px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    resize: vertical;
+    outline: none;
+    border-radius: 10px 10px 0 0;
+    transition: all 0.3s ease;
+}
+#ideaText:focus {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom-color: #8a73ff;
+}
+
+/* Dicsőségfal konténer */
+.hall-of-fame-container {
+    margin-top: 40px;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+}
+
+.hall-header h2 {
+    font-size: 2rem;
+    color: #ffd700;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+    margin-bottom: 5px;
+}
+.hall-header p {
+    color: #e0e0e0;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+/* Ötlet kártyák rácsa */
+.idea-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* Dicsőségfal kártya */
+.fame-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.fame-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+/* Arany csillogás effekt */
+.fame-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.fame-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.fame-avatar {
+    font-size: 1.5rem;
+}
+.fame-name {
+    font-weight: 700;
+    color: #ffd700;
+}
+.fame-idea {
+    font-size: 0.95rem;
+    color: #fff;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+.fame-footer {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: right;
+}
+
+/* Várakozó lista (Vertical) */
+.idea-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pending-idea-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 4px solid #3498db; /* Kék csík */
+    padding: 15px;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pending-content h4 {
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+.pending-content p {
+    color: #ccc;
+    font-size: 0.9rem;
+}
+.pending-status {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+/* Státusz színek az admin táblázathoz */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.status-done { background: rgba(39, 174, 96, 0.2); color: #2ecc71; }
+.status-waiting { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+
+/* Admin gomb */
+.mark-done-btn {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.mark-done-btn:hover { transform: scale(1.05); }
+
 
 
 
