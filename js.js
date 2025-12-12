@@ -1492,78 +1492,84 @@ function animateProgress(fillElement) {
     }, 40); // 4 másodperc per slide
 }
 });
-window.downloadRecap = function() {
-    const element = document.getElementById('storyContainer');
-    // Gombok elrejtése a képről
-    const actions = element.querySelector('.story-actions');
-    const navL = element.querySelector('.story-nav-left');
-    const navR = element.querySelector('.story-nav-right');
-    
-    actions.style.display = 'none';
-    navL.style.display = 'none';
-    navR.style.display = 'none';
-
-    html2canvas(element, { 
-        backgroundColor: '#10002b',
-        scale: 2 // Jobb minőség
-    }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'sor-recap-2025.png';
-        link.href = canvas.toDataURL();
-        link.click();
-        
-        // Visszaállítás
-        actions.style.display = 'flex';
-        navL.style.display = 'block';
-        navR.style.display = 'block';
-        showSuccess("Sikeres letöltés!");
-    });
-}
-    // js.txt - illeszd be a fájl végére vagy a window.downloadRecap környékére
+// CSERÉLD LE EZT A RÉSZT A FÁJL VÉGÉN (window.downloadRecap után):
 
 window.toggleFullscreen = function() {
     const elem = document.getElementById('storyContainer');
+    const cursor = document.getElementById('beerCursor'); // Megkeressük a kurzort
     const btn = document.querySelector('.story-fullscreen-btn');
 
-    if (!document.fullscreenElement &&    // Standard
-        !document.webkitFullscreenElement) {  // Safari/Chrome régebbi
+    if (!document.fullscreenElement && 
+        !document.webkitFullscreenElement) {
         
-        // Belépés teljes képernyőre
+        // --- BELÉPÉS ---
         if (elem.requestFullscreen) {
             elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
+        } else if (elem.webkitRequestFullscreen) {
             elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
+        } else if (elem.msRequestFullscreen) {
             elem.msRequestFullscreen();
         }
-        if(btn) btn.innerHTML = '✕'; // Ikon váltása bezárásra
+
+        // TRÜKK: Átmozgatjuk a kurzort a fullscreen elembe, hogy látszódjon
+        if (cursor && elem) {
+            elem.appendChild(cursor);
+        }
+
+        if(btn) btn.innerHTML = '✕'; 
+
     } else {
-        // Kilépés
+        // --- KILÉPÉS ---
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) { /* Safari */
+        } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE11 */
+        } else if (document.msExitFullscreen) {
             document.msExitFullscreen();
         }
-        if(btn) btn.innerHTML = '⛶'; // Ikon visszaállítása
+        
+        // A visszapakolást a 'fullscreenchange' esemény is kezeli (biztonságból),
+        // de itt is meghívhatjuk.
+        if(btn) btn.innerHTML = '⛶';
     }
 }
 
-// Opcionális: Ha a user ESC-el lép ki, az ikon akkor is váltson vissza
-document.addEventListener('fullscreenchange', updateFullscreenIcon);
-document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+// Figyeljük a teljes képernyő változást (pl. ha ESC-et nyom a user)
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-function updateFullscreenIcon() {
+function handleFullscreenChange() {
     const btn = document.querySelector('.story-fullscreen-btn');
-    if(!btn) return;
+    const cursor = document.getElementById('beerCursor');
+    const storyContainer = document.getElementById('storyContainer');
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        btn.innerHTML = '⛶';
+    // Megnézzük, hogy épp van-e teljes képernyő
+    const isFullscreen = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement ||
+                         document.msFullscreenElement;
+
+    if (!isFullscreen) {
+        // --- KILÉPTÜNK (pl. ESC gombbal) ---
+        if(btn) btn.innerHTML = '⛶';
+        
+        // Visszarakjuk a kurzort a body-ba, ha eddig a storyban volt
+        if (cursor && storyContainer && cursor.parentElement === storyContainer) {
+            document.body.appendChild(cursor);
+        }
     } else {
-        btn.innerHTML = '✕';
+        // --- BELÉPTÜNK (ellenőrzés) ---
+        if(btn) btn.innerHTML = '✕';
+        
+        // Ha valamiért még nem lenne ott, berakjuk a storyba
+        if (cursor && storyContainer && cursor.parentElement !== storyContainer) {
+            storyContainer.appendChild(cursor);
+        }
     }
 }
+
 
 
 
