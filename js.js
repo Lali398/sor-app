@@ -2252,39 +2252,58 @@ window.markIdeaPending = async function(index) {
 };
 
 async function loadAdminIdeas() {
-        console.log("🔍 loadAdminIdeas() INDULT");
-        const adminToken = localStorage.getItem('adminToken');
-        const userToken = localStorage.getItem('userToken');
+    console.log("🔍 loadAdminIdeas() INDULT");
+    
+    // Kifejezetten az admin tokent keressük először
+    let token = localStorage.getItem('adminToken');
+    
+    // Ha nincs admin token, megnézzük a sima user tokent (hátha csak user vagy)
+    if (!token) {
+        token = localStorage.getItem('userToken');
+    }
 
-        if (!adminToken && !userToken) return;
+    if (!token) {
+        console.error("❌ Nincs elérhető token!");
+        showError("Nem vagy bejelentkezve!");
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
+        });
+        
+        // Ha 401-et kapunk, az azt jelenti, hogy lejárt a token -> Dobjuk ki a felhasználót
+        if (response.status === 401) {
+            console.error("⛔ Token lejárt vagy érvénytelen (401)");
+            localStorage.removeItem('adminToken'); // Töröljük a rossz tokent
+            localStorage.removeItem('userToken');
+            showError("A munkamenet lejárt. Kérlek, jelentkezz be újra!");
+            setTimeout(() => {
+                location.reload(); // Frissítjük az oldalt, hogy visszadobjon a loginhoz
+            }, 1500);
+            return;
+        }
 
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adminToken || userToken}`
-                },
-                body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
-            });
-            
-            const ideas = await response.json();
-            if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
-            
-            if (typeof renderAdminIdeas === 'function') {
-                renderAdminIdeas(ideas);
-            }
-            if (typeof updateIdeasStats === 'function') {
-                updateIdeasStats(ideas);
-            }
-        } catch (error) {
-            console.error("Hiba az ötletek betöltésekor:", error);
+        const ideas = await response.json();
+        
+        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
+        
+        renderAdminIdeas(ideas);
+        updateIdeasStats(ideas);
+    } catch (error) {
+        console.error("❌ Hiba az ötletek betöltésekor:", error);
+        // Csak akkor írjunk ki hibát, ha nem 401-es volt (azt már kezeltük fent)
+        if (!error.message.includes('munkamenet lejárt')) {
+            showError(error.message || "Nem sikerült betölteni az ötleteket.");
         }
     }
-
-    // Ez a sor indítja el az admin ötletek betöltését, ha épp admin nézetben vagyunk
-    if (document.getElementById('adminView').style.display !== 'none') {
-        loadAdminIdeas();
-    }
+}
 
 });
+
