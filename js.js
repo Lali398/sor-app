@@ -168,31 +168,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
             });
+            
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
+            // Adatok mentése a változókba
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
             
-            // === JAVÍTÁS ITT: ADMIN TOKEN MENTÉSE ===
-            // Ez a rész hiányzott, ezért volt 401-es hiba
+            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
+            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
             if (result.adminToken) {
+                console.log("Admin token sikeresen mentve!"); // Debug üzenet
                 localStorage.setItem('userToken', result.adminToken);
-                // Létrehozunk egy admin profilt is, hogy a rendszer ne dobjon hibát
+                
+                // Admin profil mentése a működéshez
                 localStorage.setItem('userData', JSON.stringify({ 
-                    name: 'Főnök', 
+                    name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
+            } else {
+                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
             }
-            // ========================================
+            // =====================================
             
             showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
+            
             setTimeout(() => {
                 closeAdminModal();
                 switchToAdminView();
             }, 1000);
+
         } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás felhasználónév vagy jelszó!');
@@ -2304,6 +2312,7 @@ function createBeerBubbles(x, y) {
     }
 }
     });
+
 
 
 
