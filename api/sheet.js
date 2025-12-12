@@ -503,18 +503,21 @@ case 'EDIT_USER_DRINK': {
                 }
                 
                 const submitterName = isAnonymous ? 'Anonymous' : userData.name;
+                const userEmail = isAnonymous ? 'Anonymous' : userData.email;
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
                 const date = new Date().toLocaleDateString('hu-HU');
                 
+                // Sorrend: A:Beküldő, B:Ötlet, C:Időpont, D:Státusz, E:Dátum, F:Email
                 const newRow = [
-                    submitterName,           // A: Ki javasolta?
-                    ideaText,                // B: Ötlet
-                    timestamp,               // C: Időpont
-                    'Megcsinálásra vár',     // D: Státusz
-                    date,                    // E: Dátum
-                    isAnonymous ? 'Anonymous' : userData.email  // F: Email Cím
+                    submitterName,           
+                    ideaText,                
+                    timestamp,               
+                    'Megcsinálásra vár',     
+                    date,                    
+                    userEmail
                 ];
                 
+                // Fontos: Itt a 'IDEAS_SHEET' változót használjuk, aminek a neve: 'Vendég ötletek'
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${IDEAS_SHEET}!A:F`,
@@ -525,40 +528,25 @@ case 'EDIT_USER_DRINK': {
                 return res.status(201).json({ message: "Köszönjük az ötleted! 💡" });
             }
 
-            case 'GET_COMPLETED_IDEAS': {
-                const userData = verifyUser(req);
-                
-                const ideasResponse = await sheets.spreadsheets.values.get({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET
-                });
-                
-                const allIdeas = ideasResponse.data.values || [];
-                
-                const completedIdeas = allIdeas
-                    .filter(row => row[3] === 'Megcsinálva')
-                    .map(row => ({
-                        submitter: row[0],
-                        idea: row[1],
-                        timestamp: row[2],
-                        date: row[4]
-                    }));
-                
-                return res.status(200).json(completedIdeas);
-            }
-
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
+                
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${IDEAS_SHEET}!A:F` 
                 });
-                const allIdeas = ideasResponse.data.values || [];
                 
-                const ideas = allIdeas.map((row, index) => {
+                const allRows = ideasResponse.data.values || [];
+                
+                // Átalakítás objektumokká
+                // Fontos: Az 'index' paramétert mentjük el, ez a sor száma (0-tól kezdve)
+                const ideas = allRows.map((row, index) => {
+                    // Ha üres a sor, vagy ez a fejléc, akkor null-t adunk vissza (később kiszűrjük)
                     if (!row || row.length === 0) return null;
+                    if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null; // Fejléc szűrés
+
                     return {
-                        index: index,
+                        index: index, // Ez kell majd a módosításhoz (pl. az 5. sor módosítása)
                         submitter: row[0] || 'Névtelen',
                         idea: row[1] || 'Nincs szöveg',
                         timestamp: row[2] || '',
@@ -566,7 +554,7 @@ case 'EDIT_USER_DRINK': {
                         date: row[4] || '',
                         email: row[5] || ''
                     };
-                }).filter(item => item !== null && item.submitter !== 'Ki javasolta?');
+                }).filter(item => item !== null); // Kiszűrjük az üres sorokat és a fejlécet
 
                 return res.status(200).json(ideas);
             }
@@ -575,23 +563,20 @@ case 'EDIT_USER_DRINK': {
                 const userData = verifyUser(req);
                 const { index, newStatus } = req.body;
                 
-                const ideasResponse = await sheets.spreadsheets.values.get({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET
-                });
-                const allIdeas = ideasResponse.data.values || [];
-                
-                if (index < 0 || index >= allIdeas.length) {
-                    return res.status(400).json({ error: "Érvénytelen index" });
+                // Biztonsági ellenőrzés
+                if (index === undefined || index === null) {
+                    return res.status(400).json({ error: "Hiányzó index!" });
                 }
                 
-                // Mivel a range alapból A1-től indul, és van fejléc, ezért a sor indexe az array index + 1
-                // Fontos: Google Sheets API 1-től indexel, a tömb 0-tól.
-                // Ha lekérjük az egész táblát, a 0. elem az első sor (fejléc).
-                // A kliens oldalon kiszűrtük a fejlécet? 
-                // A GET_ALL_IDEAS-ban a map indexe a VALÓDI sor indexe (0 = fejléc).
+                // Mivel a Google Sheets sorai 1-től kezdődnek, a tömb indexe pedig 0-tól,
+                // és a map-elésnél az eredeti tömbindexet mentettük el:
+                // Tömb index 0 = Sheet 1. sor (Fejléc)
+                // Tömb index 1 = Sheet 2. sor (Első adat)
+                // Tehát a helyes sor a Sheet-ben: index + 1
                 
-                const range = `${IDEAS_SHEET}!D${index + 1}`;
+                const rowIndex = parseInt(index) + 1;
+                const range = `${IDEAS_SHEET}!D${rowIndex}`; // D oszlop a Státusz
+                
                 await sheets.spreadsheets.values.update({
                     spreadsheetId: SPREADSHEET_ID,
                     range: range,
@@ -599,7 +584,7 @@ case 'EDIT_USER_DRINK': {
                     resource: { values: [[newStatus]] }
                 });
                 
-                return res.status(200).json({ message: "Ötlet státusza frissítve! ✅" });
+                return res.status(200).json({ message: "Státusz sikeresen frissítve! ✅" });
             }
             
             case 'DELETE_USER': {
@@ -654,6 +639,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
