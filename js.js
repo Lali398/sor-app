@@ -1769,6 +1769,8 @@ switchToUserView = function() {
     // 3. Betöltjük a 2FA kapcsoló állapotát (EZ AZ ÚJ RÉSZ)
     updateSettingsUI();
 };
+    });
+
 
 
 
