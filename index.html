@@ -655,18 +655,12 @@
         </div>
     </div>
 <div class="modal-overlay" id="setup2FAModal">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h3>2FA Beállítása</h3>
-                <button class="modal-close" onclick="close2FAModal()">&times;</button>
-            </header>
-            
-            <div style="text-align: center;">
-                <p style="margin-bottom: 15px; color: #ddd;">Olvasd be ezt a QR kódot a Google Authenticator alkalmazással:</p>
-                
-                <img id="qrCodeImage" src="" alt="QR Kód" style="width: 200px; height: 200px; border-radius: 10px; margin-bottom: 20px;">
-                
-                <div style="background: rgba(255, 165, 0, 0.15); border: 1px solid rgba(255, 165, 0, 0.5); padding: 15px; border-radius: 12px; margin: 10px 0 20px 0; text-align: left;">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>2FA Beállítása</h3>
+            <button class="modal-close" onclick="close2FAModal()">&times;</button>
+        </header>
+        <div style="background: rgba(255, 165, 0, 0.15); border: 1px solid rgba(255, 165, 0, 0.5); padding: 15px; border-radius: 12px; margin: 10px 0 20px 0; text-align: left;">
                     <p style="color: #ffcc00; font-weight: bold; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                         <span>⚠️</span> FONTOS BIZTONSÁGI MENTÉS!
                     </p>
@@ -677,33 +671,30 @@
                         <span id="manualSecret" style="color: #fff; font-family: monospace; font-size: 16px; font-weight: bold; letter-spacing: 1px; user-select: all;"></span>
                     </div>
                 </div>
-                
-                <div class="input-group" style="margin-top: 25px;">
-                    <input type="text" id="setup2FACode" placeholder="Írd be a 6 jegyű kódot" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem; color: white;">
-                    <label for="setup2FACode" style="text-align: center; width: 100%;">Ellenőrző kód az appból</label>
-                </div>
-                
-                <button id="confirm2FABtn" class="auth-btn" style="margin-top: 15px;">Aktiválás és Mentés</button>
-            </div>
-        </div>
-    </div> <div class="modal-overlay" id="login2FAModal">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h3>Biztonsági ellenőrzés</h3>
-            </header>
-            <div style="text-align: center;">
-                <p style="margin-bottom: 20px; color: #ddd;">Kérlek add meg a Google Authenticator kódot a belépéshez.</p>
-                <div class="beer-icon" style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
-                
-                <form id="verify2FALoginForm">
-                    <div class="input-group">
-                        <input type="text" id="login2FACode" required placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; color: white;">
-                    </div>
-                    <button type="submit" class="auth-btn">Ellenőrzés</button>
-                </form>
-            </div>
+            
+            <button id="confirm2FABtn" class="auth-btn" style="margin-top: 10px;">Aktiválás</button>
         </div>
     </div>
+</div>
+
+<div class="modal-overlay" id="login2FAModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Biztonsági ellenőrzés</h3>
+        </header>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 20px; color: #ddd;">Kérlek add meg a Google Authenticator kódot a belépéshez.</p>
+            <div class="beer-icon" style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
+            
+            <form id="verify2FALoginForm">
+                <div class="input-group">
+                    <input type="text" id="login2FACode" required placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; color: white;">
+                </div>
+                <button type="submit" class="auth-btn">Ellenőrzés</button>
+            </form>
+        </div>
+    </div>
+</div>
 
     
     <script src="js.js"></script>
