@@ -39,20 +39,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const scrollTop = window.scrollY;
         const docHeight = document.body.scrollHeight - window.innerHeight;
-        let scrollPercent = scrollTop / docHeight; // 0-tól 1-ig megy
+        
+        // --- JAVÍTÁS: NaN (Not a Number) elkerülése ---
+        // Ha teljes képernyőn vagyunk, a docHeight lehet 0, ami osztásnál hibát okoz.
+        let scrollPercent = 0;
+        if (docHeight > 0) {
+            scrollPercent = scrollTop / docHeight;
+        }
 
-        // Matek:
-        // 0% görgetésnél (fent): -15 fok (kicsit dől)
-        // 100% görgetésnél (lent): -70 fok (nagyon dől, mintha innád)
+        // Biztonsági korlát (0 és 1 között tartjuk)
+        scrollPercent = Math.min(Math.max(scrollPercent, 0), 1);
+
         const startAngle = -15;
         const endAngle = -70; 
         
-        // Kiszámoljuk az új szöget
         currentScrollRotate = startAngle + (scrollPercent * (endAngle - startAngle));
 
-        // Frissítjük a kurzort az új szöggel (ha épp nem mozdul az egér, akkor is látszódjon)
         if (window.mouseX !== undefined) {
-             updateCursorPosition(window.mouseX, window.mouseY);
+            updateCursorPosition(window.mouseX, window.mouseY);
         }
     });
 
@@ -1496,7 +1500,7 @@ function animateProgress(fillElement) {
 
 window.toggleFullscreen = function() {
     const elem = document.getElementById('storyContainer');
-    const cursor = document.getElementById('beerCursor'); // Megkeressük a kurzort
+    const cursor = document.getElementById('beerCursor'); // Kurzor megkeresése
     const btn = document.querySelector('.story-fullscreen-btn');
 
     if (!document.fullscreenElement && 
@@ -1512,10 +1516,11 @@ window.toggleFullscreen = function() {
         }
 
         // TRÜKK: Átmozgatjuk a kurzort a fullscreen elembe, hogy látszódjon
+        // Különben a böngésző kitakarja, mert a body-ban van
         if (cursor && elem) {
             elem.appendChild(cursor);
         }
-
+        
         if(btn) btn.innerHTML = '✕'; 
 
     } else {
@@ -1524,51 +1529,40 @@ window.toggleFullscreen = function() {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
         }
-        
-        // A visszapakolást a 'fullscreenchange' esemény is kezeli (biztonságból),
-        // de itt is meghívhatjuk.
         if(btn) btn.innerHTML = '⛶';
     }
 }
 
-// Figyeljük a teljes képernyő változást (pl. ha ESC-et nyom a user)
-document.addEventListener('fullscreenchange', handleFullscreenChange);
-document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
+// Eseményfigyelő, ami akkor is visszapakolja a kurzort, ha ESC-el lépsz ki
 function handleFullscreenChange() {
     const btn = document.querySelector('.story-fullscreen-btn');
     const cursor = document.getElementById('beerCursor');
     const storyContainer = document.getElementById('storyContainer');
     
-    // Megnézzük, hogy épp van-e teljes képernyő
-    const isFullscreen = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement ||
-                         document.msFullscreenElement;
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
 
     if (!isFullscreen) {
-        // --- KILÉPTÜNK (pl. ESC gombbal) ---
+        // Kilépéskor visszatesszük a kurzort a body-ba (hogy mindenhol működjön)
         if(btn) btn.innerHTML = '⛶';
-        
-        // Visszarakjuk a kurzort a body-ba, ha eddig a storyban volt
-        if (cursor && storyContainer && cursor.parentElement === storyContainer) {
+        if (cursor && document.body) {
             document.body.appendChild(cursor);
         }
     } else {
-        // --- BELÉPTÜNK (ellenőrzés) ---
+        // Belépéskor ellenőrizzük, hogy jó helyen van-e
         if(btn) btn.innerHTML = '✕';
-        
-        // Ha valamiért még nem lenne ott, berakjuk a storyba
         if (cursor && storyContainer && cursor.parentElement !== storyContainer) {
             storyContainer.appendChild(cursor);
         }
     }
 }
+
+// Figyeljük a változást minden böngészőben
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
 
 
 
