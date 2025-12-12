@@ -100,6 +100,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 150);
         }
     });
+    function createBeerBubbles(x, y) {
+    // 3-5 buborék generálása
+    const bubbleCount = Math.floor(Math.random() * 3) + 3;
+    
+    for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'beer-bubble';
+        
+        // Véletlenszerű irány és távolság
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 30 + Math.random() * 50;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        // Véletlenszerű méret
+        const size = 10 + Math.random() * 15;
+        
+        bubble.style.left = x + 'px';
+        bubble.style.top = y + 'px';
+        bubble.style.width = size + 'px';
+        bubble.style.height = size + 'px';
+        bubble.style.background = `rgba(255, 193, 7, ${Math.random() * 0.5 + 0.5})`;
+        
+        // CSS változók a buborék animációhoz
+        bubble.style.setProperty('--tx', tx + 'px');
+        bubble.style.setProperty('--ty', ty + 'px');
+        
+        document.body.appendChild(bubble);
+        
+        // Eltávolítás 600ms után
+        setTimeout(() => {
+            if (bubble.parentNode) {
+                bubble.parentNode.removeChild(bubble);
+            }
+        }, 600);
+    }
+}
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
@@ -2250,6 +2287,7 @@ async function loadAdminIdeas() {
 }
     
     });
+
 
 
 
