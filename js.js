@@ -2214,38 +2214,43 @@ window.markIdeaPending = async function(index) {
     await updateIdeaStatus(index, 'Megcsinálásra vár');
 };
 
-async function updateIdeaStatus(index, newStatus) {
+async function loadAdminIdeas() {
+    console.log("🔍 loadAdminIdeas() INDULT");
+    
+    const adminToken = localStorage.getItem('adminToken');
+    const userToken = localStorage.getItem('userToken');
+    
+    console.log("🔑 Admin Token:", adminToken ? "VAN" : "NINCS");
+    console.log("🔑 User Token:", userToken ? "VAN" : "NINCS");
+    
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                'Authorization': `Bearer ${adminToken || userToken}`
             },
-            body: JSON.stringify({ 
-                action: 'UPDATE_IDEA_STATUS', 
-                index, 
-                newStatus 
-            })
+            body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
         });
         
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        console.log("📡 Response status:", response.status);
         
-        showSuccess(result.message);
-        loadAdminIdeas(); // Frissítjük a listát
+        const ideas = await response.json();
+        console.log("📦 Kapott adatok:", ideas);
+        
+        if (!response.ok) throw new Error(ideas.error || 'Szerverhiba');
+        
+        renderAdminIdeas(ideas);
+        updateIdeasStats(ideas);
         
     } catch (error) {
-        console.error("Hiba a státusz módosításakor:", error);
-        showError(error.message || "Nem sikerült módosítani a státuszt.");
+        console.error("❌ Hiba az ötletek betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni az ötleteket.");
     }
 }
-
-// === FRISSÍTÉS GOMB (ADMIN) ===
-if (refreshIdeasBtn) {
-    refreshIdeasBtn.addEventListener('click', loadAdminIdeas);
-}
+    
     });
+
 
 
 
