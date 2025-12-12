@@ -555,28 +555,38 @@ case 'EDIT_USER_DRINK': {
                 return res.status(200).json(completedIdeas);
             }
 
-            case 'GET_ALL_IDEAS': {
-                const userData = verifyUser(req);
-                
-                const ideasResponse = await sheets.spreadsheets.values.get({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${IDEAS_SHEET}!A:F`,
-                });
-                
-                const allIdeas = ideasResponse.data.values || [];
-                
-                const ideas = allIdeas.map((row, index) => ({
-                    index: index,
-                    submitter: row[0],
-                    idea: row[1],
-                    timestamp: row[2],
-                    status: row[3],
-                    date: row[4],
-                    email: row[5]
-                }));
-                
-                return res.status(200).json(ideas);
-            }
+            // sheet.js - GET_ALL_IDEAS módosítása
+
+case 'GET_ALL_IDEAS': {
+    const userData = verifyUser(req);
+    // Itt is fontos a pontos range megadása!
+    const ideasResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${IDEAS_SHEET}!A:F` // Kényszerítjük az A-F oszlopokat
+    });
+    
+    const allIdeas = ideasResponse.data.values || [];
+    
+    // A fejlécet (első sor) kihagyjuk, ha van
+    // Feltételezzük, hogy az első sor a fejléc: "Ki javasolta?", "Ötlet", stb.
+    // Ha az allIdeas[0][0] == "Ki javasolta?", akkor slice(1)-gyel vágjuk le.
+    // De a biztonság kedvéért egyszerűen csak map-elünk mindenre, ami adat.
+    
+    const ideas = allIdeas.map((row, index) => ({
+        index: index, // Ez a sheet sorindexe lesz (ha a teljes sheetet olvassuk)
+        submitter: row[0] || 'Ismeretlen',
+        idea: row[1] || '',
+        timestamp: row[2] || '',
+        status: row[3] || 'Megcsinálásra vár', // Ha nincs státusz, alapértelmezett legyen
+        date: row[4] || '',
+        email: row[5] || ''
+    }));
+    
+    // Opcionális: Szűrjük ki az üres sorokat (ahol nincs ötlet szöveg)
+    const validIdeas = ideas.filter(i => i.idea && i.idea.trim() !== '' && i.submitter !== 'Ki javasolta?');
+
+    return res.status(200).json(validIdeas);
+}
 
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
@@ -656,6 +666,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
