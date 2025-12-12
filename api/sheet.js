@@ -494,7 +494,7 @@ case 'EDIT_USER_DRINK': {
 
             // === ÖTLETAJÁNLÓ API ===
             
-            case 'SUBMIT_IDEA': {
+           case 'SUBMIT_IDEA': {
                 const userData = verifyUser(req);
                 const { ideaText, isAnonymous } = req.body;
                 
@@ -517,7 +517,7 @@ case 'EDIT_USER_DRINK': {
                 
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET,
+                    range: `${IDEAS_SHEET}!A:F`,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
@@ -549,24 +549,25 @@ case 'EDIT_USER_DRINK': {
 
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
-                
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET
+                    range: `${IDEAS_SHEET}!A:F` 
                 });
-                
                 const allIdeas = ideasResponse.data.values || [];
                 
-                const ideas = allIdeas.map((row, index) => ({
-                    index: index,
-                    submitter: row[0],
-                    idea: row[1],
-                    timestamp: row[2],
-                    status: row[3],
-                    date: row[4],
-                    email: row[5]
-                }));
-                
+                const ideas = allIdeas.map((row, index) => {
+                    if (!row || row.length === 0) return null;
+                    return {
+                        index: index,
+                        submitter: row[0] || 'Névtelen',
+                        idea: row[1] || 'Nincs szöveg',
+                        timestamp: row[2] || '',
+                        status: row[3] || 'Megcsinálásra vár',
+                        date: row[4] || '',
+                        email: row[5] || ''
+                    };
+                }).filter(item => item !== null && item.submitter !== 'Ki javasolta?');
+
                 return res.status(200).json(ideas);
             }
 
@@ -578,12 +579,17 @@ case 'EDIT_USER_DRINK': {
                     spreadsheetId: SPREADSHEET_ID,
                     range: IDEAS_SHEET
                 });
-                
                 const allIdeas = ideasResponse.data.values || [];
                 
                 if (index < 0 || index >= allIdeas.length) {
                     return res.status(400).json({ error: "Érvénytelen index" });
                 }
+                
+                // Mivel a range alapból A1-től indul, és van fejléc, ezért a sor indexe az array index + 1
+                // Fontos: Google Sheets API 1-től indexel, a tömb 0-tól.
+                // Ha lekérjük az egész táblát, a 0. elem az első sor (fejléc).
+                // A kliens oldalon kiszűrtük a fejlécet? 
+                // A GET_ALL_IDEAS-ban a map indexe a VALÓDI sor indexe (0 = fejléc).
                 
                 const range = `${IDEAS_SHEET}!D${index + 1}`;
                 await sheets.spreadsheets.values.update({
@@ -648,6 +654,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
