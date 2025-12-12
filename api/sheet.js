@@ -69,19 +69,35 @@ export default async function handler(req, res) {
             
             case 'GET_DATA': {
                 const { username, password } = req.body;
+                
+                // Admin jelszó ellenőrzés (admin / sor)
                 if (username !== 'admin' || password !== 'sor') {
                     return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
                 }
+                
+                // --- EZ A RÉSZ HIÁNYOZHATOTT VAGY VOLT HIBÁS ---
+                // Admin token generálása
+                const adminToken = jwt.sign(
+                    { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: '1d' }
+                );
+                // ------------------------------------------------
+
+                // Adatok lekérése
                 const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
                 const allRows = sörökResponse.data.values || [];
                 const allBeers = [];
+                
                 allRows.forEach(row => {
                     const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
                     if (beer1) allBeers.push(beer1);
                     const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
                     if (beer2) allBeers.push(beer2);
                 });
-                return res.status(200).json({ beers: allBeers, users: [] });
+                
+                // Visszaküldjük az adminToken-t is!
+                return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
             }
 
             case 'REGISTER_USER': {
@@ -639,6 +655,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
