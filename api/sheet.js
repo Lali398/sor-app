@@ -525,7 +525,7 @@ case 'EDIT_USER_DRINK': {
                 
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET,
+                    range: `${IDEAS_SHEET}!A:F`,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
@@ -538,7 +538,7 @@ case 'EDIT_USER_DRINK': {
                 
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET
+                    range: `${IDEAS_SHEET}!A:F`
                 });
                 
                 const allIdeas = ideasResponse.data.values || [];
@@ -560,7 +560,7 @@ case 'EDIT_USER_DRINK': {
                 
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: IDEAS_SHEET
+                    range: `${IDEAS_SHEET}!A:F`,
                 });
                 
                 const allIdeas = ideasResponse.data.values || [];
@@ -656,6 +656,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
