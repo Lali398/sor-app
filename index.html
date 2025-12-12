@@ -144,6 +144,7 @@
             <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
             <button class="main-tab-btn" data-tab-content="user-drink-rating-content">🍹 Ital Értékelés</button>
             <button class="main-tab-btn" data-tab-content="user-drinks-content">🍸 Italjaim</button>
+            <button class="main-tab-btn" data-tab-content="user-ideas-content">💡 Ötletláda</button>
             <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
             <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
             <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
@@ -154,6 +155,56 @@
                 <header class="card-header">
                     <h3>Személyre Szabás</h3>
                 </header>
+
+<div class="main-tab-pane" id="user-ideas-content">
+    
+    <section class="card idea-submit-card">
+        <header class="card-header">
+            <h3>Van egy jó ötleted? 💡</h3>
+        </header>
+        <form id="submitIdeaForm" class="config-form">
+            <div class="input-group">
+                <textarea id="ideaText" required placeholder="Írd le, milyen funkciót vagy újítást látnál szívesen..."></textarea>
+                <label for="ideaText">Az ötleted</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="setting-item" style="background: rgba(0,0,0,0.2); padding: 10px 15px; margin-bottom: 20px;">
+                <div class="setting-info">
+                    <h4 style="font-size: 0.9rem;">Anonim beküldés 🕵️</h4>
+                    <p style="font-size: 0.8rem;">Nem jelenik meg a neved a listában.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="ideaAnonymous">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Ötlet beküldése 🚀</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </section>
+
+    <div class="hall-of-fame-container">
+        <div class="hall-header">
+            <h2>🏆 Dicsőségfal 🏆</h2>
+            <p>Akiknek az ötletei valósággá váltak</p>
+        </div>
+        <div id="hallOfFameList" class="idea-grid">
+            <div class="recap-spinner"></div>
+        </div>
+    </div>
+
+    <section class="card" style="margin-top: 40px;">
+        <header class="card-header">
+            <h3>Beküldött ötletek listája ⏳</h3>
+        </header>
+        <div id="pendingIdeasList" class="idea-list-vertical">
+            </div>
+    </section>
+</div>
                 
                 <div class="settings-group">
                     <div class="setting-item">
@@ -522,6 +573,7 @@
     <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
     <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
     <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
+    <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendég Ötletek</button>
     <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
 </nav>
 
@@ -530,6 +582,31 @@
         <header class="card-header">
             <h3>Admin Személyre Szabás</h3>
         </header>
+
+<div class="main-tab-pane" id="admin-ideas-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Vendégek javaslatai</h3>
+            <button class="refresh-btn" onclick="loadAllIdeasForAdmin()">🔄 Frissítés</button>
+        </header>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dátum</th>
+                        <th>Beküldő</th>
+                        <th>Ötlet</th>
+                        <th>Státusz</th>
+                        <th>Művelet</th>
+                    </tr>
+                </thead>
+                <tbody id="adminIdeasTableBody">
+                    <tr><td colspan="5" class="no-results">Betöltés...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
         
         <div class="settings-group">
             <div class="setting-item">
@@ -989,6 +1066,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
