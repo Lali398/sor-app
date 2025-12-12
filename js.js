@@ -1491,7 +1491,7 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4 másodperc per slide
 }
-
+});
 window.downloadRecap = function() {
     const element = document.getElementById('storyContainer');
     // Gombok elrejtése a képről
@@ -1564,7 +1564,7 @@ function updateFullscreenIcon() {
         btn.innerHTML = '✕';
     }
 }
-});
+
 
 
 
