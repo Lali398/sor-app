@@ -1057,68 +1057,72 @@ let storyInterval;
 function renderStoryMode(data, container) {
     // HTML Struktúra
     const html = `
-    <div class="recap-story-container" id="storyContainer">
-        <div class="story-progress-container">
-            <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
-            <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
-        </div>
+<div class="recap-story-container" id="storyContainer">
+    <button class="story-fullscreen-btn" onclick="toggleFullscreen()">
+        ⛶
+    </button>
 
-        <div class="story-nav-left" onclick="prevSlide()"></div>
-        <div class="story-nav-right" onclick="nextSlide()"></div>
+    <div class="story-progress-container">
+        <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
+        <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
+        <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
+        <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
+    </div>
 
-        <div class="story-slide active" id="slide-0">
-            <h3 class="story-title">${data.periodName}</h3>
-            <p class="story-text">Nem voltál szomjas!</p>
-            <div class="story-big-number">${data.count}</div>
-            <p class="story-text">sört kóstoltál meg.</p>
-            <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
-        </div>
+    <div class="story-nav-left" onclick="prevSlide()"></div>
+    <div class="story-nav-right" onclick="nextSlide()"></div>
 
-        <div class="story-slide" id="slide-1">
-            <h3 class="story-title">Az abszolút kedvenc</h3>
-            <p class="story-text">Ez vitte a prímet:</p>
-            <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${data.topBeer}</span>
-            <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
-        </div>
+    <div class="story-slide active" id="slide-0">
+        <h3 class="story-title">${data.periodName}</h3>
+        <p class="story-text">Nem voltál szomjas!</p>
+        <div class="story-big-number">${data.count}</div>
+        <p class="story-text">sört kóstoltál meg.</p>
+        <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
+    </div>
 
-        <div class="story-slide" id="slide-2">
-            <h3 class="story-title">Így szereted</h3>
-            <p class="story-text">Kedvenc típus:</p>
-            <span class="story-highlight">${data.favType}</span>
-            <br>
-            <p class="story-text">Legtöbbször itt:</p>
-            <span class="story-highlight">${data.favPlace}</span>
-            <br>
-            <p class="story-text">Átlagos időpont:</p>
-            <span class="story-highlight">${data.drinkingTime}</span>
-        </div>
+    <div class="story-slide" id="slide-1">
+        <h3 class="story-title">Az abszolút kedvenc</h3>
+        <p class="story-text">Ez vitte a prímet:</p>
+        <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${data.topBeer}</span>
+        <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
+    </div>
 
-        <div class="story-slide" id="slide-3" style="z-index: 30;"> 
-            <h3 class="story-title">Összegzés</h3>
-            <div class="story-summary-grid" id="captureTarget">
-                <div class="summary-item">
-                    <span class="summary-label">Összes sör</span>
-                    <span class="summary-value">${data.count} db</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Átlag</span>
-                    <span class="summary-value">${data.avg}</span>
-                </div>
-                <div class="summary-item" style="grid-column: 1/-1">
-                    <span class="summary-label">Top Sör</span>
-                    <span class="summary-value">${data.topBeer}</span>
-                </div>
+    <div class="story-slide" id="slide-2">
+        <h3 class="story-title">Így szereted</h3>
+        <p class="story-text">Kedvenc típus:</p>
+        <span class="story-highlight">${data.favType}</span>
+        <br>
+        <p class="story-text">Legtöbbször itt:</p>
+        <span class="story-highlight">${data.favPlace}</span>
+        <br>
+        <p class="story-text">Átlagos időpont:</p>
+        <span class="story-highlight">${data.drinkingTime}</span>
+    </div>
+
+    <div class="story-slide" id="slide-3" style="z-index: 30;"> 
+        <h3 class="story-title">Összegzés</h3>
+        <div class="story-summary-grid" id="captureTarget">
+            <div class="summary-item">
+                <span class="summary-label">Összes sör</span>
+                <span class="summary-value">${data.count} db</span>
             </div>
-            
-            <div class="story-actions">
-                <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
-                <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
+            <div class="summary-item">
+                <span class="summary-label">Átlag</span>
+                <span class="summary-value">${data.avg}</span>
             </div>
+            <div class="summary-item" style="grid-column: 1/-1">
+                <span class="summary-label">Top Sör</span>
+                <span class="summary-value">${data.topBeer}</span>
+            </div>
+        </div>
+        
+        <div class="story-actions">
+            <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
+            <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
         </div>
     </div>
-    `;
+</div>
+`;
 
     container.innerHTML = html;
     
@@ -1515,7 +1519,54 @@ window.downloadRecap = function() {
         showSuccess("Sikeres letöltés!");
     });
 }
+    // js.txt - illeszd be a fájl végére vagy a window.downloadRecap környékére
+
+window.toggleFullscreen = function() {
+    const elem = document.getElementById('storyContainer');
+    const btn = document.querySelector('.story-fullscreen-btn');
+
+    if (!document.fullscreenElement &&    // Standard
+        !document.webkitFullscreenElement) {  // Safari/Chrome régebbi
+        
+        // Belépés teljes képernyőre
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+        if(btn) btn.innerHTML = '✕'; // Ikon váltása bezárásra
+    } else {
+        // Kilépés
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+        if(btn) btn.innerHTML = '⛶'; // Ikon visszaállítása
+    }
+}
+
+// Opcionális: Ha a user ESC-el lép ki, az ikon akkor is váltson vissza
+document.addEventListener('fullscreenchange', updateFullscreenIcon);
+document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+function updateFullscreenIcon() {
+    const btn = document.querySelector('.story-fullscreen-btn');
+    if(!btn) return;
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        btn.innerHTML = '⛶';
+    } else {
+        btn.innerHTML = '✕';
+    }
+}
 });
+
+
 
 
 
