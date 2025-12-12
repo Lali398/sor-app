@@ -155,8 +155,32 @@
                 <header class="card-header">
                     <h3>Személyre Szabás</h3>
                 </header>
+                    <div class="settings-group">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Sörös Kurzor 🍺</h4>
+                            <p>Egyedi söröskorsó kurzor használata az oldalon.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userCursorToggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
 
-<div class="main-tab-pane" id="user-ideas-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
+                            <p>Google Authenticator használata a belépéshez.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="user2FAToggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="main-tab-pane" id="user-ideas-content">
     
     <section class="card idea-submit-card">
         <header class="card-header">
@@ -205,32 +229,6 @@
             </div>
     </section>
 </div>
-                
-                <div class="settings-group">
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h4>Sörös Kurzor 🍺</h4>
-                            <p>Egyedi söröskorsó kurzor használata az oldalon.</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="userCursorToggle" checked>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
-                            <p>Google Authenticator használata a belépéshez.</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="user2FAToggle">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                </div>
-            </section>
-        </div>
 
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
@@ -582,8 +580,21 @@
         <header class="card-header">
             <h3>Admin Személyre Szabás</h3>
         </header>
-
-<div class="main-tab-pane" id="admin-ideas-content">
+        <div class="settings-group">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Sörös Kurzor 🍺</h4>
+                    <p>Legyen söröskorsó a kurzor az admin felületen is.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="adminCursorToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+</div>
+        <div class="main-tab-pane" id="admin-ideas-content">
     <section class="card">
         <header class="card-header">
             <h3>Vendégek javaslatai</h3>
@@ -604,21 +615,6 @@
                     <tr><td colspan="5" class="no-results">Betöltés...</td></tr>
                 </tbody>
             </table>
-        </div>
-    </section>
-</div>
-        
-        <div class="settings-group">
-            <div class="setting-item">
-                <div class="setting-info">
-                    <h4>Sörös Kurzor 🍺</h4>
-                    <p>Legyen söröskorsó a kurzor az admin felületen is.</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" id="adminCursorToggle" checked>
-                    <span class="slider round"></span>
-                </label>
-            </div>
         </div>
     </section>
 </div>
@@ -1066,6 +1062,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
