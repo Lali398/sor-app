@@ -1257,6 +1257,23 @@ input:checked + .slider:before {
 .recap-story-container:fullscreen .story-title { font-size: 3rem; }
 .recap-story-container:fullscreen .story-text { font-size: 1.5rem; }
 
+/* Szerkesztő gomb */
+.edit-btn {
+    padding: 5px 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+.edit-btn:hover {
+    background: #2980b9;
+    transform: scale(1.1);
+}
+
+
 
 
 
