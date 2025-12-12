@@ -407,21 +407,21 @@ export default async function handler(req, res) {
     const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
     
     const updatedRow = [
-        targetRow[0], // Dátum
-        userData.name,
-        beerName,
-        location,
-        type,
-        look,
-        smell,
-        taste,
-        parseFloat(beerPercentage) || 0,
-        totalScore,
-        avgScore,
-        notes || '',
-        targetRow[12], // Jóváhagyva
-        userData.email
-    ];
+    targetRow[0],      // A: Dátum
+    userData.name,     // B: Név
+    beerName,          // C: Sör neve
+    location,          // D: Főzési hely
+    type,              // E: Típus
+    look,              // F: Külalak
+    smell,             // G: Illat
+    taste,             // H: Íz
+    totalScore,        // I: Összpontszám ✅
+    avgScore,          // J: Átlag ✅
+    numPercentage,     // K: Alkohol % ✅
+    notes || '',       // L: Jegyzetek
+    targetRow[12],     // M: Jóváhagyva?
+    userData.email     // N: Email
+];
     
     const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
@@ -460,21 +460,21 @@ case 'EDIT_USER_DRINK': {
     const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
     
     const updatedRow = [
-        targetRow[0], // Dátum
-        userData.name,
-        drinkName,
-        location,
-        type,
-        look,
-        smell,
-        taste,
-        parseFloat(drinkPercentage) || 0,
-        totalScore,
-        avgScore,
-        notes || '',
-        targetRow[12], // Jóváhagyva
-        userData.email
-    ];
+    targetRow[0],      // A: Dátum
+    userData.name,     // B: Név
+    beerName,          // C: Sör neve
+    location,          // D: Főzési hely
+    type,              // E: Típus
+    look,              // F: Külalak
+    smell,             // G: Illat
+    taste,             // H: Íz
+    totalScore,        // I: Összpontszám ✅
+    avgScore,          // J: Átlag ✅
+    numPercentage,     // K: Alkohol % ✅
+    notes || '',       // L: Jegyzetek
+    targetRow[12],     // M: Jóváhagyva?
+    userData.email     // N: Email
+];
     
     const range = `${GUEST_DRINKS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
@@ -539,6 +539,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
