@@ -980,6 +980,7 @@ function setupAdminRecap() {
         
         renderUserBeers(beers);
         updateUserStats(beers);
+        updateDashboard(beers);
     } catch (error) {
         console.error("Hiba a felhasználói adatok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni a söreidet.");
@@ -1752,6 +1753,138 @@ window.addEventListener('scroll', function() {
         }
     };
 
+
+    // === MODERN SIDEBAR NAVIGATION ===
+function initModernSidebar() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // Remove active from all
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Hide all views
+            document.querySelectorAll('.view-content').forEach(v => {
+                v.style.display = 'none';
+                v.classList.remove('active');
+            });
+            
+            // Show selected view
+            const viewId = item.dataset.view;
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.style.display = 'block';
+                targetView.classList.add('active');
+                
+                // Trigger scroll animations
+                setTimeout(() => {
+                    observeScrollAnimations();
+                }, 100);
+            }
+        });
+    });
+}
+
+// === BENTO GRID ANIMATIONS ===
+function observeScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    
+    document.querySelectorAll('.scroll-fade').forEach(el => {
+        observer.observe(el);
+    });
+    
+    document.querySelectorAll('.bento-card').forEach(card => {
+        observer.observe(card);
+    });
+    
+    document.querySelectorAll('table tr').forEach((row, index) => {
+        row.style.transitionDelay = `${index * 0.05}s`;
+        observer.observe(row);
+    });
+}
+
+// === DASHBOARD DATA UPDATE ===
+function updateDashboard(beers) {
+    if (!beers || beers.length === 0) return;
+    
+    // Total beers
+    document.getElementById('dashTotalBeers').textContent = beers.length;
+    
+    // Average score
+    const avgScore = (beers.reduce((sum, b) => sum + (parseFloat(b.totalScore) || 0), 0) / beers.length).toFixed(1);
+    document.getElementById('dashAvgScore').textContent = avgScore;
+    
+    // Top beer
+    const topBeer = beers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), beers[0]);
+    document.getElementById('dashTopBeer').textContent = topBeer.beerName || '-';
+    
+    // Favorite type
+    const types = {};
+    beers.forEach(b => {
+        if (b.type) types[b.type] = (types[b.type] || 0) + 1;
+    });
+    const favType = Object.keys(types).reduce((a, b) => types[a] > types[b] ? a : b, '-');
+    document.getElementById('dashFavType').textContent = favType;
+    
+    // Recent beer
+    if (beers.length > 0) {
+        const recent = beers[0];
+        document.getElementById('dashRecentBeer').innerHTML = `
+            <div>${recent.beerName}</div>
+            <div style="color: #888; font-size: 14px; margin-top: 5px;">
+                ${recent.date ? new Date(recent.date).toLocaleDateString('hu-HU') : 'N/A'} • ${recent.avg || 0} ⭐
+            </div>
+        `;
+    }
+    
+    // Recent table
+    const tableBody = document.getElementById('dashboardRecentTable');
+    tableBody.innerHTML = '';
+    beers.slice(0, 5).forEach(beer => {
+        const row = `
+            <tr class="scroll-fade">
+                <td>${beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A'}</td>
+                <td>${beer.beerName}</td>
+                <td>${beer.type || '-'}</td>
+                <td>${beer.avg || 0}</td>
+            </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', row);
+    });
+}
+
+// === FAB & MODAL FUNCTIONS ===
+window.openAddBeerModal = function() {
+    document.getElementById('addBeerModal').classList.add('active');
+}
+
+window.closeAddBeerModal = function() {
+    document.getElementById('addBeerModal').classList.remove('active');
+}
+
+// === MODIFY switchToUserView ===
+// Find the existing switchToUserView function and ADD these lines at the END:
+
+// ... (your existing switchToUserView code)
+
+// ADD THESE LINES:
+initModernSidebar();
+observeScrollAnimations();
+updateDashboard(currentUserBeers || []);
+
+// Update sidebar name
+const userData = JSON.parse(localStorage.getItem('userData'));
+if (userData) {
+    document.getElementById('sidebarUserName').textContent = `Szia, ${userData.name}!`;
+}
+
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
@@ -2312,6 +2445,7 @@ function createBeerBubbles(x, y) {
     }
 }
     });
+
 
 
 
