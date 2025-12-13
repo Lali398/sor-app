@@ -123,145 +123,116 @@
     </div>
 
     <!-- FELHASZNÁLÓI NÉZET -->
-    <div class="admin-view modern-layout" id="userView" style="display: none;">
-    <!-- MODERN SIDEBAR -->
-    <nav class="modern-sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">🍺</div>
-            <div class="sidebar-user-name" id="sidebarUserName">Szia!</div>
-        </div>
+    <div class="admin-view" id="userView" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="beer-icon">🍺</span>
+                    <h1 id="userWelcomeMessage">Szia!</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="userLogoutBtn">
+                        <span>🚪</span>
+                        <span>Kijelentkezés</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+ 
+               <nav class="main-tabs">
+            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Sör Értékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
+            <button class="main-tab-btn" data-tab-content="user-drink-rating-content">🍹 Ital Értékelés</button>
+            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍸 Italjaim</button>
+            <button class="main-tab-btn" data-tab-content="user-ideas-content">💡 Ötletláda</button>
+            <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
+            <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
+            <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
+        </nav>
         
-        <div class="sidebar-menu">
-            <div class="sidebar-item active" data-view="dashboard">
-                <span class="sidebar-icon">📊</span>
-                <span class="sidebar-text">Vezérlőpult</span>
-            </div>
-            <div class="sidebar-item" data-view="user-rating-content">
-                <span class="sidebar-icon">⭐</span>
-                <span class="sidebar-text">Sör Értékelés</span>
-            </div>
-            <div class="sidebar-item" data-view="user-beers-content">
-                <span class="sidebar-icon">🍺</span>
-                <span class="sidebar-text">Söreim</span>
-            </div>
-            <div class="sidebar-item" data-view="user-drink-rating-content">
-                <span class="sidebar-icon">🍹</span>
-                <span class="sidebar-text">Ital Értékelés</span>
-            </div>
-            <div class="sidebar-item" data-view="user-drinks-content">
-                <span class="sidebar-icon">🥃</span>
-                <span class="sidebar-text">Italjaim</span>
-            </div>
-            <div class="sidebar-item" data-view="user-ideas-content">
-                <span class="sidebar-icon">💡</span>
-                <span class="sidebar-text">Ötletláda</span>
-            </div>
-            <div class="sidebar-item" data-view="user-recap-content">
-                <span class="sidebar-icon">📈</span>
-                <span class="sidebar-text">Visszatekintő</span>
-            </div>
-            <div class="sidebar-item" data-view="user-account-content">
-                <span class="sidebar-icon">👤</span>
-                <span class="sidebar-text">Fiókom</span>
-            </div>
-            <div class="sidebar-item" data-view="user-settings-content">
-                <span class="sidebar-icon">⚙️</span>
-                <span class="sidebar-text">Beállítások</span>
-            </div>
-        </div>
+        <div class="main-tab-pane" id="user-settings-content">
+            <section class="card">
+                <header class="card-header">
+                    <h3>Személyre Szabás</h3>
+                </header>
+                    <div class="settings-group">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Sörös Kurzor 🍺</h4>
+                            <p>Egyedi söröskorsó kurzor használata az oldalon.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userCursorToggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
 
-        <div class="sidebar-footer">
-            <button class="sidebar-logout" id="userLogoutBtn">
-                <span>🚪</span>
-                <span>Kijelentkezés</span>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
+                            <p>Google Authenticator használata a belépéshez.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="user2FAToggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="main-tab-pane" id="user-ideas-content">
+    
+    <section class="card idea-submit-card">
+        <header class="card-header">
+            <h3>Van egy jó ötleted? 💡</h3>
+        </header>
+        <form id="submitIdeaForm" class="config-form">
+            <div class="input-group">
+                <textarea id="ideaText" required placeholder="Írd le, milyen funkciót vagy újítást látnál szívesen..."></textarea>
+                <label for="ideaText">Az ötleted</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="setting-item" style="background: rgba(0,0,0,0.2); padding: 10px 15px; margin-bottom: 20px;">
+                <div class="setting-info">
+                    <h4 style="font-size: 0.9rem;">Anonim beküldés 🕵️</h4>
+                    <p style="font-size: 0.8rem;">Nem jelenik meg a neved a listában.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="ideaAnonymous">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Ötlet beküldése 🚀</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
             </button>
-        </div>
-    </nav>
-        <main class="modern-main-content">
-        
-        <!-- ÚJ DASHBOARD VIEW -->
-<div id="dashboard" class="main-tab-pane active">
-    <h1 class="page-title">Szia! 👋</h1>
-    <p class="page-subtitle">Üdvözöl a modern sörös vezérlőpultod</p>
+        </form>
+    </section>
 
-    <!-- BENTO GRID -->
-    <div class="bento-grid">
-        <div class="bento-card large scroll-fade">
-            <div>
-                <div class="card-icon">🍺</div>
-                <div class="card-title">Értékelt Sörök</div>
-            </div>
-            <div>
-                <div class="card-value" id="dashTotalBeers">0</div>
-                <div class="card-subtitle">+0 az elmúlt héten</div>
-            </div>
+    <div class="hall-of-fame-container">
+        <div class="hall-header">
+            <h2>🏆 Dicsőségfal 🏆</h2>
+            <p>Akiknek az ötletei valósággá váltak</p>
         </div>
-
-        <div class="bento-card scroll-fade" style="transition-delay: 0.1s;">
-            <div>
-                <div class="card-icon">⭐</div>
-                <div class="card-title">Átlag Pontszám</div>
-            </div>
-            <div class="card-value" id="dashAvgScore">0.0</div>
-        </div>
-
-        <div class="bento-card scroll-fade" style="transition-delay: 0.15s;">
-            <div>
-                <div class="card-icon">🏆</div>
-                <div class="card-title">Top Sör</div>
-            </div>
-            <div class="card-value" style="font-size: 18px;" id="dashTopBeer">-</div>
-        </div>
-
-        <div class="bento-card wide scroll-fade" style="transition-delay: 0.2s;">
-            <div>
-                <div class="card-icon">🎯</div>
-                <div class="card-title">Kedvenc Típus</div>
-            </div>
-            <div class="card-value" style="font-size: 24px;" id="dashFavType">-</div>
-        </div>
-
-        <div class="bento-card scroll-fade click-card" style="transition-delay: 0.25s;" onclick="document.querySelector('.main-tab-btn[data-tab-content=user-rating-content]').click()">
-            <div>
-                <div class="card-icon">➕</div>
-                <div class="card-title">Új Értékelés</div>
-            </div>
-            <div class="card-subtitle">Sör hozzáadása</div>
-        </div>
-
-        <div class="bento-card tall scroll-fade" style="transition-delay: 0.3s;">
-            <div>
-                <div class="card-icon">🕐</div>
-                <div class="card-title">Legutóbbi</div>
-            </div>
-            <div id="dashRecentBeer" style="color: #fff; font-size: 16px; margin-top: 15px;">-</div>
+        <div id="hallOfFameList" class="idea-grid">
+            <div class="recap-spinner"></div>
         </div>
     </div>
 
-    <!-- RECENT BEERS TABLE -->
-    <div class="table-section scroll-fade">
-        <h2 class="section-title">Legutóbbi értékelések</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dátum</th>
-                        <th>Sör neve</th>
-                        <th>Típus</th>
-                        <th>Átlag</th>
-                    </tr>
-                </thead>
-                <tbody id="dashboardRecentTable">
-                    <tr><td colspan="4" class="no-results">Betöltés...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <section class="card" style="margin-top: 40px;">
+        <header class="card-header">
+            <h3>Beküldött ötletek listája ⏳</h3>
+        </header>
+        <div id="pendingIdeasList" class="idea-list-vertical">
+            </div>
+    </section>
 </div>
 
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
-                <div class="main-tab-pane" id="user-rating-content">
+                <div class="main-tab-pane active" id="user-rating-content">
                     <section class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon beers">🍺</div>
@@ -572,14 +543,11 @@
                     </section>
                 </div>
             </div>
-            <!-- FLOATING ACTION BUTTON -->
-    <button class="fab" onclick="document.querySelector('.main-tab-btn[data-tab-content=user-rating-content]').click()">+</button>
-</main>
         </main>
     </div>
 
     <!-- ADMIN NÉZET -->
-    <div class="admin-view modern-layout" id="adminView" style="display: none;">
+    <div class="admin-view" id="adminView" style="display: none;">
         <header class="admin-header">
             <div class="header-content">
                 <div class="logo">
@@ -1094,8 +1062,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
 
 
 
