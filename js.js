@@ -2311,7 +2311,71 @@ function createBeerBubbles(x, y) {
         }, 600);
     }
 }
+    // === ÚJ UI JAVÍTÁSOK (Scroll & Szinkronizálás) ===
+
+// 1. Scroll Animáció ("Reveal on Scroll")
+const observerOptions = {
+    threshold: 0.1 // Akkor aktiválódik, ha az elem 10%-a látszik
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
     });
+}, observerOptions);
+
+// Minden kártyát és szekciót figyelünk
+function initScrollAnimation() {
+    const elements = document.querySelectorAll('.card, .stat-card, .kpi-card, .chart-container');
+    elements.forEach(el => {
+        el.classList.add('reveal-on-scroll'); // Alapból adjuk hozzá az osztályt
+        observer.observe(el);
+    });
+}
+
+// 2. Sidebar és Bottom Nav szinkronizálása
+// Ha a sidebaron kattintasz, a mobil menü is váltson, és fordítva.
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.nav-item, .nav-item-mobile');
+    if (!btn) return;
+
+    const targetId = btn.dataset.tabContent;
+    if(!targetId) return;
+
+    // Minden navigációs elemet frissítünk (Sidebar ÉS Mobil is)
+    const allNavs = document.querySelectorAll(`[data-tab-content="${targetId}"]`);
+    
+    // Aktív osztályok törlése mindenhonnan
+    document.querySelectorAll('.nav-item, .nav-item-mobile').forEach(b => b.classList.remove('active'));
+    
+    // Új aktív hozzáadása
+    allNavs.forEach(nav => nav.classList.add('active'));
+});
+
+// A 'userLogoutBtnSidebar' gomb bekötése a régi kijelentkezéshez
+const sidebarLogout = document.getElementById('userLogoutBtnSidebar');
+if(sidebarLogout) {
+    sidebarLogout.addEventListener('click', switchToGuestView);
+}
+
+// Inicializálás nézetváltáskor
+const originalSwitchToUserViewUpdate = switchToUserView;
+switchToUserView = function() {
+    originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
+    
+    // Név frissítése a sidebarban is
+    const user = JSON.parse(localStorage.getItem('userData'));
+    if(user && document.getElementById('userWelcomeMessageSidebar')) {
+        document.getElementById('userWelcomeMessageSidebar').textContent = `Szia, ${user.name}!`;
+    }
+    
+    // Animációk indítása kis késleltetéssel (hogy a DOM felépüljön)
+    setTimeout(initScrollAnimation, 100);
+};
+    });
+
 
 
 
