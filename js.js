@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         showSuccess('Sör sikeresen hozzáadva!');
         addBeerForm.reset();
+        closeAddModal('beer');
         loadUserData();
     } catch (error) {
         console.error("Hiba sör hozzáadásakor:", error);
@@ -294,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         showSuccess('Ital sikeresen hozzáadva!');
         addDrinkForm.reset();
+        closeAddModal('drink');
         loadUserDrinks(); // Újratöltjük az italokat
     } catch (error) {
         console.error("Hiba ital hozzáadásakor:", error);
@@ -718,27 +720,42 @@ async function markIdeaAsDone(index) {
     // ======================================================
 
     function initializeMainTabs(viewElement) {
-        const tabsContainer = viewElement.querySelector('.main-tabs');
-        if (!tabsContainer) return; // Nincs is fül ezen a nézeten
+    // Kétféle navigációt támogatunk: a régi tab-listát (admin) és az új oldalsávot (user)
+    const navButtons = viewElement.querySelectorAll('.main-tab-btn, .nav-item[data-tab-content]');
+    const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
 
-        const tabButtons = tabsContainer.querySelectorAll('.main-tab-btn');
-        const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
-
-        tabsContainer.addEventListener('click', (e) => {
-            const clickedButton = e.target.closest('.main-tab-btn');
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Megakadályozzuk, hogy a gomb belsejére kattintva elvesszen a referencia
+            const clickedButton = e.target.closest('button'); 
             if (!clickedButton) return;
 
-            // Gombok állapotának frissítése
-            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // Ha kijelentkezés gomb, azt hagyjuk a saját eseménykezelőjére
+            if (clickedButton.id === 'userLogoutBtn') return;
+
+            // Aktív állapot beállítása
+            navButtons.forEach(b => b.classList.remove('active'));
             clickedButton.classList.add('active');
 
-            // Tartalmi panelek frissítése
+            // Címsor frissítése mobilon
+            const label = clickedButton.querySelector('.label');
+            const dashboardTitle = document.querySelector('.dashboard-topbar h3');
+            if(dashboardTitle && label) {
+                dashboardTitle.textContent = label.textContent;
+            }
+
+            // Tartalom váltása
             const targetPaneId = clickedButton.dataset.tabContent;
             tabPanes.forEach(pane => {
                 pane.classList.toggle('active', pane.id === targetPaneId);
             });
+            
+            // Ha az ötletekre váltunk, töltsük be
+            if(targetPaneId === 'user-ideas-content') loadUserIdeas();
+            if(targetPaneId === 'admin-ideas-content') loadAllIdeasForAdmin();
         });
-    }
+    });
+}
 
 // ======================================================
     // === ÚJ: STATISZTIKA FUNKCIÓK ===
@@ -2374,7 +2391,44 @@ switchToUserView = function() {
     // Animációk indítása kis késleltetéssel (hogy a DOM felépüljön)
     setTimeout(initScrollAnimation, 100);
 };
+    const fabMainBtn = document.getElementById('fabMainBtn');
+const fabContainer = document.getElementById('fabContainer');
+
+if (fabMainBtn) {
+    fabMainBtn.addEventListener('click', () => {
+        fabContainer.classList.toggle('active');
     });
+
+    // Ha máshova kattintunk, záródjon be
+    document.addEventListener('click', (e) => {
+        if (!fabContainer.contains(e.target)) {
+            fabContainer.classList.remove('active');
+        }
+    });
+}
+
+// === ÚJ MODAL FUNKCIÓK (SÖR/ITAL HOZZÁADÁS) ===
+window.openAddModal = function(type) {
+    fabContainer.classList.remove('active'); // FAB bezárása
+    
+    if (type === 'beer') {
+        document.getElementById('addBeerModal').classList.add('active');
+    } else if (type === 'drink') {
+        document.getElementById('addDrinkModal').classList.add('active');
+    }
+    document.body.style.overflow = 'hidden'; // Görgetés tiltása
+}
+
+window.closeAddModal = function(type) {
+    if (type === 'beer') {
+        document.getElementById('addBeerModal').classList.remove('active');
+    } else if (type === 'drink') {
+        document.getElementById('addDrinkModal').classList.remove('active');
+    }
+    document.body.style.overflow = 'auto';
+}
+    });
+
 
 
 
