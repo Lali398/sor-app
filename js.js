@@ -360,6 +360,130 @@ function renderUserDrinks(drinks) {
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
     });
 }
+    // === SCROLL REVEAL ANIMÁCIÓK ===
+function initScrollReveal() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+            }
+        });
+    }, observerOptions);
+
+    // Összes kártya és stat elem megfigyelése
+    const elementsToReveal = document.querySelectorAll('.stat-card, .card, .kpi-card');
+    elementsToReveal.forEach(el => {
+        el.classList.add('scroll-reveal');
+        observer.observe(el);
+    });
+}
+
+// === FEJLÉC DINAMIKUS VISELKEDÉS ===
+let headerScrollTop = 0;  // ÁTNEVEZVE, hogy ne ütközzön
+let scrollTimer = null;
+
+function handleHeaderScroll() {
+    const headers = document.querySelectorAll('.admin-header');
+    if (headers.length === 0) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = Math.min(scrollTop / 300, 1);
+    
+    headers.forEach(header => {
+        // Sör feltöltés animáció
+        header.style.setProperty('--fill-percent', scrollPercent);
+        
+        // Scrolled osztály hozzáadása
+        if (scrollTop > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+        
+        // Fejléc elrejtése lefelé görgetéskor
+        if (scrollTop > headerScrollTop && scrollTop > 350) {
+            header.classList.add('hidden');
+        } else if (scrollTop < headerScrollTop || scrollTop < 100) {
+            header.classList.remove('hidden');
+        }
+    });
+    
+    headerScrollTop = scrollTop;
+}
+
+// Throttle a scroll eseményhez (jobb teljesítmény)
+function throttleScroll() {
+    if (scrollTimer) return;
+    
+    scrollTimer = setTimeout(() => {
+        handleHeaderScroll();
+        scrollTimer = null;
+    }, 10);
+}
+
+// === TAB VÁLTÁSKOR SCROLL REVEAL ÚJRAINICIALIZÁLÁSA ===
+function reinitScrollReveal() {
+    // Töröljük az összes korábbi revealed osztályt
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+        el.classList.remove('revealed');
+    });
+    
+    // Újra inicializáljuk
+    setTimeout(() => {
+        initScrollReveal();
+    }, 100);
+}
+
+// === INICIALIZÁLÁS ===
+document.addEventListener('DOMContentLoaded', function() {
+    // Scroll reveal indítása
+    initScrollReveal();
+    
+    // Scroll esemény figyelése
+    window.addEventListener('scroll', throttleScroll);
+    
+    // Tab váltás figyelése
+    const tabButtons = document.querySelectorAll('.main-tab-btn');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setTimeout(() => {
+                reinitScrollReveal();
+            }, 100);
+        });
+    });
+    
+    // Stat tab váltás figyelése is
+    const statTabButtons = document.querySelectorAll('.stat-tab-btn');
+    statTabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setTimeout(() => {
+                reinitScrollReveal();
+            }, 100);
+        });
+    });
+});
+
+// === SMOOTH SCROLL A LINKEKHEZ ===
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
 
     // === ÖTLET LÁDA FUNKCIÓK ===
 
@@ -467,6 +591,7 @@ async function loadUserIdeas() {
         hallContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
+    
 
 // 3. Ötletek betöltése (Admin oldal)
 async function loadAllIdeasForAdmin() {
@@ -2414,6 +2539,7 @@ function createBeerBubbles(x, y) {
     }
 }
     });
+
 
 
 
