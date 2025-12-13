@@ -123,32 +123,64 @@
     </div>
 
     <!-- FELHASZNÁLÓI NÉZET -->
-    <div class="admin-view" id="userView" style="display: none;">
-        <header class="admin-header">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="beer-icon">🍺</span>
-                    <h1 id="userWelcomeMessage">Szia!</h1>
-                </div>
-                <div class="header-actions">
-                    <button class="header-btn" id="userLogoutBtn">
-                        <span>🚪</span>
-                        <span>Kijelentkezés</span>
-                    </button>
-                </div>
-            </div>
-        </header>
- 
-               <nav class="main-tabs">
-            <button class="main-tab-btn active" data-tab-content="user-rating-content">⭐ Sör Értékelés</button>
-            <button class="main-tab-btn" data-tab-content="user-beers-content">🍺 Söreim</button>
-            <button class="main-tab-btn" data-tab-content="user-drink-rating-content">🍹 Ital Értékelés</button>
-            <button class="main-tab-btn" data-tab-content="user-drinks-content">🍸 Italjaim</button>
-            <button class="main-tab-btn" data-tab-content="user-ideas-content">💡 Ötletláda</button>
-            <button class="main-tab-btn" data-tab-content="user-recap-content">📈 Visszatekintő</button>
-            <button class="main-tab-btn" data-tab-content="user-account-content">👤 Fiókom</button>
-            <button class="main-tab-btn" data-tab-content="user-settings-content">⚙️ Személyre Szabás</button>
+    <div class="admin-view dashboard-layout" id="userView" style="display: none;">
+    
+    <aside class="sidebar glass-panel">
+        <div class="sidebar-header">
+            <span class="beer-icon-small">🍺</span>
+            <h1 id="userWelcomeMessage">Szia!</h1>
+        </div>
+        
+        <nav class="sidebar-nav main-tabs">
+            <button class="nav-item active main-tab-btn" data-tab-content="user-rating-content">
+                <span class="nav-icon">⭐</span> <span class="nav-text">Sör Értékelés</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-beers-content">
+                <span class="nav-icon">🍺</span> <span class="nav-text">Söreim</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-drink-rating-content">
+                <span class="nav-icon">🍹</span> <span class="nav-text">Ital Értékelés</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-drinks-content">
+                <span class="nav-icon">🍸</span> <span class="nav-text">Italjaim</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-ideas-content">
+                <span class="nav-icon">💡</span> <span class="nav-text">Ötletláda</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-recap-content">
+                <span class="nav-icon">📈</span> <span class="nav-text">Visszatekintő</span>
+            </button>
+            <div class="nav-spacer"></div>
+            <button class="nav-item main-tab-btn" data-tab-content="user-account-content">
+                <span class="nav-icon">👤</span> <span class="nav-text">Fiókom</span>
+            </button>
+            <button class="nav-item main-tab-btn" data-tab-content="user-settings-content">
+                <span class="nav-icon">⚙️</span> <span class="nav-text">Beállítások</span>
+            </button>
+            
+            <button class="nav-item logout-btn-sidebar" id="userLogoutBtn">
+                <span class="nav-icon">🚪</span> <span class="nav-text">Kijelentkezés</span>
+            </button>
         </nav>
+    </aside>
+
+    <main class="dashboard-content">
+        <header class="mobile-header">
+            <span class="beer-icon">🍺</span>
+            <h2>Sör Táblázat</h2>
+        </header>
+
+        <div class="main-tab-content-container">
+            <div class="main-tab-pane active fade-in-up" id="user-rating-content">
+                 <section class="stats-grid scroll-trigger">
+                    </section>
+                 <section class="card glass-panel scroll-trigger" style="margin-top: 30px;">
+                    </section>
+            </div>
+
+            </div>
+    </main>
+</div>
         
         <div class="main-tab-pane" id="user-settings-content">
             <section class="card">
@@ -1062,6 +1094,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
