@@ -1447,6 +1447,205 @@ input:checked + .slider:before {
     gap: 5px;
 }
 .mark-done-btn:hover { transform: scale(1.05); }
+/* === ÚJ MODERN ELRENDEZÉS (SIDEBAR & BOTTOM NAV) === */
+
+/* Alap elrendezés konténer */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- SIDEBAR (Asztali nézet) --- */
+.sidebar {
+    width: 260px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    padding-left: 10px;
+}
+
+.sidebar-logo h2 {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 700;
+    margin: 0;
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+/* Az új gomb stílus a sidebarban */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 20px;
+    color: #b0b0b0;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    transform: translateX(5px);
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    min-width: 25px;
+}
+
+/* Tartalom terület (hogy ne lógjon bele a sidebarba) */
+.content-area {
+    margin-left: 260px; /* Sidebar szélessége */
+    padding: 40px;
+    width: calc(100% - 260px);
+    min-height: 100vh;
+}
+
+/* --- SCROLL ANIMÁCIÓK --- */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+}
+
+.reveal-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- LEBEGŐ GOMB (FAB) MOBILRA ÉS DESKTOPRA IS JÓ --- */
+.fab-container {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 900;
+}
+
+.fab-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(245, 87, 108, 0.5);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* --- MOBIL NÉZET (Responsive) --- */
+@media (max-width: 992px) {
+    .sidebar {
+        display: none; /* Mobilon elrejtjük a sidebart */
+    }
+
+    .content-area {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 20px 100px 20px; /* Alul hely a menünek */
+    }
+
+    /* Alsó navigációs sáv */
+    .bottom-nav {
+        display: flex !important; /* Csak mobilon látszik */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(16, 0, 43, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding: 10px 20px;
+        justify-content: space-around;
+        z-index: 1000;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+    }
+
+    .nav-item-mobile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 0.7rem;
+        gap: 5px;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .nav-item-mobile.active {
+        color: #f093fb;
+    }
+    
+    .nav-item-mobile .nav-icon {
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+    }
+    
+    .fab-container {
+        bottom: 90px; /* Feljebb toljuk a menü miatt */
+        right: 20px;
+    }
+}
+
+/* Alapból rejtett alsó menü (desktopon) */
+.bottom-nav { display: none; }
+
+/* BENTO GRID (Kártyák elrendezése) */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.bento-wide {
+    grid-column: 1 / -1;
+}
+
 
 
 
