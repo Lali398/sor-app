@@ -1447,21 +1447,19 @@ input:checked + .slider:before {
     gap: 5px;
 }
 .mark-done-btn:hover { transform: scale(1.05); }
-/* === ÚJ MODERN ELRENDEZÉS (SIDEBAR & BOTTOM NAV) === */
-
-/* Alap elrendezés konténer */
-.app-layout {
+/* === DASHBOARD LAYOUT === */
+.dashboard-layout {
     display: flex;
     min-height: 100vh;
+    background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
 }
 
-/* --- SIDEBAR (Asztali nézet) --- */
-.sidebar {
+/* Oldalsáv stílusok */
+.dashboard-sidebar {
     width: 260px;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -1470,182 +1468,249 @@ input:checked + .slider:before {
     transition: transform 0.3s ease;
 }
 
-.sidebar-logo {
+.sidebar-header {
+    padding: 30px 20px;
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 40px;
-    padding-left: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sidebar-logo h2 {
-    font-size: 1.5rem;
+.sidebar-header h2 {
+    font-size: 1.2rem;
     color: white;
-    font-weight: 700;
     margin: 0;
 }
 
-.nav-links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex-grow: 1;
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
 }
 
-/* Az új gomb stílus a sidebarban */
 .nav-item {
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 12px 20px;
+    padding: 15px 25px;
+    background: transparent;
+    border: none;
     color: #b0b0b0;
-    border-radius: 15px;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 500;
-    width: 100%;
     text-align: left;
     font-family: 'Poppins', sans-serif;
 }
 
+.nav-item .icon {
+    margin-right: 15px;
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+
 .nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    transform: translateX(5px);
+    padding-left: 30px; /* Kis animáció jobbra */
 }
 
 .nav-item.active {
-    background: linear-gradient(90deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+    border-left: 4px solid #667eea;
     color: white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-weight: 600;
 }
 
-.nav-icon {
-    font-size: 1.2rem;
-    min-width: 25px;
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Tartalom terület (hogy ne lógjon bele a sidebarba) */
-.content-area {
-    margin-left: 260px; /* Sidebar szélessége */
-    padding: 40px;
+.logout-link {
+    color: #ff6b6b;
+}
+.logout-link:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff8787;
+}
+
+/* Fő tartalom eltolása */
+.dashboard-main {
+    flex: 1;
+    margin-left: 260px; /* Oldalsáv szélessége */
+    padding: 30px;
     width: calc(100% - 260px);
-    min-height: 100vh;
 }
 
-/* --- SCROLL ANIMÁCIÓK --- */
-.reveal-on-scroll {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s ease-out;
+.dashboard-topbar {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.reveal-on-scroll.visible {
-    opacity: 1;
-    transform: translateY(0);
+.dashboard-topbar h3 {
+    color: white;
+    font-size: 1.5rem;
 }
 
-/* --- LEBEGŐ GOMB (FAB) MOBILRA ÉS DESKTOPRA IS JÓ --- */
+/* === FLOATING ACTION BUTTON (FAB) === */
 .fab-container {
     position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 900;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 15px;
 }
 
-.fab-btn {
+.fab-main {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     border: none;
     color: white;
     font-size: 2rem;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(245, 87, 108, 0.5);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.fab-btn:hover {
-    transform: scale(1.1) rotate(90deg);
+.fab-container.active .fab-main {
+    transform: rotate(45deg);
+    background: #e74c3c; /* Pirosra vált nyitáskor */
 }
 
-/* --- MOBIL NÉZET (Responsive) --- */
-@media (max-width: 992px) {
-    .sidebar {
-        display: none; /* Mobilon elrejtjük a sidebart */
-    }
+.fab-options {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
 
-    .content-area {
-        margin-left: 0;
+.fab-container.active .fab-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.fab-option {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.fab-option:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.fab-option .emoji {
+    font-size: 1.5rem;
+}
+
+/* Tooltip a gombok mellett */
+.fab-option .tooltip {
+    position: absolute;
+    right: 65px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.fab-option:hover .tooltip {
+    opacity: 1;
+}
+
+/* === MOBIL NÉZET (RESPONSIVE) === */
+@media (max-width: 768px) {
+    .dashboard-sidebar {
         width: 100%;
-        padding: 20px 20px 100px 20px; /* Alul hely a menünek */
-    }
-
-    /* Alsó navigációs sáv */
-    .bottom-nav {
-        display: flex !important; /* Csak mobilon látszik */
-        position: fixed;
+        height: auto;
         bottom: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(16, 0, 43, 0.95);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding: 10px 20px;
-        justify-content: space-around;
-        z-index: 1000;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        top: auto;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0;
+        background: #10002b; /* Sötétebb háttér mobilon */
     }
 
-    .nav-item-mobile {
+    .sidebar-header, .sidebar-footer {
+        display: none; /* Mobilon rejtjük a fejlécet és a kijelentkezést */
+    }
+
+    .sidebar-nav {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: none;
-        border: none;
-        color: #888;
-        font-size: 0.7rem;
-        gap: 5px;
-        cursor: pointer;
-        transition: color 0.3s;
+        justify-content: space-around;
+        padding: 0;
+        overflow-x: auto;
     }
 
-    .nav-item-mobile.active {
-        color: #f093fb;
+    .nav-item {
+        flex-direction: column;
+        padding: 10px;
+        font-size: 0.7rem;
+        border-left: none;
+        justify-content: center;
+    }
+
+    .nav-item .icon {
+        margin-right: 0;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    .nav-item:hover {
+        padding-left: 10px; /* Reset hover animation */
     }
     
-    .nav-item-mobile .nav-icon {
-        font-size: 1.4rem;
-        margin-bottom: 2px;
+    .nav-item.active {
+        border-left: none;
+        border-top: 3px solid #667eea;
+        background: rgba(255,255,255,0.05);
     }
-    
+
+    .dashboard-main {
+        margin-left: 0;
+        padding: 15px;
+        padding-bottom: 90px; /* Hely a mobil menünek */
+        width: 100%;
+    }
+
     .fab-container {
-        bottom: 90px; /* Feljebb toljuk a menü miatt */
+        bottom: 80px; /* Feljebb kell tolni a mobil menü miatt */
         right: 20px;
     }
 }
-
-/* Alapból rejtett alsó menü (desktopon) */
-.bottom-nav { display: none; }
-
-/* BENTO GRID (Kártyák elrendezése) */
-.bento-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-}
-
-.bento-wide {
-    grid-column: 1 / -1;
-}
-
 
 
 
