@@ -2273,28 +2273,6 @@ editDrinkForm.addEventListener('submit', async (e) => {
         setLoading(submitBtn, false);
     }
 });
-    // === SCROLL REVEAL ANIMÁCIÓK ===
-function initScrollReveal() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-            }
-        });
-    }, observerOptions);
-
-    // Összes kártya és stat elem megfigyelése
-    const elementsToReveal = document.querySelectorAll('.stat-card, .card, .kpi-card');
-    elementsToReveal.forEach(el => {
-        el.classList.add('scroll-reveal');
-        observer.observe(el);
-    });
-}
 
 // === FEJLÉC DINAMIKUS VISELKEDÉS ===
 let lastScrollTop = 0;
@@ -2436,6 +2414,7 @@ function createBeerBubbles(x, y) {
     }
 }
     });
+
 
 
 
