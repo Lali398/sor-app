@@ -718,138 +718,27 @@ async function markIdeaAsDone(index) {
     // ======================================================
 
     function initializeMainTabs(viewElement) {
-    // MODERN SIDEBAR NAVIGATION
-    const sidebarItems = viewElement.querySelectorAll('.sidebar-item');
-    const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
-    
-    if (sidebarItems.length === 0) return; // Ha nincs sidebar, kilépünk
-    
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // Remove active from all items
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Hide all panes
+        const tabsContainer = viewElement.querySelector('.main-tabs');
+        if (!tabsContainer) return; // Nincs is fül ezen a nézeten
+
+        const tabButtons = tabsContainer.querySelectorAll('.main-tab-btn');
+        const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
+
+        tabsContainer.addEventListener('click', (e) => {
+            const clickedButton = e.target.closest('.main-tab-btn');
+            if (!clickedButton) return;
+
+            // Gombok állapotának frissítése
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            // Tartalmi panelek frissítése
+            const targetPaneId = clickedButton.dataset.tabContent;
             tabPanes.forEach(pane => {
-                pane.classList.remove('active');
-                pane.style.display = 'none';
+                pane.classList.toggle('active', pane.id === targetPaneId);
             });
-            
-            // Show selected pane
-            const targetPaneId = item.dataset.view;
-            const targetPane = viewElement.querySelector(`#${targetPaneId}`);
-            if (targetPane) {
-                targetPane.classList.add('active');
-                targetPane.style.display = 'block';
-                
-                // Trigger scroll animations
-                setTimeout(() => {
-                    observeScrollAnimations();
-                }, 100);
-            }
         });
-    });
-}
-
-    // === SCROLL ANIMATIONS ===
-function observeScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    
-    document.querySelectorAll('.scroll-fade').forEach(el => {
-        if (!el.classList.contains('visible')) {
-            observer.observe(el);
-        }
-    });
-    
-    document.querySelectorAll('.bento-card').forEach(card => {
-        if (!card.classList.contains('visible')) {
-            observer.observe(card);
-        }
-    });
-    
-    document.querySelectorAll('table tr').forEach((row, index) => {
-        row.style.transitionDelay = `${index * 0.05}s`;
-        if (!row.classList.contains('visible')) {
-            observer.observe(row);
-        }
-    });
-}
-
-// === DASHBOARD DATA UPDATE ===
-function updateDashboard(beers) {
-    if (!beers || beers.length === 0) {
-        document.getElementById('dashTotalBeers').textContent = '0';
-        document.getElementById('dashAvgScore').textContent = '0.0';
-        document.getElementById('dashTopBeer').textContent = '-';
-        document.getElementById('dashFavType').textContent = '-';
-        document.getElementById('dashRecentBeer').textContent = 'Még nincs értékelés';
-        document.getElementById('dashboardRecentTable').innerHTML = '<tr><td colspan="4" class="no-results">Még nem értékeltél egy sört sem.</td></tr>';
-        return;
     }
-    
-    // Total beers
-    document.getElementById('dashTotalBeers').textContent = beers.length;
-    
-    // Average score
-    const avgScore = (beers.reduce((sum, b) => sum + (parseFloat(b.totalScore) || 0), 0) / beers.length).toFixed(1);
-    document.getElementById('dashAvgScore').textContent = avgScore;
-    
-    // Top beer
-    const topBeer = beers.reduce((max, beer) => {
-        const maxScore = parseFloat(max.totalScore) || 0;
-        const beerScore = parseFloat(beer.totalScore) || 0;
-        return beerScore > maxScore ? beer : max;
-    }, beers[0]);
-    document.getElementById('dashTopBeer').textContent = topBeer.beerName || '-';
-    
-    // Favorite type
-    const types = {};
-    beers.forEach(b => {
-        if (b.type) types[b.type] = (types[b.type] || 0) + 1;
-    });
-    const favType = Object.keys(types).length > 0 
-        ? Object.keys(types).reduce((a, b) => types[a] > types[b] ? a : b) 
-        : '-';
-    document.getElementById('dashFavType').textContent = favType;
-    
-    // Recent beer
-    if (beers.length > 0) {
-        const recent = beers[0];
-        document.getElementById('dashRecentBeer').innerHTML = `
-            <div style="font-weight: 600;">${recent.beerName}</div>
-            <div style="color: #888; font-size: 14px; margin-top: 5px;">
-                ${recent.date ? new Date(recent.date).toLocaleDateString('hu-HU') : 'N/A'} • ${recent.avg || 0} ⭐
-            </div>
-        `;
-    }
-    
-    // Recent table
-    const tableBody = document.getElementById('dashboardRecentTable');
-    tableBody.innerHTML = '';
-    beers.slice(0, 5).forEach((beer, index) => {
-        const row = `
-            <tr class="scroll-fade" style="transition-delay: ${index * 0.1}s;">
-                <td>${beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A'}</td>
-                <td>${beer.beerName}</td>
-                <td>${beer.type || '-'}</td>
-                <td class="average-cell">${beer.avg || 0}</td>
-            </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
-    });
-    
-    // Trigger animations
-    setTimeout(() => {
-        observeScrollAnimations();
-    }, 100);
-}
 
 // ======================================================
     // === ÚJ: STATISZTIKA FUNKCIÓK ===
@@ -1091,7 +980,6 @@ function setupAdminRecap() {
         
         renderUserBeers(beers);
         updateUserStats(beers);
-        updateDashboard(beers);
     } catch (error) {
         console.error("Hiba a felhasználói adatok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni a söreidet.");
@@ -1857,155 +1745,12 @@ window.addEventListener('scroll', function() {
         loadUserData();
         loadUserDrinks();
 
-        // Update sidebar name
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData && document.getElementById('sidebarUserName')) {
-            document.getElementById('sidebarUserName').textContent = `Szia, ${userData.name}!`;
-        }
-        
-        // Trigger initial animations
-        setTimeout(() => {
-            observeScrollAnimations();
-        }, 100);
-
         // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
         const userData = JSON.parse(localStorage.getItem('userData'));
         if (userData) {
             loadUserPreferences(userData.email);
         }
     };
-
-
-    // === MODERN SIDEBAR NAVIGATION ===
-function initModernSidebar() {
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // Remove active from all
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Hide all views
-            document.querySelectorAll('.view-content').forEach(v => {
-                v.style.display = 'none';
-                v.classList.remove('active');
-            });
-            
-            // Show selected view
-            const viewId = item.dataset.view;
-            const targetView = document.getElementById(viewId);
-            if (targetView) {
-                targetView.style.display = 'block';
-                targetView.classList.add('active');
-                
-                // Trigger scroll animations
-                setTimeout(() => {
-                    observeScrollAnimations();
-                }, 100);
-            }
-        });
-    });
-}
-
-// === BENTO GRID ANIMATIONS ===
-function observeScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-    
-    document.querySelectorAll('.scroll-fade').forEach(el => {
-        observer.observe(el);
-    });
-    
-    document.querySelectorAll('.bento-card').forEach(card => {
-        observer.observe(card);
-    });
-    
-    document.querySelectorAll('table tr').forEach((row, index) => {
-        row.style.transitionDelay = `${index * 0.05}s`;
-        observer.observe(row);
-    });
-}
-
-// === DASHBOARD DATA UPDATE ===
-function updateDashboard(beers) {
-    if (!beers || beers.length === 0) return;
-    
-    // Total beers
-    document.getElementById('dashTotalBeers').textContent = beers.length;
-    
-    // Average score
-    const avgScore = (beers.reduce((sum, b) => sum + (parseFloat(b.totalScore) || 0), 0) / beers.length).toFixed(1);
-    document.getElementById('dashAvgScore').textContent = avgScore;
-    
-    // Top beer
-    const topBeer = beers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), beers[0]);
-    document.getElementById('dashTopBeer').textContent = topBeer.beerName || '-';
-    
-    // Favorite type
-    const types = {};
-    beers.forEach(b => {
-        if (b.type) types[b.type] = (types[b.type] || 0) + 1;
-    });
-    const favType = Object.keys(types).reduce((a, b) => types[a] > types[b] ? a : b, '-');
-    document.getElementById('dashFavType').textContent = favType;
-    
-    // Recent beer
-    if (beers.length > 0) {
-        const recent = beers[0];
-        document.getElementById('dashRecentBeer').innerHTML = `
-            <div>${recent.beerName}</div>
-            <div style="color: #888; font-size: 14px; margin-top: 5px;">
-                ${recent.date ? new Date(recent.date).toLocaleDateString('hu-HU') : 'N/A'} • ${recent.avg || 0} ⭐
-            </div>
-        `;
-    }
-    
-    // Recent table
-    const tableBody = document.getElementById('dashboardRecentTable');
-    tableBody.innerHTML = '';
-    beers.slice(0, 5).forEach(beer => {
-        const row = `
-            <tr class="scroll-fade">
-                <td>${beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A'}</td>
-                <td>${beer.beerName}</td>
-                <td>${beer.type || '-'}</td>
-                <td>${beer.avg || 0}</td>
-            </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
-    });
-}
-
-// === FAB & MODAL FUNCTIONS ===
-window.openAddBeerModal = function() {
-    document.getElementById('addBeerModal').classList.add('active');
-}
-
-window.closeAddBeerModal = function() {
-    document.getElementById('addBeerModal').classList.remove('active');
-}
-
-// === MODIFY switchToUserView ===
-// Find the existing switchToUserView function and ADD these lines at the END:
-
-// ... (your existing switchToUserView code)
-
-// ADD THESE LINES:
-initModernSidebar();
-observeScrollAnimations();
-updateDashboard(currentUserBeers || []);
-
-// Update sidebar name
-const userData = JSON.parse(localStorage.getItem('userData'));
-if (userData) {
-    document.getElementById('sidebarUserName').textContent = `Szia, ${userData.name}!`;
-}
 
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
@@ -2567,9 +2312,6 @@ function createBeerBubbles(x, y) {
     }
 }
     });
-
-
-
 
 
 
