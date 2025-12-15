@@ -1900,7 +1900,8 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4 másodperc per slide
 }
-
+});
+// CSERÉLD LE EZT A RÉSZT A FÁJL VÉGÉN (window.downloadRecap után):
 
 window.toggleFullscreen = function() {
     const elem = document.getElementById('storyContainer');
@@ -2489,8 +2490,9 @@ window.closeContactModal = function() {
 }
 
 // 3. Űrlap beküldése
-// Csak simán a kód, mivel már az egész fájl a betöltés után fut
-const contactForm = document.getElementById('contactForm');
+// (Külön eseményfigyelő, ami biztosan lefut)
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
     
     // Biztonságos segédfüggvények (ha a globálisak nem elérhetőek)
     const safeSetLoading = (btn, state) => {
@@ -2501,12 +2503,13 @@ const contactForm = document.getElementById('contactForm');
     };
     
     const safeShowMsg = (msg, type) => {
+        // Ha van globális függvény, használjuk azt, ha nincs, alert
         if(typeof window.showNotification === 'function') {
             window.showNotification(msg, type);
         } else if(typeof showNotification === 'function') {
             showNotification(msg, type);
         } else {
-            alert(msg);
+            alert(msg); // Végső eset
         }
     };
 
@@ -2552,54 +2555,5 @@ const contactForm = document.getElementById('contactForm');
         });
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
