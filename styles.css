@@ -1803,6 +1803,58 @@ input:checked + .slider:before {
 .input-group input[type="text"].password-visible {
     padding-right: 35px;
 }
+.guest-help-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100; /* Hogy a buborékok és minden más felett legyen */
+    
+    /* Glassmorphism Stílus */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.guest-help-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.guest-help-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobilon csak a kérdőjel látszódjon, hogy ne takarjon ki sokat */
+@media (max-width: 480px) {
+    .guest-help-btn {
+        padding: 10px;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+        border-radius: 50%; /* Kerek gomb mobilon */
+    }
+    
+    .guest-help-btn .btn-label {
+        display: none; /* Szöveg elrejtése */
+    }
+}
+
 
 
 
