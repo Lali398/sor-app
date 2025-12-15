@@ -1592,18 +1592,21 @@ input:checked + .slider:before {
 
 .fab-options {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column-reverse; /* Ez biztosítja, hogy felfelé építkezzen */
     gap: 15px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
+    /* Kezdőállapot: kicsit lejjebb vannak és kicsik */
+    transform: translateY(20px) scale(0.8); 
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Rugalmas animáció */
+    margin-bottom: 15px; /* Hely a fő gomb felett */
 }
 
 .fab-container.active .fab-options {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    /* Végállapot: eredeti helyükön és méretben */
+    transform: translateY(0) scale(1);
 }
 
 .fab-option {
@@ -1779,6 +1782,7 @@ input:checked + .slider:before {
         justify-content: space-between;
     }
 }
+
 
 
 
