@@ -1,3 +1,35 @@
+window.setLoading = function(button, isLoading) { 
+    if(!button) return;
+    button.classList.toggle('loading', isLoading);
+    button.disabled = isLoading; 
+}
+
+window.showNotification = function(message, type) { 
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`; 
+    notification.textContent = message; 
+    
+    // Stílusok
+    Object.assign(notification.style, { 
+        position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', 
+        borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', 
+        transform: 'translateX(400px)', transition: 'transform 0.3s ease', 
+        backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') 
+    });
+    
+    document.body.appendChild(notification); 
+    
+    // Animáció
+    setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); 
+    setTimeout(() => { 
+        notification.style.transform = 'translateX(400px)'; 
+        setTimeout(() => { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 300); 
+    }, 4000);
+}
+
+window.showError = function(msg) { window.showNotification(msg, 'error'); }
+window.showSuccess = function(msg) { window.showNotification(msg, 'success'); }
+
 document.addEventListener('DOMContentLoaded', function() {
 
     if (typeof Chart !== 'undefined') {
@@ -1672,15 +1704,7 @@ window.downloadRecap = function() {
     });
 }
 
-// --- SEGÉDFÜGGVÉNYEK ---
-// ... (a fájl többi része változatlan) ...
-    
-    // --- SEGÉDFÜGGVÉNYEK ---
-    function setLoading(button, isLoading) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; }
-    function showError(message) { showNotification(message, 'error'); }
-    function showSuccess(message) { showNotification(message, 'success'); }
-    function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
-    
+   
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 // === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
 let lastScrollTop = 0;
@@ -2456,56 +2480,86 @@ window.openAddModal = function(type) {
     document.body.style.overflow = 'hidden'; // Görgetés tiltása
 }
 
+// Modal bezáró logika (Sör/Ital)
 window.closeAddModal = function(type) {
     if (type === 'beer') {
-        document.getElementById('addBeerModal').classList.remove('active');
+        const modal = document.getElementById('addBeerModal');
+        if(modal) modal.classList.remove('active');
     } else if (type === 'drink') {
-        document.getElementById('addDrinkModal').classList.remove('active');
+        const modal = document.getElementById('addDrinkModal');
+        if(modal) modal.classList.remove('active');
     }
     document.body.style.overflow = 'auto';
 }
-    // 1. Modal megnyitása
-    window.openContactModal = function() {
-        // Bezárjuk a lebegő menüt, ha nyitva van
-        const fabContainer = document.getElementById('fabContainer');
-        if(fabContainer) fabContainer.classList.remove('active');
 
-        // Megnyitjuk a modal-t
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Görgetés tiltása
-        }
+// ======================================================
+// === ÚJ: KAPCSOLAT / HIBAJELENTÉS KEZELÉSE (JAVÍTOTT) ===
+// ======================================================
+
+// 1. Modal megnyitása
+window.openContactModal = function() {
+    // Bezárjuk a lebegő menüt, ha nyitva van
+    const fabContainer = document.getElementById('fabContainer');
+    if(fabContainer) fabContainer.classList.remove('active');
+
+    // Megnyitjuk a modal-t
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; 
     }
+}
 
-    // 2. Modal bezárása
-    window.closeContactModal = function() {
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        
-        // Űrlap törlése
-        const form = document.getElementById('contactForm');
-        if (form) form.reset();
-
-        document.body.style.overflow = 'auto';
+// 2. Modal bezárása
+window.closeContactModal = function() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.remove('active');
     }
+    const form = document.getElementById('contactForm');
+    if (form) form.reset();
+    document.body.style.overflow = 'auto';
+}
 
-    // 3. Űrlap beküldése
+// 3. Űrlap beküldése
+// (Külön eseményfigyelő, ami biztosan lefut)
+document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contactForm');
+    
+    // Biztonságos segédfüggvények (ha a globálisak nem elérhetőek)
+    const safeSetLoading = (btn, state) => {
+        if(btn) {
+            btn.classList.toggle('loading', state);
+            btn.disabled = state;
+        }
+    };
+    
+    const safeShowMsg = (msg, type) => {
+        // Ha van globális függvény, használjuk azt, ha nincs, alert
+        if(typeof window.showNotification === 'function') {
+            window.showNotification(msg, type);
+        } else if(typeof showNotification === 'function') {
+            showNotification(msg, type);
+        } else {
+            alert(msg); // Végső eset
+        }
+    };
+
     if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
+        // Töröljük a korábbi eseménykezelőket (klónozással), hogy ne duplázódjon
+        const newForm = contactForm.cloneNode(true);
+        contactForm.parentNode.replaceChild(newForm, contactForm);
+
+        newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const subject = document.getElementById('contactSubject').value;
             const message = document.getElementById('contactMessage').value;
-            const submitBtn = contactForm.querySelector('.auth-btn');
+            const submitBtn = newForm.querySelector('.auth-btn');
 
-            setLoading(submitBtn, true);
+            safeSetLoading(submitBtn, true);
 
             try {
-                // API hívás a sheet.js-hez
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
@@ -2519,20 +2573,21 @@ window.closeAddModal = function(type) {
                 const result = await response.json();
 
                 if(response.ok) {
-                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    closeContactModal();
+                    safeShowMsg(result.message || "Üzenet elküldve!", "success");
+                    window.closeContactModal();
                 } else {
-                    showError(result.error || "Hiba történt küldéskor.");
+                    safeShowMsg(result.error || "Hiba történt küldéskor.", "error");
                 }
             } catch(err) {
                 console.error(err);
-                showError("Hálózati hiba.");
+                safeShowMsg("Hálózati hiba.", "error");
             } finally {
-                setLoading(submitBtn, false);
+                safeSetLoading(submitBtn, false);
             }
         });
     }
-    });
+});
+
 
 
 
