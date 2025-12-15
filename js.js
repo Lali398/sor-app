@@ -2504,70 +2504,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            console.log("Űrlap küldése folyamatban...");
-
+            
             const subjectInput = document.getElementById('contactSubject');
             const messageInput = document.getElementById('contactMessage');
-            const submitBtn = newForm.querySelector('.auth-btn');
-            
-            // Gomb UI elemek
-            const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
-            const btnLoading = submitBtn ? submitBtn.querySelector('.btn-loading') : null;
+            const submitBtn = newForm.querySelector('.auth-btn'); 
 
-            // UI frissítése: Töltés állapot
+            // Adatok
+            const subject = subjectInput.value;
+            const message = messageInput.value;
+
+            // Gomb töltés állapotba
             if (submitBtn) {
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                if(btnText) btnText.style.opacity = '0';
+                if(btnLoading) btnLoading.style.display = 'block';
                 submitBtn.disabled = true;
-                if (btnText) btnText.style.opacity = '0';
-                if (btnLoading) btnLoading.style.display = 'block';
             }
 
             try {
-                // Token ellenőrzése
+                // Token beszerzése (ha van)
                 const token = localStorage.getItem('userToken');
-                if (!token) {
-                    throw new Error("Kérlek jelentkezz be a hibajelentéshez!");
+                
+                // MÓDOSÍTÁS: Nem dobunk hibát, ha nincs token!
+                // Összeállítjuk a fejléceket dinamikusan
+                const headers = { 
+                    'Content-Type': 'application/json'
+                };
+
+                // Csak akkor csatoljuk a tokent, ha létezik (be van lépve)
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
                 }
 
-                // API hívás
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` 
-                    },
+                    headers: headers, // Itt adjuk át a dinamikus fejlécet
                     body: JSON.stringify({ 
                         action: 'SEND_REPORT', 
-                        subject: subjectInput.value, 
-                        message: messageInput.value 
+                        subject: subject, 
+                        message: message 
                     })
                 });
 
                 const result = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(result.error || "Szerver oldali hiba történt.");
+                if (response.ok) {
+                    if (typeof showSuccess === 'function') {
+                        showSuccess(result.message || "Üzenet sikeresen elküldve!");
+                    } else {
+                        alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
+                    }
+                    window.closeContactModal();
+                } else {
+                    throw new Error(result.error || "Hiba történt küldéskor.");
                 }
 
-                // SIKERES KÜLDÉS
-                alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
-                window.closeContactModal(); // Ablak bezárása
-
             } catch (err) {
-                console.error("Hiba történt:", err);
-                alert("❌ Hiba: " + err.message);
+                console.error(err);
+                if (typeof showError === 'function') {
+                    showError(err.message);
+                } else {
+                    alert("❌ Hiba: " + err.message);
+                }
             } finally {
-                // UI Visszaállítása (hogy ne ragadjon be)
+                // Gomb visszaállítása
                 if (submitBtn) {
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    const btnLoading = submitBtn.querySelector('.btn-loading');
+                    if(btnText) btnText.style.opacity = '1';
+                    if(btnLoading) btnLoading.style.display = 'none';
                     submitBtn.disabled = false;
-                    if (btnText) btnText.style.opacity = '1';
-                    if (btnLoading) btnLoading.style.display = 'none';
                 }
             }
         });
-    } else {
-        console.warn("Nem található a 'contactForm' űrlap.");
-    }
-});
 
 
 
