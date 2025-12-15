@@ -46,6 +46,7 @@
                                 <input type="password" id="loginPassword" required>
                                 <label for="loginPassword">Jelszó</label>
                                 <span class="input-highlight"></span>
+                                <span class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</span>
                             </div>
                             <button type="submit" class="auth-btn">
                                 <span class="btn-text">Bejelentkezés</span>
@@ -75,23 +76,21 @@
                                 <span class="input-highlight"></span>
                             </div>
                             <div class="input-group">
-                                <input type="password" id="registerPassword" required>
-                                <label for="registerPassword">Jelszó</label>
-                                <span class="input-highlight"></span>
-                            </div>
-                            <div class="input-group">
-                                <input type="password" id="registerPasswordConfirm" required>
-                                <label for="registerPasswordConfirm">Jelszó megerősítés</label>
-                                <span class="input-highlight"></span>
-                            </div>
-                            <div class="input-group">
                             <input type="password" id="registerPassword" required>
                             <label for="registerPassword">Jelszó</label>
                             <span class="input-highlight"></span>
+                            <span class="password-toggle" onclick="togglePassword('registerPassword', this)">👁️</span>
                             <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
                                 Min. 8 karakter, 1 szám, 1 spec. karakter.
                             </small>
                         </div>
+                            <div class="input-group">
+                                <input type="password" id="registerPasswordConfirm" required>
+                                <label for="registerPasswordConfirm">Jelszó megerősítés</label>
+                                <span class="input-highlight"></span>
+                                <span class="password-toggle" onclick="togglePassword('registerPasswordConfirm', this)">👁️</span>
+                            </div>
+                            
                             <div class="terms-group">
                                 <input type="checkbox" id="registerTerms" required>
                                 <label for="registerTerms">
@@ -896,6 +895,7 @@
                     <input type="password" id="adminPassword" required>
                     <label for="adminPassword">Jelszó</label>
                     <span class="input-highlight"></span>
+                    <span class="password-toggle" onclick="togglePassword('adminPassword', this)">👁️</span>
                 </div>
                 <button type="submit" class="auth-btn">Bejelentkezés</button>
             </form>
@@ -1099,3 +1099,4 @@
     <script src="js.js"></script>
 </body>
 </html>
+
