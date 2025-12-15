@@ -124,29 +124,52 @@
 
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
-    <!-- FEJLÉC -->
     <header class="admin-header">
         <div class="header-content">
             <div class="logo">
                 <span class="beer-icon">🍺</span>
-                <h1 id="userWelcomeMessage">Szia!</h1>
+                <h1 class="desktop-only">Sör Napló</h1>
             </div>
+
+            <div class="header-stats-container">
+                <div class="h-stat-item">
+                    <span class="h-icon">🍺</span>
+                    <div class="h-data">
+                        <span class="h-label">Kóstolva</span>
+                        <span class="h-value" id="headerBeerCount">0</span>
+                    </div>
+                </div>
+                <div class="h-stat-item">
+                    <span class="h-icon">⭐</span>
+                    <div class="h-data">
+                        <span class="h-label">Átlag</span>
+                        <span class="h-value" id="headerAvgScore">0.0</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="header-actions">
                 <button class="header-btn" id="userLogoutBtn">
                     <span>🚪</span>
-                    <span>Kijelentkezés</span>
+                    <span class="desktop-only">Kijelentkezés</span>
                 </button>
             </div>
         </div>
     </header>
 
     <!-- DASHBOARD LAYOUT (SIDEBAR + MAIN) -->
-    <div class="dashboard-layout">
-        <!-- OLDALSÁV (Desktop) / ALSÓ MENÜ (Mobil) -->
+   <div class="dashboard-layout">
         <aside class="dashboard-sidebar">
             <div class="sidebar-header">
-                <span class="beer-icon">🍺</span>
-                <h2 id="userWelcomeMessageSidebar">Szia!</h2>
+                 <span class="beer-icon" style="font-size: 2rem;">🍺</span>
+                 <span style="color: white; font-weight: 600; margin-left: 10px;">Menü</span>
+            </div>
+
+            <<div class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                 <span class="beer-icon" style="font-size: 2rem;">🍺</span>
+                 <span style="color: white; font-weight: 600; margin-left: 10px;">Menü</span>
             </div>
 
             <nav class="sidebar-nav">
@@ -183,9 +206,8 @@
                     <span class="label">Beállítások</span>
                 </button>
             </nav>
-
             <div class="sidebar-footer">
-                <button class="nav-item logout-link" id="userLogoutBtnSidebar">
+                 <button class="nav-item logout-link" id="userLogoutBtnSidebar">
                     <span class="icon">🚪</span>
                     <span class="label">Kijelentkezés</span>
                 </button>
@@ -1139,6 +1161,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
