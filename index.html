@@ -121,13 +121,12 @@
     </div>
 
     <!-- FELHASZNÁLÓI NÉZET -->
-<div class="admin-view" id="userView" style="display: none;">
-    <header class="admin-header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="beer-icon">🍺</span>
-                <h1 class="desktop-only">Sör Napló</h1>
-            </div>
+<header class="admin-header" id="mainHeader">
+    <div class="header-content">
+        <div class="logo">
+            <span class="beer-icon">🍺</span>
+            <h1 id="userWelcomeMessage">Sör Napló</h1>
+        </div>
 
             <div class="header-stats-container">
                 <div class="h-stat-item">
@@ -145,35 +144,21 @@
                     </div>
                 </div>
             </div>
-    </header>
-    <div class="header-actions">
-                <button class="header-btn" id="userLogoutBtn">
-                    <span>🚪</span>
-                    <span class="desktop-only">Kijelentkezés</span>
-                </button>
-            </div>
-        </div>
-        <header class="admin-header" id="mainHeader">
-    <div class="header-content">
-        <div class="logo">
-            <span class="beer-icon">🍺</span>
-            <h1 id="userWelcomeMessage">Sör Napló</h1>
-        </div>
-        
-        <div class="header-actions">
+         <div class="header-actions">
             <button class="header-btn" id="userLogoutBtn">
                 <span>🚪</span>
                 <span>Kijelentkezés</span>
             </button>
         </div>
     </div>
-    
     <div class="header-toggle-container">
         <button id="headerToggleBtn" class="header-toggle-btn">
             ▲
         </button>
     </div>
-</header>
+    </header>
+   
+        
 
     <!-- DASHBOARD LAYOUT (SIDEBAR + MAIN) -->
    <div class="dashboard-layout">
@@ -1163,6 +1148,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
