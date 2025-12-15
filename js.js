@@ -1674,9 +1674,6 @@ window.downloadRecap = function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 
-    // ======================================================
-    // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
-    // ======================================================
 
     // Beállítás betöltése és szinkronizálása
     function loadUserPreferences(userEmail) {
@@ -2481,8 +2478,6 @@ window.addEventListener('scroll', function() {
     lastScrollTop = scrollTop;
 });
     });
-
-
 
 
 
