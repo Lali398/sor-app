@@ -1070,30 +1070,30 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-    // 1. Darabszám kiszámolása
-    const count = beers.length;
-    
-    // 2. Átlag kiszámolása
-    let average = '0.0';
-    if (count > 0) {
+        // 1. Dashboard statisztikák frissítése (Eredeti kártyák)
+        const countElement = document.getElementById('userBeerCount');
+        const avgElement = document.getElementById('userAverageScore');
+        
+        if(countElement) countElement.textContent = beers.length;
+
+        // 2. ÚJ: Fejléc statisztikák frissítése
+        const headerCount = document.getElementById('headerBeerCount');
+        const headerAvg = document.getElementById('headerAvgScore');
+
+        if(headerCount) headerCount.textContent = beers.length;
+
+        if (beers.length === 0) {
+            if(avgElement) avgElement.textContent = '0.0';
+            if(headerAvg) headerAvg.textContent = '0.0';
+            return;
+        }
+
         const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
-        average = (totalScoreSum / count).toFixed(1);
+        const average = (totalScoreSum / beers.length).toFixed(1);
+        
+        if(avgElement) avgElement.textContent = average;
+        if(headerAvg) headerAvg.textContent = average;
     }
-
-    // --- FRISSÍTÉS A DASHBOARDON (Lenti kártyák) ---
-    const dashboardCount = document.getElementById('userBeerCount');
-    const dashboardAvg = document.getElementById('userAverageScore');
-    
-    if (dashboardCount) dashboardCount.textContent = count;
-    if (dashboardAvg) dashboardAvg.textContent = average;
-
-    // --- ÚJ: FRISSÍTÉS A FEJLÉCBEN (Fenti kapszula) ---
-    const headerCount = document.getElementById('headerBeerCount');
-    const headerAvg = document.getElementById('headerAvgScore');
-
-    if (headerCount) headerCount.textContent = count;
-    if (headerAvg) headerAvg.textContent = average;
-}
     function updateUserDrinkStats(drinks) {
     document.getElementById('userDrinkCount').textContent = drinks.length;
     if (drinks.length === 0) {
@@ -1673,7 +1673,38 @@ window.downloadRecap = function() {
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
+// === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
+let lastScrollTop = 0;
 
+window.addEventListener('scroll', function() {
+    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
+    const headers = document.querySelectorAll('.admin-header'); 
+    
+    if (headers.length === 0) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
+    
+    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
+    headers.forEach(header => {
+        // Sör feltöltés animáció - inline style-lal állítjuk be
+        header.style.setProperty('--fill-percent', scrollPercent);
+        
+        if (scrollPercent >= 1) {
+            header.classList.add('filled');
+        } else {
+            header.classList.remove('filled');
+        }
+        
+        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
+        if (scrollTop > lastScrollTop && scrollTop > 350) {
+            header.classList.add('hidden');
+        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
+            header.classList.remove('hidden');
+        }
+    });
+    
+    lastScrollTop = scrollTop;
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -2424,24 +2455,51 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-    // === HEADER MOZGATÁS LOGIKA ===
-const headerToggleBtn = document.getElementById('headerToggleBtn');
-const mainHeader = document.getElementById('mainHeader');
-let isHeaderLocked = false; // Ez tárolja, hogy fel van-e húzva manuálisan
-
-if (headerToggleBtn && mainHeader) {
-    headerToggleBtn.addEventListener('click', () => {
-        isHeaderLocked = !isHeaderLocked;
-        
-        if (isHeaderLocked) {
-            // Felhúzás
-            mainHeader.classList.add('manual-collapsed');
-            // Opcionális: a nyílban lévő karakter cseréje, de CSS rotate elegánsabb
-        } else {
-            // Leengedés
-            mainHeader.classList.remove('manual-collapsed');
-        }
     });
-}
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
