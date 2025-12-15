@@ -1711,25 +1711,3 @@ input:checked + .slider:before {
         right: 20px;
     }
 }
-/* Ezt add hozzá a CSS fájlodhoz */
-.password-toggle {
-    position: absolute;
-    right: 10px;
-    top: 15px; /* Igazítsd a mező magasságához, ha kell */
-    cursor: pointer;
-    font-size: 1.2rem;
-    z-index: 10;
-    user-select: none; /* Hogy ne jelölje ki szövegként dupla kattintásra */
-    transition: transform 0.2s;
-}
-
-.password-toggle:hover {
-    transform: scale(1.1);
-}
-
-/* Hogy a hosszú jelszó ne folyjon rá a szem ikonra */
-.input-group input[type="password"],
-.input-group input[type="text"].password-visible {
-    padding-right: 35px;
-}
-
