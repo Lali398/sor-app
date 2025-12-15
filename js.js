@@ -2558,85 +2558,122 @@ window.closeContactModal = function() {
     const form = document.getElementById('contactForm');
     if (form) form.reset(); // Űrlap törlése
     document.body.style.overflow = 'auto'; // Görgetés vissza
-};
-
-// 3. Űrlap beküldés kezelése
-const contactForm = document.getElementById('contactForm');
-
-if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const subjectInput = document.getElementById('contactSubject');
-        const messageInput = document.getElementById('contactMessage');
-        const submitBtn = contactForm.querySelector('.auth-btn'); // Gomb keresése a formon belül
-
-        // Adatok
-        const subject = subjectInput.value;
-        const message = messageInput.value;
-
-        // Gomb töltés állapotba
-        if (submitBtn) {
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-        }
-
-        try {
-            // Token beszerzése (ha be van lépve)
-            const token = localStorage.getItem('userToken');
-            
-            // Ha nincs token (vendég), akkor is engedhetjük, vagy dobhatunk hibát. 
-            // A te API-d (SEND_REPORT) elvárja a "verifyUser"-t, tehát BE KELL LÉPNI hozzá.
-            if (!token) {
-                throw new Error("A hibajelentéshez kérlek jelentkezz be!");
-            }
-
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ 
-                    action: 'SEND_REPORT', 
-                    subject: subject, 
-                    message: message 
-                })
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                // Sikeres küldés
-                // Használjuk a meglévő értesítő rendszeredet, ha van, ha nincs, akkor alert
-                if (typeof showSuccess === 'function') {
-                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                } else {
-                    alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
-                }
-                window.closeContactModal();
-            } else {
-                // Szerver hiba
-                throw new Error(result.error || "Hiba történt küldéskor.");
-            }
-
-        } catch (err) {
-            console.error(err);
-            if (typeof showError === 'function') {
-                showError(err.message);
-            } else {
-                alert("❌ Hiba: " + err.message);
-            }
-        } finally {
-            // Gomb visszaállítása
-            if (submitBtn) {
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-            }
-        }
-    });
 }
     });
+
+window.openContactModal = function() {
+    const modal = document.getElementById('contactModal');
+    // Ha van lebegő menü (FAB), azt bezárjuk, hogy ne takarjon ki
+    const fab = document.getElementById('fabContainer');
+    if (fab) fab.classList.remove('active');
+
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Görgetés tiltása
+    } else {
+        console.error("Nem található a 'contactModal' elem a HTML-ben!");
+    }
+};
+
+// 2. Modal bezárása (Globális elérés)
+window.closeContactModal = function() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    const form = document.getElementById('contactForm');
+    if (form) form.reset(); // Űrlap törlése
+    document.body.style.overflow = 'auto'; // Görgetés visszaállítása
+};
+
+// 3. Űrlap beküldés kezelése (Biztonságos módban)
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
+
+    if (contactForm) {
+        // Klónozzuk az elemet, hogy eltávolítsuk a korábbi (esetleg beragadt) eseményfigyelőket
+        const newForm = contactForm.cloneNode(true);
+        contactForm.parentNode.replaceChild(newForm, contactForm);
+
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const subjectInput = document.getElementById('contactSubject');
+            const messageInput = document.getElementById('contactMessage');
+            const submitBtn = newForm.querySelector('.auth-btn'); 
+
+            // Adatok
+            const subject = subjectInput.value;
+            const message = messageInput.value;
+
+            // Gomb töltés állapotba
+            if (submitBtn) {
+                // Ha van spinner, kezeljük
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                if(btnText) btnText.style.opacity = '0';
+                if(btnLoading) btnLoading.style.display = 'block';
+                submitBtn.disabled = true;
+            }
+
+            try {
+                // Token beszerzése
+                const token = localStorage.getItem('userToken');
+                
+                // Mivel a sheet.js-ben a SEND_REPORT 'verifyUser'-t használ, 
+                // csak bejelentkezett felhasználó tud küldeni.
+                // Ha vendégként is szeretnéd engedni, a backendet is módosítani kellene.
+                if (!token) {
+                    throw new Error("A hibajelentéshez kérlek jelentkezz be!");
+                }
+
+                const response = await fetch('/api/sheet', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ 
+                        action: 'SEND_REPORT', 
+                        subject: subject, 
+                        message: message 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Sikeres küldés
+                    if (typeof showSuccess === 'function') {
+                        showSuccess(result.message || "Üzenet sikeresen elküldve!");
+                    } else {
+                        alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
+                    }
+                    window.closeContactModal();
+                } else {
+                    throw new Error(result.error || "Hiba történt küldéskor.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                if (typeof showError === 'function') {
+                    showError(err.message);
+                } else {
+                    alert("❌ Hiba: " + err.message);
+                }
+            } finally {
+                // Gomb visszaállítása
+                if (submitBtn) {
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    const btnLoading = submitBtn.querySelector('.btn-loading');
+                    if(btnText) btnText.style.opacity = '1';
+                    if(btnLoading) btnLoading.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+    }
+});
 
 
 
