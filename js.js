@@ -972,34 +972,52 @@ function setupAdminRecap() {
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
-        showError('Nem vagy bejelentkezve.');
+        // Ha nincs user adat, visszadobjuk a loginra
         switchToGuestView();
         return;
     }
-    userWelcomeMessage.textContent = `Szia, ${user.name}!`;
+    
+    // Fejléc üdvözlés frissítése (ha van ilyen elem)
+    const welcomeMsg = document.getElementById('userWelcomeMessage');
+    if(welcomeMsg) welcomeMsg.textContent = `Szia, ${user.name}!`;
+
+    // Táblázat ürítése és töltésjelző
+    const tableBody = document.getElementById('userBeerTableBody');
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betöltése...</td></tr>';
+
     try {
+        console.log("Sörök lekérése..."); // Debug
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
+        
         const beers = await response.json();
+        
         if (!response.ok) {
-                if (response.status === 401) {
-                showError("A munkameneted lejárt, jelentkezz be újra.");
+            if (response.status === 401) {
+                showError("A munkamenet lejárt.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(beers.error || 'Szerverhiba');
         }
         
-        currentUserBeers = beers; // <--- ITT MENTJÜK EL GLOBÁLISAN
+        // Globális változó frissítése
+        currentUserBeers = beers;
         
+        console.log(`Sikeres lekérés: ${beers.length} sör.`);
+        
+        // Renderelés hívása
         renderUserBeers(beers);
+        
+        // Statisztikák frissítése (Headerben is!)
         updateUserStats(beers);
+
     } catch (error) {
-        console.error("Hiba a felhasználói adatok betöltésekor:", error);
-        showError(error.message || "Nem sikerült betölteni a söreidet.");
+        console.error("Hiba a sörök betöltésekor:", error);
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="10" class="no-results error">Hiba: ${error.message}</td></tr>`;
     }
 }
 
@@ -2139,49 +2157,49 @@ window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
 switchToUserView = function() {
-    // 1. Nézetek kezelése (Guest/Admin elrejtése, User megjelenítése)
-    const guestView = document.getElementById('guestView');
-    const adminView = document.getElementById('adminView');
-    const userView = document.getElementById('userView');
-
-    if (guestView) guestView.style.display = 'none';
-    if (adminView) adminView.style.display = 'none';
-    if (userView) userView.style.display = 'block';
+    // 1. Nézetek átváltása
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
     
-    // 2. Háttér beállítása
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
 
-    // 3. Fülek inicializálása
-    if (typeof initializeMainTabs === 'function') {
-        initializeMainTabs(userView);
-    }
+    // 2. Fülek és UI inicializálása
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
 
-    // 4. ADATOK BETÖLTÉSE (ITT VOLT A HIÁNY!)
+    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
+    // Először a söröket töltjük be
+    loadUserData();
     
-    // Sörök betöltése
-    if (typeof loadUserData === 'function') {
-        console.log("Sörök betöltése indítása...");
-        loadUserData(); 
-    }
-
-    // Italok betöltése (Ez hiányzott a belépésnél!)
+    // Aztán az italokat
     if (typeof loadUserDrinks === 'function') {
-        console.log("Italok betöltése indítása...");
         loadUserDrinks();
     }
+
+    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
+    // Újra csatoljuk az eseményt a biztonság kedvéért
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
     
-    // Ötletek betöltése (ha épp azon a fülön állnánk, bár alapból nem ott kezdünk)
-    // De a biztonság kedvéért frissíthetjük a UI beállításokat
-    
-    // 5. Beállítások és Kurzor frissítése
-    if (typeof updateSettingsUI === 'function') {
-        updateSettingsUI();
-    }
-    
-    // 6. Scroll animációk indítása (kicsit késleltetve, hogy a DOM felépüljön)
-    if (typeof initScrollAnimation === 'function') {
-        setTimeout(initScrollAnimation, 100);
+    if (fabMainBtn && fabContainer) {
+        // Először levesszük a régit (klónozással), hogy ne duplázódjon
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Megállítjuk a buborékosodást
+            fabContainer.classList.toggle('active');
+        });
+
+        // Bezárás ha máshova kattintunk
+        document.addEventListener('click', (e) => {
+            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                fabContainer.classList.remove('active');
+            }
+        });
     }
 };
     // === SÖR SZERKESZTÉS ===
@@ -2417,6 +2435,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
