@@ -2138,7 +2138,7 @@ window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
-switchToUserVieww = function() {
+switchToUserView = function() {
     // 1. Nézetek kezelése (Guest/Admin elrejtése, User megjelenítése)
     const guestView = document.getElementById('guestView');
     const adminView = document.getElementById('adminView');
@@ -2417,6 +2417,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
