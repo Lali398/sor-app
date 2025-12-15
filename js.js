@@ -2455,7 +2455,64 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
+    // === HEADER MOZGATÁS LOGIKA ===
+const headerToggleBtn = document.getElementById('headerToggleBtn');
+const mainHeader = document.getElementById('mainHeader');
+let isHeaderLocked = false; // Ez tárolja, hogy fel van-e húzva manuálisan
+
+if (headerToggleBtn && mainHeader) {
+    headerToggleBtn.addEventListener('click', () => {
+        isHeaderLocked = !isHeaderLocked;
+        
+        if (isHeaderLocked) {
+            // Felhúzás
+            mainHeader.classList.add('manual-collapsed');
+            // Opcionális: a nyílban lévő karakter cseréje, de CSS rotate elegánsabb
+        } else {
+            // Leengedés
+            mainHeader.classList.remove('manual-collapsed');
+        }
     });
+}
+
+// === GÖRGETÉS FIGYELŐ MÓDOSÍTÁSA ===
+// Keresd meg a meglévő "window.addEventListener('scroll'..." részt a kódodban (kb. 576. sor),
+// és cseréld le erre a bővített verzióra:
+
+let lastScrollTop = 0;
+
+window.addEventListener('scroll', function() {
+    // HA fel van húzva a nyilacskával, akkor a görgetés NE csináljon semmit!
+    if (isHeaderLocked) return; 
+
+    const headers = document.querySelectorAll('.admin-header');
+    if (headers.length === 0) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = Math.min(scrollTop / 300, 1);
+    
+    headers.forEach(header => {
+        // Sör feltöltés animáció (marad)
+        header.style.setProperty('--fill-percent', scrollPercent);
+        
+        if (scrollPercent >= 1) {
+            header.classList.add('filled');
+        } else {
+            header.classList.remove('filled');
+        }
+        
+        // Eredeti elrejtő logika (csak akkor fut, ha nincs lockolva)
+        if (scrollTop > lastScrollTop && scrollTop > 350) {
+            header.classList.add('hidden'); // Ez a teljes elrejtés görgetéskor
+        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
+            header.classList.remove('hidden');
+        }
+    });
+    
+    lastScrollTop = scrollTop;
+});
+    });
+
 
 
 
