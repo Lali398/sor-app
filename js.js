@@ -305,27 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-    /* === JELSZÓ MEGJELENÍTÉSE / ELREJTÉSE === */
-function togglePassword(inputId, icon) {
-    const input = document.getElementById(inputId);
-    
-    if (!input) return; // Biztonsági ellenőrzés
-
-    if (input.type === "password") {
-        input.type = "text";
-        input.classList.add('password-visible'); // CSS miatt
-        icon.textContent = "🙈"; // Lecsukott szem (vagy használhatsz mást)
-    } else {
-        input.type = "password";
-        input.classList.remove('password-visible');
-        icon.textContent = "👁️"; // Nyitott szem
-    }
-}
-
-// Mivel a HTML-ben az 'onclick' attribútumot használtuk, 
-// ezt a függvényt globálisan elérhetővé kell tenni:
-window.togglePassword = togglePassword;
-
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) return;
@@ -2449,4 +2428,3 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
-
