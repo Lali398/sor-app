@@ -1563,7 +1563,7 @@ input:checked + .slider:before {
     right: 30px;
     z-index: 20000 !important; /* Nagyon magasra emeljük, hogy ne takarja ki semmi */
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: center;
     gap: 15px;
     pointer-events: auto; /* Biztosítjuk, hogy kattintható legyen */
@@ -1803,6 +1803,7 @@ input:checked + .slider:before {
 .input-group input[type="text"].password-visible {
     padding-right: 35px;
 }
+
 
 
 
