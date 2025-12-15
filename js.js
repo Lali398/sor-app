@@ -333,28 +333,7 @@ async function loadUserDrinks() {
         showError(error.message || "Nem sikerült betölteni az italokat.");
     }
 }
-        /* === JELSZÓ MEGJELENÍTÉSE / ELREJTÉSE === */
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
-            
-            if (!input) return; // Biztonsági ellenőrzés
-        
-            if (input.type === "password") {
-                input.type = "text";
-                input.classList.add('password-visible'); // CSS miatt
-                icon.textContent = "🙈"; // Lecsukott szem (vagy használhatsz mást)
-            } else {
-                input.type = "password";
-                input.classList.remove('password-visible');
-                icon.textContent = "👁️"; // Nyitott szem
-            }
-        }
-        
-        // Mivel a HTML-ben az 'onclick' attribútumot használtuk, 
-        // ezt a függvényt globálisan elérhetővé kell tenni:
-        window.togglePassword = togglePassword;
 
-    
 function renderUserDrinks(drinks) {
     userDrinkTableBody.innerHTML = '';
     if (!drinks || drinks.length === 0) {
@@ -993,52 +972,34 @@ function setupAdminRecap() {
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
-        // Ha nincs user adat, visszadobjuk a loginra
+        showError('Nem vagy bejelentkezve.');
         switchToGuestView();
         return;
     }
-    
-    // Fejléc üdvözlés frissítése (ha van ilyen elem)
-    const welcomeMsg = document.getElementById('userWelcomeMessage');
-    if(welcomeMsg) welcomeMsg.textContent = `Szia, ${user.name}!`;
-
-    // Táblázat ürítése és töltésjelző
-    const tableBody = document.getElementById('userBeerTableBody');
-    if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betöltése...</td></tr>';
-
+    userWelcomeMessage.textContent = `Szia, ${user.name}!`;
     try {
-        console.log("Sörök lekérése..."); // Debug
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
-        
         const beers = await response.json();
-        
         if (!response.ok) {
-            if (response.status === 401) {
-                showError("A munkamenet lejárt.");
+                if (response.status === 401) {
+                showError("A munkameneted lejárt, jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(beers.error || 'Szerverhiba');
         }
         
-        // Globális változó frissítése
-        currentUserBeers = beers;
+        currentUserBeers = beers; // <--- ITT MENTJÜK EL GLOBÁLISAN
         
-        console.log(`Sikeres lekérés: ${beers.length} sör.`);
-        
-        // Renderelés hívása
         renderUserBeers(beers);
-        
-        // Statisztikák frissítése (Headerben is!)
         updateUserStats(beers);
-
     } catch (error) {
-        console.error("Hiba a sörök betöltésekor:", error);
-        if (tableBody) tableBody.innerHTML = `<tr><td colspan="10" class="no-results error">Hiba: ${error.message}</td></tr>`;
+        console.error("Hiba a felhasználói adatok betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni a söreidet.");
     }
 }
 
@@ -1070,30 +1031,16 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-        // 1. Dashboard statisztikák frissítése (Eredeti kártyák)
-        const countElement = document.getElementById('userBeerCount');
-        const avgElement = document.getElementById('userAverageScore');
-        
-        if(countElement) countElement.textContent = beers.length;
-
-        // 2. ÚJ: Fejléc statisztikák frissítése
-        const headerCount = document.getElementById('headerBeerCount');
-        const headerAvg = document.getElementById('headerAvgScore');
-
-        if(headerCount) headerCount.textContent = beers.length;
-
+        document.getElementById('userBeerCount').textContent = beers.length;
         if (beers.length === 0) {
-            if(avgElement) avgElement.textContent = '0.0';
-            if(headerAvg) headerAvg.textContent = '0.0';
+            document.getElementById('userAverageScore').textContent = '0.0';
             return;
         }
-
         const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
         const average = (totalScoreSum / beers.length).toFixed(1);
-        
-        if(avgElement) avgElement.textContent = average;
-        if(headerAvg) headerAvg.textContent = average;
+        document.getElementById('userAverageScore').textContent = average;
     }
+
     function updateUserDrinkStats(drinks) {
     document.getElementById('userDrinkCount').textContent = drinks.length;
     if (drinks.length === 0) {
@@ -1796,6 +1743,31 @@ window.addEventListener('scroll', function() {
     }
 
     // --- INTEGRÁCIÓ ---
+    
+    // User nézet váltásakor betöltjük a beállítást
+    const originalSwitchToUserView = switchToUserView;
+    switchToUserView = function() {
+        // Először futtatjuk az eredeti logikát
+        // Fontos: Az eredeti függvényben van a "document.body.classList.add('custom-cursor-active')"
+        // Ezt felül fogjuk írni a loadUserPreferences-szel, ami helyes.
+        
+        // Hogy elkerüljük a körkörös hívást, manuálisan másoljuk a logikát, 
+        // VAGY hagyjuk lefutni és utána korrigálunk. A korrigálás a biztosabb:
+        guestView.style.display = 'none';
+        adminView.style.display = 'none';
+        userView.style.display = 'block';
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+        initializeMainTabs(userView);
+        loadUserData();
+        loadUserDrinks();
+
+        // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (userData) {
+            loadUserPreferences(userData.email);
+        }
+    };
 
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
@@ -2178,50 +2150,20 @@ window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
 switchToUserView = function() {
-    // 1. Nézetek átváltása
+    // Nézetek kezelése
     document.getElementById('guestView').style.display = 'none';
     document.getElementById('adminView').style.display = 'none';
     document.getElementById('userView').style.display = 'block';
     
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
-
-    // 2. Fülek és UI inicializálása
+    
+    // Adatok betöltése (ha léteznek a függvények a scope-ban)
     if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
-    if (typeof updateSettingsUI === 'function') updateSettingsUI();
-    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+    if (typeof loadUserData === 'function') loadUserData();
 
-    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
-    // Először a söröket töltjük be
-    loadUserData();
-    
-    // Aztán az italokat
-    if (typeof loadUserDrinks === 'function') {
-        loadUserDrinks();
-    }
-
-    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
-    // Újra csatoljuk az eseményt a biztonság kedvéért
-    const fabMainBtn = document.getElementById('fabMainBtn');
-    const fabContainer = document.getElementById('fabContainer');
-    
-    if (fabMainBtn && fabContainer) {
-        // Először levesszük a régit (klónozással), hogy ne duplázódjon
-        const newBtn = fabMainBtn.cloneNode(true);
-        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Megállítjuk a buborékosodást
-            fabContainer.classList.toggle('active');
-        });
-
-        // Bezárás ha máshova kattintunk
-        document.addEventListener('click', (e) => {
-            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
-                fabContainer.classList.remove('active');
-            }
-        });
-    }
+    // A LÉNYEG: Itt hívjuk meg a javított beállítót
+    updateSettingsUI();
 };
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
@@ -2435,6 +2377,36 @@ if(sidebarLogout) {
     sidebarLogout.addEventListener('click', switchToGuestView);
 }
 
+// Inicializálás nézetváltáskor
+const originalSwitchToUserViewUpdate = switchToUserView;
+switchToUserView = function() {
+    originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
+    
+    // Név frissítése a sidebarban is
+    const user = JSON.parse(localStorage.getItem('userData'));
+    if(user && document.getElementById('userWelcomeMessageSidebar')) {
+        document.getElementById('userWelcomeMessageSidebar').textContent = `Szia, ${user.name}!`;
+    }
+    
+    // Animációk indítása kis késleltetéssel (hogy a DOM felépüljön)
+    setTimeout(initScrollAnimation, 100);
+};
+    const fabMainBtn = document.getElementById('fabMainBtn');
+const fabContainer = document.getElementById('fabContainer');
+
+if (fabMainBtn) {
+    fabMainBtn.addEventListener('click', () => {
+        fabContainer.classList.toggle('active');
+    });
+
+    // Ha máshova kattintunk, záródjon be
+    document.addEventListener('click', (e) => {
+        if (!fabContainer.contains(e.target)) {
+            fabContainer.classList.remove('active');
+        }
+    });
+}
+
 // === ÚJ MODAL FUNKCIÓK (SÖR/ITAL HOZZÁADÁS) ===
 window.openAddModal = function(type) {
     fabContainer.classList.remove('active'); // FAB bezárása
@@ -2455,108 +2427,4 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-    // === HEADER MOZGATÁS LOGIKA ===
-const headerToggleBtn = document.getElementById('headerToggleBtn');
-const mainHeader = document.getElementById('mainHeader');
-let isHeaderLocked = false; // Ez tárolja, hogy fel van-e húzva manuálisan
-
-if (headerToggleBtn && mainHeader) {
-    headerToggleBtn.addEventListener('click', () => {
-        isHeaderLocked = !isHeaderLocked;
-        
-        if (isHeaderLocked) {
-            // Felhúzás
-            mainHeader.classList.add('manual-collapsed');
-            // Opcionális: a nyílban lévő karakter cseréje, de CSS rotate elegánsabb
-        } else {
-            // Leengedés
-            mainHeader.classList.remove('manual-collapsed');
-        }
     });
-}
-
-// === GÖRGETÉS FIGYELŐ MÓDOSÍTÁSA ===
-// Keresd meg a meglévő "window.addEventListener('scroll'..." részt a kódodban (kb. 576. sor),
-// és cseréld le erre a bővített verzióra:
-
-let lastScrollTop = 0;
-
-window.addEventListener('scroll', function() {
-    // HA fel van húzva a nyilacskával, akkor a görgetés NE csináljon semmit!
-    if (isHeaderLocked) return; 
-
-    const headers = document.querySelectorAll('.admin-header');
-    if (headers.length === 0) return;
-    
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.min(scrollTop / 300, 1);
-    
-    headers.forEach(header => {
-        // Sör feltöltés animáció (marad)
-        header.style.setProperty('--fill-percent', scrollPercent);
-        
-        if (scrollPercent >= 1) {
-            header.classList.add('filled');
-        } else {
-            header.classList.remove('filled');
-        }
-        
-        // Eredeti elrejtő logika (csak akkor fut, ha nincs lockolva)
-        if (scrollTop > lastScrollTop && scrollTop > 350) {
-            header.classList.add('hidden'); // Ez a teljes elrejtés görgetéskor
-        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
-            header.classList.remove('hidden');
-        }
-    });
-    
-    lastScrollTop = scrollTop;
-});
-    });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
