@@ -1711,6 +1711,74 @@ input:checked + .slider:before {
         right: 20px;
     }
 }
+/* === ÚJ FEJLÉC STATISZTIKÁK === */
+.header-stats-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 5px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 15px;
+    flex-grow: 1; /* Hogy kitöltse a helyet középen */
+    justify-content: center;
+}
+
+.h-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.h-icon {
+    font-size: 1.5rem;
+}
+
+.h-data {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.h-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #aaa;
+    letter-spacing: 0.5px;
+}
+
+.h-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Mobilon rejtjük a szöveges logót és a labelt, hogy elférjen */
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+    
+    .header-stats-container {
+        padding: 5px 10px;
+        gap: 15px;
+        margin: 0 5px;
+    }
+
+    .h-label {
+        display: none; /* Mobilon csak a szám marad */
+    }
+    
+    .h-value {
+        font-size: 1rem;
+    }
+    
+    .header-content {
+        justify-content: space-between;
+    }
+}
+
 
 
 
