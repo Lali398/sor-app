@@ -1803,6 +1803,77 @@ input:checked + .slider:before {
 .input-group input[type="text"].password-visible {
     padding-right: 35px;
 }
+/* === HEADER MOZGATÓ GOMB ÉS LOGIKA === */
+
+/* A gomb tárolója a header alján közepén */
+.header-toggle-container {
+    position: absolute;
+    bottom: -20px; /* Kilógatjuk a header aljából */
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* Hogy át lehessen kattintani mellette */
+    z-index: 101;
+}
+
+/* Maga a nyíl gomb */
+.header-toggle-btn {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 40px;
+    height: 25px;
+    border-radius: 0 0 15px 15px; /* Félkör alul */
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.header-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    height: 30px;
+}
+
+/* === FELHÚZOTT ÁLLAPOT (COLLAPSED) === */
+
+/* Amikor a header fel van húzva */
+.admin-header.manual-collapsed {
+    /* Felhúzzuk annyira, hogy csak a statisztika sáv maradjon kb. */
+    transform: translateY(-70px); 
+    background: rgba(20, 0, 50, 0.95); /* Sötétebb háttér, hogy olvashatóbb legyen */
+}
+
+/* A nyíl megfordul */
+.admin-header.manual-collapsed .header-toggle-btn {
+    transform: rotate(180deg);
+    background: rgba(102, 126, 234, 0.8); /* Színes jelzés, hogy aktív */
+}
+
+/* Eltüntetjük a zavaró elemeket (Logó és Kijelentkezés), hogy csak a stat maradjon */
+.admin-header.manual-collapsed .logo,
+.admin-header.manual-collapsed .header-actions {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Biztosítjuk, hogy a header tartalom középre igazodjon ilyenkor */
+.admin-header.manual-collapsed .header-content {
+    justify-content: center; /* Ha a statisztika középen van, ez segít */
+}
+
+/* A header átmenete legyen sima */
+.admin-header {
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease, background 0.3s;
+}
+
 
 
 
