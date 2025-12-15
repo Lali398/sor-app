@@ -1563,7 +1563,7 @@ input:checked + .slider:before {
     right: 30px;
     z-index: 20000 !important; /* Nagyon magasra emeljük, hogy ne takarja ki semmi */
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: center;
     gap: 15px;
     pointer-events: auto; /* Biztosítjuk, hogy kattintható legyen */
@@ -1803,69 +1803,12 @@ input:checked + .slider:before {
 .input-group input[type="text"].password-visible {
     padding-right: 35px;
 }
-/* === FEJLÉC ANIMÁCIÓK ÉS KEZELÉS === */
 
-/* Alapállapotban minden látszik. 
-   Ha a .manual-collapsed osztály rajta van (felhúzva): */
 
-.admin-header.manual-collapsed {
-    transform: translateY(-70px); /* Felcsúszik */
-    background: rgba(20, 0, 50, 0.98); /* Sötét háttér */
-}
 
-/* 1. Logó és Gombok ELTŰNNEK */
-.admin-header.manual-collapsed .logo,
-.admin-header.manual-collapsed .header-actions {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-20px); /* Kicsit feljebb is úsznak eltűnéskor */
-    transition: all 0.3s ease;
-}
 
-/* 2. Statisztika kapszula MARAD és KÖZÉPRE IGAZODIK */
-.admin-header .header-stats-capsule {
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
 
-.admin-header.manual-collapsed .header-stats-capsule {
-    transform: scale(0.9); /* Kicsit összébb megy, hogy elférjen */
-    /* Mivel a flexbox space-between, és a szélsők eltűnnek, 
-       a középső elem automatikusan középen marad vizuálisan, 
-       de rásegíthetünk, ha a header-content justify-content-jét állítjuk */
-}
 
-/* Nyíl gomb stílusa */
-.header-toggle-container {
-    position: absolute;
-    bottom: -20px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 101;
-}
 
-.header-toggle-btn {
-    pointer-events: auto;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    width: 50px;
-    height: 25px;
-    border-radius: 0 0 15px 15px;
-    cursor: pointer;
-    border-top: none;
-    transition: all 0.3s ease;
-}
 
-.header-toggle-btn:hover {
-    background: rgba(102, 126, 234, 0.6);
-}
 
-/* Nyíl forgatása */
-.admin-header.manual-collapsed .header-toggle-btn {
-    transform: rotate(180deg);
-    background: rgba(102, 126, 234, 0.8);
-}
