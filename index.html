@@ -432,18 +432,20 @@
 
     <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
     <div class="fab-container" id="fabContainer">
-        <div class="fab-options">
-            <button class="fab-option" onclick="openAddModal('beer')">
-                <span class="emoji">🍺</span>
-                <span class="tooltip">Sör hozzáadása</span>
-            </button>
-            <button class="fab-option" onclick="openAddModal('drink')">
-                <span class="emoji">🍹</span>
-                <span class="tooltip">Ital hozzáadása</span>
-            </button>
-        </div>
-        <button class="fab-main" id="fabMainBtn">+</button>
+    <div class="fab-options">
+        <button class="fab-option" onclick="openAddModal('beer')" title="Sör hozzáadása">
+            <span class="emoji">🍺</span>
+            <span class="tooltip">Új Sör</span>
+        </button>
+        <button class="fab-option" onclick="openAddModal('drink')" title="Ital hozzáadása">
+            <span class="emoji">🍹</span>
+            <span class="tooltip">Új Ital</span>
+        </button>
     </div>
+    
+    <button class="fab-main" id="fabMainBtn">
+        +
+    </button>
 </div>
 
 <!-- MODALOK (Sör/Ital hozzáadásához) -->
@@ -1106,6 +1108,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
