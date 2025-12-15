@@ -2466,167 +2466,69 @@ window.closeAddModal = function(type) {
 }
     // 1. Modal megnyitása
     window.openContactModal = function() {
-        // Bezárjuk a lebegő menüt, ha nyitva van
-        const fabContainer = document.getElementById('fabContainer');
-        if(fabContainer) fabContainer.classList.remove('active');
-
-        // Megnyitjuk a modal-t
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Görgetés tiltása
-        }
-    }
-
-    // 2. Modal bezárása
-    window.closeContactModal = function() {
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        
-        // Űrlap törlése
-        const form = document.getElementById('contactForm');
-        if (form) form.reset();
-
-        document.body.style.overflow = 'auto';
-    }
-
-    // 3. Űrlap beküldése
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const subject = document.getElementById('contactSubject').value;
-            const message = document.getElementById('contactMessage').value;
-            const submitBtn = contactForm.querySelector('.auth-btn');
-
-            setLoading(submitBtn, true);
-
-            try {
-                // API hívás a sheet.js-hez
-                const response = await fetch('/api/sheet', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                    body: JSON.stringify({ 
-                        action: 'SEND_REPORT', 
-                        subject: subject, 
-                        message: message 
-                    })
-                });
-
-                const result = await response.json();
-
-                if(response.ok) {
-                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    closeContactModal();
-                } else {
-                    showError(result.error || "Hiba történt küldéskor.");
-                }
-            } catch(err) {
-                console.error(err);
-                showError("Hálózati hiba.");
-            } finally {
-                setLoading(submitBtn, false);
-            }
-        });
-    }
-    // ==========================================
-// === HIBAJELENTÉS / KAPCSOLAT MODUL ===
-// ==========================================
-
-// 1. Modal megnyitása (Globálissá téve, hogy az onclick működjön)
-window.openContactModal = function() {
+    console.log("Hibajelentő ablak megnyitása..."); // Debug üzenet
     const modal = document.getElementById('contactModal');
-    // Ha van lebegő menü (FAB), azt bezárjuk
     const fab = document.getElementById('fabContainer');
-    if (fab) fab.classList.remove('active');
-
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Görgetés tiltása
-    }
-};
-
-// 2. Modal bezárása
-window.closeContactModal = function() {
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-    const form = document.getElementById('contactForm');
-    if (form) form.reset(); // Űrlap törlése
-    document.body.style.overflow = 'auto'; // Görgetés vissza
-}
-    });
-
-window.openContactModal = function() {
-    const modal = document.getElementById('contactModal');
-    // Ha van lebegő menü (FAB), azt bezárjuk, hogy ne takarjon ki
-    const fab = document.getElementById('fabContainer');
+    
+    // Ha van lebegő menü, bezárjuk
     if (fab) fab.classList.remove('active');
 
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Görgetés tiltása
     } else {
-        console.error("Nem található a 'contactModal' elem a HTML-ben!");
+        console.error("HIBA: Nem található a 'contactModal' ID-jű elem a HTML-ben!");
+        alert("Hiba: A kapcsolat ablak nem található.");
     }
 };
 
-// 2. Modal bezárása (Globális elérés)
+// 2. Modal bezárása
 window.closeContactModal = function() {
     const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
+    if (modal) modal.classList.remove('active');
+    
     const form = document.getElementById('contactForm');
     if (form) form.reset(); // Űrlap törlése
-    document.body.style.overflow = 'auto'; // Görgetés visszaállítása
+    
+    document.body.style.overflow = 'auto'; // Görgetés engedélyezése
 };
 
-// 3. Űrlap beküldés kezelése (Biztonságos módban)
-document.addEventListener('DOMContentLoaded', function() {
+// 3. Űrlap beküldése
+document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contactForm');
 
     if (contactForm) {
-        // Klónozzuk az elemet, hogy eltávolítsuk a korábbi (esetleg beragadt) eseményfigyelőket
+        // Klónozással eltávolítjuk a régi beragadt eseménykezelőket
         const newForm = contactForm.cloneNode(true);
         contactForm.parentNode.replaceChild(newForm, contactForm);
 
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+            console.log("Űrlap küldése folyamatban...");
+
             const subjectInput = document.getElementById('contactSubject');
             const messageInput = document.getElementById('contactMessage');
-            const submitBtn = newForm.querySelector('.auth-btn'); 
+            const submitBtn = newForm.querySelector('.auth-btn');
+            
+            // Gomb UI elemek
+            const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+            const btnLoading = submitBtn ? submitBtn.querySelector('.btn-loading') : null;
 
-            // Adatok
-            const subject = subjectInput.value;
-            const message = messageInput.value;
-
-            // Gomb töltés állapotba
+            // UI frissítése: Töltés állapot
             if (submitBtn) {
-                // Ha van spinner, kezeljük
-                const btnText = submitBtn.querySelector('.btn-text');
-                const btnLoading = submitBtn.querySelector('.btn-loading');
-                if(btnText) btnText.style.opacity = '0';
-                if(btnLoading) btnLoading.style.display = 'block';
                 submitBtn.disabled = true;
+                if (btnText) btnText.style.opacity = '0';
+                if (btnLoading) btnLoading.style.display = 'block';
             }
 
             try {
-                // Token beszerzése
+                // Token ellenőrzése
                 const token = localStorage.getItem('userToken');
-                
-                // Mivel a sheet.js-ben a SEND_REPORT 'verifyUser'-t használ, 
-                // csak bejelentkezett felhasználó tud küldeni.
-                // Ha vendégként is szeretnéd engedni, a backendet is módosítani kellene.
                 if (!token) {
-                    throw new Error("A hibajelentéshez kérlek jelentkezz be!");
+                    throw new Error("Kérlek jelentkezz be a hibajelentéshez!");
                 }
 
+                // API hívás
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
                     headers: { 
@@ -2635,43 +2537,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({ 
                         action: 'SEND_REPORT', 
-                        subject: subject, 
-                        message: message 
+                        subject: subjectInput.value, 
+                        message: messageInput.value 
                     })
                 });
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    // Sikeres küldés
-                    if (typeof showSuccess === 'function') {
-                        showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    } else {
-                        alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
-                    }
-                    window.closeContactModal();
-                } else {
-                    throw new Error(result.error || "Hiba történt küldéskor.");
+                if (!response.ok) {
+                    throw new Error(result.error || "Szerver oldali hiba történt.");
                 }
 
+                // SIKERES KÜLDÉS
+                alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
+                window.closeContactModal(); // Ablak bezárása
+
             } catch (err) {
-                console.error(err);
-                if (typeof showError === 'function') {
-                    showError(err.message);
-                } else {
-                    alert("❌ Hiba: " + err.message);
-                }
+                console.error("Hiba történt:", err);
+                alert("❌ Hiba: " + err.message);
             } finally {
-                // Gomb visszaállítása
+                // UI Visszaállítása (hogy ne ragadjon be)
                 if (submitBtn) {
-                    const btnText = submitBtn.querySelector('.btn-text');
-                    const btnLoading = submitBtn.querySelector('.btn-loading');
-                    if(btnText) btnText.style.opacity = '1';
-                    if(btnLoading) btnLoading.style.display = 'none';
                     submitBtn.disabled = false;
+                    if (btnText) btnText.style.opacity = '1';
+                    if (btnLoading) btnLoading.style.display = 'none';
                 }
             }
         });
+    } else {
+        console.warn("Nem található a 'contactForm' űrlap.");
     }
 });
 
