@@ -2421,84 +2421,62 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-    // === HEADER MOZGATÁS LOGIKA ===
-const headerToggleBtn = document.getElementById('headerToggleBtn');
-const mainHeader = document.getElementById('mainHeader');
-let isHeaderLocked = false; // Ez tárolja, hogy fel van-e húzva manuálisan
+    // === JAVÍTOTT HEADER ÉS SCROLL LOGIKA ===
+    const headerToggleBtn = document.getElementById('headerToggleBtn');
+    const mainHeader = document.getElementById('mainHeader');
 
-if (headerToggleBtn && mainHeader) {
-    headerToggleBtn.addEventListener('click', () => {
-        isHeaderLocked = !isHeaderLocked;
-        
-        if (isHeaderLocked) {
-            // Felhúzás
-            mainHeader.classList.add('manual-collapsed');
-            // Opcionális: a nyílban lévő karakter cseréje, de CSS rotate elegánsabb
-        } else {
-            // Leengedés
-            mainHeader.classList.remove('manual-collapsed');
-        }
-    });
-}
-    });
-// === JAVÍTOTT HEADER ÉS SCROLL LOGIKA (AZ ÚJ IGÉNYEK SZERINT) ===
-const headerToggleBtn = document.getElementById('headerToggleBtn');
-const mainHeader = document.getElementById('mainHeader');
+    // Ez tárolja, hogy TE kézzel összecsuktad-e
+    let isHeaderLocked = false; 
+    
+    // Ez kell a görgetés irányának figyeléséhez
+    let lastScrollTop = 0;
 
-// Ez tárolja, hogy TE kézzel összecsuktad-e
-let isHeaderLocked = false; 
+    if (headerToggleBtn && mainHeader) {
 
-// Ez kell a görgetés irányának figyeléséhez
-let lastScrollTop = 0;
+        // 1. A NYÍL GOMB MŰKÖDÉSE (Kézi vezérlés)
+        headerToggleBtn.addEventListener('click', () => {
+            isHeaderLocked = !isHeaderLocked;
+            
+            if (isHeaderLocked) {
+                // HA MEGNYOMOD: Összecsukjuk és "lezárjuk"
+                mainHeader.classList.add('manual-collapsed'); 
+                mainHeader.classList.remove('hidden'); // Biztos ami biztos
+                headerToggleBtn.innerHTML = '▼'; 
+            } else {
+                // HA KINYITOD: Visszaáll az "okos" görgetős módra
+                mainHeader.classList.remove('manual-collapsed');
+                headerToggleBtn.innerHTML = '▲'; 
+            }
+        });
 
-if (headerToggleBtn && mainHeader) {
+        // 2. A GÖRGETÉS MŰKÖDÉSE
+        window.addEventListener('scroll', function() {
+            // HA LE VAN ZÁRVA (Összecsukva), NE CSINÁLJON SEMMIT!
+            if (isHeaderLocked) return; 
 
-    // 1. A NYÍL GOMB MŰKÖDÉSE (Kézi vezérlés)
-    headerToggleBtn.addEventListener('click', () => {
-        isHeaderLocked = !isHeaderLocked;
-        
-        if (isHeaderLocked) {
-            // HA MEGNYOMOD: Összecsukjuk és "lezárjuk"
-            mainHeader.classList.add('manual-collapsed'); 
-            // Opcionális: biztosítjuk, hogy a hidden class ne zavarjon be
-            mainHeader.classList.remove('hidden'); 
-            headerToggleBtn.innerHTML = '▼'; // Nyíl lefelé (hogy tudd: le van zárva, nyisd ki)
-        } else {
-            // HA KINYITOD: Visszaáll az "okos" görgetős módra
-            mainHeader.classList.remove('manual-collapsed');
-            headerToggleBtn.innerHTML = '▲'; // Nyíl felfelé (hogy tudd: fel tudod csukni)
-        }
-    });
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollPercent = Math.min(scrollTop / 300, 1);
 
-    // 2. A GÖRGETÉS MŰKÖDÉSE
-    window.addEventListener('scroll', function() {
-        // !!! A LÉNYEG ITT VAN !!!
-        // Ha kézzel össze van csukva (Locked), akkor a görgetés NE csináljon semmit!
-        // Így marad eltűnve végig.
-        if (isHeaderLocked) return; 
+            // Sör feltöltés effekt (maradhat mindig)
+            mainHeader.style.setProperty('--fill-percent', scrollPercent);
+            if (scrollPercent >= 1) mainHeader.classList.add('filled');
+            else mainHeader.classList.remove('filled');
 
-        // -- INNENTŐL CSAK AKKOR FUT, HA NINCS LEZÁRVA (ALAPÁLLAPOT) --
-        
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const scrollPercent = Math.min(scrollTop / 300, 1);
+            // OKOS ELTŰNÉS LOGIKA (Csak ha nincs lezárva)
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Lefelé görgetsz -> ELTŰNIK
+                mainHeader.classList.add('hidden');
+            } else {
+                // Felfelé görgetsz -> ELŐJÖN
+                mainHeader.classList.remove('hidden');
+            }
+            
+            lastScrollTop = Math.max(0, scrollTop);
+        });
+    }
 
-        // Sör feltöltés animáció (ez maradhat mindig aktív, vagy tehetjük a zárójelbe)
-        mainHeader.style.setProperty('--fill-percent', scrollPercent);
-        if (scrollPercent >= 1) mainHeader.classList.add('filled');
-        else mainHeader.classList.remove('filled');
+}); // <-- EZ A FONTOS LEZÁRÁS A FÁJL VÉGÉN!
 
-        // OKOS ELTŰNÉS LOGIKA:
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Lefelé görgetsz -> ELTŰNIK
-            mainHeader.classList.add('hidden');
-        } else {
-            // Felfelé görgetsz -> ELŐJÖN
-            mainHeader.classList.remove('hidden');
-        }
-        
-        lastScrollTop = Math.max(0, scrollTop); // Frissítjük a pozíciót
-    });
-}
 
 
 
