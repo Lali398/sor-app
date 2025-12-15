@@ -1673,38 +1673,7 @@ window.downloadRecap = function() {
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
-// === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
-let lastScrollTop = 0;
 
-window.addEventListener('scroll', function() {
-    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
-    const headers = document.querySelectorAll('.admin-header'); 
-    
-    if (headers.length === 0) return;
-    
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
-    
-    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
-    headers.forEach(header => {
-        // Sör feltöltés animáció - inline style-lal állítjuk be
-        header.style.setProperty('--fill-percent', scrollPercent);
-        
-        if (scrollPercent >= 1) {
-            header.classList.add('filled');
-        } else {
-            header.classList.remove('filled');
-        }
-        
-        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
-        if (scrollTop > lastScrollTop && scrollTop > 350) {
-            header.classList.add('hidden');
-        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
-            header.classList.remove('hidden');
-        }
-    });
-    
-    lastScrollTop = scrollTop;
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -2512,6 +2481,7 @@ window.addEventListener('scroll', function() {
     lastScrollTop = scrollTop;
 });
     });
+
 
 
 
