@@ -1070,30 +1070,30 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-        // 1. Dashboard statisztikák frissítése (Eredeti kártyák)
-        const countElement = document.getElementById('userBeerCount');
-        const avgElement = document.getElementById('userAverageScore');
-        
-        if(countElement) countElement.textContent = beers.length;
-
-        // 2. ÚJ: Fejléc statisztikák frissítése
-        const headerCount = document.getElementById('headerBeerCount');
-        const headerAvg = document.getElementById('headerAvgScore');
-
-        if(headerCount) headerCount.textContent = beers.length;
-
-        if (beers.length === 0) {
-            if(avgElement) avgElement.textContent = '0.0';
-            if(headerAvg) headerAvg.textContent = '0.0';
-            return;
-        }
-
+    // 1. Darabszám kiszámolása
+    const count = beers.length;
+    
+    // 2. Átlag kiszámolása
+    let average = '0.0';
+    if (count > 0) {
         const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
-        const average = (totalScoreSum / beers.length).toFixed(1);
-        
-        if(avgElement) avgElement.textContent = average;
-        if(headerAvg) headerAvg.textContent = average;
+        average = (totalScoreSum / count).toFixed(1);
     }
+
+    // --- FRISSÍTÉS A DASHBOARDON (Lenti kártyák) ---
+    const dashboardCount = document.getElementById('userBeerCount');
+    const dashboardAvg = document.getElementById('userAverageScore');
+    
+    if (dashboardCount) dashboardCount.textContent = count;
+    if (dashboardAvg) dashboardAvg.textContent = average;
+
+    // --- ÚJ: FRISSÍTÉS A FEJLÉCBEN (Fenti kapszula) ---
+    const headerCount = document.getElementById('headerBeerCount');
+    const headerAvg = document.getElementById('headerAvgScore');
+
+    if (headerCount) headerCount.textContent = count;
+    if (headerAvg) headerAvg.textContent = average;
+}
     function updateUserDrinkStats(drinks) {
     document.getElementById('userDrinkCount').textContent = drinks.length;
     if (drinks.length === 0) {
@@ -2512,6 +2512,7 @@ window.addEventListener('scroll', function() {
     lastScrollTop = scrollTop;
 });
     });
+
 
 
 
