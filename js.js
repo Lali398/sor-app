@@ -1757,31 +1757,6 @@ window.addEventListener('scroll', function() {
     }
 
     // --- INTEGRÁCIÓ ---
-    
-    // User nézet váltásakor betöltjük a beállítást
-    const originalSwitchToUserView = switchToUserView;
-    switchToUserView = function() {
-        // Először futtatjuk az eredeti logikát
-        // Fontos: Az eredeti függvényben van a "document.body.classList.add('custom-cursor-active')"
-        // Ezt felül fogjuk írni a loadUserPreferences-szel, ami helyes.
-        
-        // Hogy elkerüljük a körkörös hívást, manuálisan másoljuk a logikát, 
-        // VAGY hagyjuk lefutni és utána korrigálunk. A korrigálás a biztosabb:
-        guestView.style.display = 'none';
-        adminView.style.display = 'none';
-        userView.style.display = 'block';
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-        initializeMainTabs(userView);
-        loadUserData();
-        loadUserDrinks();
-
-        // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            loadUserPreferences(userData.email);
-        }
-    };
 
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
@@ -2163,21 +2138,51 @@ window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
-switchToUserView = function() {
-    // Nézetek kezelése
-    document.getElementById('guestView').style.display = 'none';
-    document.getElementById('adminView').style.display = 'none';
-    document.getElementById('userView').style.display = 'block';
+switchToUserVieww = function() {
+    // 1. Nézetek kezelése (Guest/Admin elrejtése, User megjelenítése)
+    const guestView = document.getElementById('guestView');
+    const adminView = document.getElementById('adminView');
+    const userView = document.getElementById('userView');
+
+    if (guestView) guestView.style.display = 'none';
+    if (adminView) adminView.style.display = 'none';
+    if (userView) userView.style.display = 'block';
     
+    // 2. Háttér beállítása
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
-    
-    // Adatok betöltése (ha léteznek a függvények a scope-ban)
-    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
-    if (typeof loadUserData === 'function') loadUserData();
 
-    // A LÉNYEG: Itt hívjuk meg a javított beállítót
-    updateSettingsUI();
+    // 3. Fülek inicializálása
+    if (typeof initializeMainTabs === 'function') {
+        initializeMainTabs(userView);
+    }
+
+    // 4. ADATOK BETÖLTÉSE (ITT VOLT A HIÁNY!)
+    
+    // Sörök betöltése
+    if (typeof loadUserData === 'function') {
+        console.log("Sörök betöltése indítása...");
+        loadUserData(); 
+    }
+
+    // Italok betöltése (Ez hiányzott a belépésnél!)
+    if (typeof loadUserDrinks === 'function') {
+        console.log("Italok betöltése indítása...");
+        loadUserDrinks();
+    }
+    
+    // Ötletek betöltése (ha épp azon a fülön állnánk, bár alapból nem ott kezdünk)
+    // De a biztonság kedvéért frissíthetjük a UI beállításokat
+    
+    // 5. Beállítások és Kurzor frissítése
+    if (typeof updateSettingsUI === 'function') {
+        updateSettingsUI();
+    }
+    
+    // 6. Scroll animációk indítása (kicsit késleltetve, hogy a DOM felépüljön)
+    if (typeof initScrollAnimation === 'function') {
+        setTimeout(initScrollAnimation, 100);
+    }
 };
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
@@ -2391,30 +2396,6 @@ if(sidebarLogout) {
     sidebarLogout.addEventListener('click', switchToGuestView);
 }
 
-// Inicializálás nézetváltáskor
-const originalSwitchToUserViewUpdate = switchToUserView;
-switchToUserView = function() {
-    originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
-    
-    // Animációk indítása kis késleltetéssel (hogy a DOM felépüljön)
-    setTimeout(initScrollAnimation, 100);
-};
-    const fabMainBtn = document.getElementById('fabMainBtn');
-const fabContainer = document.getElementById('fabContainer');
-
-if (fabMainBtn) {
-    fabMainBtn.addEventListener('click', () => {
-        fabContainer.classList.toggle('active');
-    });
-
-    // Ha máshova kattintunk, záródjon be
-    document.addEventListener('click', (e) => {
-        if (!fabContainer.contains(e.target)) {
-            fabContainer.classList.remove('active');
-        }
-    });
-}
-
 // === ÚJ MODAL FUNKCIÓK (SÖR/ITAL HOZZÁADÁS) ===
 window.openAddModal = function(type) {
     fabContainer.classList.remove('active'); // FAB bezárása
@@ -2436,6 +2417,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
