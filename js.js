@@ -2471,11 +2471,9 @@ window.closeAddModal = function(type) {
                 mainHeader.classList.remove('hidden');
             }
             
-            lastScrollTop = Math.max(0, scrollTop);
-        });
-    }
-
-}); // <-- EZ A FONTOS LEZÁRÁS A FÁJL VÉGÉN!
+           lastScrollTop = Math.max(0, scrollTop);
+    });
+}
 
 
 
