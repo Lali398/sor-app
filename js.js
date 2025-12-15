@@ -2466,19 +2466,30 @@ window.closeAddModal = function(type) {
 }
     // 1. Modal megnyitása
     window.openContactModal = function() {
-    console.log("Hibajelentő ablak megnyitása..."); // Debug üzenet
     const modal = document.getElementById('contactModal');
     const fab = document.getElementById('fabContainer');
     
+    // Email mezők kezelése
+    const emailGroup = document.getElementById('contactEmailGroup');
+    const emailInput = document.getElementById('contactEmail');
+    const token = localStorage.getItem('userToken');
+
     // Ha van lebegő menü, bezárjuk
     if (fab) fab.classList.remove('active');
 
     if (modal) {
+        // Logika: Ha NINCS token (vendég), akkor kell az email mező
+        if (!token) {
+            if(emailGroup) emailGroup.style.display = 'block';
+            if(emailInput) emailInput.required = true;
+        } else {
+            // Ha be van lépve, elrejtjük (a szerver tudja ki ő)
+            if(emailGroup) emailGroup.style.display = 'none';
+            if(emailInput) emailInput.required = false;
+        }
+
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Görgetés tiltása
-    } else {
-        console.error("HIBA: Nem található a 'contactModal' ID-jű elem a HTML-ben!");
-        alert("Hiba: A kapcsolat ablak nem található.");
+        document.body.style.overflow = 'hidden';
     }
 };
 
@@ -2488,9 +2499,9 @@ window.closeContactModal = function() {
     if (modal) modal.classList.remove('active');
     
     const form = document.getElementById('contactForm');
-    if (form) form.reset(); // Űrlap törlése
+    if (form) form.reset();
     
-    document.body.style.overflow = 'auto'; // Görgetés engedélyezése
+    document.body.style.overflow = 'auto';
 };
 
 // 3. Űrlap beküldése
@@ -2498,7 +2509,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contactForm');
 
     if (contactForm) {
-        // Klónozással eltávolítjuk a régi beragadt eseménykezelőket
         const newForm = contactForm.cloneNode(true);
         contactForm.parentNode.replaceChild(newForm, contactForm);
 
@@ -2507,13 +2517,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const subjectInput = document.getElementById('contactSubject');
             const messageInput = document.getElementById('contactMessage');
-            const submitBtn = newForm.querySelector('.auth-btn'); 
+            const emailInput = document.getElementById('contactEmail'); // Vendég email
+            const submitBtn = newForm.querySelector('.auth-btn');
 
-            // Adatok
-            const subject = subjectInput.value;
-            const message = messageInput.value;
-
-            // Gomb töltés állapotba
+            // Gomb UI
             if (submitBtn) {
                 const btnText = submitBtn.querySelector('.btn-text');
                 const btnLoading = submitBtn.querySelector('.btn-loading');
@@ -2523,42 +2530,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // Token beszerzése (ha van)
                 const token = localStorage.getItem('userToken');
+                const headers = { 'Content-Type': 'application/json' };
                 
-                // MÓDOSÍTÁS: Nem dobunk hibát, ha nincs token!
-                // Összeállítjuk a fejléceket dinamikusan
-                const headers = { 
-                    'Content-Type': 'application/json'
-                };
-
-                // Csak akkor csatoljuk a tokent, ha létezik (be van lépve)
+                // Ha be van lépve, csatoljuk a tokent
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
+                // API hívás
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
-                    headers: headers, // Itt adjuk át a dinamikus fejlécet
+                    headers: headers,
                     body: JSON.stringify({ 
                         action: 'SEND_REPORT', 
-                        subject: subject, 
-                        message: message 
+                        subject: subjectInput.value, 
+                        message: messageInput.value,
+                        guestEmail: emailInput ? emailInput.value : '' // Elküldjük a vendég emailt is
                     })
                 });
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    if (typeof showSuccess === 'function') {
-                        showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    } else {
-                        alert("✅ " + (result.message || "Üzenet sikeresen elküldve!"));
-                    }
-                    window.closeContactModal();
-                } else {
-                    throw new Error(result.error || "Hiba történt küldéskor.");
+                if (!response.ok) {
+                    throw new Error(result.error || "Hiba történt.");
                 }
+
+                if (typeof showSuccess === 'function') {
+                    showSuccess(result.message || "Üzenet elküldve!");
+                } else {
+                    alert("✅ " + (result.message || "Üzenet elküldve!"));
+                }
+                window.closeContactModal();
 
             } catch (err) {
                 console.error(err);
@@ -2568,7 +2571,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("❌ Hiba: " + err.message);
                 }
             } finally {
-                // Gomb visszaállítása
                 if (submitBtn) {
                     const btnText = submitBtn.querySelector('.btn-text');
                     const btnLoading = submitBtn.querySelector('.btn-loading');
@@ -2578,6 +2580,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+});
 
 
 
