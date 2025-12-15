@@ -494,7 +494,7 @@ table td mark {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 3000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
@@ -893,7 +893,7 @@ table tr:hover .average-cell {
     background-image: url('sorkurzor.png'); 
     background-size: contain;
     background-repeat: no-repeat;
-    pointer-events: none;
+    pointer-events: none !important;
     z-index: 99999;
     
     /* TÖRÖLD KI INNEN A TRANSFORM SOROKAT! 
@@ -1561,11 +1561,12 @@ input:checked + .slider:before {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    z-index: 1000;
+    z-index: 20000 !important; /* Nagyon magasra emeljük, hogy ne takarja ki semmi */
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    pointer-events: auto; /* Biztosítjuk, hogy kattintható legyen */
 }
 
 .fab-main {
@@ -1591,18 +1592,21 @@ input:checked + .slider:before {
 
 .fab-options {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column-reverse; /* Ez biztosítja, hogy felfelé építkezzen */
     gap: 15px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
+    /* Kezdőállapot: kicsit lejjebb vannak és kicsik */
+    transform: translateY(20px) scale(0.8); 
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Rugalmas animáció */
+    margin-bottom: 15px; /* Hely a fő gomb felett */
 }
 
 .fab-container.active .fab-options {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    /* Végállapot: eredeti helyükön és méretben */
+    transform: translateY(0) scale(1);
 }
 
 .fab-option {
@@ -1710,4 +1714,158 @@ input:checked + .slider:before {
         bottom: 80px; /* Feljebb kell tolni a mobil menü miatt */
         right: 20px;
     }
+}
+/* === ÚJ FEJLÉC STATISZTIKÁK === */
+.header-stats-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 5px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 15px;
+    flex-grow: 1; /* Hogy kitöltse a helyet középen */
+    justify-content: center;
+}
+
+.h-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.h-icon {
+    font-size: 1.5rem;
+}
+
+.h-data {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.h-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #aaa;
+    letter-spacing: 0.5px;
+}
+
+.h-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Mobilon rejtjük a szöveges logót és a labelt, hogy elférjen */
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+    
+    .header-stats-container {
+        padding: 5px 10px;
+        gap: 15px;
+        margin: 0 5px;
+    }
+
+    .h-label {
+        display: none; /* Mobilon csak a szám marad */
+    }
+    
+    .h-value {
+        font-size: 1rem;
+    }
+    
+    .header-content {
+        justify-content: space-between;
+    }
+}
+/* Ezt add hozzá a CSS fájlodhoz */
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 15px; /* Igazítsd a mező magasságához, ha kell */
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10;
+    user-select: none; /* Hogy ne jelölje ki szövegként dupla kattintásra */
+    transition: transform 0.2s;
+}
+
+.password-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Hogy a hosszú jelszó ne folyjon rá a szem ikonra */
+.input-group input[type="password"],
+.input-group input[type="text"].password-visible {
+    padding-right: 35px;
+}
+/* === FEJLÉC ANIMÁCIÓK ÉS KEZELÉS === */
+
+/* Alapállapotban minden látszik. 
+   Ha a .manual-collapsed osztály rajta van (felhúzva): */
+
+.admin-header.manual-collapsed {
+    transform: translateY(-70px); /* Felcsúszik */
+    background: rgba(20, 0, 50, 0.98); /* Sötét háttér */
+}
+
+/* 1. Logó és Gombok ELTŰNNEK */
+.admin-header.manual-collapsed .logo,
+.admin-header.manual-collapsed .header-actions {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px); /* Kicsit feljebb is úsznak eltűnéskor */
+    transition: all 0.3s ease;
+}
+
+/* 2. Statisztika kapszula MARAD és KÖZÉPRE IGAZODIK */
+.admin-header .header-stats-capsule {
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.admin-header.manual-collapsed .header-stats-capsule {
+    transform: scale(0.9); /* Kicsit összébb megy, hogy elférjen */
+    /* Mivel a flexbox space-between, és a szélsők eltűnnek, 
+       a középső elem automatikusan középen marad vizuálisan, 
+       de rásegíthetünk, ha a header-content justify-content-jét állítjuk */
+}
+
+/* Nyíl gomb stílusa */
+.header-toggle-container {
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 101;
+}
+
+.header-toggle-btn {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 50px;
+    height: 25px;
+    border-radius: 0 0 15px 15px;
+    cursor: pointer;
+    border-top: none;
+    transition: all 0.3s ease;
+}
+
+.header-toggle-btn:hover {
+    background: rgba(102, 126, 234, 0.6);
+}
+
+/* Nyíl forgatása */
+.admin-header.manual-collapsed .header-toggle-btn {
+    transform: rotate(180deg);
+    background: rgba(102, 126, 234, 0.8);
 }
