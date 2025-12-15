@@ -46,7 +46,6 @@
                                 <input type="password" id="loginPassword" required>
                                 <label for="loginPassword">Jelszó</label>
                                 <span class="input-highlight"></span>
-                                <span class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</span>
                             </div>
                             <button type="submit" class="auth-btn">
                                 <span class="btn-text">Bejelentkezés</span>
@@ -76,21 +75,23 @@
                                 <span class="input-highlight"></span>
                             </div>
                             <div class="input-group">
-                            <input type="password" id="registerPassword" required>
-                            <label for="registerPassword">Jelszó</label>
-                            <span class="input-highlight"></span>
-                            <span class="password-toggle" onclick="togglePassword('registerPassword', this)">👁️</span>
-                            <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
-                                Min. 8 karakter, 1 szám, 1 spec. karakter.
-                            </small>
-                        </div>
+                                <input type="password" id="registerPassword" required>
+                                <label for="registerPassword">Jelszó</label>
+                                <span class="input-highlight"></span>
+                            </div>
                             <div class="input-group">
                                 <input type="password" id="registerPasswordConfirm" required>
                                 <label for="registerPasswordConfirm">Jelszó megerősítés</label>
                                 <span class="input-highlight"></span>
-                                <span class="password-toggle" onclick="togglePassword('registerPasswordConfirm', this)">👁️</span>
                             </div>
-                            
+                            <div class="input-group">
+                            <input type="password" id="registerPassword" required>
+                            <label for="registerPassword">Jelszó</label>
+                            <span class="input-highlight"></span>
+                            <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                                Min. 8 karakter, 1 szám, 1 spec. karakter.
+                            </small>
+                        </div>
                             <div class="terms-group">
                                 <input type="checkbox" id="registerTerms" required>
                                 <label for="registerTerms">
@@ -305,52 +306,34 @@
 
                 <!-- SÖREIM TAB -->
                 <div class="main-tab-pane" id="user-beers-content">
-    
-    <section class="stats-grid" style="margin-bottom: 30px;">
-        <div class="stat-card">
-            <div class="stat-icon beers">🍺</div>
-            <div class="stat-info">
-                <p>Értékelt sörök</p>
-                <h3 id="userBeerCount">0</h3>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon average">⭐</div>
-            <div class="stat-info">
-                <p>Átlag pontszám</p>
-                <h3 id="userAverageScore">0.0</h3>
-            </div>
-        </div>
-    </section>
-
-    <section class="card">
-        <header class="card-header">
-            <h3>Saját sörjeid listája</h3>
-        </header>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dátum</th>
-                        <th>Sör neve</th>
-                        <th>Főzési hely</th>
-                        <th>Alkohol %</th>
-                        <th>Külalak</th>
-                        <th>Illat</th>
-                        <th>Íz</th>
-                        <th>Összpontszám</th>
-                        <th>Átlag</th>
-                        <th>Szerk.</th> </tr>
-                </thead>
-                <tbody id="userBeerTableBody">
-                    <tr>
-                        <td colspan="10" class="no-results">Betöltés...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-</div>
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját sörjeid listája</h3>
+                        </header>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Dátum</th>
+                                        <th>Sör neve</th>
+                                        <th>Főzési hely</th>
+                                        <th>Alkohol %</th>
+                                        <th>Külalak</th>
+                                        <th>Illat</th>
+                                        <th>Íz</th>
+                                        <th>Összpontszám</th>
+                                        <th>Átlag</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userBeerTableBody">
+                                    <tr>
+                                        <td colspan="5" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
 
                 <!-- ITAL ÉRTÉKELÉS TAB -->
 <div class="main-tab-pane" id="user-drink-rating-content">
@@ -456,24 +439,6 @@
 
 <!-- ITALJAIM TAB -->
 <div class="main-tab-pane" id="user-drinks-content">
-
-    <section class="stats-grid" style="margin-bottom: 30px;">
-        <div class="stat-card">
-            <div class="stat-icon beers">🍹</div>
-            <div class="stat-info">
-                <p>Értékelt italok</p>
-                <h3 id="userDrinkCount">0</h3>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon average">⭐</div>
-            <div class="stat-info">
-                <p>Átlag pontszám</p>
-                <h3 id="userDrinkAverageScore">0.0</h3>
-            </div>
-        </div>
-    </section>
-
     <section class="card">
         <header class="card-header">
             <h3>Saját italaid listája</h3>
@@ -493,12 +458,11 @@
                         <th>Íz</th>
                         <th>Összpontszám</th>
                         <th>Átlag</th>
-                        <th>Szerk.</th>
                     </tr>
                 </thead>
                 <tbody id="userDrinkTableBody">
                     <tr>
-                        <td colspan="12" class="no-results">Betöltés...</td>
+                        <td colspan="11" class="no-results">Betöltés...</td>
                     </tr>
                 </tbody>
             </table>
@@ -895,7 +859,6 @@
                     <input type="password" id="adminPassword" required>
                     <label for="adminPassword">Jelszó</label>
                     <span class="input-highlight"></span>
-                    <span class="password-toggle" onclick="togglePassword('adminPassword', this)">👁️</span>
                 </div>
                 <button type="submit" class="auth-btn">Bejelentkezés</button>
             </form>
@@ -1099,4 +1062,3 @@
     <script src="js.js"></script>
 </body>
 </html>
-
