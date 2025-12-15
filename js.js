@@ -1031,16 +1031,30 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-        document.getElementById('userBeerCount').textContent = beers.length;
+        // 1. Dashboard statisztikák frissítése (Eredeti kártyák)
+        const countElement = document.getElementById('userBeerCount');
+        const avgElement = document.getElementById('userAverageScore');
+        
+        if(countElement) countElement.textContent = beers.length;
+
+        // 2. ÚJ: Fejléc statisztikák frissítése
+        const headerCount = document.getElementById('headerBeerCount');
+        const headerAvg = document.getElementById('headerAvgScore');
+
+        if(headerCount) headerCount.textContent = beers.length;
+
         if (beers.length === 0) {
-            document.getElementById('userAverageScore').textContent = '0.0';
+            if(avgElement) avgElement.textContent = '0.0';
+            if(headerAvg) headerAvg.textContent = '0.0';
             return;
         }
+
         const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
         const average = (totalScoreSum / beers.length).toFixed(1);
-        document.getElementById('userAverageScore').textContent = average;
+        
+        if(avgElement) avgElement.textContent = average;
+        if(headerAvg) headerAvg.textContent = average;
     }
-
     function updateUserDrinkStats(drinks) {
     document.getElementById('userDrinkCount').textContent = drinks.length;
     if (drinks.length === 0) {
@@ -2382,12 +2396,6 @@ const originalSwitchToUserViewUpdate = switchToUserView;
 switchToUserView = function() {
     originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
     
-    // Név frissítése a sidebarban is
-    const user = JSON.parse(localStorage.getItem('userData'));
-    if(user && document.getElementById('userWelcomeMessageSidebar')) {
-        document.getElementById('userWelcomeMessageSidebar').textContent = `Szia, ${user.name}!`;
-    }
-    
     // Animációk indítása kis késleltetéssel (hogy a DOM felépüljön)
     setTimeout(initScrollAnimation, 100);
 };
@@ -2428,6 +2436,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
