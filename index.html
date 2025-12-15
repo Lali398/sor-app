@@ -16,6 +16,10 @@
     <!-- VENDÉG NÉZET -->
     <div class="guest-view" id="guestView">
         <div class="container">
+            <button class="guest-help-btn" onclick="openContactModal()">
+        <span style="font-size: 1.2rem;">❓</span>
+        <span class="btn-label">Hibajelentés</span>
+    </button>
             <div class="animated-bg">
                 <div class="bubble"></div>
                 <div class="bubble"></div>
@@ -119,6 +123,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
@@ -1172,8 +1178,43 @@
 </div>
     
     <script src="js.js"></script>
+
+    <button class="guest-help-btn" onclick="openContactModal()">
+    <span style="font-size: 1.2rem;">❓</span>
+    <span class="btn-label">Hibajelentés</span>
+</button>
+
+<div class="modal-overlay" id="contactModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Kapcsolat az Adminokkal</h3>
+            <button class="modal-close" onclick="closeContactModal()">&times;</button>
+        </header>
+        <form id="contactForm" class="config-form">
+            <div class="input-group">
+                <input type="text" id="contactSubject" required>
+                <label for="contactSubject">Tárgy (pl. Hiba, Kérdés)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="contactMessage" required style="width: 100%; min-height: 100px; background: transparent; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 0; outline: none; resize: vertical; margin-top: 10px;"></textarea>
+                <label for="contactMessage" style="top: -10px; font-size: 12px; color: #aaa;">Üzenet</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Üzenet küldése 📩</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
 </body>
 </html>
+
 
 
 
