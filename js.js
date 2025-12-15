@@ -2478,6 +2478,65 @@ window.addEventListener('scroll', function() {
     lastScrollTop = scrollTop;
 });
     });
+// === JAVÍTOTT HEADER ÉS SCROLL LOGIKA (AZ ÚJ IGÉNYEK SZERINT) ===
+const headerToggleBtn = document.getElementById('headerToggleBtn');
+const mainHeader = document.getElementById('mainHeader');
+
+// Ez tárolja, hogy TE kézzel összecsuktad-e
+let isHeaderLocked = false; 
+
+// Ez kell a görgetés irányának figyeléséhez
+let lastScrollTop = 0;
+
+if (headerToggleBtn && mainHeader) {
+
+    // 1. A NYÍL GOMB MŰKÖDÉSE (Kézi vezérlés)
+    headerToggleBtn.addEventListener('click', () => {
+        isHeaderLocked = !isHeaderLocked;
+        
+        if (isHeaderLocked) {
+            // HA MEGNYOMOD: Összecsukjuk és "lezárjuk"
+            mainHeader.classList.add('manual-collapsed'); 
+            // Opcionális: biztosítjuk, hogy a hidden class ne zavarjon be
+            mainHeader.classList.remove('hidden'); 
+            headerToggleBtn.innerHTML = '▼'; // Nyíl lefelé (hogy tudd: le van zárva, nyisd ki)
+        } else {
+            // HA KINYITOD: Visszaáll az "okos" görgetős módra
+            mainHeader.classList.remove('manual-collapsed');
+            headerToggleBtn.innerHTML = '▲'; // Nyíl felfelé (hogy tudd: fel tudod csukni)
+        }
+    });
+
+    // 2. A GÖRGETÉS MŰKÖDÉSE
+    window.addEventListener('scroll', function() {
+        // !!! A LÉNYEG ITT VAN !!!
+        // Ha kézzel össze van csukva (Locked), akkor a görgetés NE csináljon semmit!
+        // Így marad eltűnve végig.
+        if (isHeaderLocked) return; 
+
+        // -- INNENTŐL CSAK AKKOR FUT, HA NINCS LEZÁRVA (ALAPÁLLAPOT) --
+        
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollPercent = Math.min(scrollTop / 300, 1);
+
+        // Sör feltöltés animáció (ez maradhat mindig aktív, vagy tehetjük a zárójelbe)
+        mainHeader.style.setProperty('--fill-percent', scrollPercent);
+        if (scrollPercent >= 1) mainHeader.classList.add('filled');
+        else mainHeader.classList.remove('filled');
+
+        // OKOS ELTŰNÉS LOGIKA:
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Lefelé görgetsz -> ELTŰNIK
+            mainHeader.classList.add('hidden');
+        } else {
+            // Felfelé görgetsz -> ELŐJÖN
+            mainHeader.classList.remove('hidden');
+        }
+        
+        lastScrollTop = Math.max(0, scrollTop); // Frissítjük a pozíciót
+    });
+}
+
 
 
 
