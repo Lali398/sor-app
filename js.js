@@ -1,35 +1,3 @@
-window.setLoading = function(button, isLoading) { 
-    if(!button) return;
-    button.classList.toggle('loading', isLoading);
-    button.disabled = isLoading; 
-}
-
-window.showNotification = function(message, type) { 
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`; 
-    notification.textContent = message; 
-    
-    // Stílusok
-    Object.assign(notification.style, { 
-        position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', 
-        borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', 
-        transform: 'translateX(400px)', transition: 'transform 0.3s ease', 
-        backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') 
-    });
-    
-    document.body.appendChild(notification); 
-    
-    // Animáció
-    setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); 
-    setTimeout(() => { 
-        notification.style.transform = 'translateX(400px)'; 
-        setTimeout(() => { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 300); 
-    }, 4000);
-}
-
-window.showError = function(msg) { window.showNotification(msg, 'error'); }
-window.showSuccess = function(msg) { window.showNotification(msg, 'success'); }
-
 document.addEventListener('DOMContentLoaded', function() {
 
     if (typeof Chart !== 'undefined') {
