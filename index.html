@@ -139,28 +139,28 @@
                     <span class="stat-icon-small">🍺</span>
                     <div class="stat-info-inline">
                         <span class="stat-label-small">Sörök</span>
-                        <span class="stat-value-small" id="userBeerCount">0</span>
+                        <span class="stat-value-small" id="headerBeerCount">0</span>
                     </div>
                 </div>
                 <div class="header-stat-item">
                     <span class="stat-icon-small">⭐</span>
                     <div class="stat-info-inline">
                         <span class="stat-label-small">Sör Átlag</span>
-                        <span class="stat-value-small" id="userAverageScore">0.0</span>
+                        <span class="stat-value-small" id="headerAvgScore">0.0</span>
                     </div>
                 </div>
                 <div class="header-stat-item">
                     <span class="stat-icon-small">🹹</span>
                     <div class="stat-info-inline">
                         <span class="stat-label-small">Italok</span>
-                        <span class="stat-value-small" id="userDrinkCount">0</span>
+                        <span class="stat-value-small" id="headerDrinkCount">0</span>
                     </div>
                 </div>
                 <div class="header-stat-item">
                     <span class="stat-icon-small">✨</span>
                     <div class="stat-info-inline">
                         <span class="stat-label-small">Ital Átlag</span>
-                        <span class="stat-value-small" id="userDrinkAverageScore">0.0</span>
+                        <span class="stat-value-small" id="headerDrinkAvgScore">0.0</span>
                     </div>
                 </div>
             </div>
@@ -185,13 +185,12 @@
             </div>
 
             <nav class="sidebar-nav">
-                
                 <button class="nav-item active" data-tab-content="user-beers-content">
                     <span class="icon">🍺</span>
                     <span class="label">Söreim</span>
                 </button>
                 <button class="nav-item" data-tab-content="user-drinks-content">
-                    <span class="icon">🍸</span>
+                    <span class="icon">�</span>
                     <span class="label">Italjaim</span>
                 </button>
                 <button class="nav-item" data-tab-content="user-ideas-content">
@@ -224,101 +223,78 @@
         <main class="dashboard-main">
             <!-- Topbar (mobil címsor) -->
             <div class="dashboard-topbar">
-                <h3>Sör Értékelés</h3>
+                <h3>Söreim</h3>
             </div>
 
             <!-- TARTALOM PANELEK -->
             <div class="main-tab-content-container">
                 
-                <!-- ÉRTÉKELÉS TAB -->
-                        <div class="stat-card">
-                            <div class="stat-icon average">⭐</div>
-                            <div class="stat-info">
-                                <p>Átlag pontszám</p>
-                                <h3 id="userAverageScore">0.0</h3>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- SÖREIM TAB -->
-                <!-- ✅ SÖREIM TAB - EZ LEGYEN AZ ACTIVE -->
-    <div class="main-tab-pane active" id="user-beers-content">
-        <section class="card">
-            <header class="card-header">
-                <h3>Saját sörjeid listája</h3>
-            </header>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Dátum</th>
-                            <th>Sör neve</th>
-                            <th>Főzési hely</th>
-                            <th>Alkohol %</th>
-                            <th>Külalak</th>
-                            <th>Illat</th>
-                            <th>Íz</th>
-                            <th>Összpontszám</th>
-                            <th>Átlag</th>
-                            <th>Művelet</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userBeerTableBody">
-                        <tr>
-                            <td colspan="10" class="no-results">Betöltés...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-
-                <!-- ITAL ÉRTÉKELÉS TAB -->
-                        <div class="stat-card">
-                            <div class="stat-icon average">⭐</div>
-                            <div class="stat-info">
-                                <p>Átlag pontszám</p>
-                                <h3 id="userDrinkAverageScore">0.0</h3>
-                            </div>
+                <!-- SÖREIM TAB - EZ AZ AKTÍV -->
+                <div class="main-tab-pane active" id="user-beers-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját sörjeid listája</h3>
+                        </header>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Dátum</th>
+                                        <th>Sör neve</th>
+                                        <th>Főzési hely</th>
+                                        <th>Alkohol %</th>
+                                        <th>Külalak</th>
+                                        <th>Illat</th>
+                                        <th>Íz</th>
+                                        <th>Összpontszám</th>
+                                        <th>Átlag</th>
+                                        <th>Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userBeerTableBody">
+                                    <tr>
+                                        <td colspan="10" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </section>
                 </div>
 
                 <!-- ITALJAIM TAB -->
                 <div class="main-tab-pane" id="user-drinks-content">
-                <section class="card">
-                <header class="card-header">
-                <h3>Saját italaid listája</h3>
-            </header>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Dátum</th>
-                            <th>Ital neve</th>
-                            <th>Kategória</th>
-                            <th>Típus</th>
-                            <th>Hely</th>
-                            <th>Alkohol %</th>
-                            <th>Külalak</th>
-                            <th>Illat</th>
-                            <th>Íz</th>
-                            <th>Összpontszám</th>
-                            <th>Átlag</th>
-                            <th>Művelet</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userDrinkTableBody">
-                        <tr>
-                            <td colspan="12" class="no-results">Betöltés...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját italaid listája</h3>
+                        </header>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Dátum</th>
+                                        <th>Ital neve</th>
+                                        <th>Kategória</th>
+                                        <th>Típus</th>
+                                        <th>Hely</th>
+                                        <th>Alkohol %</th>
+                                        <th>Külalak</th>
+                                        <th>Illat</th>
+                                        <th>Íz</th>
+                                        <th>Összpontszám</th>
+                                        <th>Átlag</th>
+                                        <th>Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userDrinkTableBody">
+                                    <tr>
+                                        <td colspan="12" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                
                 <!-- ÖTLETLÁDA TAB -->
                 <div class="main-tab-pane" id="user-ideas-content">
                     <section class="card idea-submit-card">
@@ -1151,6 +1127,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
