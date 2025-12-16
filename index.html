@@ -229,6 +229,7 @@
 
             <!-- TARTALOM PANELEK -->
             <div class="main-tab-content-container">
+                
                 <!-- ÉRTÉKELÉS TAB -->
                         <div class="stat-card">
                             <div class="stat-icon average">⭐</div>
@@ -241,36 +242,37 @@
                 </div>
 
                 <!-- SÖREIM TAB -->
-                <div class="main-tab-pane" id="user-beers-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>Saját sörjeid listája</h3>
-                        </header>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Dátum</th>
-                                        <th>Sör neve</th>
-                                        <th>Főzési hely</th>
-                                        <th>Alkohol %</th>
-                                        <th>Külalak</th>
-                                        <th>Illat</th>
-                                        <th>Íz</th>
-                                        <th>Összpontszám</th>
-                                        <th>Átlag</th>
-                                        <th>Művelet</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userBeerTableBody">
-                                    <tr>
-                                        <td colspan="10" class="no-results">Betöltés...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+                <!-- ✅ SÖREIM TAB - EZ LEGYEN AZ ACTIVE -->
+    <div class="main-tab-pane active" id="user-beers-content">
+        <section class="card">
+            <header class="card-header">
+                <h3>Saját sörjeid listája</h3>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dátum</th>
+                            <th>Sör neve</th>
+                            <th>Főzési hely</th>
+                            <th>Alkohol %</th>
+                            <th>Külalak</th>
+                            <th>Illat</th>
+                            <th>Íz</th>
+                            <th>Összpontszám</th>
+                            <th>Átlag</th>
+                            <th>Művelet</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userBeerTableBody">
+                        <tr>
+                            <td colspan="10" class="no-results">Betöltés...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
 
                 <!-- ITAL ÉRTÉKELÉS TAB -->
                         <div class="stat-card">
@@ -285,37 +287,37 @@
 
                 <!-- ITALJAIM TAB -->
                 <div class="main-tab-pane" id="user-drinks-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>Saját italaid listája</h3>
-                        </header>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Dátum</th>
-                                        <th>Ital neve</th>
-                                        <th>Kategória</th>
-                                        <th>Típus</th>
-                                        <th>Hely</th>
-                                        <th>Alkohol %</th>
-                                        <th>Külalak</th>
-                                        <th>Illat</th>
-                                        <th>Íz</th>
-                                        <th>Összpontszám</th>
-                                        <th>Átlag</th>
-                                        <th>Művelet</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userDrinkTableBody">
-                                    <tr>
-                                        <td colspan="12" class="no-results">Betöltés...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+                <section class="card">
+                <header class="card-header">
+                <h3>Saját italaid listája</h3>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dátum</th>
+                            <th>Ital neve</th>
+                            <th>Kategória</th>
+                            <th>Típus</th>
+                            <th>Hely</th>
+                            <th>Alkohol %</th>
+                            <th>Külalak</th>
+                            <th>Illat</th>
+                            <th>Íz</th>
+                            <th>Összpontszám</th>
+                            <th>Átlag</th>
+                            <th>Művelet</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userDrinkTableBody">
+                        <tr>
+                            <td colspan="12" class="no-results">Betöltés...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
 
                 <!-- ÖTLETLÁDA TAB -->
                 <div class="main-tab-pane" id="user-ideas-content">
@@ -1149,6 +1151,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
