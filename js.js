@@ -1805,22 +1805,42 @@ window.addEventListener('scroll', function() {
 
     // --- INTEGRÁCIÓ ---
 
-    // Admin nézet váltásakor betöltjük a beállítást
+    // Admin nézet váltásakor betöltjük a beállítást (JAVÍTOTT VERZIÓ)
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
+        console.log("Admin nézet aktiválása...");
+        
+        // 1. Nézetek kezelése
+        if(guestView) guestView.style.display = 'none';
+        if(userView) userView.style.display = 'none';
+        if(adminView) adminView.style.display = 'block';
+
+        // 2. Háttér és görgetés beállítása
         document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
         document.body.style.backgroundAttachment = 'fixed';
-        initializeMainTabs(adminView);
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics();
-        setupAdminRecap();
+        
+        // FONTOS: Felgörgetünk a tetejére, hogy látszódjon a fejléc
+        window.scrollTo(0, 0);
 
-        // Beállítások betöltése Adminnak
-        loadUserPreferences('admin_user');
+        // 3. Modulok inicializálása
+        if (typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
+        
+        // JAVÍTÁS: Biztonságos adatbetöltés (Try-Catch)
+        // Ez akadályozza meg, hogy a program megálljon, ha hiba van az adatokkal
+        if (typeof loadAdminData === 'function') {
+            try {
+                loadAdminData();
+            } catch (e) {
+                console.error("Hiba az adatok betöltésekor:", e);
+            }
+        }
+        
+        if (typeof initializeLiveSearch === 'function') initializeLiveSearch();
+        if (typeof setupStatistics === 'function') setupStatistics();
+        if (typeof setupAdminRecap === 'function') setupAdminRecap();
+
+        // 4. Beállítások betöltése Adminnak
+        if (typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
     };
     // === SPOTIFY STORY LOGIKA ===
 
@@ -2664,46 +2684,6 @@ document.addEventListener('click', (e) => {
         window.closeAdminModal();
     }
 });
-// ======================================================
-// === NÉZETVÁLTÁS JAVÍTÁSA (SCROLL FIX) ===
-// ======================================================
 
-// Admin nézet váltásakor betöltjük a beállítást és az adatokat
-    // CSERÉLD LE EZT A FÜGGVÉNYT ERRE:
-    switchToAdminView = function() {
-        console.log("Admin nézet aktiválása...");
-        
-        // 1. Nézetek kezelése
-        if(guestView) guestView.style.display = 'none';
-        if(userView) userView.style.display = 'none';
-        if(adminView) adminView.style.display = 'block';
-
-        // 2. Háttér és görgetés beállítása
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-        
-        // FONTOS: Felgörgetünk a tetejére, hogy látszódjon a fejléc
-        window.scrollTo(0, 0);
-
-        // 3. Modulok inicializálása
-        // Ellenőrizzük, hogy léteznek-e a függvények a hibák elkerülése végett
-        if (typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
-        
-        // Itt volt a hiba: most már biztonságosan hívjuk meg
-        if (typeof loadAdminData === 'function') {
-            try {
-                loadAdminData();
-            } catch (e) {
-                console.error("Hiba az adatok betöltésekor:", e);
-            }
-        }
-        
-        if (typeof initializeLiveSearch === 'function') initializeLiveSearch();
-        if (typeof setupStatistics === 'function') setupStatistics();
-        if (typeof setupAdminRecap === 'function') setupAdminRecap();
-
-        // 4. Beállítások betöltése Adminnak
-        if (typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
-    };
 
 
