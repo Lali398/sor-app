@@ -1,4 +1,8 @@
-
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 /* === ALAP SÖTÉT TÉMA === */
 body {
@@ -2014,6 +2018,7 @@ input:checked + .slider:before {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
 
 
 
