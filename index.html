@@ -188,6 +188,10 @@
                     <span class="icon">📈</span>
                     <span class="label">Visszatekintő</span>
                 </button>
+                <button class="nav-item" data-tab-content="user-achievements-content">
+                    <span class="icon">🏆</span>
+                    <span class="label">Eredmények</span>
+                </button>
                 <button class="nav-item" data-tab-content="user-account-content">
                     <span class="icon">👤</span>
                     <span class="label">Fiókom</span>
@@ -400,6 +404,37 @@
                     </section>
                 </div>
 
+                <!-- Achivment tab -->
+
+                <div class="main-tab-pane" id="user-achievements-content">
+    <section class="card" style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, #1f005c, #4b0082);">
+        <header class="card-header" style="justify-content: center;">
+            <h3>Jelenlegi Rangod</h3>
+        </header>
+        
+        <div class="main-badge-display">
+            <div class="badge-icon-large" id="mainBadgeIcon">🌱</div>
+            <h2 id="mainBadgeName" style="color: #ffd700; font-size: 2.5rem; margin: 10px 0;">Újonc</h2>
+            <p id="mainBadgeNext" style="color: #aaa;">Következő szint: Kocsmáros (5/10)</p>
+        </div>
+
+        <div class="progress-container" style="margin: 20px auto; max-width: 400px;">
+            <div class="story-progress-bar" style="background: rgba(255,255,255,0.1); height: 10px;">
+                <div id="achievementProgressBar" class="story-progress-fill" style="width: 0%; background: #ffd700;"></div>
+            </div>
+            <p style="margin-top: 10px; color: #fff;">Megszerezve: <span id="unlockedCount">0</span> / 50</p>
+        </div>
+    </section>
+
+    <section class="card">
+        <header class="card-header">
+            <h3>Achievement Lista</h3>
+        </header>
+        <div class="achievements-grid" id="achievementsGrid">
+            </div>
+    </section>
+</div>
+
                 <!-- FIÓKOM TAB -->
                 <div class="main-tab-pane" id="user-account-content">
                     <section class="card">
@@ -457,6 +492,18 @@
                                 </label>
                             </div>
 
+
+                                <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Rangjelzés mutatása 🎖️</h4>
+                                    <p>A megszerzett rangod (Badge) megjelenítése a neved mellett.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="showBadgeToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            
                             <div class="setting-item">
                                 <div class="setting-info">
                                     <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
@@ -1188,6 +1235,7 @@
 </div>
 </body>
 </html>
+
 
 
 
