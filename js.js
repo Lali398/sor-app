@@ -2510,7 +2510,7 @@ window.openSupportModal = function() {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
-
+});
 window.closeSupportModal = function() {
     const modal = document.getElementById('supportModal');
     modal.classList.remove('active');
@@ -2597,7 +2597,6 @@ if(supportModal) {
         }
     });
 }
-    });
 
 
 
