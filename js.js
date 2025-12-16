@@ -1302,7 +1302,6 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -2611,6 +2610,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// ==========================================
+// === ADMIN BELÉPÉS JAVÍTOTT MODUL ===
+// ==========================================
+
+window.openAdminModal = function() {
+    console.log("Admin ablak nyitása...");
+    const modal = document.getElementById('adminModal');
+    
+    // --- MENTŐÖV: Ha az ablak "beragadt" valahova, kimentjük a Body-ba ---
+    if (modal && modal.parentElement !== document.body) {
+        console.log("Admin Modal átmozgatása a főoldalra...");
+        document.body.appendChild(modal);
+    }
+
+    if (modal) {
+        // --- BIZTOSÍTÉKOK ---
+        modal.style.zIndex = "999999"; 
+        modal.style.display = "flex"; 
+        
+        // Animáció indítása
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+        
+        document.body.style.overflow = 'hidden'; // Görgetés tiltása
+        
+        // Fókusz a felhasználónév mezőre a kényelemért
+        const userInput = document.getElementById('adminUsername');
+        if(userInput) setTimeout(() => userInput.focus(), 100);
+
+    } else {
+        alert("KRITIKUS HIBA: Nem található az 'adminModal' a HTML-ben!");
+    }
+};
+
+window.closeAdminModal = function() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Várakozunk az animáció végéig
+        setTimeout(() => {
+            modal.style.zIndex = ""; 
+        }, 300);
+    }
+    document.body.style.overflow = 'auto';
+};
+
+// Biztonsági kiegészítés: Ha a modál háttérre kattintanak, záródjon be
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('adminModal');
+    if (modal && e.target === modal && modal.classList.contains('active')) {
+        window.closeAdminModal();
+    }
+});
+
 
 
 
