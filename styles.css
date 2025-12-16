@@ -1447,7 +1447,270 @@ input:checked + .slider:before {
     gap: 5px;
 }
 .mark-done-btn:hover { transform: scale(1.05); }
+/* === DASHBOARD LAYOUT === */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
+}
 
+/* Oldalsáv stílusok */
+.dashboard-sidebar {
+    width: 260px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 30px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h2 {
+    font-size: 1.2rem;
+    color: white;
+    margin: 0;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+
+.nav-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    background: transparent;
+    border: none;
+    color: #b0b0b0;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-item .icon {
+    margin-right: 15px;
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding-left: 30px; /* Kis animáció jobbra */
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+    border-left: 4px solid #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-link {
+    color: #ff6b6b;
+}
+.logout-link:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff8787;
+}
+
+/* Fő tartalom eltolása */
+.dashboard-main {
+    flex: 1;
+    margin-left: 260px; /* Oldalsáv szélessége */
+    padding: 30px;
+    width: calc(100% - 260px);
+}
+
+.dashboard-topbar {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-topbar h3 {
+    color: white;
+    font-size: 1.5rem;
+}
+
+/* === FLOATING ACTION BUTTON (FAB) === */
+.fab-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 15px;
+}
+
+.fab-main {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fab-container.active .fab-main {
+    transform: rotate(45deg);
+    background: #e74c3c; /* Pirosra vált nyitáskor */
+}
+
+.fab-options {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.fab-container.active .fab-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.fab-option {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.fab-option:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.fab-option .emoji {
+    font-size: 1.5rem;
+}
+
+/* Tooltip a gombok mellett */
+.fab-option .tooltip {
+    position: absolute;
+    right: 65px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.fab-option:hover .tooltip {
+    opacity: 1;
+}
+
+/* === MOBIL NÉZET (RESPONSIVE) === */
+@media (max-width: 768px) {
+    .dashboard-sidebar {
+        width: 100%;
+        height: auto;
+        bottom: 0;
+        top: auto;
+        flex-direction: row;
+        border-right: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0;
+        background: #10002b; /* Sötétebb háttér mobilon */
+    }
+
+    .sidebar-header, .sidebar-footer {
+        display: none; /* Mobilon rejtjük a fejlécet és a kijelentkezést */
+    }
+
+    .sidebar-nav {
+        display: flex;
+        justify-content: space-around;
+        padding: 0;
+        overflow-x: auto;
+    }
+
+    .nav-item {
+        flex-direction: column;
+        padding: 10px;
+        font-size: 0.7rem;
+        border-left: none;
+        justify-content: center;
+    }
+
+    .nav-item .icon {
+        margin-right: 0;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+
+    .nav-item:hover {
+        padding-left: 10px; /* Reset hover animation */
+    }
+    
+    .nav-item.active {
+        border-left: none;
+        border-top: 3px solid #667eea;
+        background: rgba(255,255,255,0.05);
+    }
+
+    .dashboard-main {
+        margin-left: 0;
+        padding: 15px;
+        padding-bottom: 90px; /* Hely a mobil menünek */
+        width: 100%;
+    }
+
+    .fab-container {
+        bottom: 80px; /* Feljebb kell tolni a mobil menü miatt */
+        right: 20px;
+    }
+}
 
 
 
