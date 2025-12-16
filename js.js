@@ -252,77 +252,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoading(submitBtn, false);
     }
 }
-
-    // Ezt másold be a js.js fájlba, a többi függvény közé (pl. a loadUserData után)
-
-function switchToUserView() {
-    // 1. Nézetek átváltása
-    const guestView = document.getElementById('guestView');
-    const adminView = document.getElementById('adminView');
-    const userView = document.getElementById('userView');
-
-    if (guestView) guestView.style.display = 'none';
-    if (adminView) adminView.style.display = 'none';
-    if (userView) userView.style.display = 'block';
-    
-    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-    document.body.style.backgroundAttachment = 'fixed';
-
-    // 2. Fülek és UI inicializálása
-    if (typeof initializeMainTabs === 'function') initializeMainTabs(userView);
-    if (typeof updateSettingsUI === 'function') updateSettingsUI();
-    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
-
-    // 3. ADATOK BETÖLTÉSE
-    // Először a söröket töltjük be
-    if (typeof loadUserData === 'function') loadUserData();
-    
-    // Aztán az italokat
-    if (typeof loadUserDrinks === 'function') {
-        loadUserDrinks();
-    }
-
-    // 4. FAB (Lebegő gomb) javítása
-    const fabMainBtn = document.getElementById('fabMainBtn');
-    const fabContainer = document.getElementById('fabContainer');
-    
-    if (fabMainBtn && fabContainer) {
-        // Először levesszük a régit (klónozással), hogy ne duplázódjon
-        const newBtn = fabMainBtn.cloneNode(true);
-        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            fabContainer.classList.toggle('active');
-        });
-
-        // Bezárás ha máshova kattintunk
-        document.addEventListener('click', (e) => {
-            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
-                fabContainer.classList.remove('active');
-            }
-        });
-    }
-}
-    function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
-    }
-
     async function handleAddDrink(e) {
     e.preventDefault();
     const drinkName = document.getElementById('drinkName').value;
@@ -2949,10 +2878,71 @@ function updateUserBadgeDisplay(rankData = null) {
     }
 }
 
-// -----------------------------------------------------------
-// ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
-}); 
-// Itt NE legyen több zárójel!
+    function switchToUserView() {
+        // 1. Nézetek átváltása
+        const guestView = document.getElementById('guestView');
+        const adminView = document.getElementById('adminView');
+        const userView = document.getElementById('userView');
+
+        if (guestView) guestView.style.display = 'none';
+        if (adminView) adminView.style.display = 'none';
+        if (userView) userView.style.display = 'block';
+        
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+
+        // 2. Fülek és UI inicializálása
+        if (typeof initializeMainTabs === 'function') initializeMainTabs(userView);
+        if (typeof updateSettingsUI === 'function') updateSettingsUI(); // <-- EZT KERESI A BEÁLLÍTÁSOKHOZ
+        if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+
+        // 3. ADATOK BETÖLTÉSE
+        if (typeof loadUserData === 'function') loadUserData();
+        if (typeof loadUserDrinks === 'function') loadUserDrinks();
+
+        // 4. FAB Gomb javítása
+        const fabMainBtn = document.getElementById('fabMainBtn');
+        const fabContainer = document.getElementById('fabContainer');
+        
+        if (fabMainBtn && fabContainer) {
+            const newBtn = fabMainBtn.cloneNode(true);
+            fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+            newBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fabContainer.classList.toggle('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                    fabContainer.classList.remove('active');
+                }
+            });
+        }
+    }
+function switchToAdminView() {
+        console.log("Admin nézet aktiválása...");
+        const guestView = document.getElementById('guestView');
+        const adminView = document.getElementById('adminView');
+        const userView = document.getElementById('userView');
+
+        if(guestView) guestView.style.display = 'none';
+        if(userView) userView.style.display = 'none';
+        if(adminView) adminView.style.display = 'block';
+
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+        
+        window.scrollTo(0, 0);
+
+        if (typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
+        if (typeof loadAdminData === 'function') {
+            try { loadAdminData(); } catch (e) { console.error(e); }
+        }
+        if (typeof initializeLiveSearch === 'function') initializeLiveSearch();
+        if (typeof setupStatistics === 'function') setupStatistics();
+        if (typeof setupAdminRecap === 'function') setupAdminRecap();
+        if (typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
+    }
+}); // <-- EZ LEGYEN A FÁJL LEGUTOLSÓ SORA!
 
 
 
