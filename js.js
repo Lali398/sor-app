@@ -1769,28 +1769,53 @@ window.addEventListener('scroll', function() {
     
     // User nézet váltásakor betöltjük a beállítást
     const originalSwitchToUserView = switchToUserView;
-    switchToUserView = function() {
-        // Először futtatjuk az eredeti logikát
-        // Fontos: Az eredeti függvényben van a "document.body.classList.add('custom-cursor-active')"
-        // Ezt felül fogjuk írni a loadUserPreferences-szel, ami helyes.
-        
-        // Hogy elkerüljük a körkörös hívást, manuálisan másoljuk a logikát, 
-        // VAGY hagyjuk lefutni és utána korrigálunk. A korrigálás a biztosabb:
-        guestView.style.display = 'none';
-        adminView.style.display = 'none';
-        userView.style.display = 'block';
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-        initializeMainTabs(userView);
-        loadUserData();
-        loadUserDrinks();
+    // A nézetvaltó függvény, ami meghívja a fenti javított beállítót
+switchToUserView = function() {
+    // 1. Nézetek átvaltása
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
 
-        // ÉS MOST JÖN A LÉNYEG: Felülírjuk a kurzor állapotot a mentett beállítás alapján
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            loadUserPreferences(userData.email);
-        }
-    };
+    // 2. Fülek és UI inicializálása
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+
+    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
+    // Először a söröket töltjük be
+    loadUserData();
+    
+    // Aztán az italokat - ⚠️ EZ HIÁNYZOTT!
+    if (typeof loadUserDrinks === 'function') {
+        loadUserDrinks();
+    }
+
+    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
+    // Újra csatoljuk az eseményt a biztonság kedvéért
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    
+    if (fabMainBtn && fabContainer) {
+        // Először levesszük a régit (klónozással), hogy ne duplázódjon
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Megállítjuk a buborékosodást
+            fabContainer.classList.toggle('active');
+        });
+
+        // Bezárás ha máshova kattintunk
+        document.addEventListener('click', (e) => {
+            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                fabContainer.classList.remove('active');
+            }
+        });
+    }
+};
 
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
@@ -2451,6 +2476,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
