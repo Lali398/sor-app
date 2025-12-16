@@ -1005,36 +1005,24 @@ function setupAdminRecap() {
         return;
     }
     
-    // === ÚJ RÉSZ: Badge kiszámítása és megjelenítése ===
-    // Fontos: Először be kell tölteni a söröket, hogy tudjunk számolni, 
-    // de a nevet már most kiírjuk.
-    
+    // 1. Üdvözlő üzenet beállítása (CSAK EGYSZER definiáljuk!)
     const welcomeMsg = document.getElementById('userWelcomeMessage');
     if(welcomeMsg) {
-        // Alap név
-        welcomeMsg.innerHTML = `Szia, ${user.name}!`;
-        
-        // Badge hozzáadása (aszinkron módon, ha megjöttek az adatok)
-        // De mivel a beers tömb kell hozzá, ezt a függvény VÉGÉN hívjuk majd meg.
+        // Alap név beállítása (a badge-et majd a függvény végén rakjuk mellé)
+        welcomeMsg.textContent = `Szia, ${user.name}!`;
     }
-        
-    
-    // Fejléc üdvözlés frissítése (ha van ilyen elem)
-    const welcomeMsg = document.getElementById('userWelcomeMessage');
-    if(welcomeMsg) welcomeMsg.textContent = `Szia, ${user.name}!`;
 
     // Táblázat ürítése és töltésjelző
     const tableBody = document.getElementById('userBeerTableBody');
     if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betöltése...</td></tr>';
 
     try {
-        console.log("Sörök lekérése..."); // Debug
+        console.log("Sörök lekérése...");
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
-        
         const beers = await response.json();
         
         if (!response.ok) {
@@ -1048,7 +1036,6 @@ function setupAdminRecap() {
         
         // Globális változó frissítése
         currentUserBeers = beers;
-        
         console.log(`Sikeres lekérés: ${beers.length} sör.`);
         
         // Renderelés hívása
@@ -1056,22 +1043,17 @@ function setupAdminRecap() {
         
         // Statisztikák frissítése (Headerben is!)
         updateUserStats(beers);
-
-        // === ÚJ: Achievementek frissítése és Badge kirakása ===
-        renderAchievementsTab();
-
-    const showBadge = localStorage.getItem('showBadge') !== 'false'; // Alapból true
-    if(showBadge) {
-        const achievements = calculateUnlockedAchievements();
-        const count = achievements.filter(a => a.unlocked).length;
-        const rank = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
         
-        const welcomeMsg = document.getElementById('userWelcomeMessage');
-        if(welcomeMsg) {
-            welcomeMsg.textContent = `Szia, ${user.name}!`;
-        }
+        // === ACHIEVEMENTEK ÉS BADGE FRISSÍTÉSE ===
+        // Fontos: itt hívjuk meg a badge kirakását, mert most már megvannak az adatok
+        renderAchievementsTab(); 
+        updateUserBadgeDisplay(); // Ez rakja ki a színes rangot a név mellé
+
+    } catch (error) {
+        console.error("Hiba a sörök betöltésekor:", error);
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results error">Hiba történt az adatok betöltésekor.</td></tr>';
     }
-} catch (error) { ... }
+}
     
 
     function renderUserBeers(beers) {
@@ -2943,6 +2925,7 @@ function updateUserBadgeDisplay(rankData = null) {
         }
     }
 }
+
 
 
 
