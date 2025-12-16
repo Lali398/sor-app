@@ -1302,7 +1302,6 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -2456,6 +2455,7 @@ window.openAddModal = function(type) {
     document.body.style.overflow = 'hidden'; // Görgetés tiltása
 }
 
+// --- Modal bezárása (AddModal) ---
 window.closeAddModal = function(type) {
     if (type === 'beer') {
         document.getElementById('addBeerModal').classList.remove('active');
@@ -2463,76 +2463,319 @@ window.closeAddModal = function(type) {
         document.getElementById('addDrinkModal').classList.remove('active');
     }
     document.body.style.overflow = 'auto';
-}
-    // 1. Modal megnyitása
-    window.openContactModal = function() {
-        // Bezárjuk a lebegő menüt, ha nyitva van
-        const fabContainer = document.getElementById('fabContainer');
-        if(fabContainer) fabContainer.classList.remove('active');
+};
 
-        // Megnyitjuk a modal-t
-        const modal = document.getElementById('contactModal');
-        if (modal) {
+// ==========================================
+// === FŐ ESEMÉNYFIGYELŐ BLOKK VÉGE ===
+// ==========================================
+}); // <-- EZ A ZÁRÓJEL NAGYON FONTOS! Ez zárja le a fájl legelején nyitott document.addEventListener-t!
+
+// ==========================================
+// === HIBAJELENTÉS / KAPCSOLAT MODUL (GLOBÁLIS) ===
+// ==========================================
+
+// 1. Modal megnyitása
+window.openContactModal = function() {
+    console.log("Hibajelentő ablak megnyitása...");
+    let modal = document.getElementById('contactModal');
+
+    // --- 1. MENTŐÖV: Ha az ablak rossz helyen van, átrakjuk a Body-ba ---
+    // Ha a modal egy rejtett div-ben van (pl. guestView), akkor hiába nyitjuk meg, nem látszik.
+    // Ezért átmozgatjuk közvetlenül a dokumentum "gyökerébe".
+    if (modal && modal.parentElement !== document.body) {
+        console.log("Modal átmozgatása a főoldalra, hogy látható legyen...");
+        document.body.appendChild(modal);
+    }
+
+    const fab = document.getElementById('fabContainer');
+    const emailGroup = document.getElementById('contactEmailGroup');
+    const emailInput = document.getElementById('contactEmail');
+    const token = localStorage.getItem('userToken');
+
+    // Ha van lebegő menü, bezárjuk
+    if (fab) fab.classList.remove('active');
+
+    if (modal) {
+        // --- 2. BIZTOSÍTÉK: Z-Index kényszerítése ---
+        // Így biztosan minden más elem (pl. fejléc) fölé kerül
+        modal.style.zIndex = "999999"; 
+        modal.style.display = "flex"; // Biztosítjuk, hogy ne legyen display:none
+
+        // Logika: Vendég vs User
+        if (!token) {
+            if(emailGroup) emailGroup.style.display = 'block';
+            if(emailInput) emailInput.required = true;
+        } else {
+            if(emailGroup) emailGroup.style.display = 'none';
+            if(emailInput) emailInput.required = false;
+        }
+
+        // Animáció indítása (kis késleltetéssel, hogy a CSS transition működjön)
+        setTimeout(() => {
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Görgetés tiltása
-        }
-    }
-
-    // 2. Modal bezárása
-    window.closeContactModal = function() {
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+        }, 10);
         
-        // Űrlap törlése
-        const form = document.getElementById('contactForm');
-        if (form) form.reset();
-
-        document.body.style.overflow = 'auto';
+        document.body.style.overflow = 'hidden'; // Görgetés tiltása
+    } else {
+        alert("KRITIKUS HIBA: Nem található a 'contactModal' a HTML-ben!");
     }
+};
 
-    // 3. Űrlap beküldése
+// 2. Modal bezárása
+window.closeContactModal = function() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.remove('active');
+        
+        // Várakozunk az animáció végéig, aztán resetelünk
+        setTimeout(() => {
+            modal.style.zIndex = ""; // Visszaállítjuk az eredetire
+        }, 300);
+    }
+    
+    const form = document.getElementById('contactForm');
+    if (form) form.reset();
+    
+    document.body.style.overflow = 'auto';
+};
+
+// 3. Űrlap beküldése (Külön eseményfigyelő, hogy biztosan lefusson)
+document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contactForm');
+
     if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
+        // Klónozással töröljük a régi eseménykezelőket
+        const newForm = contactForm.cloneNode(true);
+        contactForm.parentNode.replaceChild(newForm, contactForm);
+
+        newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const subject = document.getElementById('contactSubject').value;
-            const message = document.getElementById('contactMessage').value;
-            const submitBtn = contactForm.querySelector('.auth-btn');
+            const subjectInput = document.getElementById('contactSubject');
+            const messageInput = document.getElementById('contactMessage');
+            const emailInput = document.getElementById('contactEmail'); 
+            const submitBtn = newForm.querySelector('.auth-btn');
 
-            setLoading(submitBtn, true);
+            // Gomb UI frissítés
+            if (submitBtn) {
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                if(btnText) btnText.style.opacity = '0';
+                if(btnLoading) btnLoading.style.display = 'block';
+                submitBtn.disabled = true;
+            }
 
             try {
-                // API hívás a sheet.js-hez
+                const token = localStorage.getItem('userToken');
+                const headers = { 'Content-Type': 'application/json' };
+                
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                // API hívás
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+                    headers: headers,
                     body: JSON.stringify({ 
                         action: 'SEND_REPORT', 
-                        subject: subject, 
-                        message: message 
+                        subject: subjectInput.value, 
+                        message: messageInput.value,
+                        guestEmail: emailInput ? emailInput.value : '' 
                     })
                 });
 
                 const result = await response.json();
 
-                if(response.ok) {
-                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    closeContactModal();
-                } else {
-                    showError(result.error || "Hiba történt küldéskor.");
+                if (!response.ok) {
+                    throw new Error(result.error || "Hiba történt.");
                 }
-            } catch(err) {
+
+                alert("✅ " + (result.message || "Üzenet elküldve!"));
+                window.closeContactModal();
+
+            } catch (err) {
                 console.error(err);
-                showError("Hálózati hiba.");
+                alert("❌ Hiba: " + err.message);
             } finally {
-                setLoading(submitBtn, false);
+                // UI visszaállítás
+                if (submitBtn) {
+                    const btnText = submitBtn.querySelector('.btn-text');
+                    const btnLoading = submitBtn.querySelector('.btn-loading');
+                    if(btnText) btnText.style.opacity = '1';
+                    if(btnLoading) btnLoading.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
             }
         });
     }
-    });
+});
+// ==========================================
+// === ADMIN BELÉPÉS JAVÍTOTT MODUL ===
+// ==========================================
+
+window.openAdminModal = function() {
+    console.log("Admin ablak nyitása...");
+    const modal = document.getElementById('adminModal');
+    
+    // --- MENTŐÖV: Ha az ablak "beragadt" valahova, kimentjük a Body-ba ---
+    if (modal && modal.parentElement !== document.body) {
+        console.log("Admin Modal átmozgatása a főoldalra...");
+        document.body.appendChild(modal);
+    }
+
+    if (modal) {
+        // --- BIZTOSÍTÉKOK ---
+        modal.style.zIndex = "999999"; 
+        modal.style.display = "flex"; 
+        
+        // Animáció indítása
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+        
+        document.body.style.overflow = 'hidden'; // Görgetés tiltása
+        
+        // Fókusz a felhasználónév mezőre a kényelemért
+        const userInput = document.getElementById('adminUsername');
+        if(userInput) setTimeout(() => userInput.focus(), 100);
+
+    } else {
+        alert("KRITIKUS HIBA: Nem található az 'adminModal' a HTML-ben!");
+    }
+};
+
+window.closeAdminModal = function() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Várakozunk az animáció végéig
+        setTimeout(() => {
+            modal.style.zIndex = ""; 
+        }, 300);
+    }
+    document.body.style.overflow = 'auto';
+};
+
+// Biztonsági kiegészítés: Ha a modál háttérre kattintanak, záródjon be
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('adminModal');
+    if (modal && e.target === modal && modal.classList.contains('active')) {
+        window.closeAdminModal();
+    }
+});
+// ======================================================
+// === NÉZETVÁLTÁS JAVÍTÁSA (SCROLL FIX) ===
+// ======================================================
+
+// 1. Admin nézetre váltás
+switchToAdminView = function() {
+    console.log("Átváltás Admin nézetre...");
+    
+    // Elemek elrejtése/megjelenítése
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+
+    if(guestView) guestView.style.display = 'none';
+    if(userView) userView.style.display = 'none';
+    if(adminView) {
+        adminView.style.display = 'block';
+        adminView.style.opacity = '1'; // Biztos ami biztos
+    }
+
+    // HÁTTÉR BEÁLLÍTÁSA
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+
+    // Adatok és UI inicializálása
+    if(typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
+    if(typeof loadAdminData === 'function') loadAdminData();
+    if(typeof initializeLiveSearch === 'function') initializeLiveSearch();
+    if(typeof setupStatistics === 'function') setupStatistics();
+    if(typeof setupAdminRecap === 'function') setupAdminRecap();
+    
+    // Admin beállítások betöltése
+    if(typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
+};
+
+// 2. Vendég nézetre váltás (Kijelentkezés)
+const originalSwitchToGuest = switchToGuestView; // Ha van ilyen
+switchToGuestView = function() {
+    console.log("Kijelentkezés -> Vendég nézet");
+    
+    document.body.classList.remove('custom-cursor-active');
+    
+    // Token törlése
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+
+    // Nézetek kezelése
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+
+    if(adminView) adminView.style.display = 'none';
+    if(userView) userView.style.display = 'none';
+    if(guestView) guestView.style.display = 'block';
+
+    // Háttér visszaállítása (Vendég stílus)
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+    
+    // Mezők törlése
+    const liveInput = document.getElementById('liveSearchInput');
+    if(liveInput) liveInput.value = '';
+    if(typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+};
+
+// 3. User nézetre váltás (ezt is javítjuk, ha már itt vagyunk)
+const originalSwitchToUser = switchToUserView;
+switchToUserView = function() {
+    console.log("Belépés -> User nézet");
+
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+
+    // Inicializálás
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+    
+    // Adatok
+    if (typeof loadUserData === 'function') loadUserData();
+    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+    
+    // FAB Gomb javítás
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    if (fabMainBtn && fabContainer) {
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fabContainer.classList.toggle('active');
+        });
+    }
+};
+
+
+
+
+
 
 
 
