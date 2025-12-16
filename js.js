@@ -2897,24 +2897,28 @@ function renderAchievementsTab() {
 // EZT A FÜGGVÉNYT HÍVD MEG MINDIG, AMIKOR FRISSÜL AZ ADAT (pl. loadUserData végén)
 // js2.txt fájl vége felé
 
+// ... (a kód többi része változatlan marad a 588. sorig)
+
 function updateUserBadgeDisplay(rankData = null) {
-    const showBadge = document.getElementById('showBadgeToggle') ? document.getElementById('showBadgeToggle').checked : true;
+    const showBadge = document.getElementById('showBadgeToggle') ? 
+        document.getElementById('showBadgeToggle').checked : true;
     
+    // HIBAJAVÍTÁS: A user változó definiálása
+    const user = JSON.parse(localStorage.getItem('userData')); 
+
     // Ha nem kaptunk rank adatot, számoljuk ki
     if(!rankData) {
         const count = calculateUnlockedAchievements().filter(a => a.unlocked).length;
-        // rankSystem elérése (feltételezve, hogy globális)
+        // rankSystem elérése
         rankData = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
     }
 
     // Csak akkor nyúlunk a DOM-hoz, ha van hova
-    const badgeContainer = document.getElementById('userBadgeContainer'); // ÚJ KONTÉNER (amit a HTML-be tettünk)
+    const badgeContainer = document.getElementById('userBadgeContainer');
     const welcomeMsg = document.getElementById('userWelcomeMessage');
-    
-    // Ha a régi módszer van (nincs külön konténer), próbáljuk meg a régit javítani
+
+    // Ha a régi módszer van (nincs külön konténer)
     if (!badgeContainer && welcomeMsg) {
-         // Fallback: Ha nincs külön div, akkor a welcomeMsg végére szúrjuk be, 
-         // de előtte töröljük a régi badget, ha van.
          const existingBadge = welcomeMsg.querySelector('.user-badge-tag');
          if(existingBadge) existingBadge.remove();
 
@@ -2928,15 +2932,19 @@ function updateUserBadgeDisplay(rankData = null) {
          return;
     }
 
-    // Ha megcsináltad a HTML módosítást:
+    // Ha van külön badge konténer:
     if (badgeContainer) {
         badgeContainer.innerHTML = ''; // Törlés
-        if (showBadge) {
+        if (showBadge && user) { // Csak akkor írjuk ki, ha van user adat
             welcomeMsg.textContent = `Szia, ${user.name}!`;
         }
     }
 }
-    });
+
+// -----------------------------------------------------------
+// ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
+}); 
+// Itt NE legyen több zárójel!
 
 
 
