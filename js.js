@@ -647,19 +647,36 @@ async function markIdeaAsDone(index) {
             
             // --- ITT VOLT A HIÁNYZÓ RÉSZ ---
             // Ha a szerver azt mondja, hogy 2FA kell:
+            // Ha a szerver azt mondja, hogy 2FA kell:
             if (result.require2fa) {
-                tempLoginEmail = result.tempEmail; // Elmentjük az emailt későbbre
-                login2FAModal.classList.add('active'); // Feldobjuk a kódkérő ablakot
+                tempLoginEmail = result.tempEmail; // Email mentése
+
+                // === 2FA ABLAK MEGJELENÍTÉSE (JAVÍTOTT VERZIÓ) ===
+                const modal2FA = document.getElementById('login2FAModal');
                 
-                // Kis kényelem: fókuszáljunk a mezőre
-                setTimeout(() => {
-                    const input = document.getElementById('login2FACode');
-                    if(input) input.focus();
-                }, 100);
-                
-                // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
+                // 1. MENTŐÖV: Ha az ablak rossz helyen van, átrakjuk a Body-ba
+                if (modal2FA && modal2FA.parentElement !== document.body) {
+                    document.body.appendChild(modal2FA);
+                }
+
+                // 2. Megjelenítés kényszerítése
+                if (modal2FA) {
+                    modal2FA.style.zIndex = "999999"; // Legyen legfelül
+                    modal2FA.style.display = "flex";  // Ne legyen display: none
+                    
+                    // Animáció indítása kis késleltetéssel
+                    setTimeout(() => {
+                        modal2FA.classList.add('active');
+                        
+                        // Fókusz a beviteli mezőre
+                        const input = document.getElementById('login2FACode');
+                        if(input) input.focus();
+                    }, 10);
+                }
+
+                // 3. Töltés jelző kikapcsolása a gombon
                 setLoading(submitBtn, false);
-                return; // KILÉPÜNK A FÜGGVÉNYBŐL!
+                return; // KILÉPÜNK, hogy ne fusson tovább a sima belépés
             }
             // ---------------------------------
 
@@ -2921,6 +2938,7 @@ function updateUserBadgeDisplay(rankData = null) {
     }
 }
     });
+
 
 
 
