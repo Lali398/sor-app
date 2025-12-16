@@ -2510,7 +2510,8 @@ window.openSupportModal = function() {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
-});
+// <-- TÖRÖLD KI a }); zárójeleket innen! Csak ez maradjon: }
+
 window.closeSupportModal = function() {
     const modal = document.getElementById('supportModal');
     modal.classList.remove('active');
