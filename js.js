@@ -327,7 +327,7 @@ async function loadUserDrinks() {
         
         currentUserDrinks = drinks;
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks); // ÚJ SOR!
+        updateUserDrinkStats(drinks); // ⚠️ EZ A SOR FONTOS!
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni az italokat.");
@@ -2476,6 +2476,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
