@@ -1711,6 +1711,88 @@ input:checked + .slider:before {
         right: 20px;
     }
 }
+/* === ÚJ: STATISZTIKÁK A FEJLÉCBEN === */
+.user-header-with-stats .header-content-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 30px;
+    align-items: center;
+}
+
+.header-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.header-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.header-stat-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.stat-icon-small {
+    font-size: 1.5rem;
+}
+
+.stat-info-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.stat-label-small {
+    font-size: 0.7rem;
+    color: #b0b0b0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value-small {
+    font-size: 1.1rem;
+    color: white;
+    font-weight: 700;
+}
+
+/* Mobil nézet */
+@media (max-width: 768px) {
+    .user-header-with-stats .header-content-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .header-stats {
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .header-stat-item {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .stat-icon-small {
+        font-size: 1.2rem;
+    }
+    
+    .stat-value-small {
+        font-size: 1rem;
+    }
+}
+
 
 
 
