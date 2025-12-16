@@ -605,24 +605,42 @@ case 'EDIT_USER_DRINK': {
             }
 
             case 'SEND_REPORT': {
-                const userData = verifyUser(req); // Ellenőrizzük, ki küldi
-                const { subject, message } = req.body;
+                // Kinyerjük a vendég által beírt emailt is
+                const { subject, message, guestEmail } = req.body;
+                
+                let senderName = "Vendég";
+                let senderEmail = guestEmail || "Nincs megadva"; // Alapértelmezés a kézzel beírt
 
+                // Megpróbáljuk azonosítani a felhasználót (ha be van lépve)
+                try {
+                    if (req.headers.authorization) {
+                        const userData = verifyUser(req);
+                        senderName = userData.name;
+                        senderEmail = userData.email; // Ha be van lépve, ez felülírja a vendég emailt
+                    }
+                } catch (e) {
+                    // Ha nincs token (vendég), marad a fenti 'senderEmail' (amit beírt)
+                }
+                
                 if (!subject || !message) {
                     return res.status(400).json({ error: "A tárgy és az üzenet megadása kötelező!" });
                 }
 
+                // Ha vendég, és nem írt be emailt (bár a frontend kötelezi, de biztos ami biztos)
+                if (senderName === "Vendég" && (!senderEmail || senderEmail === "Nincs megadva")) {
+                     // Opcionális: Ha nagyon szigorú akarsz lenni, itt dobhatsz hibát, 
+                     // de a frontend 'required' attribútuma ezt már kezeli.
+                }
+
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
                 
-                // Adatok előkészítése a táblázatba
-                // Oszlopok: A:Dátum, B:Név, C:Email, D:Tárgy, E:Üzenet, F:Státusz
                 const newRow = [
                     timestamp,
-                    userData.name,
-                    userData.email,
+                    senderName,
+                    senderEmail, // Itt most már vagy a user emailje lesz, vagy amit beírt
                     subject,
                     message,
-                    'Olvasatlan' // Alapértelmezett státusz
+                    'Olvasatlan'
                 ];
 
                 await sheets.spreadsheets.values.append({
@@ -688,6 +706,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
