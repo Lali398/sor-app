@@ -124,13 +124,48 @@
 
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
-    <!-- FEJLÉC -->
-    <header class="admin-header">
-        <div class="header-content">
+    <!-- FEJLÉC STATOKKAL -->
+    <header class="admin-header user-header-with-stats">
+        <div class="header-content-grid">
+            <!-- Bal oldal: Logo + Üdvözlés -->
             <div class="logo">
                 <span class="beer-icon">🍺</span>
                 <h1 id="userWelcomeMessage">Szia!</h1>
             </div>
+            
+            <!-- Közép: Statisztikák -->
+            <div class="header-stats">
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🍺</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Sörök</span>
+                        <span class="stat-value-small" id="userBeerCount">0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">⭐</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Sör Átlag</span>
+                        <span class="stat-value-small" id="userAverageScore">0.0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🹹</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Italok</span>
+                        <span class="stat-value-small" id="userDrinkCount">0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">✨</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Ital Átlag</span>
+                        <span class="stat-value-small" id="userDrinkAverageScore">0.0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jobb oldal: Kijelentkezés -->
             <div class="header-actions">
                 <button class="header-btn" id="userLogoutBtn">
                     <span>🚪</span>
@@ -150,17 +185,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <button class="nav-item active" data-tab-content="user-rating-content">
-                    <span class="icon">⭐</span>
-                    <span class="label">Sör Értékelés</span>
-                </button>
-                <button class="nav-item" data-tab-content="user-beers-content">
+                
+                <button class="nav-item active" data-tab-content="user-beers-content">
                     <span class="icon">🍺</span>
                     <span class="label">Söreim</span>
-                </button>
-                <button class="nav-item" data-tab-content="user-drink-rating-content">
-                    <span class="icon">🍹</span>
-                    <span class="label">Ital Értékelés</span>
                 </button>
                 <button class="nav-item" data-tab-content="user-drinks-content">
                     <span class="icon">🍸</span>
@@ -202,15 +230,6 @@
             <!-- TARTALOM PANELEK -->
             <div class="main-tab-content-container">
                 <!-- ÉRTÉKELÉS TAB -->
-                <div class="main-tab-pane active" id="user-rating-content">
-                    <section class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon beers">🍺</div>
-                            <div class="stat-info">
-                                <p>Értékelt sörök</p>
-                                <h3 id="userBeerCount">0</h3>
-                            </div>
-                        </div>
                         <div class="stat-card">
                             <div class="stat-icon average">⭐</div>
                             <div class="stat-info">
@@ -254,15 +273,6 @@
                 </div>
 
                 <!-- ITAL ÉRTÉKELÉS TAB -->
-                <div class="main-tab-pane" id="user-drink-rating-content">
-                    <section class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon beers">🍹</div>
-                            <div class="stat-info">
-                                <p>Értékelt italok</p>
-                                <h3 id="userDrinkCount">0</h3>
-                            </div>
-                        </div>
                         <div class="stat-card">
                             <div class="stat-icon average">⭐</div>
                             <div class="stat-info">
@@ -1139,6 +1149,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
