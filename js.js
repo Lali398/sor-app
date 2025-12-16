@@ -253,6 +253,76 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
+    // Ezt másold be a js.js fájlba, a többi függvény közé (pl. a loadUserData után)
+
+function switchToUserView() {
+    // 1. Nézetek átváltása
+    const guestView = document.getElementById('guestView');
+    const adminView = document.getElementById('adminView');
+    const userView = document.getElementById('userView');
+
+    if (guestView) guestView.style.display = 'none';
+    if (adminView) adminView.style.display = 'none';
+    if (userView) userView.style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // 2. Fülek és UI inicializálása
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(userView);
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+
+    // 3. ADATOK BETÖLTÉSE
+    // Először a söröket töltjük be
+    if (typeof loadUserData === 'function') loadUserData();
+    
+    // Aztán az italokat
+    if (typeof loadUserDrinks === 'function') {
+        loadUserDrinks();
+    }
+
+    // 4. FAB (Lebegő gomb) javítása
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    
+    if (fabMainBtn && fabContainer) {
+        // Először levesszük a régit (klónozással), hogy ne duplázódjon
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            fabContainer.classList.toggle('active');
+        });
+
+        // Bezárás ha máshova kattintunk
+        document.addEventListener('click', (e) => {
+            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                fabContainer.classList.remove('active');
+            }
+        });
+    }
+}
+    function switchToAdminView() {
+        document.body.classList.add('custom-cursor-active');
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
+
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+
+        // Fő fülek inicializálása az admin nézeten
+        initializeMainTabs(adminView);
+
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+        setupAdminRecap();
+    }
+
     async function handleAddDrink(e) {
     e.preventDefault();
     const drinkName = document.getElementById('drinkName').value;
@@ -1298,24 +1368,7 @@ function setupAdminRecap() {
         updateIndexedAverage();
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
-    function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
-    }
+    
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -2235,53 +2288,7 @@ document.querySelectorAll('.main-tab-btn').forEach(btn => {
 window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
-// A nézetváltó függvény, ami meghívja a fenti javított beállítót
-function switchToUserView() {
-    // 1. Nézetek átváltása
-    document.getElementById('guestView').style.display = 'none';
-    document.getElementById('adminView').style.display = 'none';
-    document.getElementById('userView').style.display = 'block';
-    
-    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-    document.body.style.backgroundAttachment = 'fixed';
 
-    // 2. Fülek és UI inicializálása
-    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
-    if (typeof updateSettingsUI === 'function') updateSettingsUI();
-    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
-
-    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
-    // Először a söröket töltjük be
-    loadUserData();
-    
-    // Aztán az italokat
-    if (typeof loadUserDrinks === 'function') {
-        loadUserDrinks();
-    }
-
-    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
-    // Újra csatoljuk az eseményt a biztonság kedvéért
-    const fabMainBtn = document.getElementById('fabMainBtn');
-    const fabContainer = document.getElementById('fabContainer');
-    
-    if (fabMainBtn && fabContainer) {
-        // Először levesszük a régit (klónozással), hogy ne duplázódjon
-        const newBtn = fabMainBtn.cloneNode(true);
-        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Megállítjuk a buborékosodást
-            fabContainer.classList.toggle('active');
-        });
-
-        // Bezárás ha máshova kattintunk
-        document.addEventListener('click', (e) => {
-            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
-                fabContainer.classList.remove('active');
-            }
-        });
-    }
-};
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
     const beer = currentUserBeers[index];
@@ -2946,6 +2953,7 @@ function updateUserBadgeDisplay(rankData = null) {
 // ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
 }); 
 // Itt NE legyen több zárójel!
+
 
 
 
