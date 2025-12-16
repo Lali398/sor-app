@@ -2500,75 +2500,8 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-    // 1. Modal megnyitása
-    window.openContactModal = function() {
-        // Bezárjuk a lebegő menüt, ha nyitva van
-        const fabContainer = document.getElementById('fabContainer');
-        if(fabContainer) fabContainer.classList.remove('active');
-
-        // Megnyitjuk a modal-t
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Görgetés tiltása
-        }
-    }
-
-    // 2. Modal bezárása
-    window.closeContactModal = function() {
-        const modal = document.getElementById('contactModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        
-        // Űrlap törlése
-        const form = document.getElementById('contactForm');
-        if (form) form.reset();
-
-        document.body.style.overflow = 'auto';
-    }
-
-    // 3. Űrlap beküldése
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const subject = document.getElementById('contactSubject').value;
-            const message = document.getElementById('contactMessage').value;
-            const submitBtn = contactForm.querySelector('.auth-btn');
-
-            setLoading(submitBtn, true);
-
-            try {
-                // API hívás a sheet.js-hez
-                const response = await fetch('/api/sheet', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                    body: JSON.stringify({ 
-                        action: 'SEND_REPORT', 
-                        subject: subject, 
-                        message: message 
-                    })
-                });
-
-                const result = await response.json();
-
-                if(response.ok) {
-                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
-                    closeContactModal();
-                } else {
-                    showError(result.error || "Hiba történt küldéskor.");
-                }
-            } catch(err) {
-                console.error(err);
-                showError("Hálózati hiba.");
-            } finally {
-                setLoading(submitBtn, false);
-            }
-        });
-    }
 });
+
 
 
 
