@@ -1707,6 +1707,7 @@ window.addEventListener('scroll', function() {
     });
     
     lastScrollTop = scrollTop;
+});
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -2565,6 +2566,7 @@ window.closeContactModal = function() {
     const form = document.getElementById('contactForm');
     if (form) form.reset();
 }
+
 
 
 
