@@ -2500,11 +2500,6 @@ window.closeAddModal = function(type) {
 };
 
 // ==========================================
-// === FŐ ESEMÉNYFIGYELŐ BLOKK VÉGE ===
-// ==========================================
-}); // <-- EZ A ZÁRÓJEL NAGYON FONTOS! Ez zárja le a fájl legelején nyitott document.addEventListener-t!
-
-// ==========================================
 // === HIBAJELENTÉS / KAPCSOLAT MODUL (GLOBÁLIS) ===
 // ==========================================
 
@@ -2925,6 +2920,8 @@ function updateUserBadgeDisplay(rankData = null) {
         }
     }
 }
+    });
+
 
 
 
