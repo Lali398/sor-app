@@ -11,6 +11,7 @@ const USERS_SHEET = 'Felhasználók';
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
 const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 const IDEAS_SHEET = 'Vendég ötletek';
+const SUPPORT_SHEET = 'Hibajelentések';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -544,6 +545,55 @@ case 'EDIT_USER_DRINK': {
                 return res.status(201).json({ message: "Köszönjük az ötleted! 💡" });
             }
 
+            case 'SUBMIT_SUPPORT_TICKET': {
+    // Ez a funkció NEM igényel bejelentkezést, de ha van token, használjuk
+    let userData = null;
+    try {
+        userData = verifyUser(req);
+    } catch (error) {
+        // Nincs token vagy érvénytelen - ez OK, mert vendégek is használhatják
+        console.log("Vendég felhasználó küldte a hibajelentést");
+    }
+    
+    const { name, email, subject, message } = req.body;
+    
+    // Validálás
+    if (!name || !email || !subject || !message) {
+        return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+    }
+    
+    // Email validáció
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Érvénytelen email cím!" });
+    }
+    
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const date = new Date().toLocaleDateString('hu-HU');
+    
+    // Google Sheets sor összeállítása
+    // Oszlopok: A:Dátum, B:Beküldő Neve, C:Beküldő Email, D:Tárgy, E:Üzenet, F:Státusz
+    const newRow = [
+        date,           // A: Dátum
+        name,           // B: Beküldő Neve
+        email,          // C: Beküldő Email
+        subject,        // D: Tárgy
+        message,        // E: Üzenet
+        'Új'            // F: Státusz (alapértelmezett: "Új")
+    ];
+    
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `Hibajelentések!A:F`,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [newRow] }
+    });
+    
+    return res.status(201).json({ 
+        message: "Hibajelentésed sikeresen elküldve! Hamarosan válaszolunk az emaileden keresztül. 📧" 
+    });
+}
+
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
                 
@@ -655,6 +705,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
