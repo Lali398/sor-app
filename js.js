@@ -1660,6 +1660,7 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4mp / slide
 }
+    });
 
 window.downloadRecap = function() {
     const element = document.getElementById('storyContainer');
@@ -2945,6 +2946,7 @@ function updateUserBadgeDisplay(rankData = null) {
 // ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
 }); 
 // Itt NE legyen több zárójel!
+
 
 
 
