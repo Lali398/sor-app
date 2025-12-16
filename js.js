@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
+    }
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -2708,6 +2711,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers.forEach(h => h.classList.add('collapsed'));
     }
 });
+
 
 
 
