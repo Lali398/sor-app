@@ -2664,6 +2664,114 @@ document.addEventListener('click', (e) => {
         window.closeAdminModal();
     }
 });
+// ======================================================
+// === NÉZETVÁLTÁS JAVÍTÁSA (SCROLL FIX) ===
+// ======================================================
+
+// 1. Admin nézetre váltás
+switchToAdminView = function() {
+    console.log("Átváltás Admin nézetre...");
+    
+    // Elemek elrejtése/megjelenítése
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+
+    if(guestView) guestView.style.display = 'none';
+    if(userView) userView.style.display = 'none';
+    if(adminView) {
+        adminView.style.display = 'block';
+        adminView.style.opacity = '1'; // Biztos ami biztos
+    }
+
+    // HÁTTÉR BEÁLLÍTÁSA
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+
+    // Adatok és UI inicializálása
+    if(typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
+    if(typeof loadAdminData === 'function') loadAdminData();
+    if(typeof initializeLiveSearch === 'function') initializeLiveSearch();
+    if(typeof setupStatistics === 'function') setupStatistics();
+    if(typeof setupAdminRecap === 'function') setupAdminRecap();
+    
+    // Admin beállítások betöltése
+    if(typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
+};
+
+// 2. Vendég nézetre váltás (Kijelentkezés)
+const originalSwitchToGuest = switchToGuestView; // Ha van ilyen
+switchToGuestView = function() {
+    console.log("Kijelentkezés -> Vendég nézet");
+    
+    document.body.classList.remove('custom-cursor-active');
+    
+    // Token törlése
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+
+    // Nézetek kezelése
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+
+    if(adminView) adminView.style.display = 'none';
+    if(userView) userView.style.display = 'none';
+    if(guestView) guestView.style.display = 'block';
+
+    // Háttér visszaállítása (Vendég stílus)
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+    
+    // Mezők törlése
+    const liveInput = document.getElementById('liveSearchInput');
+    if(liveInput) liveInput.value = '';
+    if(typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+};
+
+// 3. User nézetre váltás (ezt is javítjuk, ha már itt vagyunk)
+const originalSwitchToUser = switchToUserView;
+switchToUserView = function() {
+    console.log("Belépés -> User nézet");
+
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // *** A JAVÍTÁS: GÖRGESSÜNK A TETEJÉRE! ***
+    window.scrollTo(0, 0);
+
+    // Inicializálás
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+    
+    // Adatok
+    if (typeof loadUserData === 'function') loadUserData();
+    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+    
+    // FAB Gomb javítás
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    if (fabMainBtn && fabContainer) {
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fabContainer.classList.toggle('active');
+        });
+    }
+};
+
 
 
 
