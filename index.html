@@ -128,11 +128,13 @@
 
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
-    <header class="admin-header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="beer-icon">🍺</span>
-                <h1 class="desktop-only">Sör Napló</h1>
+    <header class="admin-header" id="mainHeader">
+    <div class="header-content">
+        <div class="logo">
+            <span class="beer-icon">🍺</span>
+            <h1 class="desktop-only">Sör Napló</h1> <button id="headerToggleBtn" class="header-toggle-btn" onclick="toggleHeaderSize()">
+                🔼
+            </button>
             </div>
 
             <div class="header-stats-container">
@@ -1186,6 +1188,7 @@
 </div>
 </body>
 </html>
+
 
 
 
