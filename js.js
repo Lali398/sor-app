@@ -253,6 +253,76 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
+    // Ezt másold be a js.js fájlba, a többi függvény közé (pl. a loadUserData után)
+
+function switchToUserView() {
+    // 1. Nézetek átváltása
+    const guestView = document.getElementById('guestView');
+    const adminView = document.getElementById('adminView');
+    const userView = document.getElementById('userView');
+
+    if (guestView) guestView.style.display = 'none';
+    if (adminView) adminView.style.display = 'none';
+    if (userView) userView.style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // 2. Fülek és UI inicializálása
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(userView);
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+
+    // 3. ADATOK BETÖLTÉSE
+    // Először a söröket töltjük be
+    if (typeof loadUserData === 'function') loadUserData();
+    
+    // Aztán az italokat
+    if (typeof loadUserDrinks === 'function') {
+        loadUserDrinks();
+    }
+
+    // 4. FAB (Lebegő gomb) javítása
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    
+    if (fabMainBtn && fabContainer) {
+        // Először levesszük a régit (klónozással), hogy ne duplázódjon
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            fabContainer.classList.toggle('active');
+        });
+
+        // Bezárás ha máshova kattintunk
+        document.addEventListener('click', (e) => {
+            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                fabContainer.classList.remove('active');
+            }
+        });
+    }
+}
+    function switchToAdminView() {
+        document.body.classList.add('custom-cursor-active');
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
+
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+
+        // Fő fülek inicializálása az admin nézeten
+        initializeMainTabs(adminView);
+
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+        setupAdminRecap();
+    }
+
     async function handleAddDrink(e) {
     e.preventDefault();
     const drinkName = document.getElementById('drinkName').value;
@@ -308,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) return;
-    
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
@@ -325,9 +394,18 @@ async function loadUserDrinks() {
             throw new Error(drinks.error || 'Szerverhiba');
         }
         
-        currentUserDrinks = drinks;
+        currentUserDrinks = drinks; // Globális változó frissítése
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks); // ÚJ SOR!
+        updateUserDrinkStats(drinks);
+        
+        // --- JAVÍTÁS: Achievementek újraszámolása az italok megérkezése után ---
+        console.log(`Italok betöltve: ${drinks.length} db. Achievementek frissítése...`);
+        renderAchievementsTab(); 
+        
+        // Rangjelzés (Badge) frissítése a fejlécben, ha változott volna
+        updateUserBadgeDisplay(); 
+        // -----------------------------------------------------------------------
+
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni az italokat.");
@@ -639,19 +717,36 @@ async function markIdeaAsDone(index) {
             
             // --- ITT VOLT A HIÁNYZÓ RÉSZ ---
             // Ha a szerver azt mondja, hogy 2FA kell:
+            // Ha a szerver azt mondja, hogy 2FA kell:
             if (result.require2fa) {
-                tempLoginEmail = result.tempEmail; // Elmentjük az emailt későbbre
-                login2FAModal.classList.add('active'); // Feldobjuk a kódkérő ablakot
+                tempLoginEmail = result.tempEmail; // Email mentése
+
+                // === 2FA ABLAK MEGJELENÍTÉSE (JAVÍTOTT VERZIÓ) ===
+                const modal2FA = document.getElementById('login2FAModal');
                 
-                // Kis kényelem: fókuszáljunk a mezőre
-                setTimeout(() => {
-                    const input = document.getElementById('login2FACode');
-                    if(input) input.focus();
-                }, 100);
-                
-                // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
+                // 1. MENTŐÖV: Ha az ablak rossz helyen van, átrakjuk a Body-ba
+                if (modal2FA && modal2FA.parentElement !== document.body) {
+                    document.body.appendChild(modal2FA);
+                }
+
+                // 2. Megjelenítés kényszerítése
+                if (modal2FA) {
+                    modal2FA.style.zIndex = "999999"; // Legyen legfelül
+                    modal2FA.style.display = "flex";  // Ne legyen display: none
+                    
+                    // Animáció indítása kis késleltetéssel
+                    setTimeout(() => {
+                        modal2FA.classList.add('active');
+                        
+                        // Fókusz a beviteli mezőre
+                        const input = document.getElementById('login2FACode');
+                        if(input) input.focus();
+                    }, 10);
+                }
+
+                // 3. Töltés jelző kikapcsolása a gombon
                 setLoading(submitBtn, false);
-                return; // KILÉPÜNK A FÜGGVÉNYBŐL!
+                return; // KILÉPÜNK, hogy ne fusson tovább a sima belépés
             }
             // ---------------------------------
 
@@ -997,36 +1092,24 @@ function setupAdminRecap() {
         return;
     }
     
-    // === ÚJ RÉSZ: Badge kiszámítása és megjelenítése ===
-    // Fontos: Először be kell tölteni a söröket, hogy tudjunk számolni, 
-    // de a nevet már most kiírjuk.
-    
+    // 1. Üdvözlő üzenet beállítása (CSAK EGYSZER definiáljuk!)
     const welcomeMsg = document.getElementById('userWelcomeMessage');
     if(welcomeMsg) {
-        // Alap név
-        welcomeMsg.innerHTML = `Szia, ${user.name}!`;
-        
-        // Badge hozzáadása (aszinkron módon, ha megjöttek az adatok)
-        // De mivel a beers tömb kell hozzá, ezt a függvény VÉGÉN hívjuk majd meg.
+        // Alap név beállítása (a badge-et majd a függvény végén rakjuk mellé)
+        welcomeMsg.textContent = `Szia, ${user.name}!`;
     }
-        
-    
-    // Fejléc üdvözlés frissítése (ha van ilyen elem)
-    const welcomeMsg = document.getElementById('userWelcomeMessage');
-    if(welcomeMsg) welcomeMsg.textContent = `Szia, ${user.name}!`;
 
     // Táblázat ürítése és töltésjelző
     const tableBody = document.getElementById('userBeerTableBody');
     if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betöltése...</td></tr>';
 
     try {
-        console.log("Sörök lekérése..."); // Debug
+        console.log("Sörök lekérése...");
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
-        
         const beers = await response.json();
         
         if (!response.ok) {
@@ -1040,7 +1123,6 @@ function setupAdminRecap() {
         
         // Globális változó frissítése
         currentUserBeers = beers;
-        
         console.log(`Sikeres lekérés: ${beers.length} sör.`);
         
         // Renderelés hívása
@@ -1048,22 +1130,17 @@ function setupAdminRecap() {
         
         // Statisztikák frissítése (Headerben is!)
         updateUserStats(beers);
-
-        // === ÚJ: Achievementek frissítése és Badge kirakása ===
-        renderAchievementsTab();
-
-    const showBadge = localStorage.getItem('showBadge') !== 'false'; // Alapból true
-    if(showBadge) {
-        const achievements = calculateUnlockedAchievements();
-        const count = achievements.filter(a => a.unlocked).length;
-        const rank = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
         
-        const welcomeMsg = document.getElementById('userWelcomeMessage');
-        if(welcomeMsg) {
-            welcomeMsg.innerHTML = `Szia, ${user.name}! <span class="user-badge-tag" style="background: ${rank.color}; box-shadow: 0 0 5px ${rank.color};">${rank.icon} ${rank.name}</span>`;
-        }
+        // === ACHIEVEMENTEK ÉS BADGE FRISSÍTÉSE ===
+        // Fontos: itt hívjuk meg a badge kirakását, mert most már megvannak az adatok
+        renderAchievementsTab(); 
+        updateUserBadgeDisplay(); // Ez rakja ki a színes rangot a név mellé
+
+    } catch (error) {
+        console.error("Hiba a sörök betöltésekor:", error);
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results error">Hiba történt az adatok betöltésekor.</td></tr>';
     }
-} catch (error) { ... }
+}
     
 
     function renderUserBeers(beers) {
@@ -1291,24 +1368,7 @@ function setupAdminRecap() {
         updateIndexedAverage();
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
-    function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
-    }
+    
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -1653,6 +1713,7 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4mp / slide
 }
+    });
 
 window.downloadRecap = function() {
     const element = document.getElementById('storyContainer');
@@ -1951,7 +2012,6 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4 másodperc per slide
 }
-});
 // CSERÉLD LE EZT A RÉSZT A FÁJL VÉGÉN (window.downloadRecap után):
 
 window.toggleFullscreen = function() {
@@ -2228,53 +2288,7 @@ document.querySelectorAll('.main-tab-btn').forEach(btn => {
 window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
-// A nézetváltó függvény, ami meghívja a fenti javított beállítót
-switchToUserView = function() {
-    // 1. Nézetek átváltása
-    document.getElementById('guestView').style.display = 'none';
-    document.getElementById('adminView').style.display = 'none';
-    document.getElementById('userView').style.display = 'block';
-    
-    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-    document.body.style.backgroundAttachment = 'fixed';
 
-    // 2. Fülek és UI inicializálása
-    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
-    if (typeof updateSettingsUI === 'function') updateSettingsUI();
-    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
-
-    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
-    // Először a söröket töltjük be
-    loadUserData();
-    
-    // Aztán az italokat
-    if (typeof loadUserDrinks === 'function') {
-        loadUserDrinks();
-    }
-
-    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
-    // Újra csatoljuk az eseményt a biztonság kedvéért
-    const fabMainBtn = document.getElementById('fabMainBtn');
-    const fabContainer = document.getElementById('fabContainer');
-    
-    if (fabMainBtn && fabContainer) {
-        // Először levesszük a régit (klónozással), hogy ne duplázódjon
-        const newBtn = fabMainBtn.cloneNode(true);
-        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Megállítjuk a buborékosodást
-            fabContainer.classList.toggle('active');
-        });
-
-        // Bezárás ha máshova kattintunk
-        document.addEventListener('click', (e) => {
-            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
-                fabContainer.classList.remove('active');
-            }
-        });
-    }
-};
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
     const beer = currentUserBeers[index];
@@ -2508,11 +2522,6 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 };
-
-// ==========================================
-// === FŐ ESEMÉNYFIGYELŐ BLOKK VÉGE ===
-// ==========================================
-}); // <-- EZ A ZÁRÓJEL NAGYON FONTOS! Ez zárja le a fájl legelején nyitott document.addEventListener-t!
 
 // ==========================================
 // === HIBAJELENTÉS / KAPCSOLAT MODUL (GLOBÁLIS) ===
@@ -2894,48 +2903,68 @@ function renderAchievementsTab() {
 }
 
 // EZT A FÜGGVÉNYT HÍVD MEG MINDIG, AMIKOR FRISSÜL AZ ADAT (pl. loadUserData végén)
+// js2.txt fájl vége felé
+
+// ... (a kód többi része változatlan marad a 588. sorig)
+
 function updateUserBadgeDisplay(rankData = null) {
-    const showBadge = document.getElementById('showBadgeToggle') ? document.getElementById('showBadgeToggle').checked : true;
+    const showBadge = document.getElementById('showBadgeToggle') ? 
+        document.getElementById('showBadgeToggle').checked : true;
     
-    // Ha nem kaptunk rank adatot, számoljuk ki gyorsan
+    // HIBAJAVÍTÁS: A user változó definiálása
+    const user = JSON.parse(localStorage.getItem('userData')); 
+
+    // Ha nem kaptunk rank adatot, számoljuk ki
     if(!rankData) {
         const count = calculateUnlockedAchievements().filter(a => a.unlocked).length;
+        // rankSystem elérése
         rankData = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
     }
 
-    // Badge HTML
-    const badgeHTML = showBadge ? 
-        `<span class="user-badge-tag" style="background: linear-gradient(135deg, ${rankData.color}, #fff);">${rankData.icon} ${rankData.name}</span>` 
-        : '';
-
-    // 1. Üdvözlő üzenet (User View Header)
+    // Csak akkor nyúlunk a DOM-hoz, ha van hova
+    const badgeContainer = document.getElementById('userBadgeContainer');
     const welcomeMsg = document.getElementById('userWelcomeMessage');
-    // Azt feltételezzük, hogy a loadUserData beállította a nevet. 
-    // Itt csak hozzáfűzzük a badget, ha még nincs ott.
-    if(welcomeMsg) {
-        // Trükk: Csak a szöveges tartalmat tartjuk meg, és újra rakjuk a badget
-        const textOnly = welcomeMsg.textContent.split('👋')[0].split('Szia, ')[1] || welcomeMsg.textContent; 
-        // Visszaállítás bonyolult lehet, egyszerűbb ha mindig újraépítjük a loadUserData-ban.
-        // Inkább keressük meg a nevet és illesszük mellé.
+
+    // Ha a régi módszer van (nincs külön konténer)
+    if (!badgeContainer && welcomeMsg) {
+         const existingBadge = welcomeMsg.querySelector('.user-badge-tag');
+         if(existingBadge) existingBadge.remove();
+
+         if(showBadge) {
+             const span = document.createElement('span');
+             span.className = 'user-badge-tag';
+             span.style.background = `linear-gradient(135deg, ${rankData.color}, #fff)`;
+             span.innerHTML = `${rankData.icon} ${rankData.name}`;
+             welcomeMsg.appendChild(span);
+         }
+         return;
     }
-    
-    // JOBB MEGOLDÁS: Keressük meg az összes helyet, ahol a név van, és tegyünk mellé egy span-t
-    // De a legegyszerűbb, ha a loadUserData-t módosítjuk. Lásd lejjebb.
+
+    // Ha van külön badge konténer:
+    if (badgeContainer) {
+        badgeContainer.innerHTML = ''; // Törlés
+        if (showBadge && user) { // Csak akkor írjuk ki, ha van user adat
+            welcomeMsg.textContent = `Szia, ${user.name}!`;
+        }
+    }
 }
 
-// Beállítás mentése
-document.getElementById('showBadgeToggle').addEventListener('change', (e) => {
-    localStorage.setItem('showBadge', e.target.checked);
-    renderAchievementsTab(); // Újrarenderel, ami frissíti a badget is
-});
+// -----------------------------------------------------------
+// ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
+}); 
+// Itt NE legyen több zárójel!
 
-// Beállítás betöltése induláskor
-document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('showBadge');
-    if(saved !== null) {
-        document.getElementById('showBadgeToggle').checked = (saved === 'true');
-    }
-});
+
+
+
+
+
+
+
+
+
+
+
 
 
 
