@@ -1058,9 +1058,9 @@ function setupAdminRecap() {
         const count = achievements.filter(a => a.unlocked).length;
         const rank = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
         
-        const welcomeMsg = document.getElementById('userWelcomeMessage');
-        if(welcomeMsg) {
-            welcomeMsg.innerHTML = `Szia, ${user.name}! <span class="user-badge-tag" style="background: ${rank.color}; box-shadow: 0 0 5px ${rank.color};">${rank.icon} ${rank.name}</span>`;
+        const welcomeMsgg = document.getElementById('userWelcomeMessage');
+        if(welcomeMsgg) {
+            welcomeMsgg.innerHTML = `Szia, ${user.name}! <span class="user-badge-tag" style="background: ${rank.color}; box-shadow: 0 0 5px ${rank.color};">${rank.icon} ${rank.name}</span>`;
         }
     }
 } catch (error) { ... }
@@ -2936,6 +2936,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('showBadgeToggle').checked = (saved === 'true');
     }
 });
+
 
 
 
