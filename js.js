@@ -1,45 +1,3 @@
-// ======================================================
-// === GLOBÁLIS FÜGGVÉNYEK (DOMContentLoaded ELŐTT!) ===
-// ======================================================
-
-window.openAdminModal = function() {
-    const modal = document.getElementById('adminModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-window.closeAdminModal = function() {
-    const modal = document.getElementById('adminModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-}
-
-window.openContactModal = function() {
-    const fabContainer = document.getElementById('fabContainer');
-    if(fabContainer) fabContainer.classList.remove('active');
-
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-window.closeContactModal = function() {
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-    
-    const form = document.getElementById('contactForm');
-    if (form) form.reset();
-}
-
 document.addEventListener('DOMContentLoaded', function() {
 
     if (typeof Chart !== 'undefined') {
@@ -1344,6 +1302,13 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
+    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
+    modalClose.addEventListener('click', closeAdminModal);
+    adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
+    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
+
+
    // ======================================================
 // === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
 // ======================================================
@@ -1749,7 +1714,6 @@ window.addEventListener('scroll', function() {
     });
     
     lastScrollTop = scrollTop;
-});
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -2500,12 +2464,75 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-});
+    // 1. Modal megnyitása
+    window.openContactModal = function() {
+        // Bezárjuk a lebegő menüt, ha nyitva van
+        const fabContainer = document.getElementById('fabContainer');
+        if(fabContainer) fabContainer.classList.remove('active');
 
+        // Megnyitjuk a modal-t
+        const modal = document.getElementById('contactModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Görgetés tiltása
+        }
+    }
 
+    // 2. Modal bezárása
+    window.closeContactModal = function() {
+        const modal = document.getElementById('contactModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        
+        // Űrlap törlése
+        const form = document.getElementById('contactForm');
+        if (form) form.reset();
 
+        document.body.style.overflow = 'auto';
+    }
 
+    // 3. Űrlap beküldése
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const subject = document.getElementById('contactSubject').value;
+            const message = document.getElementById('contactMessage').value;
+            const submitBtn = contactForm.querySelector('.auth-btn');
 
+            setLoading(submitBtn, true);
+
+            try {
+                // API hívás a sheet.js-hez
+                const response = await fetch('/api/sheet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+                    body: JSON.stringify({ 
+                        action: 'SEND_REPORT', 
+                        subject: subject, 
+                        message: message 
+                    })
+                });
+
+                const result = await response.json();
+
+                if(response.ok) {
+                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
+                    closeContactModal();
+                } else {
+                    showError(result.error || "Hiba történt küldéskor.");
+                }
+            } catch(err) {
+                console.error(err);
+                showError("Hálózati hiba.");
+            } finally {
+                setLoading(submitBtn, false);
+            }
+        });
+    }
+    });
 
 
 
