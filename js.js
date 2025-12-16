@@ -1,3 +1,45 @@
+// ======================================================
+// === GLOBÁLIS FÜGGVÉNYEK (DOMContentLoaded ELŐTT!) ===
+// ======================================================
+
+window.openAdminModal = function() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+window.closeAdminModal = function() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+window.openContactModal = function() {
+    const fabContainer = document.getElementById('fabContainer');
+    if(fabContainer) fabContainer.classList.remove('active');
+
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+window.closeContactModal = function() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    const form = document.getElementById('contactForm');
+    if (form) form.reset();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
     if (typeof Chart !== 'undefined') {
@@ -2566,6 +2608,7 @@ window.closeContactModal = function() {
     const form = document.getElementById('contactForm');
     if (form) form.reset();
 }
+
 
 
 
