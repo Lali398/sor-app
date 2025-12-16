@@ -209,28 +209,10 @@
 
                 <!-- SÖREIM TAB -->
                 <div class="main-tab-pane active" id="user-beers-content">
-    
-    <div class="stats-grid" style="margin-bottom: 20px;">
-        <div class="stat-card" style="padding: 15px; min-height: auto;">
-            <div class="stat-icon beers" style="width: 50px; height: 50px; font-size: 1.5rem;">🍺</div>
-            <div class="stat-info">
-                <p>Kóstolt sörök</p>
-                <h3 id="tabBeerCount">0</h3>
-            </div>
-        </div>
-        <div class="stat-card" style="padding: 15px; min-height: auto;">
-            <div class="stat-icon average" style="width: 50px; height: 50px; font-size: 1.5rem;">⭐</div>
-            <div class="stat-info">
-                <p>Átlag pontszám</p>
-                <h3 id="tabBeerAvg">0.0</h3>
-            </div>
-        </div>
-    </div>
-
-    <section class="card">
-        <header class="card-header">
-            <h3>Saját sörjeid listája</h3>
-        </header>
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját sörjeid listája</h3>
+                        </header>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -259,28 +241,10 @@
 
                 <!-- ITALJAIM TAB -->
                 <div class="main-tab-pane" id="user-drinks-content">
-    
-    <div class="stats-grid" style="margin-bottom: 20px;">
-        <div class="stat-card" style="padding: 15px; min-height: auto;">
-            <div class="stat-icon" style="width: 50px; height: 50px; font-size: 1.5rem; background: linear-gradient(135deg, #f093fb, #f5576c);">🍹</div>
-            <div class="stat-info">
-                <p>Kóstolt italok</p>
-                <h3 id="tabDrinkCount">0</h3>
-            </div>
-        </div>
-        <div class="stat-card" style="padding: 15px; min-height: auto;">
-            <div class="stat-icon average" style="width: 50px; height: 50px; font-size: 1.5rem;">⭐</div>
-            <div class="stat-info">
-                <p>Átlag pontszám</p>
-                <h3 id="tabDrinkAvg">0.0</h3>
-            </div>
-        </div>
-    </div>
-
-    <section class="card">
-        <header class="card-header">
-            <h3>Saját italaid listája</h3>
-        </header>
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját italaid listája</h3>
+                        </header>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -468,21 +432,18 @@
 
     <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
     <div class="fab-container" id="fabContainer">
-    <div class="fab-options">
-        <button class="fab-option" onclick="openAddModal('beer')">
-            <span class="emoji">🍺</span>
-            <span class="tooltip">Sör hozzáadása</span>
-        </button>
-        <button class="fab-option" onclick="openAddModal('drink')">
-            <span class="emoji">🍹</span>
-            <span class="tooltip">Ital hozzáadása</span>
-        </button>
-        <button class="fab-option" onclick="openContactModal()">
-            <span class="emoji">❓</span>
-            <span class="tooltip">Hibajelentés</span>
-        </button>
+        <div class="fab-options">
+            <button class="fab-option" onclick="openAddModal('beer')">
+                <span class="emoji">🍺</span>
+                <span class="tooltip">Sör hozzáadása</span>
+            </button>
+            <button class="fab-option" onclick="openAddModal('drink')">
+                <span class="emoji">🍹</span>
+                <span class="tooltip">Ital hozzáadása</span>
+            </button>
+        </div>
+        <button class="fab-main" id="fabMainBtn">+</button>
     </div>
-    <button class="fab-main" id="fabMainBtn">+</button>
 </div>
 
 <!-- MODALOK (Sör/Ital hozzáadásához) -->
@@ -628,35 +589,6 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="contactModal">
-    <div class="modal-content">
-        <header class="modal-header">
-            <h3>Kapcsolat az Adminokkal</h3>
-            <button class="modal-close" onclick="closeContactModal()">&times;</button>
-        </header>
-        <form id="contactForm" class="config-form">
-            <div class="input-group">
-                <input type="text" id="contactSubject" required>
-                <label for="contactSubject">Tárgy (pl. Hiba, Kérdés)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <textarea id="contactMessage" required style="width: 100%; min-height: 100px; background: transparent; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 0; outline: none; resize: vertical;"></textarea>
-                <label for="contactMessage" style="top: -25px; font-size: 12px; color: #8a73ff;">Üzenet</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <button type="submit" class="auth-btn">
-                <span class="btn-text">Üzenet küldése 📩</span>
-                <span class="btn-loading">
-                    <div class="spinner"></div>
-                </span>
-            </button>
-        </form>
-    </div>
-</div>
-    
     <!-- ADMIN NÉZET -->
     <div class="admin-view" id="adminView" style="display: none;">
         <header class="admin-header">
@@ -1174,8 +1106,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
 
 
 
