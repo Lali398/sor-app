@@ -11,7 +11,6 @@ const USERS_SHEET = 'Felhasználók';
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
 const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 const IDEAS_SHEET = 'Vendég ötletek';
-const REPORTS_SHEET = 'Hibajelentések';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -603,56 +602,6 @@ case 'EDIT_USER_DRINK': {
                 
                 return res.status(200).json({ message: "Státusz sikeresen frissítve! ✅" });
             }
-
-            case 'SEND_REPORT': {
-                // Kinyerjük a vendég által beírt emailt is
-                const { subject, message, guestEmail } = req.body;
-                
-                let senderName = "Vendég";
-                let senderEmail = guestEmail || "Nincs megadva"; // Alapértelmezés a kézzel beírt
-
-                // Megpróbáljuk azonosítani a felhasználót (ha be van lépve)
-                try {
-                    if (req.headers.authorization) {
-                        const userData = verifyUser(req);
-                        senderName = userData.name;
-                        senderEmail = userData.email; // Ha be van lépve, ez felülírja a vendég emailt
-                    }
-                } catch (e) {
-                    // Ha nincs token (vendég), marad a fenti 'senderEmail' (amit beírt)
-                }
-                
-                if (!subject || !message) {
-                    return res.status(400).json({ error: "A tárgy és az üzenet megadása kötelező!" });
-                }
-
-                // Ha vendég, és nem írt be emailt (bár a frontend kötelezi, de biztos ami biztos)
-                if (senderName === "Vendég" && (!senderEmail || senderEmail === "Nincs megadva")) {
-                     // Opcionális: Ha nagyon szigorú akarsz lenni, itt dobhatsz hibát, 
-                     // de a frontend 'required' attribútuma ezt már kezeli.
-                }
-
-                const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-                
-                const newRow = [
-                    timestamp,
-                    senderName,
-                    senderEmail, // Itt most már vagy a user emailje lesz, vagy amit beírt
-                    subject,
-                    message,
-                    'Olvasatlan'
-                ];
-
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `${REPORTS_SHEET}!A:F`,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [newRow] }
-                });
-
-                return res.status(201).json({ message: "Üzenet sikeresen elküldve az adminoknak!" });
-            }
-
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -706,9 +655,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
-
 
 
 
