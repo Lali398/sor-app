@@ -86,42 +86,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAddBeer(e) {
-        e.preventDefault();
-        const beerName = document.getElementById('beerName').value;
-        const type = document.getElementById('beerType').value;
-        const location = document.getElementById('beerLocation').value;
-        const look = document.getElementById('beerLook').value;
-        const smell = document.getElementById('beerSmell').value;
-        const taste = document.getElementById('beerTaste').value;
-        const notes = document.getElementById('beerNotes').value;
-        const submitBtn = addBeerForm.querySelector('.auth-btn');
+    e.preventDefault();
+    const beerName = document.getElementById('beerName').value;
+    const type = document.getElementById('beerType').value;
+    const location = document.getElementById('beerLocation').value;
+    const beerPercentage = document.getElementById('beerPercentage').value;
+    const look = document.getElementById('beerLook').value;
+    const smell = document.getElementById('beerSmell').value;
+    const taste = document.getElementById('beerTaste').value;
+    const notes = document.getElementById('beerNotes').value;
+    const submitBtn = addBeerForm.querySelector('.auth-btn');
 
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, look, smell, taste, notes })
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                if (response.status === 401) {
-                    showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
-                    setTimeout(switchToGuestView, 2000);
-                    return;
-                }
-                throw new Error(result.error || 'Szerverhiba');
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            if (response.status === 401) {
+                showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
+                setTimeout(switchToGuestView, 2000);
+                return;
             }
-            showSuccess('Sör sikeresen hozzáadva!');
-            addBeerForm.reset();
-            loadUserData();
-        } catch (error) {
-            console.error("Hiba sör hozzáadásakor:", error);
-            showError(error.message || "Nem sikerült a sört hozzáadni.");
-        } finally {
-            setLoading(submitBtn, false);
+            throw new Error(result.error || 'Szerverhiba');
         }
+        showSuccess('Sör sikeresen hozzáadva!');
+        addBeerForm.reset();
+        loadUserData();
+    } catch (error) {
+        console.error("Hiba sör hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült a sört hozzáadni.");
+    } finally {
+        setLoading(submitBtn, false);
     }
+}
     
     async function handleGuestRegister(e) {
         e.preventDefault();
@@ -541,24 +542,30 @@ function setupAdminRecap() {
     }
 
     function renderUserBeers(beers) {
-        userBeerTableBody.innerHTML = '';
-        if (!beers || beers.length === 0) {
-            userBeerTableBody.innerHTML = `<tr><td colspan="5" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
-            return;
-        }
-        beers.forEach(beer => {
-            const row = `
-                <tr>
-                    <td>${beer.beerName}</td>
-                    <td>${beer.type}</td>
-                    <td>${beer.location}</td>
-                    <td>${beer.beerPercentage || 0}%</td>
-                    <td class="score-cell">${beer.totalScore || 0}</td>
-                </tr>
-            `;
-            userBeerTableBody.insertAdjacentHTML('beforeend', row);
-        });
+    userBeerTableBody.innerHTML = '';
+    if (!beers || beers.length === 0) {
+        userBeerTableBody.innerHTML = `<tr><td colspan="9" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        return;
     }
+    beers.forEach(beer => {
+        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
+        const formattedAvg = beer.avg ? parseFloat(beer.avg).toFixed(2) : '0.00';
+        const row = `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${beer.beerName}</td>
+                <td>${beer.location}</td>
+                <td>${beer.beerPercentage || 0}%</td>
+                <td>${beer.look || 0}</td>
+                <td>${beer.smell || 0}</td>
+                <td>${beer.taste || 0}</td>
+                <td>${beer.totalScore || 0}</td>
+                <td class="average-cell">${formattedAvg}</td>
+            </tr>
+        `;
+        userBeerTableBody.insertAdjacentHTML('beforeend', row);
+    });
+}
     
     function updateUserStats(beers) {
         document.getElementById('userBeerCount').textContent = beers.length;
@@ -878,51 +885,61 @@ async function handleAdminRecapGenerate(period, button) {
 }
 
 
+    
 // --- FELHASZNÁLÓI RECAP KEZELÉSE (API HÍVÁS) ---
 
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
-    // Biztosítjuk, hogy ez ne fusson le az admin gombokra
-    if (!button || e.target.closest('.admin-recap-controls')) return;
-
+    
+    // Ha nincs gomb vagy admin recap területen van, ne fusson le
+    if (!button) return;
+    if (button.closest('#adminRecapControls')) return;
+    
     const period = button.dataset.period;
     const allButtons = recapControls.querySelectorAll('.recap-btn');
+
+    console.log('Recap kérés indítása:', period); // Debug log
 
     allButtons.forEach(btn => btn.classList.remove('loading'));
     button.classList.add('loading');
     recapResultsContainer.innerHTML = '<div class="recap-spinner"></div>';
 
     try {
+        const token = localStorage.getItem('userToken');
+        console.log('Token:', token ? 'van' : 'nincs'); // Debug log
+
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+                'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ action: 'GET_USER_RECAP', period: period })
+            body: JSON.stringify({ 
+                action: 'GET_USER_RECAP', 
+                period: period 
+            })
         });
 
+        console.log('Response status:', response.status); // Debug log
+
         const result = await response.json();
+        console.log('Response data:', result); // Debug log
 
         if (!response.ok) {
-             if (response.status === 401) {
+            if (response.status === 401) {
                 showError("A munkameneted lejárt, jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(result.error || 'Szerverhiba');
         }
-        result.period = period; 
-
-        renderRecap(result, recapResultsContainer);
-
-        // MÓDOSÍTVA: Átadjuk a cél konténert
+        
+        result.period = period;
         renderRecap(result, recapResultsContainer);
 
     } catch (error) {
         console.error("Hiba a visszatekintő lekérésekor:", error);
         showError(error.message || "Nem sikerült lekérni a statisztikát.");
-        // MÓDOSÍTVA: Átadjuk a cél konténert
         renderRecap({ message: "Hiba történt a lekérés során." }, recapResultsContainer);
     } finally {
         button.classList.remove('loading');
@@ -1020,36 +1037,44 @@ function renderRecap(data, containerElement) {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 });
-// === DINAMIKUS FEJLÉC SCROLL KEZELÉS ===
+// === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
 let lastScrollTop = 0;
-let scrollTimeout;
 
 window.addEventListener('scroll', function() {
-    const header = document.querySelector('.admin-header');
-    if (!header) return;
+    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
+    const headers = document.querySelectorAll('.admin-header'); 
+    
+    if (headers.length === 0) return;
     
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
     
-    // Sör feltöltés animáció
-    if (scrollPercent > 0) {
-        header.style.setProperty('--fill-height', (scrollPercent * 100) + '%');
+    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
+    headers.forEach(header => {
+        // Sör feltöltés animáció - inline style-lal állítjuk be
+        header.style.setProperty('--fill-percent', scrollPercent);
+        
         if (scrollPercent >= 1) {
             header.classList.add('filled');
         } else {
             header.classList.remove('filled');
         }
-    }
-    
-    // Fejléc elrejtése lefelé görgetéskor (ha megtelt)
-    if (scrollTop > lastScrollTop && scrollTop > 350) {
-        header.classList.add('hidden');
-    } else if (scrollTop < lastScrollTop || scrollTop < 100) {
-        header.classList.remove('hidden');
-    }
+        
+        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
+        if (scrollTop > lastScrollTop && scrollTop > 350) {
+            header.classList.add('hidden');
+        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
+            header.classList.remove('hidden');
+        }
+    });
     
     lastScrollTop = scrollTop;
 });
+
+
+
+
+
 
 
 
