@@ -2456,6 +2456,7 @@ window.openAddModal = function(type) {
     document.body.style.overflow = 'hidden'; // Görgetés tiltása
 }
 
+// --- Modal bezárása (AddModal) ---
 window.closeAddModal = function(type) {
     if (type === 'beer') {
         document.getElementById('addBeerModal').classList.remove('active');
@@ -2463,9 +2464,20 @@ window.closeAddModal = function(type) {
         document.getElementById('addDrinkModal').classList.remove('active');
     }
     document.body.style.overflow = 'auto';
-}
-    // 1. Modal megnyitása
-    window.openContactModal = function() {
+};
+
+// ==========================================
+// === FŐ ESEMÉNYFIGYELŐ BLOKK VÉGE ===
+// ==========================================
+}); // <-- EZ A ZÁRÓJEL NAGYON FONTOS! Ez zárja le a fájl legelején nyitott document.addEventListener-t!
+
+// ==========================================
+// === HIBAJELENTÉS / KAPCSOLAT MODUL (GLOBÁLIS) ===
+// ==========================================
+
+// 1. Modal megnyitása
+window.openContactModal = function() {
+    console.log("Hibajelentő ablak megnyitása...");
     const modal = document.getElementById('contactModal');
     const fab = document.getElementById('fabContainer');
     
@@ -2483,13 +2495,15 @@ window.closeAddModal = function(type) {
             if(emailGroup) emailGroup.style.display = 'block';
             if(emailInput) emailInput.required = true;
         } else {
-            // Ha be van lépve, elrejtjük (a szerver tudja ki ő)
+            // Ha be van lépve, elrejtjük
             if(emailGroup) emailGroup.style.display = 'none';
             if(emailInput) emailInput.required = false;
         }
 
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+    } else {
+        console.error("Hiba: Nem található a contactModal elem!");
     }
 };
 
@@ -2504,11 +2518,12 @@ window.closeContactModal = function() {
     document.body.style.overflow = 'auto';
 };
 
-// 3. Űrlap beküldése
+// 3. Űrlap beküldése (Külön eseményfigyelő, hogy biztosan lefusson)
 document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contactForm');
 
     if (contactForm) {
+        // Klónozással töröljük a régi eseménykezelőket
         const newForm = contactForm.cloneNode(true);
         contactForm.parentNode.replaceChild(newForm, contactForm);
 
@@ -2517,10 +2532,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const subjectInput = document.getElementById('contactSubject');
             const messageInput = document.getElementById('contactMessage');
-            const emailInput = document.getElementById('contactEmail'); // Vendég email
+            const emailInput = document.getElementById('contactEmail'); 
             const submitBtn = newForm.querySelector('.auth-btn');
 
-            // Gomb UI
+            // Gomb UI frissítés
             if (submitBtn) {
                 const btnText = submitBtn.querySelector('.btn-text');
                 const btnLoading = submitBtn.querySelector('.btn-loading');
@@ -2533,7 +2548,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const token = localStorage.getItem('userToken');
                 const headers = { 'Content-Type': 'application/json' };
                 
-                // Ha be van lépve, csatoljuk a tokent
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
@@ -2546,7 +2560,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         action: 'SEND_REPORT', 
                         subject: subjectInput.value, 
                         message: messageInput.value,
-                        guestEmail: emailInput ? emailInput.value : '' // Elküldjük a vendég emailt is
+                        guestEmail: emailInput ? emailInput.value : '' 
                     })
                 });
 
@@ -2556,21 +2570,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(result.error || "Hiba történt.");
                 }
 
-                if (typeof showSuccess === 'function') {
-                    showSuccess(result.message || "Üzenet elküldve!");
-                } else {
-                    alert("✅ " + (result.message || "Üzenet elküldve!"));
-                }
+                alert("✅ " + (result.message || "Üzenet elküldve!"));
                 window.closeContactModal();
 
             } catch (err) {
                 console.error(err);
-                if (typeof showError === 'function') {
-                    showError(err.message);
-                } else {
-                    alert("❌ Hiba: " + err.message);
-                }
+                alert("❌ Hiba: " + err.message);
             } finally {
+                // UI visszaállítás
                 if (submitBtn) {
                     const btnText = submitBtn.querySelector('.btn-text');
                     const btnLoading = submitBtn.querySelector('.btn-loading');
