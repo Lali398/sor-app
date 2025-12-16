@@ -2478,10 +2478,17 @@ window.closeAddModal = function(type) {
 // 1. Modal megnyitása
 window.openContactModal = function() {
     console.log("Hibajelentő ablak megnyitása...");
-    const modal = document.getElementById('contactModal');
+    let modal = document.getElementById('contactModal');
+
+    // --- 1. MENTŐÖV: Ha az ablak rossz helyen van, átrakjuk a Body-ba ---
+    // Ha a modal egy rejtett div-ben van (pl. guestView), akkor hiába nyitjuk meg, nem látszik.
+    // Ezért átmozgatjuk közvetlenül a dokumentum "gyökerébe".
+    if (modal && modal.parentElement !== document.body) {
+        console.log("Modal átmozgatása a főoldalra, hogy látható legyen...");
+        document.body.appendChild(modal);
+    }
+
     const fab = document.getElementById('fabContainer');
-    
-    // Email mezők kezelése
     const emailGroup = document.getElementById('contactEmailGroup');
     const emailInput = document.getElementById('contactEmail');
     const token = localStorage.getItem('userToken');
@@ -2490,27 +2497,42 @@ window.openContactModal = function() {
     if (fab) fab.classList.remove('active');
 
     if (modal) {
-        // Logika: Ha NINCS token (vendég), akkor kell az email mező
+        // --- 2. BIZTOSÍTÉK: Z-Index kényszerítése ---
+        // Így biztosan minden más elem (pl. fejléc) fölé kerül
+        modal.style.zIndex = "999999"; 
+        modal.style.display = "flex"; // Biztosítjuk, hogy ne legyen display:none
+
+        // Logika: Vendég vs User
         if (!token) {
             if(emailGroup) emailGroup.style.display = 'block';
             if(emailInput) emailInput.required = true;
         } else {
-            // Ha be van lépve, elrejtjük
             if(emailGroup) emailGroup.style.display = 'none';
             if(emailInput) emailInput.required = false;
         }
 
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        // Animáció indítása (kis késleltetéssel, hogy a CSS transition működjön)
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+        
+        document.body.style.overflow = 'hidden'; // Görgetés tiltása
     } else {
-        console.error("Hiba: Nem található a contactModal elem!");
+        alert("KRITIKUS HIBA: Nem található a 'contactModal' a HTML-ben!");
     }
 };
 
 // 2. Modal bezárása
 window.closeContactModal = function() {
     const modal = document.getElementById('contactModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        
+        // Várakozunk az animáció végéig, aztán resetelünk
+        setTimeout(() => {
+            modal.style.zIndex = ""; // Visszaállítjuk az eredetire
+        }, 300);
+    }
     
     const form = document.getElementById('contactForm');
     if (form) form.reset();
@@ -2589,6 +2611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
