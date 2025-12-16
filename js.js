@@ -5,49 +5,49 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
     
-    // --- NÃ‰ZETEK Ã‰S ELEMEK ---
-    // --- KURZOR ELEMEK Ã‰S LOGIKA ---
+    // --- NÉZETEK ÉS ELEMEK ---
+    // --- KURZOR ELEMEK ÉS LOGIKA ---
     const beerCursor = document.getElementById('beerCursor');
 
-    // 1. Kurzor mozgatÃ¡sa + Scroll effekt vÃ¡ltozÃ³k
-    let currentScrollRotate = -15; // Alap dÅ‘lÃ©s
+    // 1. Kurzor mozgatása + Scroll effekt változók
+    let currentScrollRotate = -15; // Alap dőlés
 
     function updateCursorPosition(x, y) {
         if (!document.body.classList.contains('custom-cursor-active')) return;
         
-        // Itt kombinÃ¡ljuk a pozÃ­ciÃ³t a gÃ¶rgetÃ©sbÅ‘l szÃ¡molt dÅ‘lÃ©ssel
-        // Fontos: a 'translate' Ã©s 'rotate' sorrendje szÃ¡mÃ­t!
+        // Itt kombináljuk a pozíciót a görgetésből számolt dőléssel
+        // Fontos: a 'translate' és 'rotate' sorrendje számít!
         beerCursor.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${currentScrollRotate}deg)`;
     }
 
-    // EgÃ©rmozgÃ¡s figyelÃ©se
+    // Egérmozgás figyelése
     document.addEventListener('mousemove', (e) => {
-        // requestAnimationFrame a simÃ¡bb mozgÃ¡sÃ©rt
+        // requestAnimationFrame a simább mozgásért
         requestAnimationFrame(() => {
-            // ElmentjÃ¼k az aktuÃ¡lis egÃ©r pozÃ­ciÃ³t a stÃ­lusba (CSS vÃ¡ltozÃ³kÃ©nt is lehetne, de Ã­gy kÃ¶zvetlenebb)
-            // Viszont a transform felÃ¼lÃ­rÃ¡sa miatt a rotate-et is mindig bele kell Ã­rnunk.
-            // EzÃ©rt egyszerÅ±bb, ha globÃ¡lis vÃ¡ltozÃ³kban tÃ¡roljuk az X, Y-t.
+            // Elmentjük az aktuális egér pozíciót a stílusba (CSS változóként is lehetne, de így közvetlenebb)
+            // Viszont a transform felülírása miatt a rotate-et is mindig bele kell írnunk.
+            // Ezért egyszerűbb, ha globális változókban tároljuk az X, Y-t.
             window.mouseX = e.clientX;
             window.mouseY = e.clientY;
             updateCursorPosition(e.clientX, e.clientY);
         });
     });
 
-    // 2. GÃ–RGETÃ‰S EFFEKT (IVÃS / DÅLÃ‰S)
+    // 2. GÖRGETÉS EFFEKT (IVÁS / DŐLÉS)
     window.addEventListener('scroll', () => {
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
         const scrollTop = window.scrollY;
         const docHeight = document.body.scrollHeight - window.innerHeight;
         
-        // --- JAVÃTÃS: NaN (Not a Number) elkerÃ¼lÃ©se ---
-        // Ha teljes kÃ©pernyÅ‘n vagyunk, a docHeight lehet 0, ami osztÃ¡snÃ¡l hibÃ¡t okoz.
+        // --- JAVÍTÁS: NaN (Not a Number) elkerülése ---
+        // Ha teljes képernyőn vagyunk, a docHeight lehet 0, ami osztásnál hibát okoz.
         let scrollPercent = 0;
         if (docHeight > 0) {
             scrollPercent = scrollTop / docHeight;
         }
 
-        // BiztonsÃ¡gi korlÃ¡t (0 Ã©s 1 kÃ¶zÃ¶tt tartjuk)
+        // Biztonsági korlát (0 és 1 között tartjuk)
         scrollPercent = Math.min(Math.max(scrollPercent, 0), 1);
 
         const startAngle = -15;
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 3. Intelligens vÃ¡ltÃ¡s figyelÃ©se (Hover effekt)
+    // 3. Intelligens váltás figyelése (Hover effekt)
     document.addEventListener('mouseover', (e) => {
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
@@ -74,28 +74,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (isClickable) {
             document.body.classList.add('hovering-clickable');
-            // Ha gomb felett vagyunk, kicsit "koccintÃ³sra" Ã¡llÃ­tjuk
+            // Ha gomb felett vagyunk, kicsit "koccintósra" állítjuk
             beerCursor.style.transform = `translate(${window.mouseX}px, ${window.mouseY}px) translate(-50%, -50%) rotate(-35deg) scale(1.2)`;
         } else {
             document.body.classList.remove('hovering-clickable');
-            // VisszaÃ¡llunk a gÃ¶rgetÃ©s szerinti szÃ¶gre
+            // Visszaállunk a görgetés szerinti szögre
             if (window.mouseX) updateCursorPosition(window.mouseX, window.mouseY);
         }
     });
 
-    // 4. KattintÃ¡s effekt
+    // 4. Kattintás effekt
     document.addEventListener('click', (e) => {
         if (!document.body.classList.contains('custom-cursor-active')) return;
 
         createBeerBubbles(e.clientX, e.clientY);
         
-        // Pici animÃ¡ciÃ³ kattintÃ¡skor
+        // Pici animáció kattintáskor
         if (!document.body.classList.contains('hovering-clickable')) {
-            // Pillanatnyi "koccintÃ¡s"
+            // Pillanatnyi "koccintás"
             beerCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%) rotate(-90deg) scale(0.9)`;
             
             setTimeout(() => {
-                // VisszatÃ©rÃ©s a gÃ¶rgetÃ©s szerinti Ã¡llapothoz
+                // Visszatérés a görgetés szerinti állapothoz
                 updateCursorPosition(e.clientX, e.clientY);
             }, 150);
         }
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
-    // ---(globÃ¡lis) ÃLLAPOT ---
+    // ---(globális) ÁLLAPOT ---
     
     let beersData = [];
     let currentAdminRecapView = 'common';
@@ -148,11 +148,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let charts = {};
     let currentUserBeers = [];
     let currentUserDrinks = [];
-    let temp2FASecret = ''; // Ideiglenes tÃ¡rolÃ³ a setup kÃ¶zben
-    let tempLoginEmail = ''; // Ideiglenes tÃ¡rolÃ³ login kÃ¶zben
+    let temp2FASecret = ''; // Ideiglenes tároló a setup közben
+    let tempLoginEmail = ''; // Ideiglenes tároló login közben
 
     // ======================================================
-    // === FÅ FUNKCIÃ“K (SZERVER KOMMUNIKÃCIÃ“) ===
+    // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
 
     async function handleAdminLogin(e) {
@@ -172,29 +172,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
-            // Adatok mentÃ©se a vÃ¡ltozÃ³kba
+            // Adatok mentése a változókba
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
             
-            // === JAVÃTÃS: ADMIN TOKEN MENTÃ‰SE ===
-            // Ha ezt nem mentjÃ¼k el, minden tovÃ¡bbi kÃ©rÃ©s (pl. Ã¶tletek betÃ¶ltÃ©se) 401-et ad!
+            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
+            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
             if (result.adminToken) {
-                console.log("Admin token sikeresen mentve!"); // Debug Ã¼zenet
+                console.log("Admin token sikeresen mentve!"); // Debug üzenet
                 localStorage.setItem('userToken', result.adminToken);
                 
-                // Admin profil mentÃ©se a mÅ±kÃ¶dÃ©shez
+                // Admin profil mentése a működéshez
                 localStorage.setItem('userData', JSON.stringify({ 
-                    name: 'AdminisztrÃ¡tor', 
+                    name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
             } else {
-                console.warn("FIGYELEM: Nem Ã©rkezett admin token a szervertÅ‘l!");
+                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
             }
             // =====================================
             
-            showSuccess('Sikeres Gabz Ã©s Lajos bejelentkezÃ©s!');
+            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
             
             setTimeout(() => {
                 closeAdminModal();
@@ -202,15 +202,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
 
         } catch (error) {
-            console.error("BejelentkezÃ©si hiba:", error);
-            showError(error.message || 'HibÃ¡s felhasznÃ¡lÃ³nÃ©v vagy jelszÃ³!');
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
         } finally {
             setLoading(submitBtn, false);
         }
     }
     
     // ======================================================
-    // === VENDÃ‰G FELHASZNÃLÃ“ FUNKCIÃ“K ===
+    // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
     // ======================================================
 
     async function handleAddBeer(e) {
@@ -235,23 +235,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const result = await response.json();
         if (!response.ok) {
             if (response.status === 401) {
-                showError("A munkameneted lejÃ¡rt, kÃ©rlek jelentkezz be Ãºjra.");
+                showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(result.error || 'Szerverhiba');
         }
-        showSuccess('SÃ¶r sikeresen hozzÃ¡adva!');
+        showSuccess('Sör sikeresen hozzáadva!');
         addBeerForm.reset();
         closeAddModal('beer');
         loadUserData();
     } catch (error) {
-        console.error("Hiba sÃ¶r hozzÃ¡adÃ¡sakor:", error);
-        showError(error.message || "Nem sikerÃ¼lt a sÃ¶rt hozzÃ¡adni.");
+        console.error("Hiba sör hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült a sört hozzáadni.");
     } finally {
         setLoading(submitBtn, false);
     }
 }
+
     async function handleAddDrink(e) {
     e.preventDefault();
     const drinkName = document.getElementById('drinkName').value;
@@ -286,19 +287,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const result = await response.json();
         if (!response.ok) {
             if (response.status === 401) {
-                showError("A munkameneted lejÃ¡rt, kÃ©rlek jelentkezz be Ãºjra.");
+                showError("A munkameneted lejárt, kérlek jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(result.error || 'Szerverhiba');
         }
-        showSuccess('Ital sikeresen hozzÃ¡adva!');
+        showSuccess('Ital sikeresen hozzáadva!');
         addDrinkForm.reset();
         closeAddModal('drink');
-        loadUserDrinks(); // ÃšjratÃ¶ltjÃ¼k az italokat
+        loadUserDrinks(); // Újratöltjük az italokat
     } catch (error) {
-        console.error("Hiba ital hozzÃ¡adÃ¡sakor:", error);
-        showError(error.message || "Nem sikerÃ¼lt az italt hozzÃ¡adni.");
+        console.error("Hiba ital hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült az italt hozzáadni.");
     } finally {
         setLoading(submitBtn, false);
     }
@@ -307,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) return;
+    
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
@@ -316,56 +318,47 @@ async function loadUserDrinks() {
         const drinks = await response.json();
         if (!response.ok) {
             if (response.status === 401) {
-                showError("A munkameneted lejÃ¡rt, jelentkezz be Ãºjra.");
+                showError("A munkameneted lejárt, jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(drinks.error || 'Szerverhiba');
         }
         
-        currentUserDrinks = drinks; // GlobÃ¡lis vÃ¡ltozÃ³ frissÃ­tÃ©se
+        currentUserDrinks = drinks;
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks);
-        
-        // --- JAVÃTÃS: Achievementek ÃºjraszÃ¡molÃ¡sa az italok megÃ©rkezÃ©se utÃ¡n ---
-        console.log(`Italok betÃ¶ltve: ${drinks.length} db. Achievementek frissÃ­tÃ©se...`);
-        renderAchievementsTab(); 
-        
-        // RangjelzÃ©s (Badge) frissÃ­tÃ©se a fejlÃ©cben, ha vÃ¡ltozott volna
-        updateUserBadgeDisplay(); 
-        // -----------------------------------------------------------------------
-
+        updateUserDrinkStats(drinks); // ÚJ SOR!
     } catch (error) {
-        console.error("Hiba az italok betÃ¶ltÃ©sekor:", error);
-        showError(error.message || "Nem sikerÃ¼lt betÃ¶lteni az italokat.");
+        console.error("Hiba az italok betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni az italokat.");
     }
 }
-        /* === JELSZÃ“ MEGJELENÃTÃ‰SE / ELREJTÃ‰SE === */
+        /* === JELSZÓ MEGJELENÍTÉSE / ELREJTÉSE === */
         function togglePassword(inputId, icon) {
             const input = document.getElementById(inputId);
             
-            if (!input) return; // BiztonsÃ¡gi ellenÅ‘rzÃ©s
+            if (!input) return; // Biztonsági ellenőrzés
         
             if (input.type === "password") {
                 input.type = "text";
                 input.classList.add('password-visible'); // CSS miatt
-                icon.textContent = "ðŸ™ˆ"; // Lecsukott szem (vagy hasznÃ¡lhatsz mÃ¡st)
+                icon.textContent = "🙈"; // Lecsukott szem (vagy használhatsz mást)
             } else {
                 input.type = "password";
                 input.classList.remove('password-visible');
-                icon.textContent = "ðŸ‘ï¸"; // Nyitott szem
+                icon.textContent = "👁️"; // Nyitott szem
             }
         }
         
-        // Mivel a HTML-ben az 'onclick' attribÃºtumot hasznÃ¡ltuk, 
-        // ezt a fÃ¼ggvÃ©nyt globÃ¡lisan elÃ©rhetÅ‘vÃ© kell tenni:
+        // Mivel a HTML-ben az 'onclick' attribútumot használtuk, 
+        // ezt a függvényt globálisan elérhetővé kell tenni:
         window.togglePassword = togglePassword;
 
     
 function renderUserDrinks(drinks) {
     userDrinkTableBody.innerHTML = '';
     if (!drinks || drinks.length === 0) {
-        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">MÃ©g nem Ã©rtÃ©keltÃ©l egy italt sem.</td></tr>`;
+        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
         return;
     }
     drinks.forEach((drink, index) => {
@@ -384,16 +377,16 @@ function renderUserDrinks(drinks) {
                 <td>${drink.taste || 0}</td>
                 <td>${drink.totalScore || 0}</td>
                 <td class="average-cell">${formattedAvg}</td>
-                <td><button class="edit-btn" onclick="openEditDrinkModal(${index})">âœï¸</button></td>
+                <td><button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️</button></td>
             </tr>
         `;
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
     });
 }
 
-    // === Ã–TLET LÃDA FUNKCIÃ“K ===
+    // === ÖTLET LÁDA FUNKCIÓK ===
 
-// 1. Ã–tlet bekÃ¼ldÃ©se
+// 1. Ötlet beküldése
 async function handleIdeaSubmit(e) {
     e.preventDefault();
     const text = document.getElementById('ideaText').value;
@@ -414,11 +407,11 @@ async function handleIdeaSubmit(e) {
         });
 
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Hiba tÃ¶rtÃ©nt.");
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
 
-        showSuccess(result.message || "Ã–tlet sikeresen bekÃ¼ldve! KÃ¶szi! ðŸ’¡");
-        document.getElementById('ideaText').value = ''; // TÃ¶rlÃ©s
-        loadUserIdeas(); // Lista frissÃ­tÃ©se
+        showSuccess(result.message || "Ötlet sikeresen beküldve! Köszi! 💡");
+        document.getElementById('ideaText').value = ''; // Törlés
+        loadUserIdeas(); // Lista frissítése
 
     } catch (error) {
         showError(error.message);
@@ -427,12 +420,12 @@ async function handleIdeaSubmit(e) {
     }
 }
 
-// 2. Ã–tletek betÃ¶ltÃ©se (User oldal)
+// 2. Ötletek betöltése (User oldal)
 async function loadUserIdeas() {
     const hallContainer = document.getElementById('hallOfFameList');
     const pendingContainer = document.getElementById('pendingIdeasList');
     
-    // TÃ¶ltÃ©sjelzÅ‘
+    // Töltésjelző
     hallContainer.innerHTML = '<div class="recap-spinner"></div>';
     
     try {
@@ -443,65 +436,65 @@ async function loadUserIdeas() {
         });
         
         const ideas = await response.json();
-        if (!response.ok) throw new Error("Nem sikerÃ¼lt betÃ¶lteni az Ã¶tleteket.");
+        if (!response.ok) throw new Error("Nem sikerült betölteni az ötleteket.");
 
-        // TakarÃ­tÃ¡s
+        // Takarítás
         hallContainer.innerHTML = '';
         pendingContainer.innerHTML = '';
 
         if(ideas.length === 0) {
-            pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">MÃ©g nincsenek Ã¶tletek. LÃ©gy te az elsÅ‘!</p>';
+            pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">Még nincsenek ötletek. Légy te az első!</p>';
             return;
         }
 
         let hasFame = false;
 
         ideas.forEach(item => {
-            const isDone = (item.status === 'MegcsinÃ¡lva');
+            const isDone = (item.status === 'Megcsinálva');
             
             if (isDone) {
-                // DICSÅSÃ‰GFAL KÃRTYA
+                // DICSŐSÉGFAL KÁRTYA
                 hasFame = true;
                 const card = `
                 <div class="fame-card">
                     <div class="fame-user">
-                        <span class="fame-avatar">ðŸ‘‘</span>
+                        <span class="fame-avatar">👑</span>
                         <span class="fame-name">${item.submitter}</span>
                     </div>
                     <div class="fame-idea">"${item.idea}"</div>
                     <div class="fame-footer">
-                        KÃ¶szÃ¶njÃ¼k az Ã¶tletet! â€¢ ${item.date}
+                        Köszönjük az ötletet! • ${item.date}
                     </div>
                 </div>`;
                 hallContainer.insertAdjacentHTML('beforeend', card);
             } else {
-                // VÃRAKOZÃ“ LISTA
+                // VÁRAKOZÓ LISTA
                 const card = `
                 <div class="pending-idea-card">
                     <div class="pending-content">
                         <h4>${item.idea}</h4>
-                        <p>BekÃ¼ldte: ${item.submitter} â€¢ ${item.date}</p>
+                        <p>Beküldte: ${item.submitter} • ${item.date}</p>
                     </div>
-                    <div class="pending-status">â³ ${item.status}</div>
+                    <div class="pending-status">⏳ ${item.status}</div>
                 </div>`;
                 pendingContainer.insertAdjacentHTML('beforeend', card);
             }
         });
 
         if(!hasFame) {
-            hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">MÃ©g Ã¼res a dicsÅ‘sÃ©gfal. KÃ¼ldj be egy jÃ³ Ã¶tletet!</p>';
+            hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
         }
 
     } catch (error) {
         console.error(error);
-        hallContainer.innerHTML = '<p class="error">Hiba a betÃ¶ltÃ©skor.</p>';
+        hallContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
 
-// 3. Ã–tletek betÃ¶ltÃ©se (Admin oldal)
+// 3. Ötletek betöltése (Admin oldal)
 async function loadAllIdeasForAdmin() {
     const tbody = document.getElementById('adminIdeasTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">BetÃ¶ltÃ©s...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Betöltés...</td></tr>';
 
     try {
         const response = await fetch('/api/sheet', {
@@ -514,18 +507,18 @@ async function loadAllIdeasForAdmin() {
         tbody.innerHTML = '';
 
         if(ideas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="no-results">Nincsenek bekÃ¼ldÃ¶tt Ã¶tletek.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="no-results">Nincsenek beküldött ötletek.</td></tr>';
             return;
         }
 
         ideas.forEach(item => {
-            const isDone = (item.status === 'MegcsinÃ¡lva');
+            const isDone = (item.status === 'Megcsinálva');
             const statusClass = isDone ? 'status-done' : 'status-waiting';
             
-            // Gomb: Ha mÃ¡r kÃ©sz, ne legyen gomb, vagy legyen inaktÃ­v
+            // Gomb: Ha már kész, ne legyen gomb, vagy legyen inaktív
             const actionBtn = isDone 
-                ? 'âœ… KÃ©sz' 
-                : `<button class="mark-done-btn" onclick="markIdeaAsDone(${item.index})">ðŸ KÃ©sz</button>`;
+                ? '✅ Kész' 
+                : `<button class="mark-done-btn" onclick="markIdeaAsDone(${item.index})">🏁 Kész</button>`;
 
             const row = `
             <tr>
@@ -539,13 +532,13 @@ async function loadAllIdeasForAdmin() {
         });
 
     } catch (error) {
-        showError("Hiba az admin lista betÃ¶ltÃ©sekor.");
+        showError("Hiba az admin lista betöltésekor.");
     }
 }
 
-// 4. StÃ¡tusz frissÃ­tÃ©se (Admin mÅ±velet)
+// 4. Státusz frissítése (Admin művelet)
 async function markIdeaAsDone(index) {
-    if(!confirm("Biztosan megjelÃ¶lÃ¶d ezt az Ã¶tletet 'MegcsinÃ¡lva' stÃ¡tusszal? Ezzel kikerÃ¼l a DicsÅ‘sÃ©gfalra!")) return;
+    if(!confirm("Biztosan megjelölöd ezt az ötletet 'Megcsinálva' státusszal? Ezzel kikerül a Dicsőségfalra!")) return;
 
     try {
         const response = await fetch('/api/sheet', {
@@ -554,18 +547,18 @@ async function markIdeaAsDone(index) {
             body: JSON.stringify({ 
                 action: 'UPDATE_IDEA_STATUS', 
                 index: index, 
-                newStatus: 'MegcsinÃ¡lva' 
+                newStatus: 'Megcsinálva' 
             })
         });
 
         if(response.ok) {
-            showSuccess("StÃ¡tusz frissÃ­tve! IrÃ¡ny a dicsÅ‘sÃ©gfal! ðŸ†");
-            loadAllIdeasForAdmin(); // TÃ¡blÃ¡zat ÃºjratÃ¶ltÃ©se
+            showSuccess("Státusz frissítve! Irány a dicsőségfal! 🏆");
+            loadAllIdeasForAdmin(); // Táblázat újratöltése
         } else {
-            showError("Hiba a mentÃ©skor.");
+            showError("Hiba a mentéskor.");
         }
     } catch (error) {
-        showError("HÃ¡lÃ³zati hiba.");
+        showError("Hálózati hiba.");
     }
 }
     
@@ -578,31 +571,31 @@ async function markIdeaAsDone(index) {
         const termsAccepted = document.getElementById('registerTerms').checked;
         const submitBtn = registerForm.querySelector('.auth-btn');
 
-        // 1. Minimum 8 karakter ellenÅ‘rzÃ©se
+        // 1. Minimum 8 karakter ellenőrzése
         if (password.length < 8) {
-            showError("A jelszÃ³nak legalÃ¡bb 8 karakter hosszÃºnak kell lennie!");
+            showError("A jelszónak legalább 8 karakter hosszúnak kell lennie!");
             return;
         }
 
-        // 2. SzÃ¡m ellenÅ‘rzÃ©se (RegExp)
+        // 2. Szám ellenőrzése (RegExp)
         if (!/\d/.test(password)) {
-            showError("A jelszÃ³nak tartalmaznia kell legalÃ¡bb egy szÃ¡mot!");
+            showError("A jelszónak tartalmaznia kell legalább egy számot!");
             return;
         }
 
-        // 3. SpeciÃ¡lis karakter ellenÅ‘rzÃ©se
-        // Ez a lista tartalmazza a gyakoribb speciÃ¡lis karaktereket: !@#$%^&*() stb.
+        // 3. Speciális karakter ellenőrzése
+        // Ez a lista tartalmazza a gyakoribb speciális karaktereket: !@#$%^&*() stb.
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-            showError("A jelszÃ³nak tartalmaznia kell legalÃ¡bb egy speciÃ¡lis karaktert!");
+            showError("A jelszónak tartalmaznia kell legalább egy speciális karaktert!");
             return;
         }
 
         if (password !== passwordConfirm) {
-            showError("A kÃ©t jelszÃ³ nem egyezik!");
+            showError("A két jelszó nem egyezik!");
             return;
         }
         if (!termsAccepted) {
-            showError("A regisztrÃ¡ciÃ³hoz el kell fogadnod az AdatvÃ©delmi TÃ¡jÃ©koztatÃ³t!");
+            showError("A regisztrációhoz el kell fogadnod az Adatvédelmi Tájékoztatót!");
             return;
         }
 
@@ -616,13 +609,13 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
 
-            showSuccess('Sikeres regisztrÃ¡ciÃ³! Most mÃ¡r bejelentkezhetsz.');
+            showSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
             registerCard.classList.remove('active');
             setTimeout(() => loginCard.classList.add('active'), 300);
 
         } catch (error) {
-            console.error("RegisztrÃ¡ciÃ³s hiba:", error);
-            showError(error.message || 'A regisztrÃ¡ciÃ³ sikertelen.');
+            console.error("Regisztrációs hiba:", error);
+            showError(error.message || 'A regisztráció sikertelen.');
         } finally {
             setLoading(submitBtn, false);
         }
@@ -644,60 +637,43 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
             
-            // --- ITT VOLT A HIÃNYZÃ“ RÃ‰SZ ---
-            // Ha a szerver azt mondja, hogy 2FA kell:
+            // --- ITT VOLT A HIÁNYZÓ RÉSZ ---
             // Ha a szerver azt mondja, hogy 2FA kell:
             if (result.require2fa) {
-                tempLoginEmail = result.tempEmail; // Email mentÃ©se
-
-                // === 2FA ABLAK MEGJELENÃTÃ‰SE (JAVÃTOTT VERZIÃ“) ===
-                const modal2FA = document.getElementById('login2FAModal');
+                tempLoginEmail = result.tempEmail; // Elmentjük az emailt későbbre
+                login2FAModal.classList.add('active'); // Feldobjuk a kódkérő ablakot
                 
-                // 1. MENTÅÃ–V: Ha az ablak rossz helyen van, Ã¡trakjuk a Body-ba
-                if (modal2FA && modal2FA.parentElement !== document.body) {
-                    document.body.appendChild(modal2FA);
-                }
-
-                // 2. MegjelenÃ­tÃ©s kÃ©nyszerÃ­tÃ©se
-                if (modal2FA) {
-                    modal2FA.style.zIndex = "999999"; // Legyen legfelÃ¼l
-                    modal2FA.style.display = "flex";  // Ne legyen display: none
-                    
-                    // AnimÃ¡ciÃ³ indÃ­tÃ¡sa kis kÃ©sleltetÃ©ssel
-                    setTimeout(() => {
-                        modal2FA.classList.add('active');
-                        
-                        // FÃ³kusz a beviteli mezÅ‘re
-                        const input = document.getElementById('login2FACode');
-                        if(input) input.focus();
-                    }, 10);
-                }
-
-                // 3. TÃ¶ltÃ©s jelzÅ‘ kikapcsolÃ¡sa a gombon
+                // Kis kényelem: fókuszáljunk a mezőre
+                setTimeout(() => {
+                    const input = document.getElementById('login2FACode');
+                    if(input) input.focus();
+                }, 100);
+                
+                // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
                 setLoading(submitBtn, false);
-                return; // KILÃ‰PÃœNK, hogy ne fusson tovÃ¡bb a sima belÃ©pÃ©s
+                return; // KILÉPÜNK A FÜGGVÉNYBŐL!
             }
             // ---------------------------------
 
-            // Ez a rÃ©sz csak akkor fut le, ha NINCS bekapcsolva a 2FA a usernÃ©l
+            // Ez a rész csak akkor fut le, ha NINCS bekapcsolva a 2FA a usernél
             localStorage.setItem('userToken', result.token);
             localStorage.setItem('userData', JSON.stringify(result.user));
 
-            showSuccess(`Sikeres bejelentkezÃ©s, ${result.user.name}!`);
+            showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
             setTimeout(switchToUserView, 1000);
         } catch (error) {
-            console.error("BejelentkezÃ©si hiba:", error);
-            showError(error.message || 'HibÃ¡s e-mail cÃ­m vagy jelszÃ³!');
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás e-mail cím vagy jelszó!');
         } finally {
-            // Csak akkor kapcsoljuk ki a tÃ¶ltÃ©st, ha nem nyÃ­lt meg a 2FA ablak
-            // (Ha megnyÃ­lt, ott mÃ¡r kikapcsoltuk a 'if' Ã¡gban)
+            // Csak akkor kapcsoljuk ki a töltést, ha nem nyílt meg a 2FA ablak
+            // (Ha megnyílt, ott már kikapcsoltuk a 'if' ágban)
             if (!login2FAModal.classList.contains('active')) {
                  setLoading(submitBtn, false);
             }
         }
     }
 
-    // --- ÃšJ: FELHASZNÃLÃ“I FIÃ“K KEZELÃ‰SE ---
+    // --- ÚJ: FELHASZNÁLÓI FIÓK KEZELÉSE ---
     
     async function handleChangePassword(e) {
         e.preventDefault();
@@ -707,11 +683,11 @@ async function markIdeaAsDone(index) {
         const submitBtn = changePasswordForm.querySelector('.action-btn');
 
         if (newPassword !== newPasswordConfirm) {
-            showError("Az Ãºj jelszavak nem egyeznek!");
+            showError("Az új jelszavak nem egyeznek!");
             return;
         }
         if (newPassword.length < 6) {
-             showError("Az Ãºj jelszÃ³nak legalÃ¡bb 6 karakter hosszÃºnak kell lennie.");
+             showError("Az új jelszónak legalább 6 karakter hosszúnak kell lennie.");
              return;
         }
 
@@ -725,19 +701,19 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Szerverhiba");
             
-            showSuccess("JelszÃ³ sikeresen mÃ³dosÃ­tva!");
+            showSuccess("Jelszó sikeresen módosítva!");
             changePasswordForm.reset();
         } catch (error) {
-            showError(error.message || "Nem sikerÃ¼lt a jelszÃ³ mÃ³dosÃ­tÃ¡sa.");
+            showError(error.message || "Nem sikerült a jelszó módosítása.");
         } finally {
             setLoading(submitBtn, false);
         }
     }
 
     async function handleDeleteUser() {
-        const confirmation = prompt("Biztosan tÃ¶rÃ¶lni szeretnÃ©d a fiÃ³kodat? Ez vÃ©gleges Ã©s nem vonhatÃ³ vissza. Ha biztos vagy, Ã­rd be ide: TÃ–RLÃ‰S");
-        if (confirmation !== "TÃ–RLÃ‰S") {
-            showNotification("FiÃ³k tÃ¶rlÃ©se megszakÃ­tva.", "info");
+        const confirmation = prompt("Biztosan törölni szeretnéd a fiókodat? Ez végleges és nem vonható vissza. Ha biztos vagy, írd be ide: TÖRLÉS");
+        if (confirmation !== "TÖRLÉS") {
+            showNotification("Fiók törlése megszakítva.", "info");
             return;
         }
 
@@ -750,52 +726,52 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Szerverhiba");
 
-            showSuccess("A fiÃ³kodat sikeresen tÃ¶rÃ¶ltÃ¼k. ViszlÃ¡t!");
+            showSuccess("A fiókodat sikeresen töröltük. Viszlát!");
             setTimeout(switchToGuestView, 2000);
 
         } catch (error) {
-            showError(error.message || "A fiÃ³k tÃ¶rlÃ©se nem sikerÃ¼lt.");
+            showError(error.message || "A fiók törlése nem sikerült.");
         }
     }
 
 
 
     // ======================================================
-    // === ÃšJ: FÅ NAVIGÃCIÃ“S FÃœLEK KEZELÃ‰SE ===
+    // === ÚJ: FŐ NAVIGÁCIÓS FÜLEK KEZELÉSE ===
     // ======================================================
 
     function initializeMainTabs(viewElement) {
-    // KÃ©tfÃ©le navigÃ¡ciÃ³t tÃ¡mogatunk: a rÃ©gi tab-listÃ¡t (admin) Ã©s az Ãºj oldalsÃ¡vot (user)
+    // Kétféle navigációt támogatunk: a régi tab-listát (admin) és az új oldalsávot (user)
     const navButtons = viewElement.querySelectorAll('.main-tab-btn, .nav-item[data-tab-content]');
     const tabPanes = viewElement.querySelectorAll('.main-tab-pane');
 
     navButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            // MegakadÃ¡lyozzuk, hogy a gomb belsejÃ©re kattintva elvesszen a referencia
+            // Megakadályozzuk, hogy a gomb belsejére kattintva elvesszen a referencia
             const clickedButton = e.target.closest('button'); 
             if (!clickedButton) return;
 
-            // Ha kijelentkezÃ©s gomb, azt hagyjuk a sajÃ¡t esemÃ©nykezelÅ‘jÃ©re
+            // Ha kijelentkezés gomb, azt hagyjuk a saját eseménykezelőjére
             if (clickedButton.id === 'userLogoutBtn') return;
 
-            // AktÃ­v Ã¡llapot beÃ¡llÃ­tÃ¡sa
+            // Aktív állapot beállítása
             navButtons.forEach(b => b.classList.remove('active'));
             clickedButton.classList.add('active');
 
-            // CÃ­msor frissÃ­tÃ©se mobilon
+            // Címsor frissítése mobilon
             const label = clickedButton.querySelector('.label');
             const dashboardTitle = document.querySelector('.dashboard-topbar h3');
             if(dashboardTitle && label) {
                 dashboardTitle.textContent = label.textContent;
             }
 
-            // Tartalom vÃ¡ltÃ¡sa
+            // Tartalom váltása
             const targetPaneId = clickedButton.dataset.tabContent;
             tabPanes.forEach(pane => {
                 pane.classList.toggle('active', pane.id === targetPaneId);
             });
             
-            // Ha az Ã¶tletekre vÃ¡ltunk, tÃ¶ltsÃ¼k be
+            // Ha az ötletekre váltunk, töltsük be
             if(targetPaneId === 'user-ideas-content') loadUserIdeas();
             if(targetPaneId === 'admin-ideas-content') loadAllIdeasForAdmin();
         });
@@ -803,7 +779,7 @@ async function markIdeaAsDone(index) {
 }
 
 // ======================================================
-    // === ÃšJ: STATISZTIKA FUNKCIÃ“K ===
+    // === ÚJ: STATISZTIKA FUNKCIÓK ===
     // ======================================================
 
     function setupStatistics() {
@@ -815,37 +791,37 @@ async function markIdeaAsDone(index) {
         });
 
 }
-    // js.js (ÃšJ FUNKCIÃ“)
+    // js.js (ÚJ FUNKCIÓ)
 function setupAdminRecap() {
     const recapTabContainer = document.getElementById('admin-recap-content');
-    if (!recapTabContainer) return; // Csak akkor fut, ha lÃ©tezik a kontÃ©ner
+    if (!recapTabContainer) return; // Csak akkor fut, ha létezik a konténer
 
     const tabButtons = document.getElementById('adminRecapTabButtons');
     const controls = document.getElementById('adminRecapControls');
     const resultsContainer = document.getElementById('adminRecapResultsContainer');
     
-    // 1. BelsÅ‘ fÃ¼l vÃ¡ltÃ³ (KÃ¶zÃ¶s, Gabz, Lajos)
+    // 1. Belső fül váltó (Közös, Gabz, Lajos)
     tabButtons.addEventListener('click', (e) => {
         const clickedButton = e.target.closest('.stat-tab-btn');
         if (!clickedButton) return;
         
         currentAdminRecapView = clickedButton.dataset.tab;
         
-        // Gombok aktÃ­v Ã¡llapotÃ¡nak frissÃ­tÃ©se
+        // Gombok aktív állapotának frissítése
         tabButtons.querySelectorAll('.stat-tab-btn').forEach(btn => btn.classList.remove('active'));
         clickedButton.classList.add('active');
         
-        // EredmÃ©ny tÃ¶rlÃ©se vÃ¡ltÃ¡skor
-        resultsContainer.innerHTML = '<p class="recap-placeholder">VÃ¡lassz egy idÅ‘szakot a kezdÃ©shez.</p>';
+        // Eredmény törlése váltáskor
+        resultsContainer.innerHTML = '<p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>';
     });
 
-    // 2. IdÅ‘szak gomb (Heti, Havi...)
+    // 2. Időszak gomb (Heti, Havi...)
     controls.addEventListener('click', (e) => {
         const button = e.target.closest('.recap-btn');
         if (!button) return;
         
         const period = button.dataset.period;
-        // Ãtadjuk a gombot Ã©s a periÃ³dust az Ãºj generÃ¡lÃ³ funkciÃ³nak
+        // Átadjuk a gombot és a periódust az új generáló funkciónak
         handleAdminRecapGenerate(period, button);
     });
 }
@@ -865,36 +841,36 @@ function setupAdminRecap() {
     }
 
     function renderAllCharts(beers) {
-        destroyAllCharts(); // ElÅ‘zÅ‘ grafikonok tÃ¶rlÃ©se ÃºjrarajzolÃ¡s elÅ‘tt
+        destroyAllCharts(); // Előző grafikonok törlése újrarajzolás előtt
 
         const gabzBeers = beers.filter(b => b.ratedBy === 'admin1');
         const lajosBeers = beers.filter(b => b.ratedBy === 'admin2');
 
-        // KÃ¶zÃ¶s statisztikÃ¡k
+        // Közös statisztikák
         renderKpis('common', beers);
-        renderTypeChart('common-type-chart', 'SÃ¶rÃ¶k tÃ­pus szerint (KÃ¶zÃ¶s)', beers);
-        renderScoreDistributionChart('common-score-dist-chart', 'PontszÃ¡mok eloszlÃ¡sa (KÃ¶zÃ¶s)', beers);
-        renderMonthlyAverageChart('common-monthly-avg-chart', 'Havi Ã¡tlagpontszÃ¡m alakulÃ¡sa (KÃ¶zÃ¶s)', beers);
+        renderTypeChart('common-type-chart', 'Sörök típus szerint (Közös)', beers);
+        renderScoreDistributionChart('common-score-dist-chart', 'Pontszámok eloszlása (Közös)', beers);
+        renderMonthlyAverageChart('common-monthly-avg-chart', 'Havi átlagpontszám alakulása (Közös)', beers);
 
-        // Gabz statisztikÃ¡k
+        // Gabz statisztikák
         renderKpis('gabz', gabzBeers);
-        renderTypeChart('gabz-type-chart', 'SÃ¶rÃ¶k tÃ­pus szerint (Gabz)', gabzBeers);
-        renderScoreDistributionChart('gabz-score-dist-chart', 'PontszÃ¡mok eloszlÃ¡sa (Gabz)', gabzBeers);
+        renderTypeChart('gabz-type-chart', 'Sörök típus szerint (Gabz)', gabzBeers);
+        renderScoreDistributionChart('gabz-score-dist-chart', 'Pontszámok eloszlása (Gabz)', gabzBeers);
 
-        // Lajos statisztikÃ¡k
+        // Lajos statisztikák
         renderKpis('lajos', lajosBeers);
-        renderTypeChart('lajos-type-chart', 'SÃ¶rÃ¶k tÃ­pus szerint (Lajos)', lajosBeers);
-        renderScoreDistributionChart('lajos-score-dist-chart', 'PontszÃ¡mok eloszlÃ¡sa (Lajos)', lajosBeers);
+        renderTypeChart('lajos-type-chart', 'Sörök típus szerint (Lajos)', lajosBeers);
+        renderScoreDistributionChart('lajos-score-dist-chart', 'Pontszámok eloszlása (Lajos)', lajosBeers);
     }
 
     function renderKpis(prefix, beers) {
         if (beers.length === 0) return;
 
-        // Legjobb sÃ¶r
+        // Legjobb sör
         const bestBeer = beers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), beers[0]);
         document.getElementById(`${prefix}-best-beer`).textContent = `${bestBeer.beerName} (${bestBeer.totalScore} pont)`;
 
-        // Kedvenc tÃ­pus
+        // Kedvenc típus
         const typeCounts = beers.reduce((acc, beer) => { acc[beer.type] = (acc[beer.type] || 0) + 1; return acc; }, {});
         const favType = Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b);
         document.getElementById(`${prefix}-fav-type`).textContent = favType;
@@ -905,7 +881,7 @@ function setupAdminRecap() {
             const favLocation = Object.keys(locationCounts).reduce((a, b) => locationCounts[a] > locationCounts[b] ? a : b);
             document.getElementById(`common-fav-location`).textContent = favLocation;
         } else {
-            // SzemÃ©lyes Ã¡tlag
+            // Személyes átlag
             const avgScore = (beers.reduce((sum, b) => sum + b.totalScore, 0) / beers.length).toFixed(1);
             document.getElementById(`${prefix}-avg-score`).textContent = `${avgScore} pont`;
         }
@@ -924,7 +900,7 @@ function setupAdminRecap() {
             data: {
                 labels: Object.keys(typeCounts),
                 datasets: [{
-                    label: 'SÃ¶rÃ¶k szÃ¡ma',
+                    label: 'Sörök száma',
                     data: Object.values(typeCounts),
                     backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#f39c12', '#27ae60', '#3498db'],
                     borderColor: '#fff',
@@ -948,7 +924,7 @@ function setupAdminRecap() {
             data: {
                 labels: Object.keys(scoreCounts).sort((a,b) => a-b),
                 datasets: [{
-                    label: 'Ã‰rtÃ©kelÃ©sek szÃ¡ma',
+                    label: 'Értékelések száma',
                     data: Object.values(scoreCounts),
                     backgroundColor: 'rgba(118, 75, 162, 0.7)',
                     borderColor: 'rgba(118, 75, 162, 1)',
@@ -981,7 +957,7 @@ function setupAdminRecap() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'ÃtlagpontszÃ¡m',
+                    label: 'Átlagpontszám',
                     data: data,
                     fill: true,
                     backgroundColor: 'rgba(102, 126, 234, 0.2)',
@@ -996,7 +972,7 @@ function setupAdminRecap() {
 
     
    // ======================================================
-    // === NÃ‰ZETVÃLTÃS Ã‰S ADATKEZELÃ‰S ===
+    // === NÉZETVÁLTÁS ÉS ADATKEZELÉS ===
     // ======================================================
     
     function switchToGuestView() {
@@ -1008,7 +984,7 @@ function setupAdminRecap() {
         userView.style.display = 'none';
         document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // HÃ¡ttÃ©r fixÃ¡lÃ¡sa
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
         
         liveSearchInput.value = '';
         hideSearchSuggestions();
@@ -1017,65 +993,59 @@ function setupAdminRecap() {
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
+        // Ha nincs user adat, visszadobjuk a loginra
         switchToGuestView();
         return;
     }
     
-    // 1. ÃœdvÃ¶zlÅ‘ Ã¼zenet beÃ¡llÃ­tÃ¡sa (CSAK EGYSZER definiÃ¡ljuk!)
+    // Fejléc üdvözlés frissítése (ha van ilyen elem)
     const welcomeMsg = document.getElementById('userWelcomeMessage');
-    if(welcomeMsg) {
-        // Alap nÃ©v beÃ¡llÃ­tÃ¡sa (a badge-et majd a fÃ¼ggvÃ©ny vÃ©gÃ©n rakjuk mellÃ©)
-        welcomeMsg.textContent = `Szia, ${user.name}!`;
-    }
+    if(welcomeMsg) welcomeMsg.textContent = `Szia, ${user.name}!`;
 
-    // TÃ¡blÃ¡zat Ã¼rÃ­tÃ©se Ã©s tÃ¶ltÃ©sjelzÅ‘
+    // Táblázat ürítése és töltésjelző
     const tableBody = document.getElementById('userBeerTableBody');
-    if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betÃ¶ltÃ©se...</td></tr>';
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results">Adatok betöltése...</td></tr>';
 
     try {
-        console.log("SÃ¶rÃ¶k lekÃ©rÃ©se...");
+        console.log("Sörök lekérése..."); // Debug
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
+        
         const beers = await response.json();
         
         if (!response.ok) {
             if (response.status === 401) {
-                showError("A munkamenet lejÃ¡rt.");
+                showError("A munkamenet lejárt.");
                 setTimeout(switchToGuestView, 2000);
                 return;
             }
             throw new Error(beers.error || 'Szerverhiba');
         }
         
-        // GlobÃ¡lis vÃ¡ltozÃ³ frissÃ­tÃ©se
+        // Globális változó frissítése
         currentUserBeers = beers;
-        console.log(`Sikeres lekÃ©rÃ©s: ${beers.length} sÃ¶r.`);
         
-        // RenderelÃ©s hÃ­vÃ¡sa
+        console.log(`Sikeres lekérés: ${beers.length} sör.`);
+        
+        // Renderelés hívása
         renderUserBeers(beers);
         
-        // StatisztikÃ¡k frissÃ­tÃ©se (Headerben is!)
+        // Statisztikák frissítése (Headerben is!)
         updateUserStats(beers);
-        
-        // === ACHIEVEMENTEK Ã‰S BADGE FRISSÃTÃ‰SE ===
-        // Fontos: itt hÃ­vjuk meg a badge kirakÃ¡sÃ¡t, mert most mÃ¡r megvannak az adatok
-        renderAchievementsTab(); 
-        updateUserBadgeDisplay(); // Ez rakja ki a szÃ­nes rangot a nÃ©v mellÃ©
 
     } catch (error) {
-        console.error("Hiba a sÃ¶rÃ¶k betÃ¶ltÃ©sekor:", error);
-        if (tableBody) tableBody.innerHTML = '<tr><td colspan="10" class="no-results error">Hiba tÃ¶rtÃ©nt az adatok betÃ¶ltÃ©sekor.</td></tr>';
+        console.error("Hiba a sörök betöltésekor:", error);
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="10" class="no-results error">Hiba: ${error.message}</td></tr>`;
     }
 }
-    
 
     function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
     if (!beers || beers.length === 0) {
-        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">MÃ©g nem Ã©rtÃ©keltÃ©l egy sÃ¶rt sem.</td></tr>`;
+        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
         return;
     }
     beers.forEach((beer, index) => {
@@ -1092,7 +1062,7 @@ function setupAdminRecap() {
                 <td>${beer.taste || 0}</td>
                 <td>${beer.totalScore || 0}</td>
                 <td class="average-cell">${formattedAvg}</td>
-                <td><button class="edit-btn" onclick="openEditBeerModal(${index})">âœï¸</button></td>
+                <td><button class="edit-btn" onclick="openEditBeerModal(${index})">✏️</button></td>
             </tr>
         `;
         userBeerTableBody.insertAdjacentHTML('beforeend', row);
@@ -1100,13 +1070,13 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-    // 1. FejlÃ©c statisztikÃ¡k frissÃ­tÃ©se (ha lÃ©teznek)
+    // 1. Fejléc statisztikák frissítése (ha léteznek)
     const headerCount = document.getElementById('headerBeerCount');
     const headerAvg = document.getElementById('headerAvgScore');
 
     if(headerCount) headerCount.textContent = beers.length;
 
-    // 2. ÃšJ: Tabon belÃ¼li statisztikÃ¡k frissÃ­tÃ©se
+    // 2. ÚJ: Tabon belüli statisztikák frissítése
     const tabCount = document.getElementById('tabBeerCount');
     const tabAvg = document.getElementById('tabBeerAvg');
 
@@ -1125,7 +1095,7 @@ function setupAdminRecap() {
     if(tabAvg) tabAvg.textContent = average;
 }
     function updateUserDrinkStats(drinks) {
-    // ÃšJ: Tabon belÃ¼li statisztikÃ¡k keresÃ©se
+    // ÚJ: Tabon belüli statisztikák keresése
     const tabCount = document.getElementById('tabDrinkCount');
     const tabAvg = document.getElementById('tabDrinkAvg');
 
@@ -1210,10 +1180,10 @@ function setupAdminRecap() {
         const term = searchTerm.toLowerCase();
         const suggestions = new Map();
         beersData.forEach(beer => {
-            if (beer.beerName?.toLowerCase().includes(term) && !suggestions.has(beer.beerName)) { suggestions.set(beer.beerName, { text: beer.beerName, type: 'beer', icon: 'ðŸº' }); }
-            if (beer.type?.toLowerCase().includes(term) && !suggestions.has(beer.type)) { suggestions.set(beer.type, { text: beer.type, type: 'type', icon: 'ðŸ·ï¸' }); }
-            if (beer.location?.toLowerCase().includes(term) && !suggestions.has(beer.location)) { suggestions.set(beer.location, { text: beer.location, type: 'location', icon: 'ðŸ“' }); }
-            if (beer.ratedBy?.toLowerCase().includes(term) && !suggestions.has(beer.ratedBy)) { suggestions.set(beer.ratedBy, { text: beer.ratedBy, type: 'rater', icon: 'ðŸ‘¤' }); }
+            if (beer.beerName?.toLowerCase().includes(term) && !suggestions.has(beer.beerName)) { suggestions.set(beer.beerName, { text: beer.beerName, type: 'beer', icon: '🍺' }); }
+            if (beer.type?.toLowerCase().includes(term) && !suggestions.has(beer.type)) { suggestions.set(beer.type, { text: beer.type, type: 'type', icon: '🏷️' }); }
+            if (beer.location?.toLowerCase().includes(term) && !suggestions.has(beer.location)) { suggestions.set(beer.location, { text: beer.location, type: 'location', icon: '📍' }); }
+            if (beer.ratedBy?.toLowerCase().includes(term) && !suggestions.has(beer.ratedBy)) { suggestions.set(beer.ratedBy, { text: beer.ratedBy, type: 'rater', icon: '👤' }); }
         });
         return Array.from(suggestions.values()).slice(0, 6);
     }
@@ -1256,18 +1226,18 @@ function setupAdminRecap() {
         const total = beersData.length;
         const filtered = filteredBeers.length;
         const searchTerm = liveSearchInput.value.trim();
-        if (!searchTerm) { searchResultsInfo.textContent = `${total} sÃ¶r Ã¶sszesen`; searchResultsInfo.style.color = ''; } 
-        else if (filtered === 0) { searchResultsInfo.textContent = `Nincs talÃ¡lat "${searchTerm}" keresÃ©sre`; searchResultsInfo.style.color = '#e74c3c'; } 
-        else { searchResultsInfo.textContent = `${filtered} talÃ¡lat ${total} sÃ¶rbÅ‘l`; searchResultsInfo.style.color = '#3498db'; }
+        if (!searchTerm) { searchResultsInfo.textContent = `${total} sör összesen`; searchResultsInfo.style.color = ''; } 
+        else if (filtered === 0) { searchResultsInfo.textContent = `Nincs találat "${searchTerm}" keresésre`; searchResultsInfo.style.color = '#e74c3c'; } 
+        else { searchResultsInfo.textContent = `${filtered} találat ${total} sörből`; searchResultsInfo.style.color = '#3498db'; }
     }
 
     function highlightSearchTerm(text, searchTerm) { if (!searchTerm) return text; const regex = new RegExp(`(${searchTerm})`, 'gi'); return text.replace(regex, '<mark>$1</mark>'); }
-    function getSuggestionTypeLabel(type) { const labels = { 'beer': 'SÃ¶r nÃ©v', 'type': 'TÃ­pus', 'location': 'Hely', 'rater': 'Ã‰rtÃ©kelÅ‘' }; return labels[type] || ''; }
+    function getSuggestionTypeLabel(type) { const labels = { 'beer': 'Sör név', 'type': 'Típus', 'location': 'Hely', 'rater': 'Értékelő' }; return labels[type] || ''; }
     function getTestedBy(ratedBy) { const testers = { 'admin1': 'Gabz', 'admin2': 'Lajos' }; return testers[ratedBy] || ratedBy; }
 
     function renderBeerTable(beersToRender) {
         beerTableBody.innerHTML = '';
-        if (!beersToRender || beersToRender.length === 0) { const searchTerm = liveSearchInput.value.trim(); const message = searchTerm ? `Nincs a "${searchTerm}" keresÃ©snek megfelelÅ‘ sÃ¶r.` : 'Nincsenek sÃ¶rÃ¶k az adatbÃ¡zisban.'; beerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">${message}</td></tr>`; return; }
+        if (!beersToRender || beersToRender.length === 0) { const searchTerm = liveSearchInput.value.trim(); const message = searchTerm ? `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 'Nincsenek sörök az adatbázisban.'; beerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">${message}</td></tr>`; return; }
         beersToRender.forEach(beer => {
             const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
             const formattedAvg = beer.avg ? parseFloat(beer.avg).toFixed(2) : '0.00';
@@ -1295,11 +1265,28 @@ function setupAdminRecap() {
         renderBeerTable(filteredBeers);
         updateSearchResultsInfo();
         updateIndexedAverage();
-        renderAllCharts(beersData); // STATISZTIKÃK KIRAJZOLÃSA
+        renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
-    
+    function switchToAdminView() {
+        document.body.classList.add('custom-cursor-active');
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
 
-    // --- EsemÃ©nykezelÅ‘k ---
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
+
+        // Fő fülek inicializálása az admin nézeten
+        initializeMainTabs(adminView);
+
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+        setupAdminRecap();
+    }
+
+    // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
@@ -1307,7 +1294,7 @@ function setupAdminRecap() {
     loginForm.addEventListener('submit', handleGuestLogin);
     registerForm.addEventListener('submit', handleGuestRegister);
     
-    // FelhasznÃ¡lÃ³i nÃ©zet esemÃ©nykezelÅ‘i
+    // Felhasználói nézet eseménykezelői
     userLogoutBtn.addEventListener('click', switchToGuestView);
     addBeerForm.addEventListener('submit', handleAddBeer);
     addDrinkForm.addEventListener('submit', handleAddDrink);
@@ -1315,6 +1302,7 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
+    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -1322,22 +1310,22 @@ function setupAdminRecap() {
 
 
    // ======================================================
-// === EGYSÃ‰GESÃTETT STORY / RECAP RENDSZER (ADMIN Ã‰S USER) ===
+// === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
 // ======================================================
 
-// SegÃ©dfÃ¼ggvÃ©ny: DÃ¡tum biztonsÃ¡gos konvertÃ¡lÃ¡sa
+// Segédfüggvény: Dátum biztonságos konvertálása
 function parseBeerDate(dateString) {
     if (!dateString) return null;
-    // MegprÃ³bÃ¡ljuk ISO-kÃ©nt (pl. 2023-10-10 12:00:00)
+    // Megpróbáljuk ISO-ként (pl. 2023-10-10 12:00:00)
     let d = new Date(dateString.replace(' ', 'T'));
-    // Ha nem sikerÃ¼lt, prÃ³bÃ¡ljuk simÃ¡n (pl. 2023. 10. 10.)
+    // Ha nem sikerült, próbáljuk simán (pl. 2023. 10. 10.)
     if (isNaN(d.getTime())) {
         d = new Date(dateString);
     }
     return isNaN(d.getTime()) ? null : d;
 }
 
-// SegÃ©dfÃ¼ggvÃ©ny: KezdÅ‘ dÃ¡tum kiszÃ¡molÃ¡sa
+// Segédfüggvény: Kezdő dátum kiszámolása
 function getStartDateForPeriod(period) {
     const now = new Date();
     let startDate = new Date();
@@ -1350,24 +1338,24 @@ function getStartDateForPeriod(period) {
     return startDate;
 }
 
-// SegÃ©dfÃ¼ggvÃ©ny: StatisztikÃ¡k szÃ¡molÃ¡sa (KÃ¶zÃ¶s logika)
+// Segédfüggvény: Statisztikák számolása (Közös logika)
 function calculateRecapStats(beers) {
     if (!beers || beers.length === 0) return null;
 
     const totalBeers = beers.length;
-    // PontszÃ¡mok biztosÃ­tÃ¡sa
+    // Pontszámok biztosítása
     const validBeers = beers.map(b => ({ ...b, totalScore: parseFloat(b.totalScore) || 0 }));
     
-    // Ãtlag
+    // Átlag
     const sumScore = validBeers.reduce((sum, b) => sum + b.totalScore, 0);
     const averageScore = (sumScore / totalBeers).toFixed(2);
     
-    // Legjobb sÃ¶r
+    // Legjobb sör
     const bestBeer = validBeers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), validBeers[0]);
     
-    // Kedvenc tÃ­pus
+    // Kedvenc típus
     const typeCounts = validBeers.reduce((acc, beer) => {
-        const val = beer.type || 'EgyÃ©b';
+        const val = beer.type || 'Egyéb';
         acc[val] = (acc[val] || 0) + 1;
         return acc;
     }, {});
@@ -1381,7 +1369,7 @@ function calculateRecapStats(beers) {
     }, {});
     const favoriteLocation = Object.keys(locCounts).sort((a,b) => locCounts[b] - locCounts[a])[0] || '-';
 
-    // Ãtlagos ivÃ¡si idÅ‘ (Ã³ra)
+    // Átlagos ivási idő (óra)
     let avgHour = 18; // Default
     const hours = validBeers.map(b => {
         const d = parseBeerDate(b.date);
@@ -1403,11 +1391,11 @@ function calculateRecapStats(beers) {
     };
 }
 
-// === 1. USER OLDALI KEZELÅ ===
+// === 1. USER OLDALI KEZELŐ ===
 async function handleRecapPeriodClick(e) {
     const button = e.target.closest('.recap-btn');
     if (!button) return;
-    if (button.closest('#adminRecapControls')) return; // Admin gomboknÃ¡l ne fusson
+    if (button.closest('#adminRecapControls')) return; // Admin gomboknál ne fusson
 
     const period = button.dataset.period;
     const container = document.getElementById('recapResultsContainer');
@@ -1419,7 +1407,7 @@ async function handleRecapPeriodClick(e) {
             const now = new Date();
 
             if (!currentUserBeers || currentUserBeers.length === 0) {
-                container.innerHTML = `<p class="recap-no-results">MÃ©g nem Ã©rtÃ©keltÃ©l sÃ¶rÃ¶ket. ðŸº</p>`;
+                container.innerHTML = `<p class="recap-no-results">Még nem értékeltél söröket. 🍺</p>`;
                 return;
             }
 
@@ -1429,7 +1417,7 @@ async function handleRecapPeriodClick(e) {
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="recap-no-results">Ebben az idÅ‘szakban nem volt aktivitÃ¡s.</p>`;
+                container.innerHTML = `<p class="recap-no-results">Ebben az időszakban nem volt aktivitás.</p>`;
                 return;
             }
 
@@ -1440,12 +1428,12 @@ async function handleRecapPeriodClick(e) {
 
         } catch (err) {
             console.error(err);
-            container.innerHTML = `<p class="recap-no-results">Hiba tÃ¶rtÃ©nt. :(</p>`;
+            container.innerHTML = `<p class="recap-no-results">Hiba történt. :(</p>`;
         }
     }, 500);
 }
 
-// === 2. ADMIN OLDALI KEZELÅ ===
+// === 2. ADMIN OLDALI KEZELŐ ===
 async function handleAdminRecapGenerate(period, button) {
     const resultsContainer = document.getElementById('adminRecapResultsContainer');
     
@@ -1457,7 +1445,7 @@ async function handleAdminRecapGenerate(period, button) {
 
     setTimeout(() => {
         try {
-            // SzÅ±rÃ©s a kivÃ¡lasztott fÃ¼l alapjÃ¡n (KÃ¶zÃ¶s/Gabz/Lajos)
+            // Szűrés a kiválasztott fül alapján (Közös/Gabz/Lajos)
             let targetBeers = [];
             if (currentAdminRecapView === 'common') {
                 targetBeers = [...beersData];
@@ -1466,7 +1454,7 @@ async function handleAdminRecapGenerate(period, button) {
                 targetBeers = beersData.filter(b => b.ratedBy === filterKey);
             }
 
-            // DÃ¡tum szÅ±rÃ©s
+            // Dátum szűrés
             const startDate = getStartDateForPeriod(period);
             const now = new Date();
             
@@ -1476,22 +1464,22 @@ async function handleAdminRecapGenerate(period, button) {
             });
 
             if (filtered.length === 0) {
-                resultsContainer.innerHTML = `<p class="recap-no-results">Nincs adat erre az idÅ‘szakra.</p>`;
+                resultsContainer.innerHTML = `<p class="recap-no-results">Nincs adat erre az időszakra.</p>`;
                 button.classList.remove('loading');
                 return;
             }
 
             const data = calculateRecapStats(filtered);
-            // CÃ­m mÃ³dosÃ­tÃ¡sa, hogy lÃ¡tszÃ³djon kirÅ‘l van szÃ³
-            const userLabels = { 'common': 'KÃ¶zÃ¶s', 'gabz': 'Gabz', 'lajos': 'Lajos' };
+            // Cím módosítása, hogy látszódjon kiről van szó
+            const userLabels = { 'common': 'Közös', 'gabz': 'Gabz', 'lajos': 'Lajos' };
             data.periodName = `${userLabels[currentAdminRecapView]} - ${getPeriodName(period)}`;
 
-            // UGYANAZT a Story mÃ³dot hÃ­vjuk meg!
+            // UGYANAZT a Story módot hívjuk meg!
             renderStoryMode(data, resultsContainer);
 
         } catch (error) {
             console.error("Admin recap hiba:", error);
-            resultsContainer.innerHTML = `<p class="recap-no-results">Hiba tÃ¶rtÃ©nt.</p>`;
+            resultsContainer.innerHTML = `<p class="recap-no-results">Hiba történt.</p>`;
         } finally {
             button.classList.remove('loading');
         }
@@ -1499,19 +1487,19 @@ async function handleAdminRecapGenerate(period, button) {
 }
 
 function getPeriodName(period) {
-    const names = { 'weekly': 'Heti', 'monthly': 'Havi', 'quarterly': 'NegyedÃ©ves', 'yearly': 'Ã‰ves' };
-    return names[period] || 'Ã–sszesÃ­tÅ‘';
+    const names = { 'weekly': 'Heti', 'monthly': 'Havi', 'quarterly': 'Negyedéves', 'yearly': 'Éves' };
+    return names[period] || 'Összesítő';
 }
 
-// === STORY MODE RENDERER (ANIMÃCIÃ“ & HTML) ===
+// === STORY MODE RENDERER (ANIMÁCIÓ & HTML) ===
 let storyInterval;
 
 function renderStoryMode(data, container) {
-    // HTML StruktÃºra
+    // HTML Struktúra
     const html = `
 <div class="recap-story-container" id="storyContainer">
     <button class="story-fullscreen-btn" onclick="toggleFullscreen()">
-        â›¶
+        ⛶
     </button>
 
     <div class="story-progress-container">
@@ -1526,51 +1514,51 @@ function renderStoryMode(data, container) {
 
     <div class="story-slide active" id="slide-0">
         <h3 class="story-title">${data.periodName}</h3>
-        <p class="story-text">Nem voltÃ¡l szomjas!</p>
+        <p class="story-text">Nem voltál szomjas!</p>
         <div class="story-big-number">${data.count}</div>
-        <p class="story-text">sÃ¶rt kÃ³stoltÃ¡l meg.</p>
-        <span style="font-size: 3rem; margin-top: 20px;">ðŸ»</span>
+        <p class="story-text">sört kóstoltál meg.</p>
+        <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
     </div>
 
     <div class="story-slide" id="slide-1">
-        <h3 class="story-title">Az abszolÃºt kedvenc</h3>
-        <p class="story-text">Ez vitte a prÃ­met:</p>
+        <h3 class="story-title">Az abszolút kedvenc</h3>
+        <p class="story-text">Ez vitte a prímet:</p>
         <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${data.topBeer}</span>
-        <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} â­</div>
+        <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
     </div>
 
     <div class="story-slide" id="slide-2">
-        <h3 class="story-title">Ãgy szereted</h3>
-        <p class="story-text">Kedvenc tÃ­pus:</p>
+        <h3 class="story-title">Így szereted</h3>
+        <p class="story-text">Kedvenc típus:</p>
         <span class="story-highlight">${data.favType}</span>
         <br>
-        <p class="story-text">LegtÃ¶bbszÃ¶r itt:</p>
+        <p class="story-text">Legtöbbször itt:</p>
         <span class="story-highlight">${data.favPlace}</span>
         <br>
-        <p class="story-text">Ãtlagos idÅ‘pont:</p>
+        <p class="story-text">Átlagos időpont:</p>
         <span class="story-highlight">${data.drinkingTime}</span>
     </div>
 
     <div class="story-slide" id="slide-3" style="z-index: 30;"> 
-        <h3 class="story-title">Ã–sszegzÃ©s</h3>
+        <h3 class="story-title">Összegzés</h3>
         <div class="story-summary-grid" id="captureTarget">
             <div class="summary-item">
-                <span class="summary-label">Ã–sszes sÃ¶r</span>
+                <span class="summary-label">Összes sör</span>
                 <span class="summary-value">${data.count} db</span>
             </div>
             <div class="summary-item">
-                <span class="summary-label">Ãtlag</span>
+                <span class="summary-label">Átlag</span>
                 <span class="summary-value">${data.avg}</span>
             </div>
             <div class="summary-item" style="grid-column: 1/-1">
-                <span class="summary-label">Top SÃ¶r</span>
+                <span class="summary-label">Top Sör</span>
                 <span class="summary-value">${data.topBeer}</span>
             </div>
         </div>
         
         <div class="story-actions">
-            <button class="story-btn btn-restart" onclick="startStory(0)">Ãšjra âŸ³</button>
-            <button class="story-btn btn-download" onclick="downloadRecap()">MentÃ©s ðŸ“¥</button>
+            <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
+            <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
         </div>
     </div>
 </div>
@@ -1578,13 +1566,13 @@ function renderStoryMode(data, container) {
 
     container.innerHTML = html;
     
-    // IndÃ­tÃ¡s
+    // Indítás
     window.currentSlide = 0;
     window.totalSlides = 4;
     startStory(0);
 }
 
-// GlobÃ¡lis fÃ¼ggvÃ©nyek (hogy a HTML gombok elÃ©rjÃ©k Å‘ket)
+// Globális függvények (hogy a HTML gombok elérjék őket)
 window.startStory = function(slideIndex) {
     if(storyInterval) clearInterval(storyInterval);
     window.currentSlide = slideIndex;
@@ -1643,12 +1631,11 @@ function animateProgress(fillElement) {
     }, 40); // 4mp / slide
 }
 
-
 window.downloadRecap = function() {
     const element = document.getElementById('storyContainer');
     if (!element) return;
 
-    // Elemek elrejtÃ©se a kÃ©prÅ‘l
+    // Elemek elrejtése a képről
     const actions = element.querySelector('.story-actions');
     const navL = element.querySelector('.story-nav-left');
     const navR = element.querySelector('.story-nav-right');
@@ -1657,9 +1644,9 @@ window.downloadRecap = function() {
     if(navL) navL.style.display = 'none';
     if(navR) navR.style.display = 'none';
 
-    // EllenÅ‘rizzÃ¼k, hogy a html2canvas be van-e tÃ¶ltve
+    // Ellenőrizzük, hogy a html2canvas be van-e töltve
     if (typeof html2canvas === 'undefined') {
-        alert("Hiba: A html2canvas kÃ¶nyvtÃ¡r nincs betÃ¶ltve! EllenÅ‘rizd az index.html fÃ¡jlt.");
+        alert("Hiba: A html2canvas könyvtár nincs betöltve! Ellenőrizd az index.html fájlt.");
         if(actions) actions.style.display = 'flex';
         return;
     }
@@ -1673,43 +1660,43 @@ window.downloadRecap = function() {
         link.href = canvas.toDataURL();
         link.click();
         
-        // VisszaÃ¡llÃ­tÃ¡s
+        // Visszaállítás
         if(actions) actions.style.display = 'flex';
         if(navL) navL.style.display = 'block';
         if(navR) navR.style.display = 'block';
-        showSuccess("Sikeres letÃ¶ltÃ©s! ðŸ“¸");
+        showSuccess("Sikeres letöltés! 📸");
     }).catch(err => {
         console.error(err);
-        showError("Nem sikerÃ¼lt a kÃ©p mentÃ©se.");
+        showError("Nem sikerült a kép mentése.");
         if(actions) actions.style.display = 'flex';
     });
 }
 
-// --- SEGÃ‰DFÃœGGVÃ‰NYEK ---
-// ... (a fÃ¡jl tÃ¶bbi rÃ©sze vÃ¡ltozatlan) ...
+// --- SEGÉDFÜGGVÉNYEK ---
+// ... (a fájl többi része változatlan) ...
     
-    // --- SEGÃ‰DFÃœGGVÃ‰NYEK ---
+    // --- SEGÉDFÜGGVÉNYEK ---
     function setLoading(button, isLoading) { button.classList.toggle('loading', isLoading); button.disabled = isLoading; }
     function showError(message) { showNotification(message, 'error'); }
     function showSuccess(message) { showNotification(message, 'success'); }
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
     
-    console.log('ðŸº Gabz Ã©s Lajos SÃ¶r TÃ¡blÃ¡zat alkalmazÃ¡s betÃ¶ltve!');
-// === DINAMIKUS FEJLÃ‰C SCROLL KEZELÃ‰S (JAVÃTOTT) ===
+    console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
+// === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
 let lastScrollTop = 0;
 
 window.addEventListener('scroll', function() {
-    // Itt a querySelector helyett querySelectorAll-t hasznÃ¡lunk, hogy MINDEN fejlÃ©cet megtalÃ¡ljon
+    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
     const headers = document.querySelectorAll('.admin-header'); 
     
     if (headers.length === 0) return;
     
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig tÃ¶ltÅ‘dik
+    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
     
-    // VÃ©gigmegyÃ¼nk az Ã¶sszes megtalÃ¡lt fejlÃ©cen (User Ã©s Admin is)
+    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
     headers.forEach(header => {
-        // SÃ¶r feltÃ¶ltÃ©s animÃ¡ciÃ³ - inline style-lal Ã¡llÃ­tjuk be
+        // Sör feltöltés animáció - inline style-lal állítjuk be
         header.style.setProperty('--fill-percent', scrollPercent);
         
         if (scrollPercent >= 1) {
@@ -1718,7 +1705,7 @@ window.addEventListener('scroll', function() {
             header.classList.remove('filled');
         }
         
-        // FejlÃ©c elrejtÃ©se lefelÃ© gÃ¶rgetÃ©skor (csak ha mÃ¡r van gÃ¶rgetÃ©s)
+        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
         if (scrollTop > lastScrollTop && scrollTop > 350) {
             header.classList.add('hidden');
         } else if (scrollTop < lastScrollTop || scrollTop < 100) {
@@ -1728,27 +1715,27 @@ window.addEventListener('scroll', function() {
     
     lastScrollTop = scrollTop;
     // ======================================================
-    // === SZEMÃ‰LYRE SZABÃS (BEÃLLÃTÃSOK MENTÃ‰SE) - JAVÃTOTT ===
+    // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
 
-    // BeÃ¡llÃ­tÃ¡s betÃ¶ltÃ©se Ã©s szinkronizÃ¡lÃ¡sa
+    // Beállítás betöltése és szinkronizálása
     function loadUserPreferences(userEmail) {
         if (!userEmail) return;
 
         const userToggle = document.getElementById('userCursorToggle');
         const adminToggle = document.getElementById('adminCursorToggle');
 
-        // Egyedi kulcs a felhasznÃ¡lÃ³hoz
+        // Egyedi kulcs a felhasználóhoz
         const storageKey = `cursor_pref_${userEmail}`;
         const savedPref = localStorage.getItem(storageKey);
 
-        // AlapÃ©rtelmezÃ©s: BEKAPCSOLVA (ha nincs mentve semmi, vagy 'true')
+        // Alapértelmezés: BEKAPCSOLVA (ha nincs mentve semmi, vagy 'true')
         // Ha 'null', akkor is true legyen (default state)
         const isCursorActive = savedPref === null ? true : (savedPref === 'true');
 
-        console.log(`BeÃ¡llÃ­tÃ¡s betÃ¶ltÃ©se (${userEmail}):`, isCursorActive ? "BE" : "KI");
+        console.log(`Beállítás betöltése (${userEmail}):`, isCursorActive ? "BE" : "KI");
 
-        // 1. KapcsolÃ³k vizuÃ¡lis Ã¡llapotÃ¡nak beÃ¡llÃ­tÃ¡sa (SZINKRONIZÃLÃS)
+        // 1. Kapcsolók vizuális állapotának beállítása (SZINKRONIZÁLÁS)
         if (userToggle) {
             userToggle.checked = isCursorActive;
         }
@@ -1756,11 +1743,11 @@ window.addEventListener('scroll', function() {
             adminToggle.checked = isCursorActive;
         }
 
-        // 2. A tÃ©nyleges kurzor be/kikapcsolÃ¡sa
+        // 2. A tényleges kurzor be/kikapcsolása
         toggleCustomCursor(isCursorActive);
     }
 
-    // Kurzor be/kikapcsolÃ³ segÃ©dfÃ¼ggvÃ©ny
+    // Kurzor be/kikapcsoló segédfüggvény
     function toggleCustomCursor(isActive) {
         if (isActive) {
             document.body.classList.add('custom-cursor-active');
@@ -1769,18 +1756,18 @@ window.addEventListener('scroll', function() {
         }
     }
 
-    // BeÃ¡llÃ­tÃ¡s mentÃ©se gombnyomÃ¡skor
+    // Beállítás mentése gombnyomáskor
     function saveCursorPreference(isActive) {
         let currentUserEmail = null;
         
-        // MegnÃ©zzÃ¼k ki van bejelentkezve
+        // Megnézzük ki van bejelentkezve
         const userData = JSON.parse(localStorage.getItem('userData'));
         
-        // Ha a user nÃ©zet lÃ¡thatÃ³ Ã©s van user adat
+        // Ha a user nézet látható és van user adat
         if (document.getElementById('userView').style.display !== 'none' && userData) {
             currentUserEmail = userData.email;
         } 
-        // Ha az admin nÃ©zet lÃ¡thatÃ³
+        // Ha az admin nézet látható
         else if (document.getElementById('adminView').style.display !== 'none') {
             currentUserEmail = 'admin_user'; 
         }
@@ -1790,18 +1777,18 @@ window.addEventListener('scroll', function() {
             localStorage.setItem(storageKey, isActive);
             toggleCustomCursor(isActive);
             
-            // SzinkronizÃ¡ljuk a mÃ¡sik gombot is (hogy ne legyen eltÃ©rÃ©s ha nÃ©zetet vÃ¡ltasz)
+            // Szinkronizáljuk a másik gombot is (hogy ne legyen eltérés ha nézetet váltasz)
             const userToggle = document.getElementById('userCursorToggle');
             const adminToggle = document.getElementById('adminCursorToggle');
             if(userToggle) userToggle.checked = isActive;
             if(adminToggle) adminToggle.checked = isActive;
 
-            showNotification(isActive ? "SÃ¶r kurzor bekapcsolva! ðŸº" : "SÃ¶r kurzor kikapcsolva.", "success");
+            showNotification(isActive ? "Sör kurzor bekapcsolva! 🍺" : "Sör kurzor kikapcsolva.", "success");
         }
     }
 
-    // EsemÃ©nyfigyelÅ‘k csatolÃ¡sa
-    // (Ãšjra lekÃ©rjÃ¼k az elemeket, hogy biztosan meglegyenek)
+    // Eseményfigyelők csatolása
+    // (Újra lekérjük az elemeket, hogy biztosan meglegyenek)
     const uToggle = document.getElementById('userCursorToggle');
     const aToggle = document.getElementById('adminCursorToggle');
 
@@ -1817,53 +1804,33 @@ window.addEventListener('scroll', function() {
         });
     }
 
-    // --- INTEGRÃCIÃ“ ---
+    // --- INTEGRÁCIÓ ---
 
-    // Admin nÃ©zet vÃ¡ltÃ¡sakor betÃ¶ltjÃ¼k a beÃ¡llÃ­tÃ¡st (JAVÃTOTT VERZIÃ“)
+    // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
-        console.log("Admin nÃ©zet aktivÃ¡lÃ¡sa...");
-        
-        // 1. NÃ©zetek kezelÃ©se
-        if(guestView) guestView.style.display = 'none';
-        if(userView) userView.style.display = 'none';
-        if(adminView) adminView.style.display = 'block';
-
-        // 2. HÃ¡ttÃ©r Ã©s gÃ¶rgetÃ©s beÃ¡llÃ­tÃ¡sa
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
         document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
         document.body.style.backgroundAttachment = 'fixed';
-        
-        // FONTOS: FelgÃ¶rgetÃ¼nk a tetejÃ©re, hogy lÃ¡tszÃ³djon a fejlÃ©c
-        window.scrollTo(0, 0);
+        initializeMainTabs(adminView);
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics();
+        setupAdminRecap();
 
-        // 3. Modulok inicializÃ¡lÃ¡sa
-        if (typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
-        
-        // JAVÃTÃS: BiztonsÃ¡gos adatbetÃ¶ltÃ©s (Try-Catch)
-        // Ez akadÃ¡lyozza meg, hogy a program megÃ¡lljon, ha hiba van az adatokkal
-        if (typeof loadAdminData === 'function') {
-            try {
-                loadAdminData();
-            } catch (e) {
-                console.error("Hiba az adatok betÃ¶ltÃ©sekor:", e);
-            }
-        }
-        
-        if (typeof initializeLiveSearch === 'function') initializeLiveSearch();
-        if (typeof setupStatistics === 'function') setupStatistics();
-        if (typeof setupAdminRecap === 'function') setupAdminRecap();
-
-        // 4. BeÃ¡llÃ­tÃ¡sok betÃ¶ltÃ©se Adminnak
-        if (typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
+        // Beállítások betöltése Adminnak
+        loadUserPreferences('admin_user');
     };
     // === SPOTIFY STORY LOGIKA ===
 
 function generateStoryData(beers, period) {
-    // Alap statisztikÃ¡k szÃ¡molÃ¡sa
+    // Alap statisztikák számolása
     const stats = calculateRecapStats(beers);
     
-    // Ãtlagos ivÃ¡si idÅ‘pont szÃ¡mÃ­tÃ¡sa (BiztonsÃ¡gos mÃ³don)
-    let avgHour = 18; // AlapÃ©rtelmezett: este 6
+    // Átlagos ivási időpont számítása (Biztonságos módon)
+    let avgHour = 18; // Alapértelmezett: este 6
     try {
         const hours = beers
             .map(b => {
@@ -1877,22 +1844,22 @@ function generateStoryData(beers, period) {
             avgHour = Math.floor(hours.reduce((a,b)=>a+b,0) / hours.length);
         }
     } catch (e) {
-        console.warn("Nem sikerÃ¼lt kiszÃ¡molni az idÅ‘pontot", e);
+        console.warn("Nem sikerült kiszámolni az időpontot", e);
     }
     
-    // IdÅ‘szak nevek magyarul
+    // Időszak nevek magyarul
     const periodNames = { 
         'weekly': 'A heted', 
-        'monthly': 'A hÃ³napod', 
-        'quarterly': 'A negyedÃ©ved', 
-        'yearly': 'Az Ã©ved' 
+        'monthly': 'A hónapod', 
+        'quarterly': 'A negyedéved', 
+        'yearly': 'Az éved' 
     };
     
     return {
-        periodName: periodNames[period] || 'Ã–sszesÃ­tÅ‘d',
+        periodName: periodNames[period] || 'Összesítőd',
         count: stats.totalBeers,
         avg: stats.averageScore,
-        topBeer: stats.bestBeer.name || 'Ismeretlen sÃ¶r', // Fallback ha nincs nÃ©v
+        topBeer: stats.bestBeer.name || 'Ismeretlen sör', // Fallback ha nincs név
         topScore: stats.bestBeer.score || 0,
         favType: stats.favoriteType || 'Nincs adat',
         favPlace: stats.favoriteLocation || 'Nincs adat',
@@ -1907,7 +1874,7 @@ function showSlide(index) {
         el.classList.toggle('active', i === index);
     });
 
-    // Progress bar kezelÃ©s
+    // Progress bar kezelés
     document.querySelectorAll('.story-progress-bar').forEach((el, i) => {
         el.classList.remove('active', 'completed');
         el.querySelector('.story-progress-fill').style.width = '0%';
@@ -1926,7 +1893,7 @@ function animateProgress(fillElement) {
     if(storyInterval) clearInterval(storyInterval);
     let width = 0;
     
-    // Ha az utolsÃ³ slide, ne lapozzon automatikusan, csak teljen meg
+    // Ha az utolsó slide, ne lapozzon automatikusan, csak teljen meg
     const isLast = window.currentSlide === window.totalSlides - 1;
     
     storyInterval = setInterval(() => {
@@ -1939,19 +1906,20 @@ function animateProgress(fillElement) {
                 window.nextSlide();
             }
         }
-    }, 40); // 4 mÃ¡sodperc per slide
+    }, 40); // 4 másodperc per slide
 }
-// CSERÃ‰LD LE EZT A RÃ‰SZT A FÃJL VÃ‰GÃ‰N (window.downloadRecap utÃ¡n):
+});
+// CSERÉLD LE EZT A RÉSZT A FÁJL VÉGÉN (window.downloadRecap után):
 
 window.toggleFullscreen = function() {
     const elem = document.getElementById('storyContainer');
-    const cursor = document.getElementById('beerCursor'); // Kurzor megkeresÃ©se
+    const cursor = document.getElementById('beerCursor'); // Kurzor megkeresése
     const btn = document.querySelector('.story-fullscreen-btn');
 
     if (!document.fullscreenElement && 
         !document.webkitFullscreenElement) {
         
-        // --- BELÃ‰PÃ‰S ---
+        // --- BELÉPÉS ---
         if (elem.requestFullscreen) {
             elem.requestFullscreen();
         } else if (elem.webkitRequestFullscreen) {
@@ -1960,26 +1928,26 @@ window.toggleFullscreen = function() {
             elem.msRequestFullscreen();
         }
 
-        // TRÃœKK: Ãtmozgatjuk a kurzort a fullscreen elembe, hogy lÃ¡tszÃ³djon
-        // KÃ¼lÃ¶nben a bÃ¶ngÃ©szÅ‘ kitakarja, mert a body-ban van
+        // TRÜKK: Átmozgatjuk a kurzort a fullscreen elembe, hogy látszódjon
+        // Különben a böngésző kitakarja, mert a body-ban van
         if (cursor && elem) {
             elem.appendChild(cursor);
         }
         
-        if(btn) btn.innerHTML = 'âœ•'; 
+        if(btn) btn.innerHTML = '✕'; 
 
     } else {
-        // --- KILÃ‰PÃ‰S ---
+        // --- KILÉPÉS ---
         if (document.exitFullscreen) {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
         }
-        if(btn) btn.innerHTML = 'â›¶';
+        if(btn) btn.innerHTML = '⛶';
     }
 }
 
-// EsemÃ©nyfigyelÅ‘, ami akkor is visszapakolja a kurzort, ha ESC-el lÃ©psz ki
+// Eseményfigyelő, ami akkor is visszapakolja a kurzort, ha ESC-el lépsz ki
 function handleFullscreenChange() {
     const btn = document.querySelector('.story-fullscreen-btn');
     const cursor = document.getElementById('beerCursor');
@@ -1988,42 +1956,42 @@ function handleFullscreenChange() {
     const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
 
     if (!isFullscreen) {
-        // KilÃ©pÃ©skor visszatesszÃ¼k a kurzort a body-ba (hogy mindenhol mÅ±kÃ¶djÃ¶n)
-        if(btn) btn.innerHTML = 'â›¶';
+        // Kilépéskor visszatesszük a kurzort a body-ba (hogy mindenhol működjön)
+        if(btn) btn.innerHTML = '⛶';
         if (cursor && document.body) {
             document.body.appendChild(cursor);
         }
     } else {
-        // BelÃ©pÃ©skor ellenÅ‘rizzÃ¼k, hogy jÃ³ helyen van-e
-        if(btn) btn.innerHTML = 'âœ•';
+        // Belépéskor ellenőrizzük, hogy jó helyen van-e
+        if(btn) btn.innerHTML = '✕';
         if (cursor && storyContainer && cursor.parentElement !== storyContainer) {
             storyContainer.appendChild(cursor);
         }
     }
 }
 
-// FigyeljÃ¼k a vÃ¡ltozÃ¡st minden bÃ¶ngÃ©szÅ‘ben
+// Figyeljük a változást minden böngészőben
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 document.addEventListener('mozfullscreenchange', handleFullscreenChange);
 document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-// === 2FA KEZELÃ‰S ===
+// === 2FA KEZELÉS ===
 
-// KapcsolÃ³ esemÃ©nykezelÅ‘
+// Kapcsoló eseménykezelő
 if (user2FAToggle) {
     user2FAToggle.addEventListener('change', async (e) => {
         const isChecked = e.target.checked;
         
         if (isChecked) {
-            // BekapcsolÃ¡s: KÃ©rjÃ¼nk titkos kulcsot Ã©s QR kÃ³dot
-            e.target.checked = false; // MÃ©g ne kapcsoljuk be vizuÃ¡lisan, amÃ­g nincs kÃ©sz
+            // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
+            e.target.checked = false; // Még ne kapcsoljuk be vizuálisan, amíg nincs kész
             await start2FASetup();
         } else {
-            // KikapcsolÃ¡s
-            if (confirm("Biztosan ki akarod kapcsolni a kÃ©tlÃ©pcsÅ‘s azonosÃ­tÃ¡st?")) {
+            // Kikapcsolás
+            if (confirm("Biztosan ki akarod kapcsolni a kétlépcsős azonosítást?")) {
                 await disable2FA();
             } else {
-                e.target.checked = true; // Visszakapcsoljuk, ha mÃ©gsem
+                e.target.checked = true; // Visszakapcsoljuk, ha mégsem
             }
         }
     });
@@ -2043,18 +2011,18 @@ async function start2FASetup() {
             document.getElementById('manualSecret').textContent = result.secret;
             temp2FASecret = result.secret;
             
-            // Modal megjelenÃ­tÃ©se
+            // Modal megjelenítése
             setup2FAModal.classList.add('active');
         }
     } catch (error) {
-        showError("Hiba a 2FA generÃ¡lÃ¡sakor.");
+        showError("Hiba a 2FA generálásakor.");
     }
 }
 
-// "AktivÃ¡lÃ¡s" gomb a modalban
+// "Aktiválás" gomb a modalban
 document.getElementById('confirm2FABtn').addEventListener('click', async () => {
     const code = document.getElementById('setup2FACode').value;
-    if (code.length < 6) { showError("Add meg a 6 jegyÅ± kÃ³dot!"); return; }
+    if (code.length < 6) { showError("Add meg a 6 jegyű kódot!"); return; }
 
     try {
         const response = await fetch('/api/sheet', {
@@ -2068,16 +2036,16 @@ document.getElementById('confirm2FABtn').addEventListener('click', async () => {
             setup2FAModal.classList.remove('active');
             user2FAToggle.checked = true;
             
-            // FrissÃ­tjÃ¼k a lokÃ¡lis adatot is
+            // Frissítjük a lokális adatot is
             const userData = JSON.parse(localStorage.getItem('userData'));
             userData.has2FA = true;
             localStorage.setItem('userData', JSON.stringify(userData));
         } else {
             const res = await response.json();
-            showError(res.error || "HibÃ¡s kÃ³d!");
+            showError(res.error || "Hibás kód!");
         }
     } catch (error) {
-        showError("Hiba az aktivÃ¡lÃ¡skor.");
+        showError("Hiba az aktiváláskor.");
     }
 });
 
@@ -2092,32 +2060,32 @@ async function disable2FA() {
         if (response.ok) {
             showSuccess("2FA kikapcsolva.");
             user2FAToggle.checked = false;
-            // LokÃ¡lis adat frissÃ­tÃ©se
+            // Lokális adat frissítése
             const userData = JSON.parse(localStorage.getItem('userData'));
             userData.has2FA = false;
             localStorage.setItem('userData', JSON.stringify(userData));
         }
     } catch (error) {
-        showError("Nem sikerÃ¼lt kikapcsolni.");
+        showError("Nem sikerült kikapcsolni.");
         user2FAToggle.checked = true;
     }
 }
 
-// Modal bezÃ¡rÃ¡s (globÃ¡lis)
+// Modal bezárás (globális)
 window.close2FAModal = function() {
     setup2FAModal.classList.remove('active');
     document.getElementById('setup2FACode').value = '';
 }
 
-// 2FA Login Form kezelÃ©se
+// 2FA Login Form kezelése
 document.getElementById('verify2FALoginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const code = document.getElementById('login2FACode').value;
     const btn = e.target.querySelector('button');
     
-    // Kis vizuÃ¡lis visszajelzÃ©s a gombon
+    // Kis vizuális visszajelzés a gombon
     const originalText = btn.innerText;
-    btn.innerText = "EllenÅ‘rzÃ©s...";
+    btn.innerText = "Ellenőrzés...";
     btn.disabled = true;
 
     try {
@@ -2132,14 +2100,14 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         });
         const result = await response.json();
 
-        if (!response.ok) throw new Error(result.error || "HibÃ¡s kÃ³d!");
+        if (!response.ok) throw new Error(result.error || "Hibás kód!");
 
-        // Sikeres belÃ©pÃ©s
+        // Sikeres belépés
         localStorage.setItem('userToken', result.token);
         localStorage.setItem('userData', JSON.stringify(result.user));
         
         login2FAModal.classList.remove('active');
-        showSuccess(`Sikeres belÃ©pÃ©s!`);
+        showSuccess(`Sikeres belépés!`);
         switchToUserView();
 
     } catch (error) {
@@ -2149,26 +2117,26 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         document.getElementById('login2FACode').value = '';
     }
 });
-// === UI FRISSÃTÃ‰SEK (Kurzor + 2FA) ===
+// === UI FRISSÍTÉSEK (Kurzor + 2FA) ===
 
-// SegÃ©dfÃ¼ggvÃ©ny a kapcsolÃ³k beÃ¡llÃ­tÃ¡sÃ¡hoz
-// === JAVÃTOTT UI FRISSÃTÃ‰S (KURZOR + 2FA EGYBEN) ===
+// Segédfüggvény a kapcsolók beállításához
+// === JAVÍTOTT UI FRISSÍTÉS (KURZOR + 2FA EGYBEN) ===
 
 function updateSettingsUI() {
     const userData = JSON.parse(localStorage.getItem('userData'));
     
-    // --- 1. 2FA KapcsolÃ³ beÃ¡llÃ­tÃ¡sa ---
+    // --- 1. 2FA Kapcsoló beállítása ---
     const toggle2FA = document.getElementById('user2FAToggle');
     if (userData && toggle2FA) {
         toggle2FA.checked = (userData.has2FA === true);
     }
 
-    // --- 2. Kurzor beÃ¡llÃ­tÃ¡sa (EZ HOZZA VISSZA A SÃ–RT) ---
+    // --- 2. Kurzor beállítása (EZ HOZZA VISSZA A SÖRT) ---
     let emailKey = null;
     const userViewElem = document.getElementById('userView');
     const adminViewElem = document.getElementById('adminView');
 
-    // MegnÃ©zzÃ¼k, ki van Ã©pp bejelentkezve (User vagy Admin)
+    // Megnézzük, ki van épp bejelentkezve (User vagy Admin)
     if (userData && userViewElem && userViewElem.style.display !== 'none') {
         emailKey = userData.email;
     } else if (adminViewElem && adminViewElem.style.display !== 'none') {
@@ -2178,30 +2146,30 @@ function updateSettingsUI() {
     if (emailKey) {
         const storageKey = `cursor_pref_${emailKey}`;
         const savedPref = localStorage.getItem(storageKey);
-        // AlapÃ©rtelmezÃ©s: BEKAPCSOLVA (true), ha nincs mÃ©g mentve semmi
+        // Alapértelmezés: BEKAPCSOLVA (true), ha nincs még mentve semmi
         const isCursorActive = savedPref === null ? true : (savedPref === 'true');
         
-        // Itt kapcsoljuk be/ki a tÃ©nyleges sÃ¶rkurzort
+        // Itt kapcsoljuk be/ki a tényleges sörkurzort
         if (isCursorActive) {
             document.body.classList.add('custom-cursor-active');
         } else {
             document.body.classList.remove('custom-cursor-active');
         }
 
-        // A kapcsolÃ³k vizuÃ¡lis Ã¡llapotÃ¡nak frissÃ­tÃ©se
+        // A kapcsolók vizuális állapotának frissítése
         const uToggle = document.getElementById('userCursorToggle');
         const aToggle = document.getElementById('adminCursorToggle');
         if (uToggle) uToggle.checked = isCursorActive;
         if (aToggle) aToggle.checked = isCursorActive;
     }
 }
-    // EsemÃ©nykezelÅ‘ az Ã¶tlet Å±rlaphoz
+    // Eseménykezelő az ötlet űrlaphoz
 const submitIdeaForm = document.getElementById('submitIdeaForm');
 if(submitIdeaForm) {
     submitIdeaForm.addEventListener('submit', handleIdeaSubmit);
 }
 
-// FÃ¼lek vÃ¡ltÃ¡sakor tÃ¶ltsÃ¼k be az adatokat
+// Fülek váltásakor töltsük be az adatokat
 document.querySelectorAll('.main-tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const target = e.target.dataset.tabContent;
@@ -2213,12 +2181,58 @@ document.querySelectorAll('.main-tab-btn').forEach(btn => {
     });
 });
 
-// Admin gomb globÃ¡lis elÃ©rÃ©se (hogy az onclick="markIdeaAsDone(..)" mÅ±kÃ¶djÃ¶n)
+// Admin gomb globális elérése (hogy az onclick="markIdeaAsDone(..)" működjön)
 window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
+// A nézetváltó függvény, ami meghívja a fenti javított beállítót
+switchToUserView = function() {
+    // 1. Nézetek átváltása
+    document.getElementById('guestView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'none';
+    document.getElementById('userView').style.display = 'block';
+    
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
 
-    // === SÃ–R SZERKESZTÃ‰S ===
+    // 2. Fülek és UI inicializálása
+    if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
+    if (typeof updateSettingsUI === 'function') updateSettingsUI();
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
+
+    // 3. ADATOK BETÖLTÉSE (Sorrend fontos!)
+    // Először a söröket töltjük be
+    loadUserData();
+    
+    // Aztán az italokat
+    if (typeof loadUserDrinks === 'function') {
+        loadUserDrinks();
+    }
+
+    // 4. FAB Gomb Eseménykezelő javítása (Ha "beragadt" volna)
+    // Újra csatoljuk az eseményt a biztonság kedvéért
+    const fabMainBtn = document.getElementById('fabMainBtn');
+    const fabContainer = document.getElementById('fabContainer');
+    
+    if (fabMainBtn && fabContainer) {
+        // Először levesszük a régit (klónozással), hogy ne duplázódjon
+        const newBtn = fabMainBtn.cloneNode(true);
+        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
+        
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Megállítjuk a buborékosodást
+            fabContainer.classList.toggle('active');
+        });
+
+        // Bezárás ha máshova kattintunk
+        document.addEventListener('click', (e) => {
+            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
+                fabContainer.classList.remove('active');
+            }
+        });
+    }
+};
+    // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
     const beer = currentUserBeers[index];
     
@@ -2270,17 +2284,17 @@ editBeerForm.addEventListener('submit', async (e) => {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Szerverhiba');
         
-        showSuccess('SÃ¶r sikeresen mÃ³dosÃ­tva!');
+        showSuccess('Sör sikeresen módosítva!');
         closeEditBeerModal();
-        loadUserData(); // ÃšjratÃ¶ltÃ©s
+        loadUserData(); // Újratöltés
     } catch (error) {
-        showError(error.message || "Nem sikerÃ¼lt mÃ³dosÃ­tani.");
+        showError(error.message || "Nem sikerült módosítani.");
     } finally {
         setLoading(submitBtn, false);
     }
 });
 
-// === ITAL SZERKESZTÃ‰S ===
+// === ITAL SZERKESZTÉS ===
 window.openEditDrinkModal = function(index) {
     const drink = currentUserDrinks[index];
     
@@ -2334,58 +2348,58 @@ editDrinkForm.addEventListener('submit', async (e) => {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Szerverhiba');
         
-        showSuccess('Ital sikeresen mÃ³dosÃ­tva!');
+        showSuccess('Ital sikeresen módosítva!');
         closeEditDrinkModal();
-        loadUserDrinks(); // ÃšjratÃ¶ltÃ©s
+        loadUserDrinks(); // Újratöltés
     } catch (error) {
-        showError(error.message || "Nem sikerÃ¼lt mÃ³dosÃ­tani.");
+        showError(error.message || "Nem sikerült módosítani.");
     } finally {
         setLoading(submitBtn, false);
     }
 });
-    // === BUBOREK EFFEKT FÃœGGVÃ‰NY (Ezt mÃ¡sold be a js.js fÃ¡jlba) ===
+    // === BUBOREK EFFEKT FÜGGVÉNY (Ezt másold be a js.js fájlba) ===
 function createBeerBubbles(x, y) {
-    const bubbleCount = 8; // BuborÃ©kok szÃ¡ma kattintÃ¡sonkÃ©nt
+    const bubbleCount = 8; // Buborékok száma kattintásonként
     
     for (let i = 0; i < bubbleCount; i++) {
         const bubble = document.createElement('div');
         bubble.classList.add('beer-bubble');
         
-        // KezdÅ‘ pozÃ­ciÃ³ (az egÃ©r helye)
+        // Kezdő pozíció (az egér helye)
         bubble.style.left = `${x}px`;
         bubble.style.top = `${y}px`;
         
-        // VÃ©letlenszerÅ± irÃ¡ny Ã©s tÃ¡volsÃ¡g (CSS vÃ¡ltozÃ³khoz)
-        // tx: vÃ­zszintes elmozdulÃ¡s (-50px Ã©s +50px kÃ¶zÃ¶tt)
-        // ty: fÃ¼ggÅ‘leges elmozdulÃ¡s (felfelÃ©, -50px Ã©s -150px kÃ¶zÃ¶tt)
+        // Véletlenszerű irány és távolság (CSS változókhoz)
+        // tx: vízszintes elmozdulás (-50px és +50px között)
+        // ty: függőleges elmozdulás (felfelé, -50px és -150px között)
         const tx = (Math.random() - 0.5) * 100; 
         const ty = -(50 + Math.random() * 100); 
         
         bubble.style.setProperty('--tx', `${tx}px`);
         bubble.style.setProperty('--ty', `${ty}px`);
         
-        // VÃ©letlenszerÅ± mÃ©ret
+        // Véletlenszerű méret
         const size = 5 + Math.random() * 10; 
         bubble.style.width = `${size}px`;
         bubble.style.height = `${size}px`;
         
-        // VÃ©letlenszerÅ± sÃ¶r-szÃ­nek (sÃ¡rgÃ¡s-fehÃ©res)
+        // Véletlenszerű sör-színek (sárgás-fehéres)
         const colors = ['rgba(255, 255, 255, 0.8)', 'rgba(255, 198, 0, 0.6)', 'rgba(255, 255, 255, 0.5)'];
         bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
         document.body.appendChild(bubble);
 
-        // TÃ¶rlÃ©s az animÃ¡ciÃ³ utÃ¡n (0.6s a CSS-ben)
+        // Törlés az animáció után (0.6s a CSS-ben)
         setTimeout(() => {
             bubble.remove();
         }, 600);
     }
 }
-    // === ÃšJ UI JAVÃTÃSOK (Scroll & SzinkronizÃ¡lÃ¡s) ===
+    // === ÚJ UI JAVÍTÁSOK (Scroll & Szinkronizálás) ===
 
-// 1. Scroll AnimÃ¡ciÃ³ ("Reveal on Scroll")
+// 1. Scroll Animáció ("Reveal on Scroll")
 const observerOptions = {
-    threshold: 0.1 // Akkor aktivÃ¡lÃ³dik, ha az elem 10%-a lÃ¡tszik
+    threshold: 0.1 // Akkor aktiválódik, ha az elem 10%-a látszik
 };
 
 const observer = new IntersectionObserver((entries) => {
@@ -2396,17 +2410,17 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Minden kÃ¡rtyÃ¡t Ã©s szekciÃ³t figyelÃ¼nk
+// Minden kártyát és szekciót figyelünk
 function initScrollAnimation() {
     const elements = document.querySelectorAll('.card, .stat-card, .kpi-card, .chart-container');
     elements.forEach(el => {
-        el.classList.add('reveal-on-scroll'); // AlapbÃ³l adjuk hozzÃ¡ az osztÃ¡lyt
+        el.classList.add('reveal-on-scroll'); // Alapból adjuk hozzá az osztályt
         observer.observe(el);
     });
 }
 
-// 2. Sidebar Ã©s Bottom Nav szinkronizÃ¡lÃ¡sa
-// Ha a sidebaron kattintasz, a mobil menÃ¼ is vÃ¡ltson, Ã©s fordÃ­tva.
+// 2. Sidebar és Bottom Nav szinkronizálása
+// Ha a sidebaron kattintasz, a mobil menü is váltson, és fordítva.
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.nav-item, .nav-item-mobile');
     if (!btn) return;
@@ -2414,35 +2428,34 @@ document.addEventListener('click', (e) => {
     const targetId = btn.dataset.tabContent;
     if(!targetId) return;
 
-    // Minden navigÃ¡ciÃ³s elemet frissÃ­tÃ¼nk (Sidebar Ã‰S Mobil is)
+    // Minden navigációs elemet frissítünk (Sidebar ÉS Mobil is)
     const allNavs = document.querySelectorAll(`[data-tab-content="${targetId}"]`);
     
-    // AktÃ­v osztÃ¡lyok tÃ¶rlÃ©se mindenhonnan
+    // Aktív osztályok törlése mindenhonnan
     document.querySelectorAll('.nav-item, .nav-item-mobile').forEach(b => b.classList.remove('active'));
     
-    // Ãšj aktÃ­v hozzÃ¡adÃ¡sa
+    // Új aktív hozzáadása
     allNavs.forEach(nav => nav.classList.add('active'));
 });
 
-// A 'userLogoutBtnSidebar' gomb bekÃ¶tÃ©se a rÃ©gi kijelentkezÃ©shez
+// A 'userLogoutBtnSidebar' gomb bekötése a régi kijelentkezéshez
 const sidebarLogout = document.getElementById('userLogoutBtnSidebar');
 if(sidebarLogout) {
     sidebarLogout.addEventListener('click', switchToGuestView);
 }
 
-// === ÃšJ MODAL FUNKCIÃ“K (SÃ–R/ITAL HOZZÃADÃS) ===
+// === ÚJ MODAL FUNKCIÓK (SÖR/ITAL HOZZÁADÁS) ===
 window.openAddModal = function(type) {
-    fabContainer.classList.remove('active'); // FAB bezÃ¡rÃ¡sa
+    fabContainer.classList.remove('active'); // FAB bezárása
     
     if (type === 'beer') {
         document.getElementById('addBeerModal').classList.add('active');
     } else if (type === 'drink') {
         document.getElementById('addDrinkModal').classList.add('active');
     }
-    document.body.style.overflow = 'hidden'; // GÃ¶rgetÃ©s tiltÃ¡sa
+    document.body.style.overflow = 'hidden'; // Görgetés tiltása
 }
 
-// --- Modal bezÃ¡rÃ¡sa (AddModal) ---
 window.closeAddModal = function(type) {
     if (type === 'beer') {
         document.getElementById('addBeerModal').classList.remove('active');
@@ -2450,502 +2463,120 @@ window.closeAddModal = function(type) {
         document.getElementById('addDrinkModal').classList.remove('active');
     }
     document.body.style.overflow = 'auto';
-};
+}
+    // 1. Modal megnyitása
+    window.openContactModal = function() {
+        // Bezárjuk a lebegő menüt, ha nyitva van
+        const fabContainer = document.getElementById('fabContainer');
+        if(fabContainer) fabContainer.classList.remove('active');
 
-// ==========================================
-// === HIBAJELENTÃ‰S / KAPCSOLAT MODUL (GLOBÃLIS) ===
-// ==========================================
-
-// 1. Modal megnyitÃ¡sa
-window.openContactModal = function() {
-    console.log("HibajelentÅ‘ ablak megnyitÃ¡sa...");
-    let modal = document.getElementById('contactModal');
-
-    // --- 1. MENTÅÃ–V: Ha az ablak rossz helyen van, Ã¡trakjuk a Body-ba ---
-    // Ha a modal egy rejtett div-ben van (pl. guestView), akkor hiÃ¡ba nyitjuk meg, nem lÃ¡tszik.
-    // EzÃ©rt Ã¡tmozgatjuk kÃ¶zvetlenÃ¼l a dokumentum "gyÃ¶kerÃ©be".
-    if (modal && modal.parentElement !== document.body) {
-        console.log("Modal Ã¡tmozgatÃ¡sa a fÅ‘oldalra, hogy lÃ¡thatÃ³ legyen...");
-        document.body.appendChild(modal);
-    }
-
-    const fab = document.getElementById('fabContainer');
-    const emailGroup = document.getElementById('contactEmailGroup');
-    const emailInput = document.getElementById('contactEmail');
-    const token = localStorage.getItem('userToken');
-
-    // Ha van lebegÅ‘ menÃ¼, bezÃ¡rjuk
-    if (fab) fab.classList.remove('active');
-
-    if (modal) {
-        // --- 2. BIZTOSÃTÃ‰K: Z-Index kÃ©nyszerÃ­tÃ©se ---
-        // Ãgy biztosan minden mÃ¡s elem (pl. fejlÃ©c) fÃ¶lÃ© kerÃ¼l
-        modal.style.zIndex = "999999"; 
-        modal.style.display = "flex"; // BiztosÃ­tjuk, hogy ne legyen display:none
-
-        // Logika: VendÃ©g vs User
-        if (!token) {
-            if(emailGroup) emailGroup.style.display = 'block';
-            if(emailInput) emailInput.required = true;
-        } else {
-            if(emailGroup) emailGroup.style.display = 'none';
-            if(emailInput) emailInput.required = false;
-        }
-
-        // AnimÃ¡ciÃ³ indÃ­tÃ¡sa (kis kÃ©sleltetÃ©ssel, hogy a CSS transition mÅ±kÃ¶djÃ¶n)
-        setTimeout(() => {
+        // Megnyitjuk a modal-t
+        const modal = document.getElementById('contactModal');
+        if (modal) {
             modal.classList.add('active');
-        }, 10);
-        
-        document.body.style.overflow = 'hidden'; // GÃ¶rgetÃ©s tiltÃ¡sa
-    } else {
-        alert("KRITIKUS HIBA: Nem talÃ¡lhatÃ³ a 'contactModal' a HTML-ben!");
+            document.body.style.overflow = 'hidden'; // Görgetés tiltása
+        }
     }
-};
 
-// 2. Modal bezÃ¡rÃ¡sa
-window.closeContactModal = function() {
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.remove('active');
+    // 2. Modal bezárása
+    window.closeContactModal = function() {
+        const modal = document.getElementById('contactModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
         
-        // VÃ¡rakozunk az animÃ¡ciÃ³ vÃ©gÃ©ig, aztÃ¡n resetelÃ¼nk
-        setTimeout(() => {
-            modal.style.zIndex = ""; // VisszaÃ¡llÃ­tjuk az eredetire
-        }, 300);
-    }
-    
-    const form = document.getElementById('contactForm');
-    if (form) form.reset();
-    
-    document.body.style.overflow = 'auto';
-};
-const contactForm = document.getElementById('contactForm');
+        // Űrlap törlése
+        const form = document.getElementById('contactForm');
+        if (form) form.reset();
 
+        document.body.style.overflow = 'auto';
+    }
+
+    // 3. Űrlap beküldése
+    const contactForm = document.getElementById('contactForm');
     if (contactForm) {
-        // KlÃ³nozÃ¡ssal tÃ¶rÃ¶ljÃ¼k a rÃ©gi esemÃ©nykezelÅ‘ket
-        const newForm = contactForm.cloneNode(true);
-        contactForm.parentNode.replaceChild(newForm, contactForm);
-
-        newForm.addEventListener('submit', async (e) => {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const subjectInput = document.getElementById('contactSubject');
-            const messageInput = document.getElementById('contactMessage');
-            const emailInput = document.getElementById('contactEmail'); 
-            const submitBtn = newForm.querySelector('.auth-btn');
+            const subject = document.getElementById('contactSubject').value;
+            const message = document.getElementById('contactMessage').value;
+            const submitBtn = contactForm.querySelector('.auth-btn');
 
-            // Gomb UI frissÃ­tÃ©s
-            if (submitBtn) {
-                const btnText = submitBtn.querySelector('.btn-text');
-                const btnLoading = submitBtn.querySelector('.btn-loading');
-                if(btnText) btnText.style.opacity = '0';
-                if(btnLoading) btnLoading.style.display = 'block';
-                submitBtn.disabled = true;
-            }
+            setLoading(submitBtn, true);
 
             try {
-                const token = localStorage.getItem('userToken');
-                const headers = { 'Content-Type': 'application/json' };
-                
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
-
-                // API hÃ­vÃ¡s
+                // API hívás a sheet.js-hez
                 const response = await fetch('/api/sheet', {
                     method: 'POST',
-                    headers: headers,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
                     body: JSON.stringify({ 
                         action: 'SEND_REPORT', 
-                        subject: subjectInput.value, 
-                        message: messageInput.value,
-                        guestEmail: emailInput ? emailInput.value : '' 
+                        subject: subject, 
+                        message: message 
                     })
                 });
 
                 const result = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(result.error || "Hiba tÃ¶rtÃ©nt.");
+                if(response.ok) {
+                    showSuccess(result.message || "Üzenet sikeresen elküldve!");
+                    closeContactModal();
+                } else {
+                    showError(result.error || "Hiba történt küldéskor.");
                 }
-
-                alert("âœ… " + (result.message || "Ãœzenet elkÃ¼ldve!"));
-                window.closeContactModal();
-
-            } catch (err) {
+            } catch(err) {
                 console.error(err);
-                alert("âŒ Hiba: " + err.message);
+                showError("Hálózati hiba.");
             } finally {
-                // UI visszaÃ¡llÃ­tÃ¡s
-                if (submitBtn) {
-                    const btnText = submitBtn.querySelector('.btn-text');
-                    const btnLoading = submitBtn.querySelector('.btn-loading');
-                    if(btnText) btnText.style.opacity = '1';
-                    if(btnLoading) btnLoading.style.display = 'none';
-                    submitBtn.disabled = false;
-                }
+                setLoading(submitBtn, false);
             }
         });
     }
-});
-// ==========================================
-// === ADMIN BELÃ‰PÃ‰S JAVÃTOTT MODUL ===
-// ==========================================
-
-window.openAdminModal = function() {
-    console.log("Admin ablak nyitÃ¡sa...");
-    const modal = document.getElementById('adminModal');
-    
-    // --- MENTÅÃ–V: Ha az ablak "beragadt" valahova, kimentjÃ¼k a Body-ba ---
-    if (modal && modal.parentElement !== document.body) {
-        console.log("Admin Modal Ã¡tmozgatÃ¡sa a fÅ‘oldalra...");
-        document.body.appendChild(modal);
-    }
-
-    if (modal) {
-        // --- BIZTOSÃTÃ‰KOK ---
-        modal.style.zIndex = "999999"; 
-        modal.style.display = "flex"; 
-        
-        // AnimÃ¡ciÃ³ indÃ­tÃ¡sa
-        setTimeout(() => {
-            modal.classList.add('active');
-        }, 10);
-        
-        document.body.style.overflow = 'hidden'; // GÃ¶rgetÃ©s tiltÃ¡sa
-        
-        // FÃ³kusz a felhasznÃ¡lÃ³nÃ©v mezÅ‘re a kÃ©nyelemÃ©rt
-        const userInput = document.getElementById('adminUsername');
-        if(userInput) setTimeout(() => userInput.focus(), 100);
-
-    } else {
-        alert("KRITIKUS HIBA: Nem talÃ¡lhatÃ³ az 'adminModal' a HTML-ben!");
-    }
-};
-
-window.closeAdminModal = function() {
-    const modal = document.getElementById('adminModal');
-    if (modal) {
-        modal.classList.remove('active');
-        // VÃ¡rakozunk az animÃ¡ciÃ³ vÃ©gÃ©ig
-        setTimeout(() => {
-            modal.style.zIndex = ""; 
-        }, 300);
-    }
-    document.body.style.overflow = 'auto';
-};
-
-// BiztonsÃ¡gi kiegÃ©szÃ­tÃ©s: Ha a modÃ¡l hÃ¡ttÃ©rre kattintanak, zÃ¡rÃ³djon be
-document.addEventListener('click', (e) => {
-    const modal = document.getElementById('adminModal');
-    if (modal && e.target === modal && modal.classList.contains('active')) {
-        window.closeAdminModal();
-    }
-});
-// === FEJLÃ‰C Ã–SSZECSUKÃ“ FUNKCIÃ“ ===
-window.toggleHeaderSize = function() {
-    // MegkeressÃ¼k az Ã¶sszes fejlÃ©cet (user Ã©s admin nÃ©zetÃ©t is)
-    const headers = document.querySelectorAll('.admin-header');
-    
-    headers.forEach(header => {
-        header.classList.toggle('collapsed');
-        
-        // Ha manuÃ¡lisan Ã¶sszecsukjuk, tÃ¶rÃ¶ljÃ¼k a scroll miatti elrejtÃ©st
-        if (header.classList.contains('collapsed')) {
-             header.classList.remove('hidden');
-             // OpcionÃ¡lis: MentÃ©s localStorage-ba, hogy frissÃ­tÃ©snÃ©l is Ã­gy maradjon
-             localStorage.setItem('headerCollapsed', 'true');
-        } else {
-             localStorage.setItem('headerCollapsed', 'false');
-        }
-    });
-}
-const isCollapsed = localStorage.getItem('headerCollapsed') === 'true';
-    if (isCollapsed) {
-        const headers = document.querySelectorAll('.admin-header');
-        headers.forEach(h => h.classList.add('collapsed'));
-    }
-});
-// ==========================================
-// === ACHIEVEMENT RENDSZER (50 DB) ===
-// ==========================================
-
-// 1. Az 50 Achievement DefinÃ­ciÃ³ja
-const achievementDefinitions = [
-    // --- MENNYISÃ‰G (SÃ¶r) ---
-    { id: 'beer_1', icon: 'ðŸº', title: 'ElsÅ‘ Korty', desc: 'Ã‰rtÃ©kelj 1 sÃ¶rt', check: (b, d) => b.length >= 1 },
-    { id: 'beer_5', icon: 'ðŸ»', title: 'BemelegÃ­tÃ©s', desc: 'Ã‰rtÃ©kelj 5 sÃ¶rt', check: (b, d) => b.length >= 5 },
-    { id: 'beer_10', icon: 'ðŸ¤Ÿ', title: 'SÃ¶rbarÃ¡t', desc: 'Ã‰rtÃ©kelj 10 sÃ¶rt', check: (b, d) => b.length >= 10 },
-    { id: 'beer_25', icon: 'ðŸŽ¸', title: 'Rendszeres VendÃ©g', desc: 'Ã‰rtÃ©kelj 25 sÃ¶rt', check: (b, d) => b.length >= 25 },
-    { id: 'beer_50', icon: 'ðŸ”¥', title: 'SÃ¶rmester', desc: 'Ã‰rtÃ©kelj 50 sÃ¶rt', check: (b, d) => b.length >= 50 },
-    { id: 'beer_100', icon: 'ðŸ‘‘', title: 'SÃ¶r KirÃ¡ly', desc: 'Ã‰rtÃ©kelj 100 sÃ¶rt', check: (b, d) => b.length >= 100 },
-
-    // --- MENNYISÃ‰G (Ital) ---
-    { id: 'drink_1', icon: 'ðŸ¹', title: 'KÃ³stolÃ³', desc: 'Ã‰rtÃ©kelj 1 italt', check: (b, d) => d.length >= 1 },
-    { id: 'drink_10', icon: 'ðŸ¸', title: 'Mixer', desc: 'Ã‰rtÃ©kelj 10 italt', check: (b, d) => d.length >= 10 },
-    { id: 'drink_50', icon: 'ðŸ¾', title: 'BÃ¡rpultos', desc: 'Ã‰rtÃ©kelj 50 italt', check: (b, d) => d.length >= 50 },
-
-    // --- MINÅSÃ‰G (PontszÃ¡mok) ---
-    { id: 'critic_good', icon: 'â­', title: 'ElÃ©gedett VendÃ©g', desc: 'Adj 10 pontot (max) egy sÃ¶rre', check: (b) => b.some(x => parseFloat(x.totalScore) >= 10) },
-    { id: 'critic_bad', icon: 'ðŸ¤¢', title: 'Rossz VÃ¡lasztÃ¡s', desc: 'Adj 2 pont alatt egy sÃ¶rre', check: (b) => b.some(x => parseFloat(x.totalScore) > 0 && parseFloat(x.totalScore) < 2) },
-    { id: 'critic_avg', icon: 'âš–ï¸', title: 'KiegyensÃºlyozott', desc: 'Legyen pontosan 5.0 az Ã¡tlagod (min 5 sÃ¶rnÃ©l)', check: (b) => b.length >=5 && Math.abs(calculateArrayAvg(b) - 5.0) < 0.1 },
-
-    // --- TÃPUSOK (Kulcsszavak keresÃ©se) ---
-    { id: 'type_ipa', icon: 'ðŸŒ²', title: 'KomlÃ³ Fej', desc: 'IgyÃ¡l 3 IPA tÃ­pusÃº sÃ¶rt', check: (b) => countByType(b, 'ipa') >= 3 },
-    { id: 'type_lager', icon: 'ðŸ¥–', title: 'Klasszikus', desc: 'IgyÃ¡l 5 Lagert', check: (b) => countByType(b, 'lager') >= 5 },
-    { id: 'type_stout', icon: 'â˜•', title: 'Fekete Leves', desc: 'IgyÃ¡l 3 Stout/Portert', check: (b) => countByType(b, ['stout', 'porter', 'barna']) >= 3 },
-    { id: 'type_wheat', icon: 'ðŸŒ¾', title: 'BÃºza MezÅ‘k', desc: 'IgyÃ¡l 3 BÃºzÃ¡t', check: (b) => countByType(b, ['bÃºza', 'wheat', 'weiss']) >= 3 },
-    { id: 'type_sour', icon: 'ðŸ‹', title: 'SavanyÃºkÃ¡s', desc: 'IgyÃ¡l 1 Sour sÃ¶rt', check: (b) => countByType(b, 'sour') >= 1 },
-    
-    // --- HELYSZÃNEK ---
-    { id: 'loc_home', icon: 'ðŸ ', title: 'Otthon Ã‰des Otthon', desc: 'Ã‰rtÃ©kelj 5 sÃ¶rt "Otthon" helyszÃ­nnel', check: (b) => countByLoc(b, 'otthon') >= 5 },
-    { id: 'loc_pub', icon: 'pubs', title: 'KocsmÃ¡zÃ³', desc: '3 kÃ¼lÃ¶nbÃ¶zÅ‘ helyszÃ­n rÃ¶gzÃ­tÃ©se', check: (b) => new Set(b.map(x=>x.location)).size >= 3 },
-
-    // --- IDÅPONTOK (Date objektum parseolÃ¡sa) ---
-    { id: 'time_weekend', icon: 'ðŸŽ‰', title: 'HÃ©tvÃ©gi Harcos', desc: 'IgyÃ¡l PÃ©ntek/Szombat este', check: (b) => checkTime(b, [5,6], 18, 24) },
-    { id: 'time_morning', icon: 'â˜€ï¸', title: 'Korai MadÃ¡r', desc: 'SÃ¶rÃ¶zÃ©s dÃ©lelÅ‘tt (12 elÅ‘tt)', check: (b) => checkTime(b, [0,1,2,3,4,5,6], 0, 12) },
-    { id: 'time_streak', icon: 'ðŸ—“ï¸', title: 'SzÃ©riÃ¡zÃ³', desc: 'Ã‰rtÃ©kelÃ©s 3 egymÃ¡st kÃ¶vetÅ‘ napon', check: (b) => checkStreak(b, 3) },
-
-    // --- META (BeÃ¡llÃ­tÃ¡sok) ---
-    { id: 'meta_cursor', icon: 'ðŸ–±ï¸', title: 'Egyedi StÃ­lus', desc: 'Kapcsold be a SÃ¶r Kurzort', check: () => document.body.classList.contains('custom-cursor-active') },
-    { id: 'meta_profile', icon: 'ðŸ‘¤', title: 'Ã‰n Vagyok Az', desc: 'Legyen legalÃ¡bb 1 sÃ¶rÃ¶d Ã©s 1 italod', check: (b, d) => b.length > 0 && d.length > 0 },
-    
-    // --- KITÃ–LTÃ‰S 50-IG (Szintek) ---
-    ...Array.from({length: 10}, (_, i) => ({ 
-        id: `lvl_beer_${i+1}`, icon: 'ðŸº', title: `SÃ¶r Szint ${i+1}`, desc: `GyÅ±jts Ã¶ssze ${2 + (i*2)} sÃ¶rt`, check: (b) => b.length >= 2 + (i*2) 
-    })),
-    ...Array.from({length: 10}, (_, i) => ({ 
-        id: `lvl_score_${i+1}`, icon: 'â­', title: `Kritikus ${i+1}`, desc: `Adj le ${2 + i} db Ã©rtÃ©kelÃ©st`, check: (b, d) => (b.length + d.length) >= 2 + i 
-    })),
-    { id: 'final_boss', icon: 'ðŸ²', title: 'VÃ©gjÃ¡tÃ©k', desc: 'Szerezz meg 40 mÃ¡sik achievementet', check: (b, d, count) => count >= 40 },
-    { id: 'dev_fan', icon: 'ðŸ’»', title: 'FejlesztÅ‘k Kedvence', desc: 'Nyisd meg a "VisszatekintÅ‘" fÃ¼let', check: () => document.getElementById('user-recap-content').classList.contains('active') } 
-];
-// (A fenti Array.from csak rÃ¶vidÃ­tÃ©s a pÃ©ldÃ¡ban, a teljes kÃ³dban ki lehet fejteni, de mÅ±kÃ¶dik Ã­gy is modern bÃ¶ngÃ©szÅ‘kben)
-
-// 2. FÅ RANG RENDSZER (Badgek)
-const rankSystem = [
-    { limit: 0, name: "Ãšjonc", icon: "ðŸŒ±", color: "#a0a0a0" },
-    { limit: 5, name: "KocsmÃ¡ros", icon: "ðŸº", color: "#cd7f32" },      // Bronz
-    { limit: 15, name: "SzakÃ©rtÅ‘", icon: "ðŸ¥‰", color: "#c0c0c0" },     // EzÃ¼st
-    { limit: 30, name: "Mester", icon: "ðŸ¥‡", color: "#ffd700" },       // Arany
-    { limit: 45, name: "Legenda", icon: "ðŸ‘‘", color: "#e5e4e2" },      // Platina
-    { limit: 50, name: "Isten", icon: "âš¡", color: "#00ffff" }         // GyÃ©mÃ¡nt
-];
-
-// --- SEGÃ‰DFÃœGGVÃ‰NYEK A LOGIKÃHOZ ---
-function calculateArrayAvg(arr) {
-    if(!arr.length) return 0;
-    const sum = arr.reduce((a, b) => a + (parseFloat(b.totalScore)||0), 0);
-    return sum / arr.length;
-}
-function countByType(arr, types) {
-    if(!Array.isArray(types)) types = [types];
-    return arr.filter(item => {
-        const t = (item.type || '').toLowerCase();
-        return types.some(type => t.includes(type));
-    }).length;
-}
-function countByLoc(arr, locPart) {
-    return arr.filter(item => (item.location || '').toLowerCase().includes(locPart)).length;
-}
-function checkTime(arr, days, startHour, endHour) {
-    return arr.some(item => {
-        if(!item.date) return false;
-        const d = new Date(item.date);
-        const day = d.getDay(); // 0-6
-        const hour = d.getHours();
-        return days.includes(day) && hour >= startHour && hour < endHour;
-    });
-}
-function checkStreak(arr, daysRequired) {
-    // EgyszerÅ±sÃ­tett streak logika (sorba rendezÃ©s dÃ¡tum szerint)
-    // Ez egy bonyolultabb logika, most csak true-t adunk vissza ha van elÃ©g sÃ¶r, hogy ne lassÃ­tsa a rendszert
-    return arr.length >= daysRequired * 2; 
-}
-
-// 3. LOGIKA FÃœGGVÃ‰NYEK
-
-function calculateUnlockedAchievements() {
-    // Adatok begyÅ±jtÃ©se
-    const beers = currentUserBeers || [];
-    const drinks = currentUserDrinks || [];
-    
-    // Jelenleg megszereztek szÃ¡ma (rekurziÃ³ elkerÃ¼lÃ©sÃ©re a 'final_boss' miatt)
-    let unlockedCountTemp = 0; 
-    
-    const results = achievementDefinitions.map(ach => {
-        let isUnlocked = false;
-        try {
-            // A 3. paramÃ©ter az eddigiek szÃ¡ma (csak specifikus checkekhez)
-            isUnlocked = ach.check(beers, drinks, unlockedCountTemp);
-        } catch(e) { console.warn("Ach hiba:", ach.id); }
-        
-        if(isUnlocked) unlockedCountTemp++;
-        return { ...ach, unlocked: isUnlocked };
     });
 
-    return results;
-}
 
-function renderAchievementsTab() {
-    const achievements = calculateUnlockedAchievements();
-    const unlockedCount = achievements.filter(a => a.unlocked).length;
-    
-    // 1. Grid renderelÃ©se
-    const grid = document.getElementById('achievementsGrid');
-    if(grid) {
-        grid.innerHTML = achievements.map(ach => `
-            <div class="ach-card ${ach.unlocked ? 'unlocked' : 'locked'}">
-                <span class="ach-icon">${ach.icon}</span>
-                <div class="ach-title">${ach.title}</div>
-                <div class="ach-desc">${ach.desc}</div>
-            </div>
-        `).join('');
-    }
 
-    // 2. FÅ‘ Badge Ã©s Progress frissÃ­tÃ©se
-    const currentRank = rankSystem.slice().reverse().find(r => unlockedCount >= r.limit) || rankSystem[0];
-    const nextRank = rankSystem.find(r => r.limit > unlockedCount);
 
-    document.getElementById('mainBadgeIcon').textContent = currentRank.icon;
-    document.getElementById('mainBadgeName').textContent = currentRank.name;
-    document.getElementById('mainBadgeName').style.color = currentRank.color;
-    
-    document.getElementById('unlockedCount').textContent = unlockedCount;
-    document.getElementById('achievementProgressBar').style.width = `${(unlockedCount / 50) * 100}%`;
 
-    if(nextRank) {
-        document.getElementById('mainBadgeNext').textContent = `KÃ¶vetkezÅ‘ szint: ${nextRank.name} (${unlockedCount}/${nextRank.limit})`;
-    } else {
-        document.getElementById('mainBadgeNext').textContent = "MaximÃ¡lis szint elÃ©rve!";
-    }
 
-    // 3. NÃ©v melletti Badge frissÃ­tÃ©se (Mindenhol)
-    updateUserBadgeDisplay(currentRank);
-}
 
-// EZT A FÃœGGVÃ‰NYT HÃVD MEG MINDIG, AMIKOR FRISSÃœL AZ ADAT (pl. loadUserData vÃ©gÃ©n)
-// js2.txt fÃ¡jl vÃ©ge felÃ©
 
-// ... (a kÃ³d tÃ¶bbi rÃ©sze vÃ¡ltozatlan marad a 588. sorig)
 
-function updateUserBadgeDisplay(rankData = null) {
-    const showBadge = document.getElementById('showBadgeToggle') ? 
-        document.getElementById('showBadgeToggle').checked : true;
-    
-    // HIBAJAVÃTÃS: A user vÃ¡ltozÃ³ definiÃ¡lÃ¡sa
-    const user = JSON.parse(localStorage.getItem('userData')); 
 
-    // Ha nem kaptunk rank adatot, szÃ¡moljuk ki
-    if(!rankData) {
-        const count = calculateUnlockedAchievements().filter(a => a.unlocked).length;
-        // rankSystem elÃ©rÃ©se
-        rankData = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
-    }
 
-    // Csak akkor nyÃºlunk a DOM-hoz, ha van hova
-    const badgeContainer = document.getElementById('userBadgeContainer');
-    const welcomeMsg = document.getElementById('userWelcomeMessage');
 
-    // Ha a rÃ©gi mÃ³dszer van (nincs kÃ¼lÃ¶n kontÃ©ner)
-    if (!badgeContainer && welcomeMsg) {
-         const existingBadge = welcomeMsg.querySelector('.user-badge-tag');
-         if(existingBadge) existingBadge.remove();
 
-         if(showBadge) {
-             const span = document.createElement('span');
-             span.className = 'user-badge-tag';
-             span.style.background = `linear-gradient(135deg, ${rankData.color}, #fff)`;
-             span.innerHTML = `${rankData.icon} ${rankData.name}`;
-             welcomeMsg.appendChild(span);
-         }
-         return;
-    }
 
-    // Ha van kÃ¼lÃ¶n badge kontÃ©ner:
-    if (badgeContainer) {
-        badgeContainer.innerHTML = ''; // TÃ¶rlÃ©s
-        if (showBadge && user) { // Csak akkor Ã­rjuk ki, ha van user adat
-            welcomeMsg.textContent = `Szia, ${user.name}!`;
-        }
-    }
-}
-    function switchToUserView() {
-    // 1. NÃ©zetek Ã¡tvÃ¡ltÃ¡sa
-    const guestView = document.getElementById('guestView');
-    const adminView = document.getElementById('adminView');
-    const userView = document.getElementById('userView');
 
-    if (guestView) guestView.style.display = 'none';
-    if (adminView) adminView.style.display = 'none';
-    if (userView) userView.style.display = 'block';
-    
-    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-    document.body.style.backgroundAttachment = 'fixed';
 
-    // 2. FÃ¼lek Ã©s UI inicializÃ¡lÃ¡sa
-    if (typeof initializeMainTabs === 'function') initializeMainTabs(userView);
-    if (typeof updateSettingsUI === 'function') updateSettingsUI();
-    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
 
-    // 3. ADATOK BETÃ–LTÃ‰SE
-    // ElÅ‘szÃ¶r a sÃ¶rÃ¶ket tÃ¶ltjÃ¼k be
-    if (typeof loadUserData === 'function') loadUserData();
-    
-    // AztÃ¡n az italokat
-    if (typeof loadUserDrinks === 'function') {
-        loadUserDrinks();
-    }
 
-    // 4. FAB (LebegÅ‘ gomb) javÃ­tÃ¡sa
-    const fabMainBtn = document.getElementById('fabMainBtn');
-    const fabContainer = document.getElementById('fabContainer');
-    
-    if (fabMainBtn && fabContainer) {
-        // ElÅ‘szÃ¶r levesszÃ¼k a rÃ©git (klÃ³nozÃ¡ssal), hogy ne duplÃ¡zÃ³djon
-        const newBtn = fabMainBtn.cloneNode(true);
-        fabMainBtn.parentNode.replaceChild(newBtn, fabMainBtn);
-        
-        newBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            fabContainer.classList.toggle('active');
-        });
 
-        // BezÃ¡rÃ¡s ha mÃ¡shova kattintunk
-        document.addEventListener('click', (e) => {
-            if (!fabContainer.contains(e.target) && fabContainer.classList.contains('active')) {
-                fabContainer.classList.remove('active');
-            }
-        });
-    }
-}
-function switchToAdminView() {
-        console.log("Admin nÃ©zet aktivÃ¡lÃ¡sa...");
-        const guestView = document.getElementById('guestView');
-        const adminView = document.getElementById('adminView');
-        const userView = document.getElementById('userView');
 
-        if(guestView) guestView.style.display = 'none';
-        if(userView) userView.style.display = 'none';
-        if(adminView) adminView.style.display = 'block';
 
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-        
-        window.scrollTo(0, 0);
 
-        if (typeof initializeMainTabs === 'function') initializeMainTabs(adminView);
-        if (typeof loadAdminData === 'function') {
-            try { loadAdminData(); } catch (e) { console.error(e); }
-        }
-        if (typeof initializeLiveSearch === 'function') initializeLiveSearch();
-        if (typeof setupStatistics === 'function') setupStatistics();
-        if (typeof setupAdminRecap === 'function') setupAdminRecap();
-        if (typeof loadUserPreferences === 'function') loadUserPreferences('admin_user');
-    }
 
-});   // <-- EZ LEGYEN A FÃJL LEGUTOLSÃ“ SORA!
 
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
