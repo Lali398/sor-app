@@ -2477,9 +2477,6 @@ window.closeAddModal = function(type) {
 }
     // === HIBAJELENTÉS / SEGÍTSÉG FUNKCIÓ ===
 
-// === HIBAJELENTÉS / SEGÍTSÉG FUNKCIÓ (GLOBÁLIS SCOPE-BAN!) ===
-// Ez KÍVÜL legyen a document.addEventListener blokkján!
-
 window.openSupportModal = function() {
     const modal = document.getElementById('supportModal');
     const emailGroup = document.getElementById('supportEmailGroup');
@@ -2521,102 +2518,86 @@ window.closeSupportModal = function() {
     document.getElementById('supportForm').reset();
 }
 
-// === MOST JÖN A DOMCONTENTLOADED BLOKK ===
-document.addEventListener('DOMContentLoaded', function() {
-
-    if (typeof Chart !== 'undefined') {
-        Chart.defaults.color = '#e0e0e0';
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
-    }
-    
-    // ... (itt folytatódik a többi kód, mint eddig)
-    
-    // A js.js fájl VÉGÉN (még a DOMContentLoaded blokkon BELÜL):
-    
-    // Form beküldés kezelése
-    const supportForm = document.getElementById('supportForm');
-    if(supportForm) {
-        supportForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+// Form beküldés kezelése
+const supportForm = document.getElementById('supportForm');
+if(supportForm) {
+    supportForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const subject = document.getElementById('supportSubject').value;
+        const message = document.getElementById('supportMessage').value;
+        const submitBtn = supportForm.querySelector('.auth-btn');
+        
+        // Bejelentkezett user adatai vagy vendég adatai
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userToken = localStorage.getItem('userToken');
+        
+        let senderName, senderEmail;
+        
+        if (userData && userToken) {
+            // Bejelentkezett felhasználó
+            senderName = userData.name;
+            senderEmail = userData.email;
+        } else {
+            // Vendég felhasználó
+            senderName = document.getElementById('supportName').value;
+            senderEmail = document.getElementById('supportEmail').value;
             
-            const subject = document.getElementById('supportSubject').value;
-            const message = document.getElementById('supportMessage').value;
-            const submitBtn = supportForm.querySelector('.auth-btn');
+            // Email validáció
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(senderEmail)) {
+                showError("Érvénytelen email cím!");
+                return;
+            }
+        }
+        
+        setLoading(submitBtn, true);
+        
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // Token csak akkor, ha van (bejelentkezett user)
+                    ...(userToken && { 'Authorization': `Bearer ${userToken}` })
+                },
+                body: JSON.stringify({ 
+                    action: 'SUBMIT_SUPPORT_TICKET',
+                    name: senderName,
+                    email: senderEmail,
+                    subject: subject,
+                    message: message
+                })
+            });
             
-            // Bejelentkezett user adatai vagy vendég adatai
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            const userToken = localStorage.getItem('userToken');
+            const result = await response.json();
             
-            let senderName, senderEmail;
-            
-            if (userData && userToken) {
-                // Bejelentkezett felhasználó
-                senderName = userData.name;
-                senderEmail = userData.email;
-            } else {
-                // Vendég felhasználó
-                senderName = document.getElementById('supportName').value;
-                senderEmail = document.getElementById('supportEmail').value;
-                
-                // Email validáció
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(senderEmail)) {
-                    showError("Érvénytelen email cím!");
-                    return;
-                }
+            if (!response.ok) {
+                throw new Error(result.error || 'Hiba történt a küldés során.');
             }
             
-            setLoading(submitBtn, true);
+            showSuccess('Üzeneted sikeresen elküldve! Hamarosan válaszolunk. 📧');
+            closeSupportModal();
             
-            try {
-                const response = await fetch('/api/sheet', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        // Token csak akkor, ha van (bejelentkezett user)
-                        ...(userToken && { 'Authorization': `Bearer ${userToken}` })
-                    },
-                    body: JSON.stringify({ 
-                        action: 'SUBMIT_SUPPORT_TICKET',
-                        name: senderName,
-                        email: senderEmail,
-                        subject: subject,
-                        message: message
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(result.error || 'Hiba történt a küldés során.');
-                }
-                
-                showSuccess('Üzeneted sikeresen elküldve! Hamarosan válaszolunk. 📧');
-                closeSupportModal();
-                
-            } catch (error) {
-                console.error("Hibajelentés küldési hiba:", error);
-                showError(error.message || "Nem sikerült elküldeni az üzenetet.");
-            } finally {
-                setLoading(submitBtn, false);
-            }
-        });
-    }
+        } catch (error) {
+            console.error("Hibajelentés küldési hiba:", error);
+            showError(error.message || "Nem sikerült elküldeni az üzenetet.");
+        } finally {
+            setLoading(submitBtn, false);
+        }
+    });
+}
 
-    // Modal bezárása X gombbal vagy kattintással
-    const supportModal = document.getElementById('supportModal');
-    if(supportModal) {
-        supportModal.addEventListener('click', (e) => {
-            if (e.target === supportModal) {
-                closeSupportModal();
-            }
-        });
-    }
-
-}); // <-- DOMContentLoaded blokk vége
-
-
-
+// Modal bezárása X gombbal vagy kattintással
+const supportModal = document.getElementById('supportModal');
+if(supportModal) {
+    supportModal.addEventListener('click', (e) => {
+        if (e.target === supportModal) {
+            closeSupportModal();
+        }
+    });
+}
+    });
 
 
 
