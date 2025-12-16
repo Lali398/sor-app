@@ -2684,6 +2684,34 @@ document.addEventListener('click', (e) => {
         window.closeAdminModal();
     }
 });
+// === FEJLÉC ÖSSZECSUKÓ FUNKCIÓ ===
+window.toggleHeaderSize = function() {
+    // Megkeressük az összes fejlécet (user és admin nézetét is)
+    const headers = document.querySelectorAll('.admin-header');
+    
+    headers.forEach(header => {
+        header.classList.toggle('collapsed');
+        
+        // Ha manuálisan összecsukjuk, töröljük a scroll miatti elrejtést
+        if (header.classList.contains('collapsed')) {
+             header.classList.remove('hidden');
+             // Opcionális: Mentés localStorage-ba, hogy frissítésnél is így maradjon
+             localStorage.setItem('headerCollapsed', 'true');
+        } else {
+             localStorage.setItem('headerCollapsed', 'false');
+        }
+    });
+}
+
+// Oldal betöltésekor ellenőrizzük a mentett állapotot
+document.addEventListener('DOMContentLoaded', () => {
+    const isCollapsed = localStorage.getItem('headerCollapsed') === 'true';
+    if (isCollapsed) {
+        const headers = document.querySelectorAll('.admin-header');
+        headers.forEach(h => h.classList.add('collapsed'));
+    }
+});
+
 
 
 
