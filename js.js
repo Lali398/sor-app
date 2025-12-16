@@ -2236,7 +2236,7 @@ window.markIdeaAsDone = markIdeaAsDone;
 window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
-switchToUserView = function() {
+function switchToUserView() {
     // 1. Nézetek átváltása
     document.getElementById('guestView').style.display = 'none';
     document.getElementById('adminView').style.display = 'none';
@@ -2946,6 +2946,7 @@ function updateUserBadgeDisplay(rankData = null) {
 // ITT ZÁRUL A FŐ DOMContentLoaded FÜGGVÉNY
 }); 
 // Itt NE legyen több zárójel!
+
 
 
 
