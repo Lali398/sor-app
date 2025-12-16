@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-   if (typeof Chart !== 'undefined') {
+    if (typeof Chart !== 'undefined') {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
@@ -327,7 +327,7 @@ async function loadUserDrinks() {
         
         currentUserDrinks = drinks;
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks); // ⚠️ EZ A SOR FONTOS!
+        updateUserDrinkStats(drinks); // ÚJ SOR!
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni az italokat.");
@@ -2475,133 +2475,7 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
-    // === HIBAJELENTÉS / SEGÍTSÉG FUNKCIÓ ===
-
-window.openSupportModal = function() {
-    const modal = document.getElementById('supportModal');
-    const emailGroup = document.getElementById('supportEmailGroup');
-    const nameGroup = document.getElementById('supportNameGroup');
-    const emailInput = document.getElementById('supportEmail');
-    const nameInput = document.getElementById('supportName');
-    
-    // Ellenőrizzük, be van-e jelentkezve a felhasználó
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    const userToken = localStorage.getItem('userToken');
-    
-    if (userData && userToken) {
-        // Bejelentkezett user: email és név rejtése
-        emailGroup.style.display = 'none';
-        nameGroup.style.display = 'none';
-        emailInput.removeAttribute('required');
-        nameInput.removeAttribute('required');
-    } else {
-        // Vendég: email és név megjelenítése
-        emailGroup.style.display = 'block';
-        nameGroup.style.display = 'block';
-        emailInput.setAttribute('required', 'required');
-        nameInput.setAttribute('required', 'required');
-    }
-    
-    // FAB bezárása (ha nyitva volt)
-    const fabContainer = document.getElementById('fabContainer');
-    if(fabContainer) fabContainer.classList.remove('active');
-    
-    // Modal megnyitása
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-window.closeSupportModal = function() {
-    const modal = document.getElementById('supportModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    document.getElementById('supportForm').reset();
-}
-
-// Form beküldés kezelése
-const supportForm = document.getElementById('supportForm');
-if(supportForm) {
-    supportForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const subject = document.getElementById('supportSubject').value;
-        const message = document.getElementById('supportMessage').value;
-        const submitBtn = supportForm.querySelector('.auth-btn');
-        
-        // Bejelentkezett user adatai vagy vendég adatai
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        const userToken = localStorage.getItem('userToken');
-        
-        let senderName, senderEmail;
-        
-        if (userData && userToken) {
-            // Bejelentkezett felhasználó
-            senderName = userData.name;
-            senderEmail = userData.email;
-        } else {
-            // Vendég felhasználó
-            senderName = document.getElementById('supportName').value;
-            senderEmail = document.getElementById('supportEmail').value;
-            
-            // Email validáció
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(senderEmail)) {
-                showError("Érvénytelen email cím!");
-                return;
-            }
-        }
-        
-        setLoading(submitBtn, true);
-        
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    // Token csak akkor, ha van (bejelentkezett user)
-                    ...(userToken && { 'Authorization': `Bearer ${userToken}` })
-                },
-                body: JSON.stringify({ 
-                    action: 'SUBMIT_SUPPORT_TICKET',
-                    name: senderName,
-                    email: senderEmail,
-                    subject: subject,
-                    message: message
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.error || 'Hiba történt a küldés során.');
-            }
-            
-            showSuccess('Üzeneted sikeresen elküldve! Hamarosan válaszolunk. 📧');
-            closeSupportModal();
-            
-        } catch (error) {
-            console.error("Hibajelentés küldési hiba:", error);
-            showError(error.message || "Nem sikerült elküldeni az üzenetet.");
-        } finally {
-            setLoading(submitBtn, false);
-        }
     });
-}
-
-// Modal bezárása X gombbal vagy kattintással
-const supportModal = document.getElementById('supportModal');
-if(supportModal) {
-    supportModal.addEventListener('click', (e) => {
-        if (e.target === supportModal) {
-            closeSupportModal();
-        }
-    });
-}
-    });
-
-
-
-
 
 
 
