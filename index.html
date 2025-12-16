@@ -117,6 +117,13 @@
         </div>
     </div>
 
+    <!-- Segítség gomb a vendég nézetben -->
+<button class="admin-btn" onclick="openSupportModal()" style="margin-top: 20px; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+    <span class="admin-icon">❓</span>
+    <span class="admin-text">Segítség / Hibajelentés</span>
+    <div class="admin-shine"></div>
+</button>
+    
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
     <!-- FEJLÉC STATOKKAL -->
@@ -448,19 +455,20 @@
     </div>
 
     <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
-    <div class="fab-container" id="fabContainer">
-        <div class="fab-options">
-            <button class="fab-option" onclick="openAddModal('beer')">
-                <span class="emoji">🍺</span>
-                <span class="tooltip">Sör hozzáadása</span>
-            </button>
-            <button class="fab-option" onclick="openAddModal('drink')">
-                <span class="emoji">🍹</span>
-                <span class="tooltip">Ital hozzáadása</span>
-            </button>
-        </div>
-        <button class="fab-main" id="fabMainBtn">+</button>
-    </div>
+    <div class="fab-options">
+    <button class="fab-option" onclick="openAddModal('beer')">
+        <span class="emoji">🍺</span>
+        <span class="tooltip">Sör hozzáadása</span>
+    </button>
+    <button class="fab-option" onclick="openAddModal('drink')">
+        <span class="emoji">🍹</span>
+        <span class="tooltip">Ital hozzáadása</span>
+    </button>
+    <!-- ÚJ HIBAJELENTÉS GOMB -->
+    <button class="fab-option" onclick="openSupportModal()">
+        <span class="emoji">❓</span>
+        <span class="tooltip">Segítség / Hibajelentés</span>
+    </button>
 </div>
 
 <!-- MODALOK (Sör/Ital hozzáadásához) -->
@@ -1118,10 +1126,65 @@
         </form>
     </div>
 </div>
+
+<!-- HIBAJELENTÉS / SEGÍTSÉG MODAL -->
+<div class="modal-overlay" id="supportModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>❓ Segítségkérés / Hibajelentés</h3>
+            <button class="modal-close" onclick="closeSupportModal()">&times;</button>
+        </header>
+        <form id="supportForm" class="config-form">
+            <!-- Email mező (csak vendégeknek) -->
+            <div class="input-group" id="supportEmailGroup">
+                <input type="email" id="supportEmail" required>
+                <label for="supportEmail">Email címed</label>
+                <span class="input-highlight"></span>
+                <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                    Ide fogjuk küldeni a választ.
+                </small>
+            </div>
+            
+            <!-- Név mező (csak vendégeknek) -->
+            <div class="input-group" id="supportNameGroup">
+                <input type="text" id="supportName" required>
+                <label for="supportName">Neved</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <!-- Tárgy -->
+            <div class="input-group">
+                <select id="supportSubject" required style="width: 100%; padding: 15px 0; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none;">
+                    <option value="" disabled selected>Válassz témát</option>
+                    <option value="🐛 Hiba bejelentés">🐛 Hiba bejelentés</option>
+                    <option value="💡 Ötlet / Javaslat">💡 Ötlet / Javaslat</option>
+                    <option value="❓ Kérdés / Segítség">❓ Kérdés / Segítség</option>
+                    <option value="📊 Adatprobléma">📊 Adatprobléma</option>
+                    <option value="🔐 Bejelentkezési probléma">🔐 Bejelentkezési probléma</option>
+                    <option value="⚙️ Egyéb">⚙️ Egyéb</option>
+                </select>
+            </div>
+            
+            <!-- Üzenet -->
+            <div class="input-group">
+                <textarea id="supportMessage" required placeholder="Írd le a problémát részletesen..." style="min-height: 120px; width: 100%; background: rgba(0, 0, 0, 0.2); border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 15px; font-family: 'Poppins', sans-serif; font-size: 16px; resize: vertical; outline: none; border-radius: 10px 10px 0 0;"></textarea>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Küldés 🚀</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
