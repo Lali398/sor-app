@@ -1643,7 +1643,7 @@ function animateProgress(fillElement) {
     }, 40); // 4mp / slide
 }
     });
-}
+
 
 
 window.downloadRecap = function() {
@@ -2954,6 +2954,7 @@ function switchToAdminView() {
     }
 
 });   // <-- EZ LEGYEN A FÁJL LEGUTOLSÓ SORA!
+
 
 
 
