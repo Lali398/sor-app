@@ -308,7 +308,6 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) return;
-    
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
@@ -325,9 +324,18 @@ async function loadUserDrinks() {
             throw new Error(drinks.error || 'Szerverhiba');
         }
         
-        currentUserDrinks = drinks;
+        currentUserDrinks = drinks; // Globális változó frissítése
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks); // ÚJ SOR!
+        updateUserDrinkStats(drinks);
+        
+        // --- JAVÍTÁS: Achievementek újraszámolása az italok megérkezése után ---
+        console.log(`Italok betöltve: ${drinks.length} db. Achievementek frissítése...`);
+        renderAchievementsTab(); 
+        
+        // Rangjelzés (Badge) frissítése a fejlécben, ha változott volna
+        updateUserBadgeDisplay(); 
+        // -----------------------------------------------------------------------
+
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni az italokat.");
@@ -1060,7 +1068,7 @@ function setupAdminRecap() {
         
         const welcomeMsg = document.getElementById('userWelcomeMessage');
         if(welcomeMsg) {
-            welcomeMsg.innerHTML = `Szia, ${user.name}! <span class="user-badge-tag" style="background: ${rank.color}; box-shadow: 0 0 5px ${rank.color};">${rank.icon} ${rank.name}</span>`;
+            welcomeMsg.textContent = `Szia, ${user.name}!`;
         }
     }
 } catch (error) { ... }
@@ -2894,48 +2902,48 @@ function renderAchievementsTab() {
 }
 
 // EZT A FÜGGVÉNYT HÍVD MEG MINDIG, AMIKOR FRISSÜL AZ ADAT (pl. loadUserData végén)
+// js2.txt fájl vége felé
+
 function updateUserBadgeDisplay(rankData = null) {
     const showBadge = document.getElementById('showBadgeToggle') ? document.getElementById('showBadgeToggle').checked : true;
     
-    // Ha nem kaptunk rank adatot, számoljuk ki gyorsan
+    // Ha nem kaptunk rank adatot, számoljuk ki
     if(!rankData) {
         const count = calculateUnlockedAchievements().filter(a => a.unlocked).length;
+        // rankSystem elérése (feltételezve, hogy globális)
         rankData = rankSystem.slice().reverse().find(r => count >= r.limit) || rankSystem[0];
     }
 
-    // Badge HTML
-    const badgeHTML = showBadge ? 
-        `<span class="user-badge-tag" style="background: linear-gradient(135deg, ${rankData.color}, #fff);">${rankData.icon} ${rankData.name}</span>` 
-        : '';
-
-    // 1. Üdvözlő üzenet (User View Header)
+    // Csak akkor nyúlunk a DOM-hoz, ha van hova
+    const badgeContainer = document.getElementById('userBadgeContainer'); // ÚJ KONTÉNER (amit a HTML-be tettünk)
     const welcomeMsg = document.getElementById('userWelcomeMessage');
-    // Azt feltételezzük, hogy a loadUserData beállította a nevet. 
-    // Itt csak hozzáfűzzük a badget, ha még nincs ott.
-    if(welcomeMsg) {
-        // Trükk: Csak a szöveges tartalmat tartjuk meg, és újra rakjuk a badget
-        const textOnly = welcomeMsg.textContent.split('👋')[0].split('Szia, ')[1] || welcomeMsg.textContent; 
-        // Visszaállítás bonyolult lehet, egyszerűbb ha mindig újraépítjük a loadUserData-ban.
-        // Inkább keressük meg a nevet és illesszük mellé.
-    }
     
-    // JOBB MEGOLDÁS: Keressük meg az összes helyet, ahol a név van, és tegyünk mellé egy span-t
-    // De a legegyszerűbb, ha a loadUserData-t módosítjuk. Lásd lejjebb.
+    // Ha a régi módszer van (nincs külön konténer), próbáljuk meg a régit javítani
+    if (!badgeContainer && welcomeMsg) {
+         // Fallback: Ha nincs külön div, akkor a welcomeMsg végére szúrjuk be, 
+         // de előtte töröljük a régi badget, ha van.
+         const existingBadge = welcomeMsg.querySelector('.user-badge-tag');
+         if(existingBadge) existingBadge.remove();
+
+         if(showBadge) {
+             const span = document.createElement('span');
+             span.className = 'user-badge-tag';
+             span.style.background = `linear-gradient(135deg, ${rankData.color}, #fff)`;
+             span.innerHTML = `${rankData.icon} ${rankData.name}`;
+             welcomeMsg.appendChild(span);
+         }
+         return;
+    }
+
+    // Ha megcsináltad a HTML módosítást:
+    if (badgeContainer) {
+        badgeContainer.innerHTML = ''; // Törlés
+        if (showBadge) {
+            welcomeMsg.textContent = `Szia, ${user.name}!`;
+        }
+    }
 }
 
-// Beállítás mentése
-document.getElementById('showBadgeToggle').addEventListener('change', (e) => {
-    localStorage.setItem('showBadge', e.target.checked);
-    renderAchievementsTab(); // Újrarenderel, ami frissíti a badget is
-});
-
-// Beállítás betöltése induláskor
-document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('showBadge');
-    if(saved !== null) {
-        document.getElementById('showBadgeToggle').checked = (saved === 'true');
-    }
-});
 
 
 
