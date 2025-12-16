@@ -1854,6 +1854,87 @@ input:checked + .slider:before {
         display: none; /* Szöveg elrejtése */
     }
 }
+.header-toggle-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+    font-size: 12px;
+}
+
+.header-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Ha össze van csukva, forduljon meg a nyíl */
+.admin-header.collapsed .header-toggle-btn {
+    transform: rotate(180deg);
+}
+
+/* --- ÖSSZECSUKOTT ÁLLAPOT STÍLUSAI --- */
+
+.admin-header.collapsed {
+    padding: 5px 20px; /* Kisebb padding */
+    backdrop-filter: blur(15px); /* Erősebb homályosítás */
+    background: rgba(20, 0, 40, 0.95); /* Sötétebb háttér, hogy olvasható legyen */
+    height: auto; /* Engedjük összemenni */
+}
+
+/* Összecsukva eltüntetjük a szöveges logót */
+.admin-header.collapsed .logo h1 {
+    display: none;
+}
+
+/* Összecsukva eltüntetjük a sör ikont a bal szélről, ha mobilon vagyunk, vagy kicsinyítjük */
+.admin-header.collapsed .logo .beer-icon {
+    font-size: 1.5rem; /* Kisebb ikon */
+}
+
+/* Összecsukva a jobb oldali gombokból csak az ikon maradjon (ha van szöveg) */
+.admin-header.collapsed .header-btn span:not(:first-child),
+.admin-header.collapsed .logout-btn span:not(:first-child),
+.admin-header.collapsed .refresh-btn span:not(:first-child) {
+    display: none;
+}
+
+/* A statisztikák (Középen) maradjanak, de kicsit kompaktabban */
+.admin-header.collapsed .header-stats-container {
+    padding: 2px 15px;
+    background: rgba(0,0,0,0.4); /* Sötétebb háttér a számoknak */
+    border: none;
+}
+
+.admin-header.collapsed .h-stat-item {
+    gap: 5px;
+}
+
+.admin-header.collapsed .h-icon {
+    font-size: 1rem; /* Kisebb ikonok középütt */
+}
+
+.admin-header.collapsed .h-value {
+    font-size: 1rem;
+}
+
+/* Mobilon is igazítunk rajta */
+@media (max-width: 768px) {
+    .admin-header.collapsed {
+        padding: 5px 10px;
+    }
+    .admin-header.collapsed .header-content {
+        gap: 5px;
+    }
+}
+
 
 
 
