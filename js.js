@@ -1031,25 +1031,48 @@ function setupAdminRecap() {
 }
     
     function updateUserStats(beers) {
-        document.getElementById('userBeerCount').textContent = beers.length;
-        if (beers.length === 0) {
-            document.getElementById('userAverageScore').textContent = '0.0';
-            return;
-        }
-        const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
-        const average = (totalScoreSum / beers.length).toFixed(1);
-        document.getElementById('userAverageScore').textContent = average;
-    }
+    // 1. Fejléc statisztikák frissítése (ha léteznek)
+    const headerCount = document.getElementById('headerBeerCount');
+    const headerAvg = document.getElementById('headerAvgScore');
 
-    function updateUserDrinkStats(drinks) {
-    document.getElementById('userDrinkCount').textContent = drinks.length;
-    if (drinks.length === 0) {
-        document.getElementById('userDrinkAverageScore').textContent = '0.0';
+    if(headerCount) headerCount.textContent = beers.length;
+
+    // 2. ÚJ: Tabon belüli statisztikák frissítése
+    const tabCount = document.getElementById('tabBeerCount');
+    const tabAvg = document.getElementById('tabBeerAvg');
+
+    if (tabCount) tabCount.textContent = beers.length;
+
+    if (beers.length === 0) {
+        if(headerAvg) headerAvg.textContent = '0.0';
+        if(tabAvg) tabAvg.textContent = '0.0';
         return;
     }
+
+    const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
+    const average = (totalScoreSum / beers.length).toFixed(1);
+    
+    if(headerAvg) headerAvg.textContent = average;
+    if(tabAvg) tabAvg.textContent = average;
+}
+    
+
+    function updateUserDrinkStats(drinks) {
+    // Fejléc statisztikák
+    const headerCount = document.getElementById('headerDrinkCount');
+    const headerAvg = document.getElementById('headerDrinkAvgScore');
+
+    if(headerCount) headerCount.textContent = drinks.length;
+
+    if (drinks.length === 0) {
+        if(headerAvg) headerAvg.textContent = '0.0';
+        return;
+    }
+    
     const totalScoreSum = drinks.reduce((total, drink) => total + (parseFloat(drink.totalScore) || 0), 0);
     const average = (totalScoreSum / drinks.length).toFixed(1);
-    document.getElementById('userDrinkAverageScore').textContent = average;
+    
+    if(headerAvg) headerAvg.textContent = average;
 }
 
     function calculateIndexedAverage(beers = beersData) {
@@ -2428,6 +2451,7 @@ window.closeAddModal = function(type) {
     document.body.style.overflow = 'auto';
 }
     });
+
 
 
 
