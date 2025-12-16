@@ -1958,7 +1958,6 @@ function animateProgress(fillElement) {
         }
     }, 40); // 4 másodperc per slide
 }
-});
 // CSERÉLD LE EZT A RÉSZT A FÁJL VÉGÉN (window.downloadRecap után):
 
 window.toggleFullscreen = function() {
@@ -2938,6 +2937,7 @@ function updateUserBadgeDisplay(rankData = null) {
     }
 }
     });
+
 
 
 
