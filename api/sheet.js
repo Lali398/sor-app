@@ -103,104 +103,59 @@ export default async function handler(req, res) {
 
             case 'REGISTER_USER': {
                 const { name, email, password } = req.body;
-                
-                // 1. Validálás
-                if (!name || !email || !password) {
-                    return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
-                }
-
-                // Jelszó erősség (Min 8 karakter, 1 szám, 1 spec. karakter)
+                if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+                // Regex: legalább 1 szám, legalább 1 spec. karakter, min 8 hossz
                 const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+                
                 if (!passwordRegex.test(password)) {
                     return res.status(400).json({ 
-                        error: "A jelszó túl gyenge! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
+                        error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
                     });
                 }
+              
 
-                // 2. Létezik-e már?
-                const usersResponse = await sheets.spreadsheets.values.get({ 
-                    spreadsheetId: SPREADSHEET_ID, 
-                    range: USERS_SHEET 
-                });
+                const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                const userExists = users.data.values?.some(row => row[1] === email);
+                if (userExists) return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
                 
-                const rows = usersResponse.data.values || [];
-                const userExists = rows.some(row => row[1] === email); // B oszlop az email
-                
-                if (userExists) {
-                    return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
-                }
-                
-                // 3. Jelszó titkosítása és mentés
                 const hashedPassword = await bcrypt.hash(password, 10);
-            
-                // Új sor: Név, Email, JelszóHash, Secret(üres), 2FA(FALSE), Achievementek(üres JSON), Badge(üres)
-                const newRow = [
-                    name, 
-                    email, 
-                    hashedPassword, 
-                    '',             
-                    'FALSE',        
-                    '{"unlocked":[]}', 
-                    ''              
-                ];
-
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: USERS_SHEET,
                     valueInputOption: 'USER_ENTERED',
-                    resource: { values: [newRow] },
+                    resource: { values: [[name, email, hashedPassword]] },
                 });
-
                 return res.status(201).json({ message: "Sikeres regisztráció!" });
             }
+
             case 'LOGIN_USER': {
                 const { email, password } = req.body;
-
-                // 1. Adatok lekérése
-                const usersResponse = await sheets.spreadsheets.values.get({ 
-                    spreadsheetId: SPREADSHEET_ID, 
-                    range: USERS_SHEET 
-                });
-                const rows = usersResponse.data.values || [];
-
-                // 2. Keresés email alapján
-                const userRow = rows.find(row => row[1] === email);
+                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
                 
-                if (!userRow) {
-                    return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-                }
-
-                // 3. Jelszó ellenőrzés
+                // Megkeressük a sort, ahol az email egyezik
+                const rows = usersResponse.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === email);
+                
+                if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+                
+                const userRow = rows[rowIndex];
                 const isPasswordValid = await bcrypt.compare(password, userRow[2]);
-                if (!isPasswordValid) {
-                    return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-                }
+                if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
 
-                // 4. 2FA ellenőrzés
+                // 2FA ELLENŐRZÉS (E oszlop - index 4)
                 const is2FAEnabled = userRow[4] === 'TRUE';
+
                 if (is2FAEnabled) {
+                    // Ha be van kapcsolva, NEM adunk tokent, csak jelezzük a kliensnek
                     return res.status(200).json({ 
                         require2fa: true, 
-                        tempEmail: email 
+                        tempEmail: email // Ezt visszaküldjük, hogy a kliens tudja kinek kell a kódot küldeni
                     });
                 }
-
-                // 5. Beléptetés (ha nincs 2FA)
-                let achievementsData = { unlocked: [] };
-                try {
-                    if (userRow[5]) achievementsData = JSON.parse(userRow[5]);
-                } catch (e) { console.error("JSON hiba:", e); }
-
-                const user = { 
-                    name: userRow[0], 
-                    email: userRow[1], 
-                    has2FA: false,
-                    achievements: achievementsData, 
-                    badge: userRow[6] || '' 
-                };
-
-                const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1d' });
-
+                
+                // Hagyományos belépés
+                const user = { name: userRow[0], email: userRow[1], has2FA: false };
+                const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
                 return res.status(200).json({ token, user });
             }
 
@@ -749,44 +704,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-case 'UPDATE_ACHIEVEMENTS': {
-                const userData = verifyUser(req);
-                const { achievements, badge } = req.body; // pl. achievements: { unlocked: [...] }, badge: "Sörmester"
-
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const rows = usersResponse.data.values || [];
-                const rowIndex = rows.findIndex(row => row[1] === userData.email);
-
-                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
-
-                // F és G oszlop frissítése (Index 5 és 6) a felhasználó sorában
-                // Range: Felhasználók!F(sor):G(sor)
-                const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
-                
-                await sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: range,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [[JSON.stringify(achievements), badge]] }
-                });
-
-                return res.status(200).json({ message: "Eredmények mentve!" });
-            }
-
-            default:
-                return res.status(400).json({ error: "Ismeretlen action." });
-        
-        } // <--- Itt záródik a SWITCH blokk
-
-    } catch (error) {
-        console.error("API hiba:", error);
-        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: "Érvénytelen vagy lejárt token. Jelentkezz be újra!" });
-        }
-        return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
-    }
-}
-
 
 
 
