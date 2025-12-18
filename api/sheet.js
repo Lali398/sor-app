@@ -765,34 +765,60 @@ case 'EDIT_USER_DRINK': {
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
                 
+                // 1. Ötletek lekérése
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${IDEAS_SHEET}!A:F` 
                 });
                 
-                const allRows = ideasResponse.data.values || [];
+                // 2. Felhasználók lekérése (hogy tudjuk a rangokat)
+                const usersResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${USERS_SHEET}!A:G` // G oszlop a Badge
+                });
                 
-                // Átalakítás objektumokká
-                // Fontos: Az 'index' paramétert mentjük el, ez a sor száma (0-tól kezdve)
+                const allRows = ideasResponse.data.values || [];
+                const allUsers = usersResponse.data.values || [];
+
+                // Csinálunk egy gyors keresőtáblát: Email -> Badge
+                // userRow[1] az email, userRow[6] a badge (G oszlop)
+                const userBadges = {};
+                allUsers.forEach(row => {
+                    if (row[1] && row[6]) {
+                        userBadges[row[1]] = row[6];
+                    }
+                });
+                
+                // Átalakítás objektumokká + Badge hozzáadása
                 const ideas = allRows.map((row, index) => {
-                    // Ha üres a sor, vagy ez a fejléc, akkor null-t adunk vissza (később kiszűrjük)
                     if (!row || row.length === 0) return null;
-                    if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null; // Fejléc szűrés
+                    if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null;
+
+                    const submitterEmail = row[5] || '';
+                    const submitterName = row[0] || 'Névtelen';
+                    
+                    // Megnézzük, van-e badge ehhez az emailhez
+                    // Ha a név "Anonymous", akkor semmiképp ne legyen badge
+                    let badge = '';
+                    if (submitterName !== 'Anonymous' && userBadges[submitterEmail]) {
+                        badge = userBadges[submitterEmail];
+                    }
 
                     return {
-                        index: index, // Ez kell majd a módosításhoz (pl. az 5. sor módosítása)
-                        submitter: row[0] || 'Névtelen',
+                        index: index,
+                        submitter: submitterName,
                         idea: row[1] || 'Nincs szöveg',
                         timestamp: row[2] || '',
                         status: row[3] || 'Megcsinálásra vár',
                         date: row[4] || '',
-                        email: row[5] || ''
+                        email: submitterEmail,
+                        badge: badge // <--- ITT ADJUK HOZZÁ
                     };
-                }).filter(item => item !== null); // Kiszűrjük az üres sorokat és a fejlécet
+                }).filter(item => item !== null);
 
                 return res.status(200).json(ideas);
             }
-
+            
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
                 const { index, newStatus } = req.body;
@@ -924,6 +950,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
