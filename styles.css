@@ -136,11 +136,11 @@ body {
 }
 
 .input-group input:focus ~ label,
-.input-group input:valid ~ label {
-    top: -50px; /* -20px-ről -25px-re */
+.input-group input:not(:placeholder-shown) ~ label {
+    top: -5px;
     font-size: 12px;
-    color: #8a73ff;
-    font-weight: 500;
+    color: #b19cd9;
+    text-shadow: 0 0 5px rgba(177, 156, 217, 0.4);
 }
 
 /* Auth gomb (változatlan, jól mutat) */
@@ -1957,6 +1957,7 @@ input:checked + .slider:before {
 .achievement-toast.active {
     transform: translateX(-50%) translateY(0);
 }
+
 
 
 
