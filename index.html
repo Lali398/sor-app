@@ -1088,7 +1088,7 @@
         </div>
     </div>
 </div>
-
+<!-- UJJ JELSZÓ MODAL -->
 <div class="modal-overlay" id="forgotPasswordModal">
     <div class="modal-content">
         <header class="modal-header">
@@ -1108,13 +1108,18 @@
                 <label for="forgotRecoveryCode">Helyreállító Kód (pl. A1B2C3D4)</label>
                 <span class="input-highlight"></span>
             </div>
-
+            
             <div class="input-group">
                 <input type="password" id="forgotNewPassword" required placeholder=" ">
                 <label for="forgotNewPassword">Új jelszó</label>
                 <span class="input-highlight"></span>
             </div>
 
+            <div class="input-group">
+                <input type="password" id="forgotNewPasswordConfirm" required placeholder=" ">
+                <label for="forgotNewPasswordConfirm">Új jelszó megerősítése</label>
+                <span class="input-highlight"></span>
+            </div>
             <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
                 <span class="btn-text">Jelszó Mentése 💾</span>
                 <span class="btn-loading"><div class="spinner"></div></span>
@@ -1312,6 +1317,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
