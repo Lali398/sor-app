@@ -2526,7 +2526,285 @@ const guestSupportBtn = document.getElementById('guestSupportBtn');
 if(guestSupportBtn) {
     guestSupportBtn.addEventListener('click', openSupportModal);
 }
+    // === ACHIEVEMENT RENDSZER KEZELÉSE ===
+
+let currentAchievements = [];
+let currentLevel = null;
+let selectedCategory = 'all';
+
+// Achievement-ek betöltése
+async function loadAchievements() {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_ACHIEVEMENTS' })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Hiba az achievement-ek betöltésekor");
+        
+        currentAchievements = data.achievements;
+        currentLevel = data.level;
+        
+        // UI frissítése
+        updateAchievementUI(data);
+        updateBadgeInHeader(data.selectedBadge);
+        updateBadgeSelector(data);
+        
+        // Új achievement-ek értesítése
+        if (data.newlyUnlocked && data.newlyUnlocked.length > 0) {
+            showNewAchievements(data.newlyUnlocked);
+        }
+        
+    } catch (error) {
+        console.error("Hiba az achievement-ek betöltésekor:", error);
+        showError(error.message || "Nem sikerült betölteni az achievement-eket.");
+    }
+}
+
+// UI frissítése
+function updateAchievementUI(data) {
+    // Szint és progress
+    document.getElementById('currentLevelName').textContent = data.level.name;
+    document.getElementById('currentLevelBadge').textContent = data.level.badge;
+    document.getElementById('achievementProgress').textContent = `${data.unlockedCount}/${data.totalCount}`;
+    
+    const progressPercent = (data.unlockedCount / data.totalCount) * 100;
+    const progressBar = document.getElementById('achievementProgressBar');
+    progressBar.style.width = progressPercent + '%';
+    progressBar.textContent = Math.round(progressPercent) + '%';
+    progressBar.style.background = `linear-gradient(90deg, ${data.level.color}, #764ba2)`;
+    
+    // Szint badge-ek kiemelése
+    document.querySelectorAll('.level-badge-item').forEach((item, index) => {
+        item.classList.remove('current');
+        const levelData = [
+            { min: 0, max: 5 },
+            { min: 6, max: 10 },
+            { min: 11, max: 20 },
+            { min: 21, max: 35 },
+            { min: 36, max: 50 }
+        ][index];
+        
+        if (data.unlockedCount >= levelData.min && data.unlockedCount <= levelData.max) {
+            item.classList.add('current');
+        }
     });
+    
+    // Kategória számok frissítése
+    updateCategoryCounters(data.achievements);
+    
+    // Achievement-ek renderelése
+    renderAchievements(data.achievements, selectedCategory);
+}
+
+// Kategória számlálók
+function updateCategoryCounters(achievements) {
+    const categories = ['all', 'mennyiseg', 'pontszam', 'tipus', 'helyek', 'ido', 'sorozat', 'kulonleges', 'kozossegi'];
+    
+    categories.forEach(cat => {
+        const unlocked = cat === 'all' 
+            ? achievements.filter(a => a.unlocked).length
+            : achievements.filter(a => a.category === cat && a.unlocked).length;
+        
+        const total = cat === 'all'
+            ? achievements.length
+            : achievements.filter(a => a.category === cat).length;
+        
+        const countEl = document.getElementById(`count-${cat}`);
+        if (countEl) {
+            countEl.textContent = `${unlocked}/${total}`;
+        }
+    });
+}
+
+// Achievement-ek renderelése
+function renderAchievements(achievements, category) {
+    const grid = document.getElementById('achievementGrid');
+    if (!grid) return;
+    
+    // Szűrés
+    const filtered = category === 'all' 
+        ? achievements 
+        : achievements.filter(a => a.category === category);
+    
+    // Rendezés: feloldottak elől
+    filtered.sort((a, b) => {
+        if (a.unlocked && !b.unlocked) return -1;
+        if (!a.unlocked && b.unlocked) return 1;
+        return 0;
+    });
+    
+    grid.innerHTML = '';
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#aaa; grid-column: 1/-1;">Nincsenek achievement-ek ebben a kategóriában.</p>';
+        return;
+    }
+    
+    filtered.forEach(ach => {
+        const card = document.createElement('div');
+        card.className = `achievement-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
+        
+        card.innerHTML = `
+            ${ach.isNew ? '<div class="achievement-new-badge">ÚJ!</div>' : ''}
+            <div class="achievement-header">
+                <span class="achievement-icon">${ach.icon}</span>
+                <span class="achievement-points">+${ach.points} pont</span>
+            </div>
+            <div class="achievement-body">
+                <h4>${ach.name}</h4>
+                <p class="achievement-desc">${ach.desc}</p>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+
+// Kategória filter kezelése
+document.addEventListener('click', (e) => {
+    const filterBtn = e.target.closest('.filter-tab');
+    if (!filterBtn) return;
+    
+    // Aktív státusz frissítése
+    document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+    filterBtn.classList.add('active');
+    
+    // Kategória váltás
+    selectedCategory = filterBtn.dataset.category;
+    renderAchievements(currentAchievements, selectedCategory);
+});
+
+// Badge választó frissítése (Beállítások tab)
+function updateBadgeSelector(data) {
+    const selector = document.getElementById('badgeSelector');
+    if (!selector) return;
+    
+    const levels = [
+        { badge: '🍺', name: 'Újoncpohár', min: 0 },
+        { badge: '🍻', name: 'Korsós', min: 6 },
+        { badge: '🏆', name: 'Mester', min: 11 },
+        { badge: '👑', name: 'Sörkirály', min: 21 },
+        { badge: '⭐', name: 'Sörimádó', min: 36 }
+    ];
+    
+    selector.innerHTML = '';
+    
+    levels.forEach(level => {
+        const isUnlocked = data.unlockedCount >= level.min;
+        const isSelected = data.selectedBadge === level.badge;
+        
+        const option = document.createElement('div');
+        option.className = `badge-option ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+        option.innerHTML = `
+            <span class="badge-option-icon">${level.badge}</span>
+            <span class="badge-option-name">${level.name}</span>
+        `;
+        
+        if (isUnlocked) {
+            option.addEventListener('click', () => selectBadge(level.badge));
+        }
+        
+        selector.appendChild(option);
+    });
+}
+
+// Badge kiválasztása
+async function selectBadge(badge) {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'SET_SELECTED_BADGE', badge })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        
+        showSuccess('Badge sikeresen beállítva! 🎉');
+        updateBadgeInHeader(badge);
+        
+        // Selector frissítése
+        document.querySelectorAll('.badge-option').forEach(opt => {
+            opt.classList.remove('selected');
+            if (opt.querySelector('.badge-option-icon').textContent === badge) {
+                opt.classList.add('selected');
+            }
+        });
+        
+    } catch (error) {
+        showError(error.message || "Nem sikerült beállítani a badge-et.");
+    }
+}
+
+// Badge megjelenítése a fejlécben
+function updateBadgeInHeader(badge) {
+    // Sidebar név mellé
+    const sidebarName = document.getElementById('userWelcomeMessageSidebar');
+    if (sidebarName) {
+        // Töröljük a régi badge-et ha van
+        const oldBadge = sidebarName.querySelector('.user-badge');
+        if (oldBadge) oldBadge.remove();
+        
+        // Új badge hozzáadása
+        const badgeSpan = document.createElement('span');
+        badgeSpan.className = 'user-badge';
+        badgeSpan.textContent = badge;
+        badgeSpan.title = 'A jelenlegi szinted badge-e';
+        sidebarName.appendChild(badgeSpan);
+    }
+    
+    // Felső fejléc (ha van)
+    const headerName = document.getElementById('userWelcomeMessage');
+    if (headerName) {
+        const oldBadge = headerName.querySelector('.user-badge');
+        if (oldBadge) oldBadge.remove();
+        
+        const badgeSpan = document.createElement('span');
+        badgeSpan.className = 'user-badge';
+        badgeSpan.textContent = badge;
+        badgeSpan.title = 'A jelenlegi szinted badge-e';
+        headerName.appendChild(badgeSpan);
+    }
+}
+
+// Új achievement-ek értesítése
+function showNewAchievements(newAchievements) {
+    newAchievements.forEach((ach, index) => {
+        setTimeout(() => {
+            showNotification(`🏆 Új achievement: ${ach.name}! (+${ach.points} pont)`, 'success');
+        }, index * 2000); // 2mp késleltetés achievement-enként
+    });
+}
+
+// Achievement-ek betöltése amikor a tab-ra váltunk
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-tab-content="user-achievements-content"]');
+    if (btn) {
+        loadAchievements();
+    }
+});
+
+// Inicializálás amikor a user nézetre váltunk
+const originalSwitchToUserViewWithAch = switchToUserView;
+switchToUserView = function() {
+    originalSwitchToUserViewWithAch();
+    // Achievement-ek betöltése (de nem azonnal, hanem kis késleltetéssel)
+    setTimeout(() => {
+        // Csak a badge-et frissítjük, a teljes betöltés csak a tab megnyitásakor történik
+        loadAchievements();
+    }, 500);
+};
+    });
+
 
 
 
