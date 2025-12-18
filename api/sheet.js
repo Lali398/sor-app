@@ -898,6 +898,17 @@ case 'EDIT_USER_DRINK': {
                     return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
                 }
             }
+            default:
+                return res.status(400).json({ error: "Ismeretlen művelet." });
+        } // Switch lezárása
+
+    } catch (error) {
+        // Ez a FŐ hibakezelő, ami elkapja a szerverhibákat (pl. google api hiba, connection error)
+        console.error("Szerver hiba:", error);
+        return res.status(500).json({ error: "Szerverhiba történt: " + error.message });
+    }
+} // Handler függvény lezárása
+
 
 
 
