@@ -11,6 +11,7 @@ const USERS_SHEET = 'Felhasználók';
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
 const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 const IDEAS_SHEET = 'Vendég ötletek';
+const ACHIEVEMENTS_SHEET = 'Vendég Achievement-ek';
 const SUPPORT_SHEET = 'Hibajelentések';
 
 const COL_INDEXES = {
@@ -19,6 +20,198 @@ const COL_INDEXES = {
 };
 
 // === SEGÉDFÜGGVÉNYEK ===
+
+const ACHIEVEMENT_DEFINITIONS = [
+    // === MENNYISÉG ALAPJÁN ===
+    { id: 'first_beer', name: 'Első korty', desc: 'Értékelj 1 sört', icon: '🍺', points: 10, category: 'mennyiseg' },
+    { id: 'beer_5', name: 'Kezdő kóstoló', desc: '5 sör értékelve', icon: '🍻', points: 20, category: 'mennyiseg' },
+    { id: 'beer_10', name: 'Rajongó', desc: '10 sör értékelve', icon: '🏅', points: 30, category: 'mennyiseg' },
+    { id: 'beer_25', name: 'Sörfürdő', desc: '25 sör értékelve', icon: '🎯', points: 50, category: 'mennyiseg' },
+    { id: 'beer_50', name: 'Félszáz!', desc: '50 sör értékelve', icon: '💯', points: 75, category: 'mennyiseg' },
+    { id: 'beer_100', name: 'Centurió', desc: '100 sör értékelve', icon: '👑', points: 100, category: 'mennyiseg' },
+    { id: 'beer_250', name: 'Sörmilliárdos', desc: '250 sör értékelve', icon: '🌟', points: 150, category: 'mennyiseg' },
+    
+    // === PONTSZÁM ALAPJÁN ===
+    { id: 'first_10', name: 'Tökéletes!', desc: 'Első 10 pontos értékelés', icon: '⭐', points: 25, category: 'pontszam' },
+    { id: 'five_9plus', name: 'Válogatós', desc: '5 db 9+ pontszámú sör', icon: '🎖️', points: 40, category: 'pontszam' },
+    { id: 'ten_9plus', name: 'Minőség bajnok', desc: '10 db 9+ pontszámú sör', icon: '🏆', points: 60, category: 'pontszam' },
+    { id: 'perfect_streak', name: 'Csúcsforma', desc: '3 egymást követő 10 pontos', icon: '🔥', points: 50, category: 'pontszam' },
+    { id: 'avg_8plus', name: 'Magas mérce', desc: 'Átlagod 8+ pont', icon: '📈', points: 70, category: 'pontszam' },
+    { id: 'avg_9plus', name: 'Elit', desc: 'Átlagod 9+ pont', icon: '💎', points: 100, category: 'pontszam' },
+    
+    // === TÍPUSOK ALAPJÁN ===
+    { id: 'type_3', name: 'Nyitott szemmel', desc: '3 különböző típus', icon: '🎨', points: 20, category: 'tipus' },
+    { id: 'type_5', name: 'Kalandvágyó', desc: '5 különböző típus', icon: '🗺️', points: 30, category: 'tipus' },
+    { id: 'type_10', name: 'Világutazó', desc: '10 különböző típus', icon: '🌍', points: 50, category: 'tipus' },
+    { id: 'type_15', name: 'Univerzális', desc: '15 különböző típus', icon: '🌌', points: 80, category: 'tipus' },
+    { id: 'ipa_lover', name: 'IPA Fanatikus', desc: '10 db IPA értékelve', icon: '🍃', points: 40, category: 'tipus' },
+    { id: 'lager_king', name: 'Lager Király', desc: '10 db Lager értékelve', icon: '👑', points: 40, category: 'tipus' },
+    { id: 'stout_master', name: 'Stout Mester', desc: '10 db Stout/Porter értékelve', icon: '⚫', points: 50, category: 'tipus' },
+    
+    // === HELYEK ALAPJÁN ===
+    { id: 'place_3', name: 'Körbejáró', desc: '3 különböző hely', icon: '🚶', points: 20, category: 'helyek' },
+    { id: 'place_5', name: 'Felfedező', desc: '5 különböző hely', icon: '🧭', points: 30, category: 'helyek' },
+    { id: 'place_10', name: 'Térkép Úr', desc: '10 különböző hely', icon: '📍', points: 50, category: 'helyek' },
+    { id: 'place_20', name: 'Világjáró', desc: '20 különböző hely', icon: '✈️', points: 80, category: 'helyek' },
+    { id: 'local_hero', name: 'Törzsvendég', desc: '20 sör ugyanarról a helyről', icon: '🏠', points: 60, category: 'helyek' },
+    
+    // === IDŐPONT ALAPJÁN ===
+    { id: 'early_bird', name: 'Korai madár', desc: 'Reggel 6-9 között értékelés', icon: '🌅', points: 30, category: 'ido' },
+    { id: 'lunch_lover', name: 'Ebédidő', desc: 'Délben 12-14 között értékelés', icon: '☀️', points: 20, category: 'ido' },
+    { id: 'happy_hour', name: 'Happy Hour', desc: '17-19 között értékelés', icon: '🌆', points: 20, category: 'ido' },
+    { id: 'night_owl', name: 'Éjszakai bagoly', desc: 'Éjjel 22-24 között értékelés', icon: '🌙', points: 30, category: 'ido' },
+    { id: 'midnight_brewer', name: 'Éjféli kóstoló', desc: 'Éjfél után értékelés', icon: '🌃', points: 40, category: 'ido' },
+    
+    // === SOROZATOK ===
+    { id: 'streak_3', name: '3 napos széria', desc: '3 egymást követő nap', icon: '📅', points: 30, category: 'sorozat' },
+    { id: 'streak_7', name: 'Heti bajnok', desc: '7 egymást követő nap', icon: '🗓️', points: 50, category: 'sorozat' },
+    { id: 'streak_14', name: 'Kéthetes menet', desc: '14 egymást követő nap', icon: '📆', points: 80, category: 'sorozat' },
+    { id: 'streak_30', name: 'Havi legenda', desc: '30 egymást követő nap', icon: '🏅', points: 150, category: 'sorozat' },
+    { id: 'daily_3', name: 'Napi rutin', desc: '3 sör egy napon belül', icon: '🔄', points: 25, category: 'sorozat' },
+    { id: 'weekend_warrior', name: 'Hétvégi harcos', desc: '5 sör hétvégén', icon: '🎉', points: 35, category: 'sorozat' },
+    
+    // === KÜLÖNLEGES ===
+    { id: 'worst_beer', name: 'Bátorság próba', desc: 'Adj 3 pont alatti értékelést', icon: '💀', points: 15, category: 'kulonleges' },
+    { id: 'honest_critic', name: 'Őszinte kritikus', desc: '5 db 5 pont alatti értékelés', icon: '📝', points: 30, category: 'kulonleges' },
+    { id: 'high_standard', name: 'Magaslat', desc: '10 db 8+ pontos értékelés', icon: '🎯', points: 50, category: 'kulonleges' },
+    { id: 'first_note', name: 'Jegyzetelő', desc: 'Első jegyzet hozzáadása', icon: '📖', points: 10, category: 'kulonleges' },
+    { id: 'detailed_notes', name: 'Részletező', desc: '10 részletes jegyzet (50+ karakter)', icon: '✍️', points: 40, category: 'kulonleges' },
+    { id: 'strong_beer', name: 'Erős ital', desc: 'Értékelj 8%+ alkoholos sört', icon: '💪', points: 25, category: 'kulonleges' },
+    { id: 'light_beer', name: 'Könnyű fuvallat', desc: 'Értékelj 3% alatti sört', icon: '🌬️', points: 20, category: 'kulonleges' },
+    { id: 'speed_demon', name: 'Gyors kóstoló', desc: '5 értékelés 1 órán belül', icon: '⚡', points: 35, category: 'kulonleges' },
+    { id: 'balanced', name: 'Kiegyensúlyozott', desc: 'Külalak, illat, íz mind 8+', icon: '⚖️', points: 45, category: 'kulonleges' },
+    { id: 'triple_threat', name: 'Tripla veszély', desc: '3 különböző sör ugyanazon a napon', icon: '🎲', points: 30, category: 'kulonleges' },
+    
+    // === KÖZÖSSÉGI ===
+    { id: 'idea_submit', name: 'Ötletadó', desc: 'Küldd be első ötleted', icon: '💡', points: 15, category: 'kozossegi' },
+    { id: 'support_hero', name: 'Segítőkész', desc: 'Küldj be támogatási kérést', icon: '🆘', points: 10, category: 'kozossegi' },
+    { id: 'early_adopter', name: 'Korai felhasználó', desc: 'Regisztráltál az első 100 között', icon: '🎖️', points: 50, category: 'kozossegi' },
+];
+
+// SZINTRENDSZER (Badge-ek)
+const LEVEL_SYSTEM = [
+    { minAchievements: 0, maxAchievements: 5, name: 'Újoncpohár', badge: '🍺', color: '#94a3b8' },
+    { minAchievements: 6, maxAchievements: 10, name: 'Korsós', badge: '🍻', color: '#60a5fa' },
+    { minAchievements: 11, maxAchievements: 20, name: 'Mester', badge: '🏆', color: '#f59e0b' },
+    { minAchievements: 21, maxAchievements: 35, name: 'Sörkirály', badge: '👑', color: '#8b5cf6' },
+    { minAchievements: 36, maxAchievements: 50, name: 'Sörimádó', badge: '⭐', color: '#ef4444' },
+];
+
+// === ACHIEVEMENT ELLENŐRZŐ FUNKCIÓK ===
+
+function checkAchievements(userBeers, userDrinks, userData) {
+    const unlocked = [];
+    const totalBeers = userBeers.length;
+    
+    // MENNYISÉG
+    if (totalBeers >= 1 && !hasAchievement('first_beer', userData.achievements)) unlocked.push('first_beer');
+    if (totalBeers >= 5) unlocked.push('beer_5');
+    if (totalBeers >= 10) unlocked.push('beer_10');
+    if (totalBeers >= 25) unlocked.push('beer_25');
+    if (totalBeers >= 50) unlocked.push('beer_50');
+    if (totalBeers >= 100) unlocked.push('beer_100');
+    if (totalBeers >= 250) unlocked.push('beer_250');
+    
+    // PONTSZÁMOK
+    const perfect10 = userBeers.filter(b => parseFloat(b.totalScore) === 30).length;
+    const nines = userBeers.filter(b => parseFloat(b.avg) >= 9).length;
+    const eights = userBeers.filter(b => parseFloat(b.avg) >= 8).length;
+    
+    if (perfect10 >= 1) unlocked.push('first_10');
+    if (nines >= 5) unlocked.push('five_9plus');
+    if (nines >= 10) unlocked.push('ten_9plus');
+    if (eights >= 10) unlocked.push('high_standard');
+    
+    // ÁTLAG
+    if (totalBeers >= 5) {
+        const avgScore = userBeers.reduce((sum, b) => sum + parseFloat(b.avg || 0), 0) / totalBeers;
+        if (avgScore >= 8) unlocked.push('avg_8plus');
+        if (avgScore >= 9) unlocked.push('avg_9plus');
+    }
+    
+    // TÍPUSOK
+    const uniqueTypes = new Set(userBeers.map(b => b.type).filter(Boolean));
+    if (uniqueTypes.size >= 3) unlocked.push('type_3');
+    if (uniqueTypes.size >= 5) unlocked.push('type_5');
+    if (uniqueTypes.size >= 10) unlocked.push('type_10');
+    if (uniqueTypes.size >= 15) unlocked.push('type_15');
+    
+    // SPECIFIKUS TÍPUSOK
+    const ipaCount = userBeers.filter(b => b.type && b.type.toLowerCase().includes('ipa')).length;
+    const lagerCount = userBeers.filter(b => b.type && b.type.toLowerCase().includes('lager')).length;
+    const stoutCount = userBeers.filter(b => b.type && (b.type.toLowerCase().includes('stout') || b.type.toLowerCase().includes('porter'))).length;
+    
+    if (ipaCount >= 10) unlocked.push('ipa_lover');
+    if (lagerCount >= 10) unlocked.push('lager_king');
+    if (stoutCount >= 10) unlocked.push('stout_master');
+    
+    // HELYEK
+    const uniquePlaces = new Set(userBeers.map(b => b.location).filter(Boolean));
+    if (uniquePlaces.size >= 3) unlocked.push('place_3');
+    if (uniquePlaces.size >= 5) unlocked.push('place_5');
+    if (uniquePlaces.size >= 10) unlocked.push('place_10');
+    if (uniquePlaces.size >= 20) unlocked.push('place_20');
+    
+    // HELYEK - TÖRZSVENDÉG
+    const placeCounts = {};
+    userBeers.forEach(b => {
+        if (b.location) placeCounts[b.location] = (placeCounts[b.location] || 0) + 1;
+    });
+    if (Object.values(placeCounts).some(count => count >= 20)) unlocked.push('local_hero');
+    
+    // IDŐPONTOK
+    userBeers.forEach(beer => {
+        if (!beer.date) return;
+        const hour = new Date(beer.date).getHours();
+        if (hour >= 6 && hour < 9) unlocked.push('early_bird');
+        if (hour >= 12 && hour < 14) unlocked.push('lunch_lover');
+        if (hour >= 17 && hour < 19) unlocked.push('happy_hour');
+        if (hour >= 22 && hour < 24) unlocked.push('night_owl');
+        if (hour >= 0 && hour < 6) unlocked.push('midnight_brewer');
+    });
+    
+    // KÜLÖNLEGES
+    const lowScores = userBeers.filter(b => parseFloat(b.totalScore) < 9).length; // 3 pont alatti (0-3-3-3)
+    const badBeers = userBeers.filter(b => parseFloat(b.avg) < 5).length;
+    
+    if (lowScores >= 1) unlocked.push('worst_beer');
+    if (badBeers >= 5) unlocked.push('honest_critic');
+    
+    const hasNotes = userBeers.filter(b => b.notes && b.notes.length > 0).length;
+    const detailedNotes = userBeers.filter(b => b.notes && b.notes.length > 50).length;
+    
+    if (hasNotes >= 1) unlocked.push('first_note');
+    if (detailedNotes >= 10) unlocked.push('detailed_notes');
+    
+    const strongBeers = userBeers.filter(b => parseFloat(b.beerPercentage) >= 8).length;
+    const lightBeers = userBeers.filter(b => parseFloat(b.beerPercentage) < 3).length;
+    
+    if (strongBeers >= 1) unlocked.push('strong_beer');
+    if (lightBeers >= 1) unlocked.push('light_beer');
+    
+    // BALANCED (mind a 3 kategória 8+)
+    const balanced = userBeers.filter(b => 
+        parseFloat(b.look) >= 8 && 
+        parseFloat(b.smell) >= 8 && 
+        parseFloat(b.taste) >= 8
+    ).length;
+    if (balanced >= 1) unlocked.push('balanced');
+    
+    return [...new Set(unlocked)]; // Duplikációk eltávolítása
+}
+
+function hasAchievement(achievementId, userAchievements) {
+    return userAchievements && userAchievements.includes(achievementId);
+}
+
+function calculateLevel(achievementCount) {
+    for (const level of LEVEL_SYSTEM) {
+        if (achievementCount >= level.minAchievements && achievementCount <= level.maxAchievements) {
+            return level;
+        }
+    }
+    return LEVEL_SYSTEM[LEVEL_SYSTEM.length - 1]; // Max szint
+}
 
 const transformRowToBeer = (row, userIndexes, ratedBy) => {
     const beerName = row[userIndexes.beerName];
@@ -704,207 +897,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-// api/sheet.js - Achievement funkciók hozzáadása
-
-// === ACHIEVEMENT KONFIGURÁCIÓK ===
-const ACHIEVEMENTS_SHEET = 'VendÃ©g Achievement-ek';
-
-const ACHIEVEMENT_DEFINITIONS = [
-    // === MENNYISÉG ALAPJÁN ===
-    { id: 'first_beer', name: 'Első korty', desc: 'Értékelj 1 sört', icon: '🍺', points: 10, category: 'mennyiseg' },
-    { id: 'beer_5', name: 'Kezdő kóstoló', desc: '5 sör értékelve', icon: '🍻', points: 20, category: 'mennyiseg' },
-    { id: 'beer_10', name: 'Rajongó', desc: '10 sör értékelve', icon: '🏅', points: 30, category: 'mennyiseg' },
-    { id: 'beer_25', name: 'Sörfürdő', desc: '25 sör értékelve', icon: '🎯', points: 50, category: 'mennyiseg' },
-    { id: 'beer_50', name: 'Félszáz!', desc: '50 sör értékelve', icon: '💯', points: 75, category: 'mennyiseg' },
-    { id: 'beer_100', name: 'Centurió', desc: '100 sör értékelve', icon: '👑', points: 100, category: 'mennyiseg' },
-    { id: 'beer_250', name: 'Sörmilliárdos', desc: '250 sör értékelve', icon: '🌟', points: 150, category: 'mennyiseg' },
-    
-    // === PONTSZÁM ALAPJÁN ===
-    { id: 'first_10', name: 'Tökéletes!', desc: 'Első 10 pontos értékelés', icon: '⭐', points: 25, category: 'pontszam' },
-    { id: 'five_9plus', name: 'Válogatós', desc: '5 db 9+ pontszámú sör', icon: '🎖️', points: 40, category: 'pontszam' },
-    { id: 'ten_9plus', name: 'Minőség bajnok', desc: '10 db 9+ pontszámú sör', icon: '🏆', points: 60, category: 'pontszam' },
-    { id: 'perfect_streak', name: 'Csúcsforma', desc: '3 egymást követő 10 pontos', icon: '🔥', points: 50, category: 'pontszam' },
-    { id: 'avg_8plus', name: 'Magas mérce', desc: 'Átlagod 8+ pont', icon: '📈', points: 70, category: 'pontszam' },
-    { id: 'avg_9plus', name: 'Elit', desc: 'Átlagod 9+ pont', icon: '💎', points: 100, category: 'pontszam' },
-    
-    // === TÍPUSOK ALAPJÁN ===
-    { id: 'type_3', name: 'Nyitott szemmel', desc: '3 különböző típus', icon: '🎨', points: 20, category: 'tipus' },
-    { id: 'type_5', name: 'Kalandvágyó', desc: '5 különböző típus', icon: '🗺️', points: 30, category: 'tipus' },
-    { id: 'type_10', name: 'Világutazó', desc: '10 különböző típus', icon: '🌍', points: 50, category: 'tipus' },
-    { id: 'type_15', name: 'Univerzális', desc: '15 különböző típus', icon: '🌌', points: 80, category: 'tipus' },
-    { id: 'ipa_lover', name: 'IPA Fanatikus', desc: '10 db IPA értékelve', icon: '🍃', points: 40, category: 'tipus' },
-    { id: 'lager_king', name: 'Lager Király', desc: '10 db Lager értékelve', icon: '👑', points: 40, category: 'tipus' },
-    { id: 'stout_master', name: 'Stout Mester', desc: '10 db Stout/Porter értékelve', icon: '⚫', points: 50, category: 'tipus' },
-    
-    // === HELYEK ALAPJÁN ===
-    { id: 'place_3', name: 'Körbejáró', desc: '3 különböző hely', icon: '🚶', points: 20, category: 'helyek' },
-    { id: 'place_5', name: 'Felfedező', desc: '5 különböző hely', icon: '🧭', points: 30, category: 'helyek' },
-    { id: 'place_10', name: 'Térkép Úr', desc: '10 különböző hely', icon: '📍', points: 50, category: 'helyek' },
-    { id: 'place_20', name: 'Világjáró', desc: '20 különböző hely', icon: '✈️', points: 80, category: 'helyek' },
-    { id: 'local_hero', name: 'Törzsvendég', desc: '20 sör ugyanarról a helyről', icon: '🏠', points: 60, category: 'helyek' },
-    
-    // === IDŐPONT ALAPJÁN ===
-    { id: 'early_bird', name: 'Korai madár', desc: 'Reggel 6-9 között értékelés', icon: '🌅', points: 30, category: 'ido' },
-    { id: 'lunch_lover', name: 'Ebédidő', desc: 'Délben 12-14 között értékelés', icon: '☀️', points: 20, category: 'ido' },
-    { id: 'happy_hour', name: 'Happy Hour', desc: '17-19 között értékelés', icon: '🌆', points: 20, category: 'ido' },
-    { id: 'night_owl', name: 'Éjszakai bagoly', desc: 'Éjjel 22-24 között értékelés', icon: '🌙', points: 30, category: 'ido' },
-    { id: 'midnight_brewer', name: 'Éjféli kóstoló', desc: 'Éjfél után értékelés', icon: '🌃', points: 40, category: 'ido' },
-    
-    // === SOROZATOK ===
-    { id: 'streak_3', name: '3 napos széria', desc: '3 egymást követő nap', icon: '📅', points: 30, category: 'sorozat' },
-    { id: 'streak_7', name: 'Heti bajnok', desc: '7 egymást követő nap', icon: '🗓️', points: 50, category: 'sorozat' },
-    { id: 'streak_14', name: 'Kéthetes menet', desc: '14 egymást követő nap', icon: '📆', points: 80, category: 'sorozat' },
-    { id: 'streak_30', name: 'Havi legenda', desc: '30 egymást követő nap', icon: '🏅', points: 150, category: 'sorozat' },
-    { id: 'daily_3', name: 'Napi rutin', desc: '3 sör egy napon belül', icon: '🔄', points: 25, category: 'sorozat' },
-    { id: 'weekend_warrior', name: 'Hétvégi harcos', desc: '5 sör hétvégén', icon: '🎉', points: 35, category: 'sorozat' },
-    
-    // === KÜLÖNLEGES ===
-    { id: 'worst_beer', name: 'Bátorság próba', desc: 'Adj 3 pont alatti értékelést', icon: '💀', points: 15, category: 'kulonleges' },
-    { id: 'honest_critic', name: 'Őszinte kritikus', desc: '5 db 5 pont alatti értékelés', icon: '📝', points: 30, category: 'kulonleges' },
-    { id: 'high_standard', name: 'Magaslat', desc: '10 db 8+ pontos értékelés', icon: '🎯', points: 50, category: 'kulonleges' },
-    { id: 'first_note', name: 'Jegyzetelő', desc: 'Első jegyzet hozzáadása', icon: '📖', points: 10, category: 'kulonleges' },
-    { id: 'detailed_notes', name: 'Részletező', desc: '10 részletes jegyzet (50+ karakter)', icon: '✍️', points: 40, category: 'kulonleges' },
-    { id: 'strong_beer', name: 'Erős ital', desc: 'Értékelj 8%+ alkoholos sört', icon: '💪', points: 25, category: 'kulonleges' },
-    { id: 'light_beer', name: 'Könnyű fuvallat', desc: 'Értékelj 3% alatti sört', icon: '🌬️', points: 20, category: 'kulonleges' },
-    { id: 'speed_demon', name: 'Gyors kóstoló', desc: '5 értékelés 1 órán belül', icon: '⚡', points: 35, category: 'kulonleges' },
-    { id: 'balanced', name: 'Kiegyensúlyozott', desc: 'Külalak, illat, íz mind 8+', icon: '⚖️', points: 45, category: 'kulonleges' },
-    { id: 'triple_threat', name: 'Tripla veszély', desc: '3 különböző sör ugyanazon a napon', icon: '🎲', points: 30, category: 'kulonleges' },
-    
-    // === KÖZÖSSÉGI ===
-    { id: 'idea_submit', name: 'Ötletadó', desc: 'Küldd be első ötleted', icon: '💡', points: 15, category: 'kozossegi' },
-    { id: 'support_hero', name: 'Segítőkész', desc: 'Küldj be támogatási kérést', icon: '🆘', points: 10, category: 'kozossegi' },
-    { id: 'early_adopter', name: 'Korai felhasználó', desc: 'Regisztráltál az első 100 között', icon: '🎖️', points: 50, category: 'kozossegi' },
-];
-
-// SZINTRENDSZER (Badge-ek)
-const LEVEL_SYSTEM = [
-    { minAchievements: 0, maxAchievements: 5, name: 'Újoncpohár', badge: '🍺', color: '#94a3b8' },
-    { minAchievements: 6, maxAchievements: 10, name: 'Korsós', badge: '🍻', color: '#60a5fa' },
-    { minAchievements: 11, maxAchievements: 20, name: 'Mester', badge: '🏆', color: '#f59e0b' },
-    { minAchievements: 21, maxAchievements: 35, name: 'Sörkirály', badge: '👑', color: '#8b5cf6' },
-    { minAchievements: 36, maxAchievements: 50, name: 'Sörimádó', badge: '⭐', color: '#ef4444' },
-];
-
-// === ACHIEVEMENT ELLENŐRZŐ FUNKCIÓK ===
-
-function checkAchievements(userBeers, userDrinks, userData) {
-    const unlocked = [];
-    const totalBeers = userBeers.length;
-    
-    // MENNYISÉG
-    if (totalBeers >= 1 && !hasAchievement('first_beer', userData.achievements)) unlocked.push('first_beer');
-    if (totalBeers >= 5) unlocked.push('beer_5');
-    if (totalBeers >= 10) unlocked.push('beer_10');
-    if (totalBeers >= 25) unlocked.push('beer_25');
-    if (totalBeers >= 50) unlocked.push('beer_50');
-    if (totalBeers >= 100) unlocked.push('beer_100');
-    if (totalBeers >= 250) unlocked.push('beer_250');
-    
-    // PONTSZÁMOK
-    const perfect10 = userBeers.filter(b => parseFloat(b.totalScore) === 30).length;
-    const nines = userBeers.filter(b => parseFloat(b.avg) >= 9).length;
-    const eights = userBeers.filter(b => parseFloat(b.avg) >= 8).length;
-    
-    if (perfect10 >= 1) unlocked.push('first_10');
-    if (nines >= 5) unlocked.push('five_9plus');
-    if (nines >= 10) unlocked.push('ten_9plus');
-    if (eights >= 10) unlocked.push('high_standard');
-    
-    // ÁTLAG
-    if (totalBeers >= 5) {
-        const avgScore = userBeers.reduce((sum, b) => sum + parseFloat(b.avg || 0), 0) / totalBeers;
-        if (avgScore >= 8) unlocked.push('avg_8plus');
-        if (avgScore >= 9) unlocked.push('avg_9plus');
-    }
-    
-    // TÍPUSOK
-    const uniqueTypes = new Set(userBeers.map(b => b.type).filter(Boolean));
-    if (uniqueTypes.size >= 3) unlocked.push('type_3');
-    if (uniqueTypes.size >= 5) unlocked.push('type_5');
-    if (uniqueTypes.size >= 10) unlocked.push('type_10');
-    if (uniqueTypes.size >= 15) unlocked.push('type_15');
-    
-    // SPECIFIKUS TÍPUSOK
-    const ipaCount = userBeers.filter(b => b.type && b.type.toLowerCase().includes('ipa')).length;
-    const lagerCount = userBeers.filter(b => b.type && b.type.toLowerCase().includes('lager')).length;
-    const stoutCount = userBeers.filter(b => b.type && (b.type.toLowerCase().includes('stout') || b.type.toLowerCase().includes('porter'))).length;
-    
-    if (ipaCount >= 10) unlocked.push('ipa_lover');
-    if (lagerCount >= 10) unlocked.push('lager_king');
-    if (stoutCount >= 10) unlocked.push('stout_master');
-    
-    // HELYEK
-    const uniquePlaces = new Set(userBeers.map(b => b.location).filter(Boolean));
-    if (uniquePlaces.size >= 3) unlocked.push('place_3');
-    if (uniquePlaces.size >= 5) unlocked.push('place_5');
-    if (uniquePlaces.size >= 10) unlocked.push('place_10');
-    if (uniquePlaces.size >= 20) unlocked.push('place_20');
-    
-    // HELYEK - TÖRZSVENDÉG
-    const placeCounts = {};
-    userBeers.forEach(b => {
-        if (b.location) placeCounts[b.location] = (placeCounts[b.location] || 0) + 1;
-    });
-    if (Object.values(placeCounts).some(count => count >= 20)) unlocked.push('local_hero');
-    
-    // IDŐPONTOK
-    userBeers.forEach(beer => {
-        if (!beer.date) return;
-        const hour = new Date(beer.date).getHours();
-        if (hour >= 6 && hour < 9) unlocked.push('early_bird');
-        if (hour >= 12 && hour < 14) unlocked.push('lunch_lover');
-        if (hour >= 17 && hour < 19) unlocked.push('happy_hour');
-        if (hour >= 22 && hour < 24) unlocked.push('night_owl');
-        if (hour >= 0 && hour < 6) unlocked.push('midnight_brewer');
-    });
-    
-    // KÜLÖNLEGES
-    const lowScores = userBeers.filter(b => parseFloat(b.totalScore) < 9).length; // 3 pont alatti (0-3-3-3)
-    const badBeers = userBeers.filter(b => parseFloat(b.avg) < 5).length;
-    
-    if (lowScores >= 1) unlocked.push('worst_beer');
-    if (badBeers >= 5) unlocked.push('honest_critic');
-    
-    const hasNotes = userBeers.filter(b => b.notes && b.notes.length > 0).length;
-    const detailedNotes = userBeers.filter(b => b.notes && b.notes.length > 50).length;
-    
-    if (hasNotes >= 1) unlocked.push('first_note');
-    if (detailedNotes >= 10) unlocked.push('detailed_notes');
-    
-    const strongBeers = userBeers.filter(b => parseFloat(b.beerPercentage) >= 8).length;
-    const lightBeers = userBeers.filter(b => parseFloat(b.beerPercentage) < 3).length;
-    
-    if (strongBeers >= 1) unlocked.push('strong_beer');
-    if (lightBeers >= 1) unlocked.push('light_beer');
-    
-    // BALANCED (mind a 3 kategória 8+)
-    const balanced = userBeers.filter(b => 
-        parseFloat(b.look) >= 8 && 
-        parseFloat(b.smell) >= 8 && 
-        parseFloat(b.taste) >= 8
-    ).length;
-    if (balanced >= 1) unlocked.push('balanced');
-    
-    return [...new Set(unlocked)]; // Duplikációk eltávolítása
-}
-
-function hasAchievement(achievementId, userAchievements) {
-    return userAchievements && userAchievements.includes(achievementId);
-}
-
-function calculateLevel(achievementCount) {
-    for (const level of LEVEL_SYSTEM) {
-        if (achievementCount >= level.minAchievements && achievementCount <= level.maxAchievements) {
-            return level;
-        }
-    }
-    return LEVEL_SYSTEM[LEVEL_SYSTEM.length - 1]; // Max szint
-}
-
-// === API ENDPOINT-OK ===
-
-// Adja hozzá a handler switch-hez:
-
 case 'GET_ACHIEVEMENTS': {
     const userData = verifyUser(req);
     
@@ -1028,8 +1020,6 @@ case 'SET_SELECTED_BADGE': {
     
     return res.status(200).json({ message: 'Badge sikeresen beállítva!', badge });
 }
-
-
 
 
 
