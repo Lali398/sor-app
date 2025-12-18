@@ -2475,7 +2475,103 @@ window.closeAddModal = function(type) {
     }
     document.body.style.overflow = 'auto';
 }
+    // === SEGÍTSÉG / HIBABEJELENTÉS FUNKCIÓK ===
+
+// Modal megnyitása
+window.openSupportModal = function() {
+    const modal = document.getElementById('supportModal');
+    const emailGroup = document.getElementById('supportEmailGroup');
+    const nameInput = document.getElementById('supportName');
+    const emailInput = document.getElementById('supportEmail');
+    
+    // Ellenőrizzük, be van-e jelentkezve a user
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    
+    if (userData) {
+        // Bejelentkezett user: töltjük ki az adatokat
+        nameInput.value = userData.name;
+        emailInput.value = userData.email;
+        // Email mező elrejtése (read-only)
+        emailGroup.style.display = 'none';
+    } else {
+        // Vendég: kell az email mező
+        emailGroup.style.display = 'block';
+        nameInput.value = '';
+        emailInput.value = '';
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // FAB bezárása ha nyitva volt
+    const fabContainer = document.getElementById('fabContainer');
+    if(fabContainer) fabContainer.classList.remove('active');
+}
+
+// Modal bezárása
+window.closeSupportModal = function() {
+    const modal = document.getElementById('supportModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    document.getElementById('supportForm').reset();
+}
+
+// Form beküldése
+document.getElementById('supportForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('supportName').value;
+    const subject = document.getElementById('supportSubject').value;
+    const message = document.getElementById('supportMessage').value;
+    const btn = e.target.querySelector('.auth-btn');
+    
+    // Email cím lekérése
+    let email;
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+        email = userData.email;
+    } else {
+        email = document.getElementById('supportEmail').value;
+    }
+    
+    setLoading(btn, true);
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+                // NEM kell token, mert vendégek is elérhetik
+            },
+            body: JSON.stringify({ 
+                action: 'SUBMIT_SUPPORT_TICKET', 
+                name, 
+                email, 
+                subject, 
+                message 
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
+        
+        showSuccess("Üzeneted elküldve! Hamarosan válaszolunk. 📧");
+        closeSupportModal();
+        
+    } catch (error) {
+        showError(error.message || "Nem sikerült elküldeni az üzenetet.");
+    } finally {
+        setLoading(btn, false);
+    }
+});
+
+// Vendég gomb eseménykezelő
+const guestSupportBtn = document.getElementById('guestSupportBtn');
+if(guestSupportBtn) {
+    guestSupportBtn.addEventListener('click', openSupportModal);
+}
     });
+
 
 
 
