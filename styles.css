@@ -1957,6 +1957,19 @@ input:checked + .slider:before {
 .achievement-toast.active {
     transform: translateX(-50%) translateY(0);
 }
+/* --- LEGÖRDÜLŐ MENÜ (SELECT) JAVÍTÁSA --- */
+select.form-control {
+    /* Maga a mező háttere sötét legyen */
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+}
+
+/* Ez a rész a kinyíló lista elemeit szinezi át */
+select.form-control option {
+    background-color: #10002b; /* Az oldal sötétlila alapszíne */
+    color: #e0e0e0;            /* Világos betűszín */
+}
+
 
 
 
