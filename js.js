@@ -1227,7 +1227,7 @@ function setupAdminRecap() {
 }
     
 
-    unction updateUserDrinkStats(drinks) {
+    function updateUserDrinkStats(drinks) {
     // Fejléc statisztikák
     const headerCount = document.getElementById('headerDrinkCount');
     const headerAvg = document.getElementById('headerDrinkAvgScore');
@@ -3189,6 +3189,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
