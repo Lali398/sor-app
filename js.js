@@ -2526,7 +2526,44 @@ const guestSupportBtn = document.getElementById('guestSupportBtn');
 if(guestSupportBtn) {
     guestSupportBtn.addEventListener('click', openSupportModal);
 }
+    // [js.js - ACHIEVEMENT RENDSZER]
+
+// --- KONFIGURÁCIÓ: 50 ACHIEVEMENT ---
+const ACHIEVEMENTS = [
+    // --- MENNYISÉG (12 db) ---
+    { id: 'cnt_1', icon: '🍺', title: 'Első korty', desc: 'Értékelj 1 sört', check: (b, d) => b.length >= 1 },
+    { id: 'cnt_5', icon: '🖐️', title: 'Bemelegítés', desc: 'Értékelj 5 sört', check: (b, d) => b.length >= 5 },
+    { id: 'cnt_10', icon: '🔟', title: 'Amatőr', desc: 'Értékelj 10 sört', check: (b, d) => b.length >= 10 },
+    { id: 'cnt_25', icon: '🥉', title: 'Rendszeres', desc: 'Értékelj 25 sört', check: (b, d) => b.length >= 25 },
+    { id: 'cnt_50', icon: '🥈', title: 'Profi', desc: 'Értékelj 50 sört', check: (b, d) => b.length >= 50 },
+    { id: 'cnt_100', icon: '🥇', title: 'Sörmester', desc: 'Értékelj 100 sört', check: (b, d) => b.length >= 100 },
+    { id: 'drk_1', icon: '🍹', title: 'Kóstoló', desc: 'Értékelj 1 italt', check: (b, d) => d.length >= 1 },
+    { id: 'drk_10', icon: '🍸', title: 'Mixer', desc: 'Értékelj 10 italt', check: (b, d) => d.length >= 10 },
+    { id: 'drk_50', icon: '🥂', title: 'Sommelier', desc: 'Értékelj 50 italt', check: (b, d) => d.length >= 50 },
+    { id: 'total_10', icon: '🚀', title: 'Kezdő I.', desc: 'Összesen 10 értékelés (Sör+Ital)', check: (b, d) => (b.length + d.length) >= 10 },
+    { id: 'total_50', icon: '🔥', title: 'Haladó II.', desc: 'Összesen 50 értékelés', check: (b, d) => (b.length + d.length) >= 50 },
+    { id: 'total_200', icon: '👑', title: 'Legenda', desc: 'Összesen 200 értékelés', check: (b, d) => (b.length + d.length) >= 200 },
+
+    // --- PONTSZÁMOK (8 db) ---
+    { id: 'score_max', icon: '😍', title: 'Mennyei', desc: 'Adj 10/10 pontot valamire', check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) >= 10) },
+    { id: 'score_min', icon: '🤢', title: 'Moslék', desc: 'Adj 2 pont alatt valamire', check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) > 0 && parseFloat(x.avg) < 2) },
+    { id: 'score_perf_look', icon: '👀', title: 'Szépkilátás', desc: '10-es Külalak', check: (b, d) => [...b, ...d].some(x => parseFloat(x.look) === 10) },
+    { id: 'score_perf_smell', icon: '👃', title: 'Illatfelhő', desc: '10-es Illat', check: (b, d) => [...b, ...d].some(x => parseFloat(x.smell) === 10) },
+    { id: 'score_perf_taste', icon: '👅', title: 'Ízorgia', desc: '10-es Íz', check: (b, d) => [...b, ...d].some(x => parseFloat(x.taste) === 10) },
+    { id: 'avg_high', icon: '📈', title: 'Szigorú', desc: 'Az átlagod 8 felett van (min 5 teszt)', check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) > 8 },
+    { id: 'avg_low', icon: '📉', title: 'Kritikus', desc: 'Az átlagod 4 alatt van (min 5 teszt)', check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) < 4 },
+    { id: 'precision', icon: '🎯', title: 'Tizedes', desc: 'Adj nem egész pontszámot (pl. 7.5)', check: (b, d) => [...b, ...d].some(x => x.avg % 1 !== 0) },
+
+    // --- TÍPUSOK (10 db) ---
+    { id: 'type_ipa', icon: '🌲', title: 'Komlófej', desc: '3 db IPA típusú sör', check: (b) => b.filter(x => x.type.toLowerCase().includes('ipa')).length >= 3 },
+    { id: 'type_lager', icon: '🍞', title: 'Klasszikus', desc: '5 db Lager/Pilsner', check: (b) => b.filter(x => /lager|pils/i.test(x.type)).length >= 5 },
+    { id: 'type_stout', icon: '☕', title: 'Feketeöves', desc: '3 db Stout/Porter', check: (b) => b.filter(x => /stout|porter|barna/i.test(x.type)).length >= 3 },
+    { id: 'type_fruit', icon: '🍒', title: 'Gyümölcsös', desc: '3 db Gyümölcsös sör', check: (b) => b.filter(x => /gyüm|meggy|málna/i.test(x.type)).length >= 3 },
+    { id: 'type_biza', icon: 'wheat', title: 'Búzamező', desc: '3 db Búzasör', check: (b) => b.filter(x => /búza|wheat|weiss/i.test(x.type)).length >= 3 },
+    { id: 'cat_wine', icon: '🍷', title: 'Borász', desc: '3 db Bor', check: (b, d) => d.filter(x => x.category === 'Bor').length >= 3 },
+    { id: 'cat_spirit', icon: '🥃', title: 'Rövid', desc: '5 db Tömény (Pá
     });
+
 
 
 
