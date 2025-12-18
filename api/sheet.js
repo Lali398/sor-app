@@ -153,12 +153,18 @@ export default async function handler(req, res) {
                     });
                 }
                 
-                let achievements = { unlocked: [] };
-                try {
-                    if (userRow[5]) achievements = JSON.parse(userRow[5]); // F oszlop
-                } catch (e) { console.error("JSON parse error for achievements", e); }
-                
-                const badge = userRow[6] || ''; // G oszlop
+               let achievements = { unlocked: [] };
+               try {
+                  // Csak akkor próbáljuk parse-olni, ha van ott valami, és nem üres string
+                  if (userRow[5] && userRow[5].trim() !== '') {
+                      achievements = JSON.parse(userRow[5]);
+                  }
+              } catch (e) {
+                  console.error("Hiba az achievementek betöltésekor (User: " + userRow[1] + "):", e.message);
+                  // Hiba esetén marad az üres objektum, nem hal meg a szerver
+              }
+              
+              const badge = userRow[6] || '';
 
                 const user = { 
                     name: userRow[0], 
@@ -411,6 +417,21 @@ export default async function handler(req, res) {
             })) || [];
         return res.status(200).json(userDrinks);
     }
+
+            case 'UPDATE_ACHIEVEMENTS': {
+    console.log("Achievement mentés indítása..."); // LOG
+    const userData = verifyUser(req);
+    // ...
+    console.log("User megtalálva, sor:", rowIndex); // LOG
+    // ...
+    try {
+        await sheets.spreadsheets.values.update({ ... });
+        console.log("Mentés sikeres!"); // LOG
+    } catch (err) {
+        console.error("Mentés sikertelen:", err); // LOG
+    }
+    // ...
+}
     
     case 'ADD_USER_DRINK': {
         const userData = verifyUser(req);
@@ -755,6 +776,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
