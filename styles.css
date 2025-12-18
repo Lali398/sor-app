@@ -34,13 +34,15 @@ body {
     height: 100%;
     overflow: hidden;
     z-index: 1;
+    pointer-events: none !important; /* ⬅️ EZ HIÁNYZOTT! */
 }
 
 .bubble {
     position: absolute;
-    background: rgba(255, 255, 255, 0.05); /* Kicsit áttetszőbb buborékok */
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     animation: float 6s ease-in-out infinite;
+    pointer-events: none !important; /* ⬅️ EZ IS HIÁNYZOTT! */
 }
 
 /* Buborék animációk (változatlan) */
@@ -1792,6 +1794,7 @@ input:checked + .slider:before {
         font-size: 1rem;
     }
 }
+
 
 
 
