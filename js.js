@@ -307,30 +307,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
-    if (!user) return;
-    
+    if (!user) return; // Ha nincs user, csendben kilépünk (ne dobjon hibát ha épp guest nézetben hívódik)
+
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_DRINKS' })
         });
+        
         const drinks = await response.json();
+        
         if (!response.ok) {
-            if (response.status === 401) {
-                showError("A munkameneted lejárt, jelentkezz be újra.");
-                setTimeout(switchToGuestView, 2000);
-                return;
+            // Itt nem dobunk 401 hibát azonnal, mert lehet, hogy a loadUserData már kezelte
+            if (response.status !== 401) {
+                throw new Error(drinks.error || 'Szerverhiba');
             }
-            throw new Error(drinks.error || 'Szerverhiba');
+            return;
         }
         
+        // 1. Globális változó frissítése
         currentUserDrinks = drinks;
+        
+        // 2. Táblázat frissítése
         renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks); // ÚJ SOR!
+        updateUserDrinkStats(drinks);
+
+        // 3. --- ÚJ RÉSZ: ACHIEVEMENTEK AZONNALI ELLENŐRZÉSE ---
+        if (typeof checkAchievements === 'function') {
+            await checkAchievements();
+            renderAchievements(); // UI frissítése azonnal
+        }
+        // -----------------------------------------------------
+
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
-        showError(error.message || "Nem sikerült betölteni az italokat.");
+        // Itt nem feltétlenül kell showError, hogy ne zavarja a fő folyamatot
     }
 }
 
@@ -1055,20 +1067,28 @@ function setupAdminRecap() {
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
-        showError('Nem vagy bejelentkezve.');
-        switchToGuestView();
+        // Ha nincs user, de a user nézeten vagyunk, dobjuk ki
+        if(document.getElementById('userView').style.display !== 'none') {
+             showError('Nem vagy bejelentkezve.');
+             switchToGuestView();
+        }
         return;
     }
-    userWelcomeMessage.textContent = `Szia, ${user.name}!`;
+    
+    // Üdvözlő szöveg frissítése
+    if(userWelcomeMessage) userWelcomeMessage.textContent = `Szia, ${user.name}!`;
+
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
+        
         const beers = await response.json();
+        
         if (!response.ok) {
-                if (response.status === 401) {
+            if (response.status === 401) {
                 showError("A munkameneted lejárt, jelentkezz be újra.");
                 setTimeout(switchToGuestView, 2000);
                 return;
@@ -1076,16 +1096,26 @@ function setupAdminRecap() {
             throw new Error(beers.error || 'Szerverhiba');
         }
         
-        currentUserBeers = beers; // <--- ITT MENTJÜK EL GLOBÁLISAN
+        // 1. Globális változó frissítése
+        currentUserBeers = beers; 
         
+        // 2. Táblázat és statisztikák frissítése
         renderUserBeers(beers);
         updateUserStats(beers);
+
+        // 3. --- ÚJ RÉSZ: ACHIEVEMENTEK AZONNALI ELLENŐRZÉSE ---
+        // Csak akkor, ha a checkAchievements függvény már létezik
+        if (typeof checkAchievements === 'function') {
+            await checkAchievements();
+            renderAchievements(); // UI frissítése azonnal
+        }
+        // -----------------------------------------------------
+
     } catch (error) {
         console.error("Hiba a felhasználói adatok betöltésekor:", error);
         showError(error.message || "Nem sikerült betölteni a söreidet.");
     }
 }
-
     function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
     if (!beers || beers.length === 0) {
@@ -3095,6 +3125,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
