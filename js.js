@@ -751,6 +751,70 @@ async function markIdeaAsDone(index) {
     });
 }
 
+// 1. Modal megnyitása (Ezt hívja a gomb a Fiókom fülön)
+window.handleDeleteUser = function() { // Felülírjuk az eredetit
+    const modal = document.getElementById('deleteAccountModal');
+    const input = document.getElementById('deleteConfirmationInput');
+    const btn = document.getElementById('finalDeleteBtn');
+    
+    // Reset
+    input.value = '';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    modal.classList.add('active');
+    
+    // Figyeljük, hogy beírta-e a TÖRLÉS szót
+    input.oninput = function() {
+        if (this.value === 'TÖRLÉS') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
+// 2. Modal bezárása
+window.closeDeleteModal = function() {
+    document.getElementById('deleteAccountModal').classList.remove('active');
+}
+
+// 3. A tényleges törlés indítása
+window.confirmDeleteAccount = async function() {
+    const btn = document.getElementById('finalDeleteBtn');
+    
+    // Biztonsági ellenőrzés kliens oldalon is
+    const input = document.getElementById('deleteConfirmationInput').value;
+    if(input !== 'TÖRLÉS') return;
+
+    btn.innerText = "Törlés folyamatban...";
+    setLoading(btn, true);
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'DELETE_USER' })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Szerverhiba");
+
+        // Siker!
+        closeDeleteModal();
+        alert("A fiókodat és minden adatodat töröltük. Viszlát! 👋");
+        switchToGuestView();
+
+    } catch (error) {
+        showError(error.message || "A fiók törlése nem sikerült.");
+        btn.innerText = "Végleges Törlés 💣";
+    } finally {
+        setLoading(btn, false);
+    }
+}
+    
 // ======================================================
     // === ÚJ: STATISZTIKA FUNKCIÓK ===
     // ======================================================
@@ -3005,72 +3069,8 @@ window.closeRecoveryModal = function() {
         loginCard.classList.add('active');
     }, 300);
 }
-    // === FIÓK TÖRLÉS KEZELÉSE ===
-
-// 1. Modal megnyitása (Ezt hívja a gomb a Fiókom fülön)
-window.handleDeleteUser = function() { // Felülírjuk az eredetit
-    const modal = document.getElementById('deleteAccountModal');
-    const input = document.getElementById('deleteConfirmationInput');
-    const btn = document.getElementById('finalDeleteBtn');
-    
-    // Reset
-    input.value = '';
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-    
-    modal.classList.add('active');
-    
-    // Figyeljük, hogy beírta-e a TÖRLÉS szót
-    input.oninput = function() {
-        if (this.value === 'TÖRLÉS') {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        } else {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-        }
-    }
-}
-
-// 2. Modal bezárása
-window.closeDeleteModal = function() {
-    document.getElementById('deleteAccountModal').classList.remove('active');
-}
-
-// 3. A tényleges törlés indítása
-window.confirmDeleteAccount = async function() {
-    const btn = document.getElementById('finalDeleteBtn');
-    
-    // Biztonsági ellenőrzés kliens oldalon is
-    const input = document.getElementById('deleteConfirmationInput').value;
-    if(input !== 'TÖRLÉS') return;
-
-    btn.innerText = "Törlés folyamatban...";
-    setLoading(btn, true);
-
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ action: 'DELETE_USER' })
-        });
-        
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Szerverhiba");
-
-        // Siker!
-        closeDeleteModal();
-        alert("A fiókodat és minden adatodat töröltük. Viszlát! 👋");
-        switchToGuestView();
-
-    } catch (error) {
-        showError(error.message || "A fiók törlése nem sikerült.");
-        btn.innerText = "Végleges Törlés 💣";
-    } finally {
-        setLoading(btn, false);
-    }
-}
 });
+
 
 
 
