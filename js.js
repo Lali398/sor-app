@@ -861,7 +861,7 @@ function setupAdminRecap() {
             document.getElementById(`common-fav-location`).textContent = favLocation;
         } else {
             // Személyes átlag
-            const avgScore = (beers.reduce((sum, b) => sum + b.totalScore, 0) / beers.length).toFixed(1);
+            const avgScore = (beers.reduce((sum, b) => sum + b.totalScore, 0) / beers.length).toFixed(2);
             document.getElementById(`${prefix}-avg-score`).textContent = `${avgScore} pont`;
         }
     }
@@ -1050,7 +1050,7 @@ function setupAdminRecap() {
     }
 
     const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
-    const average = (totalScoreSum / beers.length).toFixed(1);
+    const average = (totalScoreSum / beers.length).toFixed(2);
     
     if(headerAvg) headerAvg.textContent = average;
     if(tabAvg) tabAvg.textContent = average;
@@ -1070,7 +1070,7 @@ function setupAdminRecap() {
     }
     
     const totalScoreSum = drinks.reduce((total, drink) => total + (parseFloat(drink.totalScore) || 0), 0);
-    const average = (totalScoreSum / drinks.length).toFixed(1);
+    const average = (totalScoreSum / drinks.length).toFixed(2);
     
     if(headerAvg) headerAvg.textContent = average;
 }
@@ -1080,7 +1080,7 @@ function setupAdminRecap() {
         const validAverages = beers.map(beer => parseFloat(beer.avg) || 0).filter(avg => avg > 0);
         if (validAverages.length === 0) return 0;
         const sum = validAverages.reduce((total, avg) => total + avg, 0);
-        return (sum / validAverages.length).toFixed(1);
+        return (sum / validAverages.length).toFixed(2);
     }
 
     function updateIndexedAverage() {
@@ -2938,6 +2938,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
