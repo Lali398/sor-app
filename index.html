@@ -204,10 +204,6 @@
                     <span class="icon">📈</span>
                     <span class="label">Visszatekintő</span>
                 </button>
-                <button class="nav-item" data-tab-content="user-achievements-content">
-                    <span class="icon">🏆</span>
-                    <span class="label">Achievement-ek</span>
-                </button>
                 <button class="nav-item" data-tab-content="user-account-content">
                     <span class="icon">👤</span>
                     <span class="label">Fiókom</span>
@@ -961,94 +957,7 @@
             </div>
         </main>
     </div>
-<div class="main-tab-pane" id="user-achievements-content">
-    <!-- SZINT ÉS PROGRESS -->
-    <section class="card">
-        <header class="card-header">
-            <div style="text-align: center; width: 100%;">
-                <h3>A szinted: <span id="currentLevelName">Betöltés...</span> <span id="currentLevelBadge" style="font-size: 2rem;">🍺</span></h3>
-                <p style="color: #aaa; margin-top: 10px;">
-                    <span id="achievementProgress">0/50</span> achievement feloldva
-                </p>
-            </div>
-        </header>
-        
-        <!-- PROGRESS BAR -->
-        <div style="margin: 20px 0;">
-            <div style="background: rgba(255,255,255,0.1); border-radius: 50px; height: 30px; overflow: hidden; position: relative;">
-                <div id="achievementProgressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem;"></div>
-            </div>
-        </div>
-        
-        <!-- SZINTEK LEÍRÁSA -->
-        <div class="level-badges-container" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; margin-top: 20px;">
-            <div class="level-badge-item" data-level="0">
-                <span class="level-icon" style="font-size: 2rem;">🍺</span>
-                <p style="font-size: 0.8rem; color: #94a3b8;">Újoncpohár</p>
-                <small style="color: #666;">0-5 achi</small>
-            </div>
-            <div class="level-badge-item" data-level="1">
-                <span class="level-icon" style="font-size: 2rem;">🍻</span>
-                <p style="font-size: 0.8rem; color: #60a5fa;">Korsós</p>
-                <small style="color: #666;">6-10</small>
-            </div>
-            <div class="level-badge-item" data-level="2">
-                <span class="level-icon" style="font-size: 2rem;">🏆</span>
-                <p style="font-size: 0.8rem; color: #f59e0b;">Mester</p>
-                <small style="color: #666;">11-20</small>
-            </div>
-            <div class="level-badge-item" data-level="3">
-                <span class="level-icon" style="font-size: 2rem;">👑</span>
-                <p style="font-size: 0.8rem; color: #8b5cf6;">Sörkirály</p>
-                <small style="color: #666;">21-35</small>
-            </div>
-            <div class="level-badge-item" data-level="4">
-                <span class="level-icon" style="font-size: 2rem;">⭐</span>
-                <p style="font-size: 0.8rem; color: #ef4444;">Sörimádó</p>
-                <small style="color: #666;">36-50</small>
-            </div>
-        </div>
-    </section>
 
-    <!-- SZŰRÉS KATEGÓRIÁK SZERINT -->
-    <section class="card" style="margin-top: 30px;">
-        <header class="card-header">
-            <h3>Achievement-ek kategóriánként</h3>
-        </header>
-        
-        <div class="achievement-filter-tabs" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-            <button class="filter-tab active" data-category="all">Mind (<span id="count-all">0</span>)</button>
-            <button class="filter-tab" data-category="mennyiseg">Mennyiség (<span id="count-mennyiseg">0</span>)</button>
-            <button class="filter-tab" data-category="pontszam">Pontszám (<span id="count-pontszam">0</span>)</button>
-            <button class="filter-tab" data-category="tipus">Típusok (<span id="count-tipus">0</span>)</button>
-            <button class="filter-tab" data-category="helyek">Helyek (<span id="count-helyek">0</span>)</button>
-            <button class="filter-tab" data-category="ido">Időpont (<span id="count-ido">0</span>)</button>
-            <button class="filter-tab" data-category="sorozat">Sorozatok (<span id="count-sorozat">0</span>)</button>
-            <button class="filter-tab" data-category="kulonleges">Különleges (<span id="count-kulonleges">0</span>)</button>
-            <button class="filter-tab" data-category="kozossegi">Közösségi (<span id="count-kozossegi">0</span>)</button>
-        </div>
-        
-        <!-- ACHIEVEMENT-EK GRID -->
-        <div id="achievementGrid" class="achievement-grid">
-            <!-- JavaScript fogja feltölteni -->
-            <div class="recap-spinner"></div>
-        </div>
-    </section>
-</div>
-
-<!-- BEÁLLÍTÁSOK TAB-BA BADGE VÁLASZTÓ (add hozzá a settings-group-ba) -->
-<div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 15px;">
-    <div class="setting-info" style="width: 100%;">
-        <h4>Megjelenített Badge 🏆</h4>
-        <p>Válaszd ki, melyik badge jelenjen meg a neved mellett.</p>
-    </div>
-    
-    <div id="badgeSelector" class="badge-selector" style="display: flex; gap: 15px; flex-wrap: wrap; width: 100%;">
-        <!-- JavaScript tölti fel a megszerzett badge-ekkel -->
-    </div>
-</div>
-
-    
     <!-- ADMIN MODAL -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
@@ -1269,8 +1178,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
 
 
 
