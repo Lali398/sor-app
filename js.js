@@ -1058,17 +1058,60 @@ function setupAdminRecap() {
     
     function switchToGuestView() {
         document.body.classList.remove('custom-cursor-active');
+        
+        // 1. Töröljük a helyi tárolót (ez eddig is megvolt)
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
+
+        // 2. KULCS FONTOSSÁGÚ: Globális adatok nullázása! 🧹
+        // Így a következő belépő üres lappal indít
+        currentUserBeers = [];
+        currentUserDrinks = [];
+        beersData = []; 
+        usersData = [];
+        filteredBeers = [];
+        
+        // 3. UI elemek "takarítása" (hogy vizuálisan se maradjon ott semmi)
+        const achiGrid = document.getElementById('achievementsGrid');
+        if (achiGrid) achiGrid.innerHTML = ''; // Ikonok törlése
+        
+        const progBar = document.getElementById('achievementProgressBar');
+        if (progBar) {
+            progBar.style.width = '0%';
+            progBar.style.background = '#bdc3c7'; // Szürke alapállapot
+        }
+
+        const progText = document.getElementById('achievementProgressText');
+        if (progText) progText.textContent = '';
+        
+        const currentLevelDisplay = document.getElementById('currentLevelDisplay');
+        if (currentLevelDisplay) {
+            currentLevelDisplay.textContent = '-';
+            currentLevelDisplay.style.background = 'transparent';
+            currentLevelDisplay.style.boxShadow = 'none';
+        }
+
+        // Header Badge (kis színes felirat a név mellett) eltüntetése
+        const headerBadge = document.querySelector('.user-badge-display');
+        if (headerBadge) headerBadge.remove();
+
+        // Üdvözlő szöveg reset
+        if (typeof userWelcomeMessage !== 'undefined' && userWelcomeMessage) {
+            userWelcomeMessage.textContent = '';
+        }
+
+        // 4. Nézetek kezelése (eredeti logika)
         guestView.style.display = 'block';
         adminView.style.display = 'none';
         userView.style.display = 'none';
-        document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
         
-        liveSearchInput.value = '';
-        hideSearchSuggestions();
+        // Háttér visszaállítása (eredeti logika)
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+        
+        // Kereső reset (eredeti logika)
+        if (typeof liveSearchInput !== 'undefined') liveSearchInput.value = '';
+        if (typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
     }
 
     async function loadUserData() {
@@ -3132,6 +3175,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
