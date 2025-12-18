@@ -153,29 +153,11 @@ export default async function handler(req, res) {
                     });
                 }
                 
-               let achievements = { unlocked: [] };
-               try {
-                  // Csak akkor próbáljuk parse-olni, ha van ott valami, és nem üres string
-                  if (userRow[5] && userRow[5].trim() !== '') {
-                      achievements = JSON.parse(userRow[5]);
-                  }
-              } catch (e) {
-                  console.error("Hiba az achievementek betöltésekor (User: " + userRow[1] + "):", e.message);
-                  // Hiba esetén marad az üres objektum, nem hal meg a szerver
-              }
-              
-              const badge = userRow[6] || '';
-
-                const user = { 
-                    name: userRow[0], 
-                    email: userRow[1], 
-                    has2FA: false,
-                    achievements: achievements, // <--- ÚJ: Visszaküldjük
-                    badge: badge               // <--- ÚJ: Visszaküldjük
-                };
-
+                // Hagyományos belépés
+                const user = { name: userRow[0], email: userRow[1], has2FA: false };
                 const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
                 return res.status(200).json({ token, user });
+            }
 
             case 'VERIFY_2FA_LOGIN': {
                 const { email, token: inputToken } = req.body;
@@ -194,23 +176,10 @@ export default async function handler(req, res) {
                 if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
 
                 // Sikeres belépés
-                let achievements = { unlocked: [] };
-                try {
-                    if (userRow[5]) achievements = JSON.parse(userRow[5]); // F oszlop
-                } catch (e) { console.error("JSON parse error for achievements", e); }
-                
-                const badge = userRow[6] || ''; // G oszlop
-
-                const user = { 
-                    name: userRow[0], 
-                    email: userRow[1], 
-                    has2FA: true,
-                    achievements: achievements, // <--- ÚJ
-                    badge: badge               // <--- ÚJ
-                };
-                
+                const user = { name: userRow[0], email: userRow[1], has2FA: true };
                 const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
                 return res.status(200).json({ token: jwtToken, user });
+            }
 
             case 'MANAGE_2FA': {
                 const userData = verifyUser(req);
@@ -366,32 +335,6 @@ export default async function handler(req, res) {
                 return res.status(200).json({ message: "Jelszó sikeresen módosítva!" });
             }
 
-            case 'UPDATE_ACHIEVEMENTS': {
-                const userData = verifyUser(req);
-                const { achievements, badge } = req.body;
-
-                // 1. Felhasználó megkeresése
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const rows = usersResponse.data.values || [];
-                const rowIndex = rows.findIndex(row => row[1] === userData.email); // B oszlop (index 1) az email
-
-                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
-
-                // 2. Mentés az F (index 5) és G (index 6) oszlopokba
-                // F: Achievementek (JSON stringként), G: Badge neve
-                const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
-                
-                await sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: range,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { 
-                        values: [[JSON.stringify(achievements), badge]] 
-                    }
-                });
-
-                return res.status(200).json({ message: "Eredmények sikeresen mentve!" });
-            }
 
                 case 'GET_USER_DRINKS': {
         const userData = verifyUser(req);
@@ -417,21 +360,6 @@ export default async function handler(req, res) {
             })) || [];
         return res.status(200).json(userDrinks);
     }
-
-            case 'UPDATE_ACHIEVEMENTS': {
-    console.log("Achievement mentés indítása..."); // LOG
-    const userData = verifyUser(req);
-    // ...
-    console.log("User megtalálva, sor:", rowIndex); // LOG
-    // ...
-    try {
-        await sheets.spreadsheets.values.update({ ... });
-        console.log("Mentés sikeres!"); // LOG
-    } catch (err) {
-        console.error("Mentés sikertelen:", err); // LOG
-    }
-    // ...
-}
     
     case 'ADD_USER_DRINK': {
         const userData = verifyUser(req);
@@ -776,8 +704,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
 
 
 
