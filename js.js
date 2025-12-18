@@ -552,6 +552,8 @@ async function markIdeaAsDone(index) {
         const termsAccepted = document.getElementById('registerTerms').checked;
         const submitBtn = registerForm.querySelector('.auth-btn');
 
+        // --- VALIDÁCIÓK  ---
+        
         // 1. Minimum 8 karakter ellenőrzése
         if (password.length < 8) {
             showError("A jelszónak legalább 8 karakter hosszúnak kell lennie!");
@@ -565,7 +567,6 @@ async function markIdeaAsDone(index) {
         }
 
         // 3. Speciális karakter ellenőrzése
-        // Ez a lista tartalmazza a gyakoribb speciális karaktereket: !@#$%^&*() stb.
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
             showError("A jelszónak tartalmaznia kell legalább egy speciális karaktert!");
             return;
@@ -575,10 +576,13 @@ async function markIdeaAsDone(index) {
             showError("A két jelszó nem egyezik!");
             return;
         }
+        
         if (!termsAccepted) {
             showError("A regisztrációhoz el kell fogadnod az Adatvédelmi Tájékoztatót!");
             return;
         }
+
+        // --- BEKÜLDÉS ---
 
         setLoading(submitBtn, true);
         try {
@@ -587,10 +591,20 @@ async function markIdeaAsDone(index) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'REGISTER_USER', name, email, password })
             });
+            
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
 
-            showSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
+            // --- ÚJ RÉSZ: HELYREÁLLÍTÓ KÓD MEGJELENÍTÉSE ---
+            if (result.recoveryCode) {
+                // Ha kaptunk kódot, kiírjuk egy ablakban, amit a felhasználó kimásolhat
+                alert(`SIKERES REGISZTRÁCIÓ! ✅\n\nFONTOS BIZTONSÁGI FIGYELMEZTETÉS:\n\nA jelszó helyreállító kódod:\n\n👉 ${result.recoveryCode} 👈\n\nKérlek írd fel vagy mentsd el ezt a kódot MOST! Mivel nincs e-mail küldés, ha elfelejted a jelszavad, KIZÁRÓLAG EZZEL a kóddal tudsz majd újat beállítani.`);
+            } else {
+                // Ha esetleg nem jönne kód (régi API verzió), marad a sima üzenet
+                showSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
+            }
+
+            // Átirányítás a bejelentkezéshez 
             registerCard.classList.remove('active');
             setTimeout(() => loginCard.classList.add('active'), 300);
 
@@ -2939,7 +2953,59 @@ handleAddDrink = async function(e) {
     // Sikeres hozzáadás után ellenőrzés
     setTimeout(() => { checkAchievements(); }, 1500);
 };
+    // === JELSZÓ HELYREÁLLÍTÁS ===
+
+// Modal megnyitása
+window.openForgotModal = function() {
+    document.getElementById('loginCard').classList.remove('active'); // Login eltüntetése
+    document.getElementById('forgotPasswordModal').classList.add('active');
+}
+
+// Modal bezárása
+window.closeForgotModal = function() {
+    document.getElementById('forgotPasswordModal').classList.remove('active');
+    document.getElementById('loginCard').classList.add('active'); // Login visszahozása
+}
+
+// Form beküldése
+const forgotForm = document.getElementById('forgotPasswordForm');
+if (forgotForm) {
+    forgotForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgotEmail').value;
+        const code = document.getElementById('forgotRecoveryCode').value;
+        const newPass = document.getElementById('forgotNewPassword').value;
+        const btn = forgotForm.querySelector('.auth-btn');
+
+        if (newPass.length < 8) {
+            showError("Az új jelszó túl rövid (min. 8 karakter)!");
+            return;
+        }
+
+        setLoading(btn, true);
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // Nincs token, mert elfelejtette a jelszavát (public endpoint)
+                body: JSON.stringify({ action: 'RESET_PASSWORD', email, recoveryCode: code, newPassword: newPass })
+            });
+            const result = await response.json();
+            
+            if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+            showSuccess(result.message);
+            closeForgotModal();
+            forgotForm.reset();
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            setLoading(btn, false);
+        }
+    });
+}
 });
+
 
 
 
