@@ -1477,6 +1477,8 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     
     /* --- EZT A RÉSZT ADD HOZZÁ/MÓDOSÍTSD: --- */
     height: 100vh;       /* Teljes képernyő magasság */
@@ -2024,7 +2026,7 @@ select.form-control:focus {
 }
 /* --- OLDALSÁV (SIDEBAR) GÖRGETŐSÁV --- */
 .sidebar::-webkit-scrollbar {
-    width: 6px; /* Itt legyen vékonyabb, mint a fő oldalon */
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .sidebar::-webkit-scrollbar-track {
@@ -2039,6 +2041,7 @@ select.form-control:focus {
 .sidebar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(243, 156, 18, 0.8); /* Erősebb szín ha ráviszed az egeret */
 }
+
 
 
 
