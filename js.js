@@ -1011,7 +1011,7 @@ function setupAdminRecap() {
     }
     beers.forEach((beer, index) => {
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
-        const formattedAvg = drink.avg ? parseFloat(drink.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
         const row = `
             <tr>
                 <td>${formattedDate}</td>
@@ -1203,7 +1203,7 @@ function setupAdminRecap() {
         if (!beersToRender || beersToRender.length === 0) { const searchTerm = liveSearchInput.value.trim(); const message = searchTerm ? `Nincs a "${searchTerm}" keresésnek megfelelő sör.` : 'Nincsenek sörök az adatbázisban.'; beerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">${message}</td></tr>`; return; }
         beersToRender.forEach(beer => {
             const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
-            const formattedAvg = drink.avg ? parseFloat(drink.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+            const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
             const row = `
                 <tr>
                     <td>${formattedDate}</td>
@@ -2938,8 +2938,6 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
-
-
 
 
 
