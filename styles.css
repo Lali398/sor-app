@@ -2041,6 +2041,72 @@ select.form-control:focus {
 .sidebar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(243, 156, 18, 0.8); /* Erősebb szín ha ráviszed az egeret */
 }
+/* === RECOVERY KÓD "MENŐ" STÍLUSOK === */
+
+/* A kártya, ami megjelenik regisztráció után */
+.recovery-reveal-card {
+    border: 2px solid #00ff88; /* Neon zöld keret */
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+    background: rgba(16, 30, 20, 0.95); /* Sötétzöldes fekete háttér */
+}
+
+/* Animált lakat ikon */
+.lock-icon-anim {
+    font-size: 3rem;
+    animation: unlockPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes unlockPop {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* A "Széf" konténer a kódnak */
+.code-vault-container {
+    background: #000;
+    border: 2px dashed #444;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Maga a kód stílusa */
+.code-vault-container code {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffd700; /* Arany szín */
+    letter-spacing: 4px;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    flex-grow: 1;
+}
+
+/* Másolás gomb */
+.copy-btn {
+    background: #333;
+    border: 1px solid #555;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.copy-btn:hover {
+    background: #555;
+    transform: scale(1.1);
+    border-color: #fff;
+}
+.copy-btn:active {
+    transform: scale(0.9);
+}
+
 
 
 
