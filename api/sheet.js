@@ -822,80 +822,83 @@ case 'EDIT_USER_DRINK': {
             }
             
             case 'DELETE_USER': {
-    if (!req.user || !req.user.email) return res.status(401).json({ error: "Nem vagy bejelentkezve!" });
-    
-    const userEmail = req.user.email;
-    console.log(`Fiók törlése folyamatban: ${userEmail}`);
+                const userData = verifyUser(req);
+                const userEmail = userData.email;
 
-    try {
-        // --- 1. FELHASZNÁLÓK LAP (USERS) TISZTÍTÁSA ---
-        const usersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-        const allUsers = usersRes.data.values || [];
-        
-        // Kiszűrjük a törlendő felhasználót, DE a fejlécet (index === 0) megtartjuk!
-        // Feltételezzük, hogy az Email a 2. oszlopban van (index 1)
-        const cleanUsers = allUsers.filter((row, index) => {
-            if (index === 0) return true; // Fejléc marad!
-            return row[1] !== userEmail; 
-        });
+                try {
+                    // --- 1. FELHASZNÁLÓ TÖRLÉSE (USERS_SHEET) ---
+                    // Ez a lépés hiányzott vagy volt hibás!
+                    const usersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                    const allUsers = usersRes.data.values || [];
+                    
+                    // A fejléc (index 0) marad, és azok a sorok, ahol a 2. oszlop (index 1) NEM az email
+                    const cleanUsers = allUsers.filter((row, index) => {
+                        if (index === 0) return true; 
+                        return row[1] !== userEmail; 
+                    });
 
-        // Visszaírjuk a tiszta listát
-        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: USERS_SHEET,
-            valueInputOption: 'USER_ENTERED',
-            resource: { values: cleanUsers }
-        });
+                    // Ha találtunk és töröltünk felhasználót, frissítjük a táblát
+                    if (cleanUsers.length !== allUsers.length) {
+                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: USERS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanUsers }
+                        });
+                    }
 
-        // --- 2. VENDÉG SÖRÖK (GUEST_BEERS) TISZTÍTÁSA ---
-        const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
-        const allBeers = beersRes.data.values || [];
-        
-        // Itt meg kell nézni, melyik oszlop az email. 
-        // Ha nem vagy biztos benne, a 'transformRowToBeer' függvényből látszik.
-        // Általában az utolsó oszlopok egyike. Most feltételezzük, hogy az email benne van a sorban.
-        const cleanBeers = allBeers.filter((row, index) => {
-            if (index === 0) return true; // Fejléc marad
-            return !row.includes(userEmail); // Ha a sor tartalmazza az emailt, kuka
-        });
+                    // --- 2. SÖRÖK TÖRLÉSE (GUEST_BEERS_SHEET) ---
+                    const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+                    const allBeers = beersRes.data.values || [];
+                    
+                    // Itt a 14. oszlop (index 13) az email cím
+                    const cleanBeers = allBeers.filter((row, index) => {
+                        if (index === 0) return true;
+                        return row[13] !== userEmail; 
+                    });
 
-        if (cleanBeers.length !== allBeers.length) {
-            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: SPREADSHEET_ID,
-                range: GUEST_BEERS_SHEET,
-                valueInputOption: 'USER_ENTERED',
-                resource: { values: cleanBeers }
-            });
-        }
+                    if (cleanBeers.length !== allBeers.length) {
+                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: GUEST_BEERS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanBeers }
+                        });
+                    }
 
-        // --- 3. VENDÉG ITALOK (GUEST_DRINKS) TISZTÍTÁSA ---
-        const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
-        const allDrinks = drinksRes.data.values || [];
-        
-        const cleanDrinks = allDrinks.filter((row, index) => {
-            if (index === 0) return true; // Fejléc marad
-            return !row.includes(userEmail);
-        });
+                    // --- 3. ITALOK TÖRLÉSE (GUEST_DRINKS_SHEET) ---
+                    const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
+                    const allDrinks = drinksRes.data.values || [];
+                    
+                    // Itt is a 14. oszlop (index 13) az email cím
+                    const cleanDrinks = allDrinks.filter((row, index) => {
+                        if (index === 0) return true;
+                        return row[13] !== userEmail;
+                    });
 
-        if (cleanDrinks.length !== allDrinks.length) {
-            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
-            await sheets.spreadsheets.values.update({
-                spreadsheetId: SPREADSHEET_ID,
-                range: GUEST_DRINKS_SHEET,
-                valueInputOption: 'USER_ENTERED',
-                resource: { values: cleanDrinks }
-            });
-        }
+                    if (cleanDrinks.length !== allDrinks.length) {
+                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: GUEST_DRINKS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanDrinks }
+                        });
+                    }
+                    
+                    // --- 4. ÖTLETEK TÖRLÉSE (Opcionális, ha az ötleteket is törölni akarod) ---
+                    // Ha a felhasználó ötleteit is törölni akarod, ide írhatsz egy hasonló blokkot az IDEAS_SHEET-re.
 
-        return res.status(200).json({ message: "Sikeres törlés." });
+                    return res.status(200).json({ message: "Fiók és adatok sikeresen törölve." });
 
-    } catch (error) {
-        console.error("Hiba a törlésnél:", error);
-        return res.status(500).json({ error: "Szerverhiba törlés közben." });
-    }
-}
+                } catch (error) {
+                    console.error("Törlési hiba:", error);
+                    return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
+                }
+            }
+
 
 
 
