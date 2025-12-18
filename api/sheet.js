@@ -822,29 +822,24 @@ case 'EDIT_USER_DRINK': {
             }
             
             case 'DELETE_USER': {
-    // 1. Ellenőrzés: Be van-e jelentkezve?
     if (!req.user || !req.user.email) return res.status(401).json({ error: "Nem vagy bejelentkezve!" });
     
     const userEmail = req.user.email;
     console.log(`Fiók törlése folyamatban: ${userEmail}`);
 
     try {
-        // --- A) FELHASZNÁLÓ TÖRLÉSE (USERS LAP) ---
+        // --- 1. FELHASZNÁLÓK LAP (USERS) TISZTÍTÁSA ---
         const usersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
         const allUsers = usersRes.data.values || [];
         
-        // Kiszűrjük a törlendő felhasználót, DE a fejlécet (0. index) megtartjuk!
+        // Kiszűrjük a törlendő felhasználót, DE a fejlécet (index === 0) megtartjuk!
+        // Feltételezzük, hogy az Email a 2. oszlopban van (index 1)
         const cleanUsers = allUsers.filter((row, index) => {
             if (index === 0) return true; // Fejléc marad!
-            return row[1] !== userEmail;  // Az email a B oszlopban (index 1) van
+            return row[1] !== userEmail; 
         });
 
-        // Ha nem változott a hossz, akkor nincs mit törölni (vagy hiba van)
-        if (cleanUsers.length === allUsers.length) {
-            return res.status(404).json({ error: "A felhasználó nem található az adatbázisban." });
-        }
-
-        // Töröljük a lapot, majd visszaírjuk a tiszta adatokat
+        // Visszaírjuk a tiszta listát
         await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
         await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
@@ -853,66 +848,46 @@ case 'EDIT_USER_DRINK': {
             resource: { values: cleanUsers }
         });
 
-        // --- B) SÖRÖK TÖRLÉSE (BEERS LAP) ---
-        const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: BEERS_SHEET });
+        // --- 2. VENDÉG SÖRÖK (GUEST_BEERS) TISZTÍTÁSA ---
+        const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
         const allBeers = beersRes.data.values || [];
         
-        // Feltételezzük, hogy a söröknél van egy oszlop, ami tárolja az emailt.
-        // Ha a UserBeer struktúra: [Dátum, Név, Hely, %, ..., UserEmail]
-        // Meg kell keresni, melyik oszlop az UserEmail.
-        // A "ADD_USER_BEER" kódból általában az utolsó oszlopok egyike.
-        // Ha nem vagy biztos az oszlop indexben, de tudod, hogy benne van az email:
+        // Itt meg kell nézni, melyik oszlop az email. 
+        // Ha nem vagy biztos benne, a 'transformRowToBeer' függvényből látszik.
+        // Általában az utolsó oszlopok egyike. Most feltételezzük, hogy az email benne van a sorban.
         const cleanBeers = allBeers.filter((row, index) => {
             if (index === 0) return true; // Fejléc marad
-            // Megnézzük, hogy a sor tartalmazza-e az emailt bármelyik cellában
-            // VAGY (jobb megoldás): Tudjuk, hogy a backend mentéskor hova teszi.
-            // Általában az utolsó oszlop a "ratedBy" vagy "email".
-            return !row.includes(userEmail); 
+            return !row.includes(userEmail); // Ha a sor tartalmazza az emailt, kuka
         });
 
         if (cleanBeers.length !== allBeers.length) {
-            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: BEERS_SHEET });
+            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
             await sheets.spreadsheets.values.update({
                 spreadsheetId: SPREADSHEET_ID,
-                range: BEERS_SHEET,
+                range: GUEST_BEERS_SHEET,
                 valueInputOption: 'USER_ENTERED',
                 resource: { values: cleanBeers }
             });
         }
 
-        // --- C) ITALOK TÖRLÉSE (DRINKS LAP) ---
-        const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: DRINKS_SHEET });
+        // --- 3. VENDÉG ITALOK (GUEST_DRINKS) TISZTÍTÁSA ---
+        const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
         const allDrinks = drinksRes.data.values || [];
         
         const cleanDrinks = allDrinks.filter((row, index) => {
-            if (index === 0) return true;
+            if (index === 0) return true; // Fejléc marad
             return !row.includes(userEmail);
         });
 
         if (cleanDrinks.length !== allDrinks.length) {
-            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: DRINKS_SHEET });
+            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
             await sheets.spreadsheets.values.update({
                 spreadsheetId: SPREADSHEET_ID,
-                range: DRINKS_SHEET,
+                range: GUEST_DRINKS_SHEET,
                 valueInputOption: 'USER_ENTERED',
                 resource: { values: cleanDrinks }
             });
         }
-
-        // --- D) ÖTLETEK TÖRLÉSE (IDEAS LAP - Ha van) ---
-        // Ha az ötleteket is törölni akarod://
-        
-        const ideasRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
-        const allIdeas = ideasRes.data.values || [];
-        const cleanIdeas = allIdeas.filter((row, index) => {
-            if (index === 0) return true;
-            return !row.includes(userEmail); // Feltéve, hogy tároljuk az emailt
-        });
-        if (cleanIdeas.length !== allIdeas.length) {
-             await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
-             await sheets.spreadsheets.values.update({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET, valueInputOption: 'USER_ENTERED', resource: { values: cleanIdeas } });
-        }
-        
 
         return res.status(200).json({ message: "Sikeres törlés." });
 
@@ -921,6 +896,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Szerverhiba törlés közben." });
     }
 }
+
 
 
 
