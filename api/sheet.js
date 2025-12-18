@@ -750,27 +750,41 @@ case 'EDIT_USER_DRINK': {
     }
 }
 case 'UPDATE_ACHIEVEMENTS': {
-    const userData = verifyUser(req);
-    const { achievements, badge } = req.body; // achievements: { unlocked: [...] }, badge: "Sörmester"
+                const userData = verifyUser(req);
+                const { achievements, badge } = req.body; // pl. achievements: { unlocked: [...] }, badge: "Sörmester"
 
-    const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-    const rows = usersResponse.data.values || [];
-    const rowIndex = rows.findIndex(row => row[1] === userData.email);
+                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                const rows = usersResponse.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === userData.email);
 
-    if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
 
-    // F és G oszlop frissítése (Index 5 és 6, Sheetben F és G)
-    // Range: Felhasználók!F(row):G(row)
-    const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
-    
-    await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range: range,
-        valueInputOption: 'USER_ENTERED',
-        resource: { values: [[JSON.stringify(achievements), badge]] }
-    });
-    
-    return res.status(200).json({ message: "Eredmények mentve!" });
+                // F és G oszlop frissítése (Index 5 és 6) a felhasználó sorában
+                // Range: Felhasználók!F(sor):G(sor)
+                const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
+                
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[JSON.stringify(achievements), badge]] }
+                });
+
+                return res.status(200).json({ message: "Eredmények mentve!" });
+            }
+
+            default:
+                return res.status(400).json({ error: "Ismeretlen action." });
+        
+        } // <--- Itt záródik a SWITCH blokk
+
+    } catch (error) {
+        console.error("API hiba:", error);
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: "Érvénytelen vagy lejárt token. Jelentkezz be újra!" });
+        }
+        return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
+    }
 }
 
 
