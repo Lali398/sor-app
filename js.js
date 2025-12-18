@@ -1822,21 +1822,48 @@ window.downloadRecap = function() {
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
-// === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
-let lastScrollTop = 0;
-
-window.addEventListener('scroll', function() {
-    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
-    const headers = document.querySelectorAll('.admin-header'); 
+// 1. Gomb inicializálása (ezt a switchToUserView végére is beteheted, ha dinamikusan jön létre)
+function initHeaderToggle() {
+    const toggleBtn = document.getElementById('headerToggleBtn');
+    const header = document.getElementById('userHeader');
     
+    // Ha nincs gomb (pl. vendég nézet), kilépünk
+    if (!toggleBtn || !header) return;
+
+    // Töröljük a korábbi event listener-t (klónozással), hogy ne duplázódjon
+    const newBtn = toggleBtn.cloneNode(true);
+    toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
+
+    newBtn.addEventListener('click', () => {
+        // Toggle classok
+        header.classList.toggle('manual-collapsed');
+        newBtn.classList.toggle('rotated');
+        document.body.classList.toggle('header-is-collapsed');
+        
+        // Ha összecsukjuk, levesszük a "hidden" osztályt, hogy biztosan látsszon a sáv
+        if (header.classList.contains('manual-collapsed')) {
+             header.classList.remove('hidden');
+        }
+    });
+}
+
+// 2. Módosított Scroll Kezelő
+let lastScrollTop = 0;
+window.addEventListener('scroll', function() {
+    const headers = document.querySelectorAll('.admin-header'); 
     if (headers.length === 0) return;
     
+    // --- ÚJ RÉSZ: Ha a User header kézzel össze van csukva, NE csináljon semmit a scroll ---
+    const userHeader = document.getElementById('userHeader');
+    if (userHeader && userHeader.classList.contains('manual-collapsed')) {
+        return; // Kilépünk, hagyjuk fixen a vékony sávot
+    }
+    // ------------------------------------------------------------------------------------
+
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
+    const scrollPercent = Math.min(scrollTop / 300, 1); 
     
-    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
     headers.forEach(header => {
-        // Sör feltöltés animáció - inline style-lal állítjuk be
         header.style.setProperty('--fill-percent', scrollPercent);
         
         if (scrollPercent >= 1) {
@@ -1845,7 +1872,7 @@ window.addEventListener('scroll', function() {
             header.classList.remove('filled');
         }
         
-        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
+        // Fejléc elrejtése lefelé görgetéskor
         if (scrollTop > lastScrollTop && scrollTop > 350) {
             header.classList.add('hidden');
         } else if (scrollTop < lastScrollTop || scrollTop < 100) {
@@ -1854,6 +1881,7 @@ window.addEventListener('scroll', function() {
     });
     
     lastScrollTop = scrollTop;
+});
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -2347,6 +2375,7 @@ switchToUserView = function() {
 
     // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
+    setTimeout(initHeaderToggle, 500);
 };
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
@@ -3204,6 +3233,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
