@@ -413,7 +413,7 @@ async function handleIdeaSubmit(e) {
     }
 }
 
-// 2. Ötletek betöltése (User oldal)
+// 2. Ötletek betöltése (User oldal) - BADGE TÁMOGATÁSSAL
 async function loadUserIdeas() {
     const hallContainer = document.getElementById('hallOfFameList');
     const pendingContainer = document.getElementById('pendingIdeasList');
@@ -427,24 +427,27 @@ async function loadUserIdeas() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
         });
-        
         const ideas = await response.json();
         if (!response.ok) throw new Error("Nem sikerült betölteni az ötleteket.");
-
+        
         // Takarítás
         hallContainer.innerHTML = '';
         pendingContainer.innerHTML = '';
-
+        
         if(ideas.length === 0) {
             pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">Még nincsenek ötletek. Légy te az első!</p>';
             return;
         }
 
         let hasFame = false;
-
         ideas.forEach(item => {
             const isDone = (item.status === 'Megcsinálva');
             
+            // Badge HTML generálása (ha van badge)
+            const badgeHtml = item.badge 
+                ? `<span class="fame-badge" style="background: rgba(255,215,0,0.2); color: #ffd700; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-left: 5px; border: 1px solid rgba(255,215,0,0.3);">${item.badge}</span>` 
+                : '';
+
             if (isDone) {
                 // DICSŐSÉGFAL KÁRTYA
                 hasFame = true;
@@ -452,7 +455,9 @@ async function loadUserIdeas() {
                 <div class="fame-card">
                     <div class="fame-user">
                         <span class="fame-avatar">👑</span>
-                        <span class="fame-name">${item.submitter}</span>
+                        <span class="fame-name">
+                            ${item.submitter}
+                            ${badgeHtml} </span>
                     </div>
                     <div class="fame-idea">"${item.idea}"</div>
                     <div class="fame-footer">
@@ -466,14 +471,16 @@ async function loadUserIdeas() {
                 <div class="pending-idea-card">
                     <div class="pending-content">
                         <h4>${item.idea}</h4>
-                        <p>Beküldte: ${item.submitter} • ${item.date}</p>
+                        <p>
+                            Beküldte: ${item.submitter} ${badgeHtml} • ${item.date}
+                        </p>
                     </div>
                     <div class="pending-status">⏳ ${item.status}</div>
                 </div>`;
                 pendingContainer.insertAdjacentHTML('beforeend', card);
             }
         });
-
+        
         if(!hasFame) {
             hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
         }
@@ -483,7 +490,7 @@ async function loadUserIdeas() {
         hallContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
-
+    
 // 3. Ötletek betöltése (Admin oldal)
 async function loadAllIdeasForAdmin() {
     const tbody = document.getElementById('adminIdeasTableBody');
@@ -3125,6 +3132,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
