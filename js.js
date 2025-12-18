@@ -2561,8 +2561,285 @@ const ACHIEVEMENTS = [
     { id: 'type_fruit', icon: '🍒', title: 'Gyümölcsös', desc: '3 db Gyümölcsös sör', check: (b) => b.filter(x => /gyüm|meggy|málna/i.test(x.type)).length >= 3 },
     { id: 'type_biza', icon: 'wheat', title: 'Búzamező', desc: '3 db Búzasör', check: (b) => b.filter(x => /búza|wheat|weiss/i.test(x.type)).length >= 3 },
     { id: 'cat_wine', icon: '🍷', title: 'Borász', desc: '3 db Bor', check: (b, d) => d.filter(x => x.category === 'Bor').length >= 3 },
-    { id: 'cat_spirit', icon: '🥃', title: 'Rövid', desc: '5 db Tömény (Pá
+    { id: 'cat_spirit', icon: '🥃', title: 'Rövid', desc: '5 db Tömény (Pálinka, Whisky, stb.)', check: (b, d) => d.filter(x => ['Pálinka', 'Whisky', 'Vodka', 'Rum', 'Gin', 'Likőr'].includes(x.category)).length >= 5 },
+    { id: 'type_cocktail', icon: '🍹', title: 'Koktélkirály', desc: '3 db Koktél', check: (b, d) => d.filter(x => x.category === 'Koktél').length >= 3 },
+    { id: 'type_champagne', icon: '🥂', title: 'Pezsgő pillanat', desc: '3 db Pezsgő', check: (b, d) => d.filter(x => x.category === 'Pezsgő').length >= 3 },
+    { id: 'type_alcohol_free', icon: '🧃', title: 'Józan Élet', desc: '3 db Alkoholmentes tétel', check: (b, d) => [...b, ...d].filter(x => x.type === 'Nem alkoholos').length >= 3 }
+];
+
+// --- RANGOK (SZINTEK) ---
+const LEVELS = [
+    { name: 'Kezdő', min: 0, color: '#bdc3c7' },
+    { name: 'Lelkes', min: 5, color: '#1abc9c' },
+    { name: 'Haladó', min: 10, color: '#3498db' },
+    { name: 'Ínyenc', min: 20, color: '#9b59b6' },
+    { name: 'Szakértő', min: 35, color: '#e67e22' },
+    { name: 'Mester', min: 50, color: '#e74c3c' },
+    { name: 'Legenda', min: 75, color: '#f1c40f' }
+];
+
+// --- SEGÉDFÜGGVÉNYEK AZ ACHIEVEMENTEKHEZ ---
+
+// Átlag számolása a feltételekhez (sör + ital)
+function calculateTotalAvg(beers, drinks) {
+    const all = [...beers, ...drinks];
+    if (all.length === 0) return 0;
+    const sum = all.reduce((acc, item) => acc + (parseFloat(item.avg) || 0), 0);
+    return sum / all.length;
+}
+
+// --- FŐ LOGIKA: EREDMÉNYEK ELLENŐRZÉSE ---
+async function checkAchievements() {
+    // 1. Jelenlegi adatok összegyűjtése
+    const allBeers = currentUserBeers || [];
+    const allDrinks = currentUserDrinks || [];
+    
+    // 2. Felhasználó profiljának és korábbi eredményeinek betöltése
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData) return;
+
+    // Ha még nincs achievements objektum, létrehozzuk
+    if (!userData.achievements) {
+        userData.achievements = { unlocked: [] };
+    }
+    
+    const unlockedIds = userData.achievements.unlocked.map(a => a.id);
+    let newUnlock = false;
+
+    // 3. Végigmegyünk az összes definíción és ellenőrizzük a feltételt
+    ACHIEVEMENTS.forEach(achi => {
+        // Ha már megvan, nem érdekes
+        if (unlockedIds.includes(achi.id)) return;
+
+        // Ellenőrzés futtatása
+        if (achi.check(allBeers, allDrinks)) {
+            // SIKER! Új achievement
+            const unlockData = {
+                id: achi.id,
+                date: new Date().toLocaleDateString('hu-HU')
+            };
+            
+            userData.achievements.unlocked.push(unlockData);
+            unlockedIds.push(achi.id);
+            newUnlock = true;
+
+            // Értesítés megjelenítése
+            showAchievementToast(achi);
+        }
     });
+
+    // 4. Ha volt új feloldás, mentünk a szerverre és frissítjük a UI-t
+    if (newUnlock) {
+        localStorage.setItem('userData', JSON.stringify(userData));
+        renderAchievements();
+        await saveAchievementsToCloud(userData.achievements, userData.badge);
+    }
+}
+
+// --- MENTÉS A SZERVERRE ---
+async function saveAchievementsToCloud(achievements, badge) {
+    try {
+        await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'UPDATE_ACHIEVEMENTS', 
+                achievements: achievements,
+                badge: badge || ''
+            })
+        });
+        console.log("Achievementek szinkronizálva.");
+    } catch (e) {
+        console.error("Hiba az achievement mentésekor:", e);
+    }
+}
+
+// --- UI MEGJELENÍTÉS (RÁCS ÉS PROGRESS BAR) ---
+function renderAchievements() {
+    const grid = document.getElementById('achievementsGrid');
+    if (!grid) return; // Ha nem a user nézeten vagyunk
+
+    const userData = JSON.parse(localStorage.getItem('userData')) || { achievements: { unlocked: [] } };
+    const unlockedIds = (userData.achievements?.unlocked || []).map(a => a.id);
+    const unlockedCount = unlockedIds.length;
+    const totalCount = ACHIEVEMENTS.length;
+
+    // 1. Progress Bar frissítése
+    const progressBar = document.getElementById('achievementProgressBar');
+    const progressText = document.getElementById('achievementProgressText');
+    const levelBadge = document.getElementById('currentLevelDisplay');
+    
+    if (progressBar && progressText) {
+        const percent = (unlockedCount / totalCount) * 100;
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `${unlockedCount} / ${totalCount}`;
+    }
+
+    // 2. Szint meghatározása
+    let currentLevel = LEVELS[0];
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (unlockedCount >= LEVELS[i].min) {
+            currentLevel = LEVELS[i];
+            break;
+        }
+    }
+    if (levelBadge) {
+        levelBadge.textContent = currentLevel.name;
+        levelBadge.style.background = currentLevel.color;
+        levelBadge.style.boxShadow = `0 0 10px ${currentLevel.color}`;
+    }
+
+    // 3. Kártyák renderelése
+    grid.innerHTML = '';
+    ACHIEVEMENTS.forEach(achi => {
+        const isUnlocked = unlockedIds.includes(achi.id);
+        const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
+        const statusIcon = isUnlocked ? '✅' : '🔒';
+        
+        // Ha fel van oldva, keressük meg a dátumot
+        let dateStr = '';
+        if (isUnlocked) {
+            const data = userData.achievements.unlocked.find(u => u.id === achi.id);
+            if (data && data.date) dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${data.date}</div>`;
+        }
+
+        const html = `
+        <div class="${cardClass}" title="${achi.title}">
+            <span class="achi-icon">${achi.icon}</span>
+            <div class="achi-title">${achi.title}</div>
+            <div class="achi-desc">${achi.desc}</div>
+            ${dateStr}
+            <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
+        </div>
+        `;
+        grid.insertAdjacentHTML('beforeend', html);
+    });
+
+    // 4. Badge választó (Beállítások fül) frissítése
+    updateBadgeSelector(currentLevel.name, userData.badge);
+}
+
+// --- BADGE VÁLASZTÓ FRISSÍTÉSE ---
+function updateBadgeSelector(maxLevelName, currentBadge) {
+    const select = document.getElementById('userBadgeSelector');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Nincs</option>';
+    
+    // Csak azokat a rangokat választhatja, amit már elért
+    let canSelect = true;
+    LEVELS.forEach(lvl => {
+        if (canSelect) {
+            const selected = (lvl.name === currentBadge) ? 'selected' : '';
+            select.insertAdjacentHTML('beforeend', `<option value="${lvl.name}" ${selected}>${lvl.name}</option>`);
+        }
+        // Ha elértük a jelenlegi szintjét, a többit nem rakjuk be (vagy letiltjuk)
+        if (lvl.name === maxLevelName) {
+            canSelect = false;
+        }
+    });
+
+    // Ha megváltoztatja, mentsük el
+    select.onchange = async () => {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        userData.badge = select.value;
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // Frissítjük a UI-t (Headerben a badge)
+        updateHeaderBadge();
+        
+        // Mentés felhőbe
+        await saveAchievementsToCloud(userData.achievements, userData.badge);
+        showSuccess('Rang sikeresen beállítva!');
+    };
+}
+
+// --- FEJLÉC BADGE MEGJELENÍTÉSE ---
+function updateHeaderBadge() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const welcomeMsg = document.getElementById('userWelcomeMessage');
+    
+    if (welcomeMsg && userData) {
+        // Töröljük a régit ha van
+        const oldBadge = welcomeMsg.querySelector('.user-badge-display');
+        if (oldBadge) oldBadge.remove();
+
+        // Ha van beállítva, odarakjuk
+        if (userData.badge) {
+            const badgeSpan = document.createElement('span');
+            badgeSpan.className = 'user-badge-display';
+            badgeSpan.textContent = userData.badge;
+            welcomeMsg.appendChild(badgeSpan);
+        }
+    }
+}
+
+// --- TOAST ÉRTESÍTÉS ---
+function showAchievementToast(achi) {
+    const toast = document.createElement('div');
+    toast.className = 'achievement-toast';
+    toast.innerHTML = `
+        <div style="font-size: 2rem;">${achi.icon}</div>
+        <div>
+            <div style="font-weight:700; color:#ffd700; font-size:0.8rem; text-transform:uppercase;">Új Eredmény!</div>
+            <div style="font-weight:600; font-size:1rem;">${achi.title}</div>
+            <div style="font-size:0.8rem; opacity:0.8;">${achi.desc}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animáció
+    requestAnimationFrame(() => {
+        toast.classList.add('active');
+    });
+
+    // Hang lejátszása (opcionális, rövid "pop" hang)
+    // const audio = new Audio('achievement_sound.mp3'); audio.play().catch(e=>{});
+
+    setTimeout(() => {
+        toast.classList.remove('active');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
+// ======================================================
+// === INICIALIZÁLÁS (AZ ADATOK BETÖLTÉSEKOR) ===
+// ======================================================
+
+// Ezt a részt be kell szúrni a `loadUserData` függvény végére, 
+// illetve a `loadUserDrinks` végére a fő kódban!
+// De mivel ez a fájl végére kerül, felülírjuk a global függvényhívásokat, 
+// vagy kibővítjük a `switchToUserView`-t.
+
+const originalUserViewInit = switchToUserView;
+switchToUserView = function() {
+    originalUserViewInit();
+    
+    // Kicsit várunk, hogy az adatok (beers/drinks) betöltődjenek a változókba
+    setTimeout(() => {
+        renderAchievements();
+        updateHeaderBadge();
+    }, 800);
+};
+
+// Figyeljük a változásokat (Ha hozzáadunk sört/italt, fusson le az ellenőrzés)
+const originalAddBeer = handleAddBeer;
+handleAddBeer = async function(e) {
+    await originalAddBeer(e); // Eredeti futtatása
+    setTimeout(() => { checkAchievements(); }, 1500); // Ellenőrzés utána
+};
+
+const originalAddDrink = handleAddDrink;
+handleAddDrink = async function(e) {
+    await originalAddDrink(e);
+    setTimeout(() => { checkAchievements(); }, 1500);
+};
+
+}); // document.addEventListener VÉGE
 
 
 
