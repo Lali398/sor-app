@@ -593,7 +593,6 @@ case 'EDIT_USER_DRINK': {
         message: "Hibajelentésed sikeresen elküldve! Hamarosan válaszolunk az emaileden keresztül. 📧" 
     });
 }
-
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
                 
@@ -705,6 +704,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
