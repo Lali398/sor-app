@@ -2658,28 +2658,35 @@ async function saveAchievementsToCloud(achievements, badge) {
 }
 
 // --- UI MEGJELENÍTÉS (RÁCS ÉS PROGRESS BAR) ---
-// --- UI MEGJELENÍTÉS (RÁCS ÉS PROGRESS BAR) ---
 function renderAchievements() {
+    console.log("--- Achievement Render Indítása ---");
+
     const grid = document.getElementById('achievementsGrid');
     if (!grid) return; 
 
-    // Adatok betöltése
-    let userData = JSON.parse(localStorage.getItem('userData')) || { achievements: { unlocked: [] } };
-    
-    // BIZTONSÁGI ELLENŐRZÉS: Ha vannak sörök, de nincs achievement, számoljunk azonnal!
-    if ((!userData.achievements || userData.achievements.unlocked.length === 0) && (typeof currentUserBeers !== 'undefined' && currentUserBeers.length > 0)) {
-        console.log("Achievementek hiányoznak, újraszámolás indítása...");
-        checkAchievements().then(() => {
-            // Újratöltés a számolás után
-            renderAchievements();
-        });
-        return; // Kilépünk, megvárjuk az újraszámolást
+    // 1. Adatok biztonságos betöltése
+    let userData = null;
+    try {
+        userData = JSON.parse(localStorage.getItem('userData'));
+    } catch (e) {
+        console.error("Hiba a localStorage olvasásakor:", e);
     }
 
-    const unlockedIds = (userData.achievements?.unlocked || []).map(a => a.id);
-    const unlockedCount = unlockedIds.length;
+    if (!userData) userData = { achievements: { unlocked: [] } };
+    if (!userData.achievements) userData.achievements = { unlocked: [] };
 
-    // 1. Szint meghatározása
+    const unlockedIds = (userData.achievements.unlocked || []).map(a => a.id);
+    const unlockedCount = unlockedIds.length;
+    console.log(`Feloldott achievementek száma: ${unlockedCount}`);
+
+    // 2. LEVELS ellenőrzése (Ez szokott lenni a hiba forrása!)
+    if (typeof LEVELS === 'undefined') {
+        console.error("HIBA: A 'LEVELS' változó nem található! Győződj meg róla, hogy a 'js.js' fájl elején definiálva van.");
+        document.getElementById('achievementProgressText').textContent = "Hiba: LEVELS változó hiányzik!";
+        return;
+    }
+
+    // 3. Szint meghatározása
     let currentLevelIndex = 0;
     for (let i = LEVELS.length - 1; i >= 0; i--) {
         if (unlockedCount >= LEVELS[i].min) {
@@ -2690,80 +2697,83 @@ function renderAchievements() {
     const currentLevel = LEVELS[currentLevelIndex];
     const nextLevel = LEVELS[currentLevelIndex + 1];
 
-    // 2. Progress Bar frissítése (RELATÍV MÓD)
+    console.log(`Jelenlegi szint: ${currentLevel.name} (Min: ${currentLevel.min})`);
+
+    // 4. Progress Bar frissítése
     const progressBar = document.getElementById('achievementProgressBar');
     const progressText = document.getElementById('achievementProgressText');
     const levelBadge = document.getElementById('currentLevelDisplay');
     
     if (progressBar && progressText) {
         if (nextLevel) {
-            // Matematika: Hol tartunk a KÉT szint között?
-            const currentLevelFloor = currentLevel.min;  // Pl. 5
-            const nextLevelCeiling = nextLevel.min;      // Pl. 10
+            const currentLevelFloor = currentLevel.min;
+            const nextLevelCeiling = nextLevel.min;
             
-            // Mennyit szereztünk ebben a szintben?
-            const progressInThisLevel = unlockedCount - currentLevelFloor;
-            // Mennyi kell összesen a szintlépéshez?
-            const neededForNextLevel = nextLevelCeiling - currentLevelFloor;
-            // Mennyi hiányzik még?
-            const remaining = nextLevelCeiling - unlockedCount;
+            // Matematika ellenőrzése
+            const progressInThisLevel = Math.max(0, unlockedCount - currentLevelFloor);
+            const neededForNextLevel = Math.max(1, nextLevelCeiling - currentLevelFloor); // 0 osztás elkerülése
+            const remaining = Math.max(0, nextLevelCeiling - unlockedCount);
 
-            // Százalék számítása (0-100% a két szint között)
+            console.log(`Számítás: ${progressInThisLevel} / ${neededForNextLevel} (Még ${remaining})`);
+
             let percent = (progressInThisLevel / neededForNextLevel) * 100;
-            percent = Math.max(0, Math.min(100, percent)); // 0 és 100 közé szorítjuk
+            if (isNaN(percent)) percent = 0; // NaN védelem
 
-            // UI Frissítés
             progressBar.style.width = `${percent}%`;
-            // Szöveg: "2 / 5 (Még 3 db)" stílusban
             progressText.innerHTML = `
                 <span style="font-weight:700; color: white;">${progressInThisLevel} / ${neededForNextLevel}</span> 
                 <span style="font-size: 0.85em; color: #ddd; margin-left: 5px;">
                     (Még <b>${remaining} db</b> a "${nextLevel.name}" szinthez)
                 </span>`;
             
-            // Szép színátmenet a jelenlegi szint színéből a következőbe
             progressBar.style.background = `linear-gradient(90deg, ${currentLevel.color}, ${nextLevel.color})`;
 
         } else {
-            // MAX SZINT
+            // Max szint
             progressBar.style.width = '100%';
             progressBar.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)';
             progressText.innerHTML = `🏆 MAX SZINT ELÉRVE! (${unlockedCount} db)`;
         }
     }
 
-    // 3. Badge frissítése
+    // 5. Badge frissítése
     if (levelBadge) {
         levelBadge.textContent = currentLevel.name;
         levelBadge.style.background = currentLevel.color;
         levelBadge.style.boxShadow = `0 0 15px ${currentLevel.color}`;
     }
 
-    // 4. Kártyák renderelése (Grid)
+    // 6. Kártyák kirajzolása (Grid)
     grid.innerHTML = '';
-    ACHIEVEMENTS.forEach(achi => {
-        const isUnlocked = unlockedIds.includes(achi.id);
-        const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
-        // Ha zárt, szürke ikon, ha nyitott, színes
-        const statusIcon = isUnlocked ? '✅' : '🔒'; 
-        
-        let dateStr = '';
-        if (isUnlocked) {
-            const data = userData.achievements.unlocked.find(u => u.id === achi.id);
-            if (data && data.date) dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${data.date}</div>`;
-        }
+    
+    // Ellenőrizzük, hogy az ACHIEVEMENTS változó létezik-e
+    if (typeof ACHIEVEMENTS !== 'undefined') {
+        ACHIEVEMENTS.forEach(achi => {
+            const isUnlocked = unlockedIds.includes(achi.id);
+            const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
+            const statusIcon = isUnlocked ? '✅' : '🔒';
+            const iconStyle = !isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : '';
 
-        const html = `
-        <div class="${cardClass}" title="${achi.title}">
-            <span class="achi-icon" style="${!isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : ''}">${achi.icon}</span>
-            <div class="achi-title">${achi.title}</div>
-            <div class="achi-desc">${achi.desc}</div>
-            ${dateStr}
-            <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
-        </div>
-        `;
-        grid.insertAdjacentHTML('beforeend', html);
-    });
+            let dateStr = '';
+            if (isUnlocked) {
+                const data = userData.achievements.unlocked.find(u => u.id === achi.id);
+                if (data && data.date) dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${data.date}</div>`;
+            }
+
+            const html = `
+            <div class="${cardClass}" title="${achi.title}">
+                <span class="achi-icon" style="${iconStyle}">${achi.icon}</span>
+                <div class="achi-title">${achi.title}</div>
+                <div class="achi-desc">${achi.desc}</div>
+                ${dateStr}
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
+            </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', html);
+        });
+    } else {
+        console.error("HIBA: Az 'ACHIEVEMENTS' tömb nem található!");
+    }
 
     if (typeof updateBadgeSelector === 'function') {
         updateBadgeSelector(currentLevel.name, userData.badge);
@@ -2905,6 +2915,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
