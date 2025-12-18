@@ -1200,7 +1200,7 @@ function setupAdminRecap() {
 
     if(headerCount) headerCount.textContent = beers.length;
 
-    // 2. ÚJ: Tabon belüli statisztikák frissítése
+    // 2. Tabon belüli statisztikák frissítése
     const tabCount = document.getElementById('tabBeerCount');
     const tabAvg = document.getElementById('tabBeerAvg');
 
@@ -1212,15 +1212,22 @@ function setupAdminRecap() {
         return;
     }
 
-    const totalScoreSum = beers.reduce((total, beer) => total + (parseFloat(beer.totalScore) || 0), 0);
-    const average = (totalScoreSum / beers.length).toFixed(2);
+    // --- JAVÍTOTT SZÁMOLÁS: ÁTLAGOK ÁTLAGA ---
+    const totalAvgSum = beers.reduce((total, beer) => {
+        // Biztonságos konverzió: vessző cseréje pontra, majd számmá alakítás
+        const val = parseFloat(beer.avg.toString().replace(',', '.')) || 0;
+        return total + val;
+    }, 0);
+    
+    const average = (totalAvgSum / beers.length).toFixed(2);
+    // ------------------------------------------
     
     if(headerAvg) headerAvg.textContent = average;
     if(tabAvg) tabAvg.textContent = average;
 }
     
 
-    function updateUserDrinkStats(drinks) {
+    unction updateUserDrinkStats(drinks) {
     // Fejléc statisztikák
     const headerCount = document.getElementById('headerDrinkCount');
     const headerAvg = document.getElementById('headerDrinkAvgScore');
@@ -1232,8 +1239,15 @@ function setupAdminRecap() {
         return;
     }
     
-    const totalScoreSum = drinks.reduce((total, drink) => total + (parseFloat(drink.totalScore) || 0), 0);
-    const average = (totalScoreSum / drinks.length).toFixed(2);
+    // --- JAVÍTOTT SZÁMOLÁS: ÁTLAGOK ÁTLAGA ---
+    const totalAvgSum = drinks.reduce((total, drink) => {
+        // Biztonságos konverzió: vessző cseréje pontra, majd számmá alakítás
+        const val = parseFloat(drink.avg.toString().replace(',', '.')) || 0;
+        return total + val;
+    }, 0);
+
+    const average = (totalAvgSum / drinks.length).toFixed(2);
+    // ------------------------------------------
     
     if(headerAvg) headerAvg.textContent = average;
 }
@@ -3175,6 +3189,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
