@@ -2163,6 +2163,9 @@ switchToUserView = function() {
     if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
     if (typeof loadUserData === 'function') loadUserData();
 
+     // ⬇️ EZT A SORT ADD HOZZÁ! ⬇️
+    if (typeof loadUserDrinks === 'function') loadUserDrinks(); // Ez betölti az italokat
+
     // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
 };
@@ -2524,6 +2527,7 @@ if(guestSupportBtn) {
     guestSupportBtn.addEventListener('click', openSupportModal);
 }
     });
+
 
 
 
