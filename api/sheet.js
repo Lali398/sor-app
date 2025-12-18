@@ -123,7 +123,7 @@ export default async function handler(req, res) {
                     spreadsheetId: SPREADSHEET_ID,
                     range: USERS_SHEET,
                     valueInputOption: 'USER_ENTERED',
-                    resource: { values: [[name, email, hashedPassword]] },
+                    resource: { values: [[name, email, hashedPassword, '', 'FALSE', '{}', '']] },
                 });
                 return res.status(201).json({ message: "Sikeres regisztráció!" });
             }
@@ -131,6 +131,19 @@ export default async function handler(req, res) {
             case 'LOGIN_USER': {
                 const { email, password } = req.body;
                 const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                const achievementsData = userRow[5] ? JSON.parse(userRow[5]) : { unlocked: [] };
+                const selectedBadge = userRow[6] || '';
+                
+                const user = { 
+                    name: userRow[0], 
+                    email: userRow[1], 
+                    has2FA: false,
+                    achievements: achievementsData, // Visszaküldjük a kliensnek
+                    badge: selectedBadge 
+                };
+                
+                const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+                return res.status(200).json({ token, user });
                 
                 // Megkeressük a sort, ahol az email egyezik
                 const rows = usersResponse.data.values || [];
@@ -240,6 +253,31 @@ export default async function handler(req, res) {
                 
                 return res.status(400).json({ error: "Ismeretlen művelet." });
             }
+
+            // [sheet.js - ÚJ CASE]
+              case 'UPDATE_ACHIEVEMENTS': {
+                  const userData = verifyUser(req);
+                  const { achievements, badge } = req.body; // achievements: { unlocked: [...] }, badge: "Sörmester"
+              
+                  const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                  const rows = usersResponse.data.values || [];
+                  const rowIndex = rows.findIndex(row => row[1] === userData.email);
+              
+                  if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+              
+                  // F és G oszlop frissítése (Index 5 és 6, Sheetben F és G)
+                  // Range: Felhasználók!F(row):G(row)
+                  const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
+                  
+                  await sheets.spreadsheets.values.update({
+                      spreadsheetId: SPREADSHEET_ID,
+                      range: range,
+                      valueInputOption: 'USER_ENTERED',
+                      resource: { values: [[JSON.stringify(achievements), badge]] }
+                  });
+                  
+                  return res.status(200).json({ message: "Eredmények mentve!" });
+              }
 
             case 'GET_USER_BEERS': {
                 const userData = verifyUser(req);
@@ -704,6 +742,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
