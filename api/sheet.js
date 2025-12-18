@@ -135,80 +135,6 @@ export default async function handler(req, res) {
     
     return res.status(201).json({ message: "Sikeres regisztráció!" });
 }
-            // --- ÚJ: JELSZÓ VISSZAÁLLÍTÁS KÓD KÉRÉSE ---
-    case 'REQUEST_RESET_CODE':
-      var users = userSheet.getDataRange().getValues();
-      var foundRow = -1;
-      
-      // 1. Megkeressük a felhasználót email alapján
-      for (var i = 1; i < users.length; i++) {
-        if (users[i][2] == data.email) { // 2-es index = C oszlop (Email)
-          foundRow = i + 1; // A sor száma a táblázatban (1-től kezdődik)
-          break;
-        }
-      }
-
-      // Ha nincs ilyen email, biztonsági okból akkor is "sikert" jelzünk a frontendnek,
-      // de a szerver nem csinál semmit. Így nem tudják halászni a címeket.
-      if (foundRow === -1) {
-        return ContentService.createTextOutput(JSON.stringify({ message: "Ha létezik a fiók, elküldtük a kódot." })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      // 2. Generálunk egy 6 jegyű kódot
-      var resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // 3. Elmentjük a kódot a J oszlopba (10. oszlop)
-      userSheet.getRange(foundRow, 10).setValue(resetCode);
-
-      // 4. Email küldése
-      try {
-        MailApp.sendEmail({
-          to: data.email,
-          subject: "SörApp - Jelszó visszaállítás kód",
-          htmlBody: "<h3>Szia!</h3>" +
-                    "<p>Jelszó visszaállítást kezdeményeztél a SörApp fiókodhoz.</p>" +
-                    "<p>A visszaállító kódod: <b style='font-size: 20px; letter-spacing: 2px;'>" + resetCode + "</b></p>" +
-                    "<p>Ha nem te voltál, hagyd figyelmen kívül ezt az üzenetet.</p>" + 
-                    "<p>Üdvözlettel,<br>Gabz és Lajos</p>"
-        });
-      } catch (error) {
-        return ContentService.createTextOutput(JSON.stringify({ error: "Hiba az email küldésekor: " + error.message })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      return ContentService.createTextOutput(JSON.stringify({ message: "Kód elküldve!" })).setMimeType(ContentService.MimeType.JSON);
-
-
-    // --- ÚJ: JELSZÓ CSERE A KÓD ALAPJÁN ---
-    case 'CONFIRM_PASSWORD_RESET':
-      var users = userSheet.getDataRange().getValues();
-      var foundRow = -1;
-      
-      for (var i = 1; i < users.length; i++) {
-        if (users[i][2] == data.email) {
-          foundRow = i + 1;
-          
-          // Ellenőrizzük a tárolt kódot a 10. oszlopból (Index 9)
-          var storedCode = users[i][9]; 
-          
-          // Ha nincs kód, vagy nem egyezik
-          if (!storedCode || storedCode.toString() !== data.code.toString()) {
-             return ContentService.createTextOutput(JSON.stringify({ error: "Hibás vagy lejárt ellenőrző kód!" })).setMimeType(ContentService.MimeType.JSON); 
-          }
-          break;
-        }
-      }
-
-      if (foundRow === -1) {
-        return ContentService.createTextOutput(JSON.stringify({ error: "Felhasználó nem található." })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      // 5. Jelszó frissítése (D oszlop, 4. oszlop)
-      userSheet.getRange(foundRow, 4).setValue(data.newPassword);
-      
-      // 6. Kód törlése biztonsági okból
-      userSheet.getRange(foundRow, 10).setValue(""); 
-
-      return ContentService.createTextOutput(JSON.stringify({ message: "Sikeres jelszócsere!" })).setMimeType(ContentService.MimeType.JSON);
 
             case 'LOGIN_USER': {
     const { email, password } = req.body;
@@ -907,7 +833,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
 
 
 
