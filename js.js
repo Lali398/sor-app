@@ -718,7 +718,7 @@ forgotResetForm.addEventListener('submit', async (e) => {
     const newPass = document.getElementById('resetNewPassword').value;
     const btn = forgotResetForm.querySelector('button');
 
-    if(newPass.length < 6) {
+    if(newPass.length < 8) {
         showError("A jelszó túl rövid!");
         return;
     }
@@ -3040,6 +3040,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
