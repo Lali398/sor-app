@@ -117,6 +117,13 @@
         </div>
     </div>
 
+    <div class="support-section" style="margin-top: 20px;">
+    <button class="support-btn" id="guestSupportBtn">
+        <span class="support-icon">❓</span>
+        <span class="support-text">Segítség kérése</span>
+    </button>
+</div>
+
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
     <!-- FEJLÉC STATOKKAL -->
@@ -458,6 +465,10 @@
                 <span class="emoji">🍹</span>
                 <span class="tooltip">Ital hozzáadása</span>
             </button>
+            <button class="fab-option" onclick="openSupportModal()">
+                <span class="emoji">❓</span>
+                <span class="tooltip">Segítség kérése</span>
+            </button>
         </div>
         <button class="fab-main" id="fabMainBtn">+</button>
     </div>
@@ -605,7 +616,51 @@
         </form>
     </div>
 </div>
+<!-- HIBABEJELENTŐ MODAL -->
+<div class="modal-overlay" id="supportModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>💬 Segítség kérése</h3>
+            <button class="modal-close" onclick="closeSupportModal()">&times;</button>
+        </header>
+        <form id="supportForm" class="config-form">
+            <div class="input-group">
+                <input type="text" id="supportName" required>
+                <label for="supportName">Neved</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <!-- Ez csak vendégeknek látszik -->
+            <div class="input-group" id="supportEmailGroup">
+                <input type="email" id="supportEmail" required>
+                <label for="supportEmail">Email címed</label>
+                <span class="input-highlight"></span>
+                <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                    Erre a címre fogunk válaszolni.
+                </small>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="supportSubject" required>
+                <label for="supportSubject">Tárgy</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="supportMessage" required placeholder="Írd le a problémát vagy kérdésedet részletesen..." style="min-height: 120px; width: 100%; background: rgba(0,0,0,0.2); border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; padding: 15px; font-family: 'Poppins', sans-serif; font-size: 16px; resize: vertical; outline: none; border-radius: 10px;"></textarea>
+            </div>
+            
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Beküldés 📨</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
 
+    
     <!-- ADMIN NÉZET -->
     <div class="admin-view" id="adminView" style="display: none;">
         <header class="admin-header">
@@ -1122,6 +1177,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
