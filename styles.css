@@ -1980,6 +1980,33 @@ select.form-control:focus {
     outline: none !important;
     border-color: #b19cd9 !important;
 }
+/* --- EGYEDI GÖRGETŐSÁV (SCROLLBAR) --- */
+
+/* Firefox-hoz */
+* {
+    scrollbar-width: thin;            /* Vékonyabb legyen */
+    scrollbar-color: #764ba2 #10002b; /* Csúszka színe | Háttér színe */
+}
+
+/* Chrome, Edge, Safari, Opera-hoz */
+::-webkit-scrollbar {
+    width: 10px; /* A sáv szélessége */
+}
+
+::-webkit-scrollbar-track {
+    background: #10002b; /* A görgetősáv háttere (egyezik az oldaléval) */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #764ba2; /* A mozgó csúszka színe (lila) */
+    border-radius: 20px;       /* Legyen kerekített */
+    border: 2px solid #10002b; /* Kis rés a szélén, hogy "lebegjen" */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #9d4edd; /* Világosabb lila, ha ráviszed az egeret */
+}
+
 
 
 
