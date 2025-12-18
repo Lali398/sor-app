@@ -1820,6 +1820,9 @@ switchToUserView = function() {
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
+        const guestSupportBtn = document.getElementById('guestSupportBtn');
+        if(guestSupportBtn) guestSupportBtn.style.display = 'none';
+
         guestView.style.display = 'none';
         userView.style.display = 'none';
         adminView.style.display = 'block';
@@ -2198,6 +2201,8 @@ window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 
 // A nézetváltó függvény, ami meghívja a fenti javított beállítót
 switchToUserView = function() {
+    const guestSupportBtn = document.getElementById('guestSupportBtn');
+    if(guestSupportBtn) guestSupportBtn.style.display = 'none';
     // Nézetek kezelése
     document.getElementById('guestView').style.display = 'none';
     document.getElementById('adminView').style.display = 'none';
@@ -2571,6 +2576,7 @@ if(guestSupportBtn) {
     guestSupportBtn.addEventListener('click', openSupportModal);
 }
     });
+
 
 
 
