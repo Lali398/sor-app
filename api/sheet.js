@@ -105,11 +105,10 @@ export default async function handler(req, res) {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
     
+    // Jelszó ellenőrzés
     const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
     if (!passwordRegex.test(password)) {
-        return res.status(400).json({ 
-            error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
-        });
+        return res.status(400).json({ error: "A jelszó gyenge! (Min. 8 karakter, 1 szám, 1 spec. karakter)" });
     }
 
     const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
@@ -118,22 +117,63 @@ export default async function handler(req, res) {
     
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // ÚJ: Alapértelmezett achievements objektum
-    const defaultAchievements = {
-        unlocked: [] // Üres tömb - még nincs semmi feloldva
-    };
+    // --- ÚJ RÉSZ: Helyreállító kód generálás ---
+    // Generálunk egy véletlenszerű 8 karakteres kódot
+    const recoveryCode = Math.random().toString(36).slice(-8).toUpperCase();
+    const hashedRecovery = await bcrypt.hash(recoveryCode, 10); // Ezt is titkosítva mentjük!
+    // -------------------------------------------
+
+    const defaultAchievements = { unlocked: [] };
     
-    // Új sor: A, B, C, D, E, F (Achievements), G (Badge)
-    // F oszlop: JSON.stringify(achievements)
-    // G oszlop: Alapértelmezett badge (üres vagy "Kezdő")
+    // A táblázatba beírjuk a recovery hash-t is a H oszlopba (index 7)
     await sheets.spreadsheets.values.append({
         spreadsheetId: SPREADSHEET_ID,
         range: USERS_SHEET,
         valueInputOption: 'USER_ENTERED',
-        resource: { values: [[name, email, hashedPassword, '', 'FALSE', JSON.stringify(defaultAchievements), '']] },
+        // Figyeld a végét: hashedRecovery hozzáadva
+        resource: { values: [[name, email, hashedPassword, '', 'FALSE', JSON.stringify(defaultAchievements), '', hashedRecovery]] },
     });
+
+    // Visszaküldjük a kódot a felhasználónak (csak most látja utoljára!)
+    return res.status(201).json({ 
+        message: "Sikeres regisztráció!", 
+        recoveryCode: recoveryCode 
+    });
+}
+
+            case 'RESET_PASSWORD': {
+    const { email, recoveryCode, newPassword } = req.body;
+    if (!email || !recoveryCode || !newPassword) return res.status(400).json({ error: "Hiányzó adatok!" });
+
+    // 1. Felhasználó megkeresése
+    const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${USERS_SHEET}!A:H` });
+    const rows = usersResponse.data.values || [];
+    const rowIndex = rows.findIndex(row => row[1] === email); // 1-es index az email
+
+    if (rowIndex === -1) return res.status(404).json({ error: "Nincs ilyen felhasználó." });
+
+    const userRow = rows[rowIndex];
+    const storedRecoveryHash = userRow[7]; // H oszlop (index 7) a recovery kód
+
+    if (!storedRecoveryHash) return res.status(400).json({ error: "Ehhez a fiókhoz nincs beállítva helyreállító kód." });
+
+    // 2. Kód ellenőrzése
+    const isCodeValid = await bcrypt.compare(recoveryCode, storedRecoveryHash);
+    if (!isCodeValid) return res.status(401).json({ error: "Hibás helyreállító kód!" });
+
+    // 3. Új jelszó mentése
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
     
-    return res.status(201).json({ message: "Sikeres regisztráció!" });
+    // Jelszó frissítése (C oszlop - index 2)
+    const updateRange = `${USERS_SHEET}!C${rowIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: updateRange,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [[newHashedPassword]] },
+    });
+
+    return res.status(200).json({ message: "Jelszó sikeresen megváltoztatva! Most már beléphetsz." });
 }
 
             case 'LOGIN_USER': {
@@ -833,6 +873,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
