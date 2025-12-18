@@ -49,10 +49,11 @@
                             </div>
                             <button type="submit" class="auth-btn">
                                 <span class="btn-text">Bejelentkezés</span>
-                                <span class="btn-loading">
-                                    <div class="spinner"></div>
-                                </span>
+                                <span class="btn-loading"><div class="spinner"></div></span>
                             </button>
+                            <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+                                <a href="#" onclick="openForgotModal()" style="color: #bbb; text-decoration: none;">Elfelejtettem a jelszavam</a>
+                            </p>
                         </form>
                         <div class="card-footer">
                             <p>Nincs még fiókja? <a href="#" class="switch-auth" data-target="register">Regisztráljon itt</a></p>
@@ -1055,6 +1056,37 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Jelszó Helyreállítása 🔐</h3>
+            <button class="modal-close" onclick="closeForgotModal()">&times;</button>
+        </header>
+        <form id="forgotPasswordForm" class="config-form">
+            <div class="input-group">
+                <input type="email" id="forgotEmail" required>
+                <label for="forgotEmail">E-mail címed</label>
+                <span class="input-highlight"></span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="forgotRecoveryCode" required placeholder=" ">
+                <label for="forgotRecoveryCode">Helyreállító Kód</label>
+                <span class="input-highlight"></span>
+                <small style="color: #aaa; font-size: 11px;">Ezt regisztrációkor kaptad.</small>
+            </div>
+            <div class="input-group">
+                <input type="password" id="forgotNewPassword" required>
+                <label for="forgotNewPassword">Új jelszó</label>
+                <span class="input-highlight"></span>
+            </div>
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Jelszó Mentése</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+    
     <!-- SZERKESZTŐ MODAL (Sörök) -->
 <div class="modal-overlay" id="editBeerModal">
     <div class="modal-content">
@@ -1214,6 +1246,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
