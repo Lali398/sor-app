@@ -595,26 +595,30 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
 
-            // --- ÚJ RÉSZ: HELYREÁLLÍTÓ KÓD MEGJELENÍTÉSE ---
+            // --- ITT AZ ÚJ MENŐ RÉSZ ---
             if (result.recoveryCode) {
-                // Ha kaptunk kódot, kiírjuk egy ablakban, amit a felhasználó kimásolhat
-                alert(`SIKERES REGISZTRÁCIÓ! ✅\n\nFONTOS BIZTONSÁGI FIGYELMEZTETÉS:\n\nA jelszó helyreállító kódod:\n\n👉 ${result.recoveryCode} 👈\n\nKérlek írd fel vagy mentsd el ezt a kódot MOST! Mivel nincs e-mail küldés, ha elfelejted a jelszavad, KIZÁRÓLAG EZZEL a kóddal tudsz majd újat beállítani.`);
-            } else {
-                // Ha esetleg nem jönne kód (régi API verzió), marad a sima üzenet
-                showSuccess('Sikeres regisztráció! Most már bejelentkezhetsz.');
-            }
-
-            // Átirányítás a bejelentkezéshez 
+            // Bezárjuk a regisztrációt
+            registerCard.classList.remove('active');
+            
+            // Beírjuk a kódot az új menő ablakba
+            document.getElementById('newRecoveryCodeDisplay').textContent = result.recoveryCode;
+            
+            // Megnyitjuk a menő ablakot
+            document.getElementById('recoveryCodeModal').classList.add('active');
+        } else {
+            showSuccess('Sikeres regisztráció!');
             registerCard.classList.remove('active');
             setTimeout(() => loginCard.classList.add('active'), 300);
-
-        } catch (error) {
-            console.error("Regisztrációs hiba:", error);
-            showError(error.message || 'A regisztráció sikertelen.');
-        } finally {
-            setLoading(submitBtn, false);
         }
+        // ---------------------------
+
+    } catch (error) {
+        console.error("Regisztrációs hiba:", error);
+        showError(error.message || 'A regisztráció sikertelen.');
+    } finally {
+        setLoading(submitBtn, false);
     }
+}
 
     async function handleGuestLogin(e) {
         e.preventDefault();
@@ -3005,6 +3009,7 @@ if (forgotForm) {
     });
 }
 });
+
 
 
 
