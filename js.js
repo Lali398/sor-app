@@ -2665,41 +2665,64 @@ function renderAchievements() {
     const userData = JSON.parse(localStorage.getItem('userData')) || { achievements: { unlocked: [] } };
     const unlockedIds = (userData.achievements?.unlocked || []).map(a => a.id);
     const unlockedCount = unlockedIds.length;
-    const totalCount = ACHIEVEMENTS.length;
 
-    // 1. Progress Bar frissítése
+    // 1. Szint meghatározása (Megkeressük, hol tartunk most)
+    let currentLevelIndex = 0;
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (unlockedCount >= LEVELS[i].min) {
+            currentLevelIndex = i;
+            break;
+        }
+    }
+    const currentLevel = LEVELS[currentLevelIndex];
+    const nextLevel = LEVELS[currentLevelIndex + 1]; // Ez a következő cél
+
+    // 2. Progress Bar frissítése (A KÖVETKEZŐ SZINTHEZ)
     const progressBar = document.getElementById('achievementProgressBar');
     const progressText = document.getElementById('achievementProgressText');
     const levelBadge = document.getElementById('currentLevelDisplay');
     
     if (progressBar && progressText) {
-        const percent = (unlockedCount / totalCount) * 100;
-        progressBar.style.width = `${percent}%`;
-        progressText.textContent = `${unlockedCount} / ${totalCount}`;
-    }
+        if (nextLevel) {
+            // Ha van még hova fejlődni
+            const nextGoal = nextLevel.min;
+            const remaining = nextGoal - unlockedCount;
+            
+            // Százalék számítása a következő szinthez (pl. 3/5 = 60%)
+            // Ha azt szeretnéd, hogy nulláról induljon a csík minden szintlépésnél, 
+            // akkor bonyolultabb képlet kell, de ez a "gyűjtő" stílus általában érthetőbb:
+            const percent = (unlockedCount / nextGoal) * 100;
 
-    // 2. Szint meghatározása
-    let currentLevel = LEVELS[0];
-    for (let i = LEVELS.length - 1; i >= 0; i--) {
-        if (unlockedCount >= LEVELS[i].min) {
-            currentLevel = LEVELS[i];
-            break;
+            progressBar.style.width = `${percent}%`;
+            // Kijelzés: Jelenlegi / Cél (Még X db)
+            progressText.innerHTML = `${unlockedCount} / ${nextGoal} <span style="font-size: 0.85em; opacity: 0.9; margin-left: 5px;">(Még ${remaining} db a "${nextLevel.name}" szinthez)</span>`;
+            
+            // Színátmenet frissítése, hogy szebb legyen
+            progressBar.style.background = `linear-gradient(90deg, ${currentLevel.color}, #f1c40f)`;
+        } else {
+            // Ha elérte a MAX szintet (Legenda)
+            progressBar.style.width = '100%';
+            progressBar.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)'; // Arany szín
+            progressText.textContent = `${unlockedCount} 🏆 MAX SZINT ELÉRVE!`;
         }
     }
+
+    // 3. Badge (Szint jelvény) frissítése
     if (levelBadge) {
         levelBadge.textContent = currentLevel.name;
         levelBadge.style.background = currentLevel.color;
-        levelBadge.style.boxShadow = `0 0 10px ${currentLevel.color}`;
+        levelBadge.style.boxShadow = `0 0 15px ${currentLevel.color}`;
+        // Kis animáció, ha szintet lépett (opcionális CSS effekt miatt)
+        levelBadge.style.transition = 'all 0.5s ease';
     }
 
-    // 3. Kártyák renderelése
+    // 4. Kártyák renderelése (Ez a rész változatlan, de szükséges a működéshez)
     grid.innerHTML = '';
     ACHIEVEMENTS.forEach(achi => {
         const isUnlocked = unlockedIds.includes(achi.id);
         const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
         const statusIcon = isUnlocked ? '✅' : '🔒';
         
-        // Ha fel van oldva, keressük meg a dátumot
         let dateStr = '';
         if (isUnlocked) {
             const data = userData.achievements.unlocked.find(u => u.id === achi.id);
@@ -2718,8 +2741,10 @@ function renderAchievements() {
         grid.insertAdjacentHTML('beforeend', html);
     });
 
-    // 4. Badge választó (Beállítások fül) frissítése
-    updateBadgeSelector(currentLevel.name, userData.badge);
+    // 5. Badge választó frissítése a Beállításokban
+    if (typeof updateBadgeSelector === 'function') {
+        updateBadgeSelector(currentLevel.name, userData.badge);
+    }
 }
 
 // --- BADGE VÁLASZTÓ FRISSÍTÉSE ---
@@ -2857,6 +2882,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
