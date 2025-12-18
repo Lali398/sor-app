@@ -1056,31 +1056,65 @@
     </div>
 </div>
 
+div class="modal-overlay" id="recoveryCodeModal">
+    <div class="modal-content recovery-reveal-card">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px;">
+            <div class="lock-icon-anim">🔓</div>
+            <h3 style="text-align: center; color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.5);">Fiók Elkészült!</h3>
+        </header>
+        
+        <div style="text-align: center;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Ez a titkos <b>Helyreállító Kódod</b>.<br>
+                <span style="font-size: 0.85rem; color: #aaa;">Ha elfelejted a jelszavad, CSAK EZZEL tudsz újat csinálni!</span>
+            </p>
+
+            <div class="code-vault-container">
+                <code id="newRecoveryCodeDisplay">X9K2-M4L1</code>
+                <button class="copy-btn" onclick="copyRecoveryCode()" title="Másolás">
+                    📋
+                </button>
+            </div>
+
+            <p id="copyFeedback" style="color: #00ff88; font-size: 0.8rem; height: 20px; margin-top: 5px; opacity: 0; transition: opacity 0.3s;">
+                Kód a vágólapra másolva!
+            </p>
+
+            <button class="auth-btn" onclick="closeRecoveryModal()" style="background: linear-gradient(135deg, #00b09b, #96c93d);">
+                Megértettem, belépek! 🚀
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="forgotPasswordModal">
     <div class="modal-content">
         <header class="modal-header">
-            <h3>Jelszó Helyreállítása 🔐</h3>
+            <h3>🔐 Helyreállítás</h3>
             <button class="modal-close" onclick="closeForgotModal()">&times;</button>
         </header>
         <form id="forgotPasswordForm" class="config-form">
             <div class="input-group">
-                <input type="email" id="forgotEmail" required>
+                <input type="email" id="forgotEmail" required placeholder=" ">
                 <label for="forgotEmail">E-mail címed</label>
                 <span class="input-highlight"></span>
             </div>
+            
             <div class="input-group">
-                <input type="text" id="forgotRecoveryCode" required placeholder=" ">
-                <label for="forgotRecoveryCode">Helyreállító Kód</label>
+                <input type="text" id="forgotRecoveryCode" required placeholder=" " 
+                       style="font-family: 'Courier New', monospace; letter-spacing: 3px; font-weight: bold; color: #ffd700;">
+                <label for="forgotRecoveryCode">Helyreállító Kód (pl. A1B2C3D4)</label>
                 <span class="input-highlight"></span>
-                <small style="color: #aaa; font-size: 11px;">Ezt regisztrációkor kaptad.</small>
             </div>
+
             <div class="input-group">
-                <input type="password" id="forgotNewPassword" required>
+                <input type="password" id="forgotNewPassword" required placeholder=" ">
                 <label for="forgotNewPassword">Új jelszó</label>
                 <span class="input-highlight"></span>
             </div>
-            <button type="submit" class="auth-btn">
-                <span class="btn-text">Jelszó Mentése</span>
+
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
+                <span class="btn-text">Jelszó Mentése 💾</span>
                 <span class="btn-loading"><div class="spinner"></div></span>
             </button>
         </form>
@@ -1246,6 +1280,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
