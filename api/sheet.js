@@ -402,7 +402,7 @@ case 'GET_ACHIEVEMENTS': {
                 const numPercentage = parseFloat(beerPercentage) || 0;
                 
                 const totalScore = numLook + numSmell + numTaste;
-                const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+                const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
                 
                 // JAVÍTOTT SORREND:
                 const newRow = [
@@ -498,7 +498,7 @@ case 'GET_ACHIEVEMENTS': {
         const numPercentage = parseFloat(drinkPercentage) || 0;
         
         const totalScore = numLook + numSmell + numTaste;
-        const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+        const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
         
         const newRow = [
             new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
@@ -551,7 +551,7 @@ case 'GET_ACHIEVEMENTS': {
     const numPercentage = parseFloat(beerPercentage) || 0;
     
     const totalScore = numLook + numSmell + numTaste;
-    const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+    const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
     
     const updatedRow = [
     targetRow[0],    // A: Dátum
@@ -608,7 +608,7 @@ case 'EDIT_USER_DRINK': {
     const numPercentage = parseFloat(drinkPercentage) || 0;
     
     const totalScore = numLook + numSmell + numTaste;
-    const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
+    const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
     
     const updatedRow = [
         targetRow[0],       // A: Dátum (megtartjuk az eredetit)
@@ -833,6 +833,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
