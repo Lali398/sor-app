@@ -2659,34 +2659,33 @@ async function saveAchievementsToCloud(achievements, badge) {
 
 // --- UI MEGJELENÍTÉS (RÁCS ÉS PROGRESS BAR) ---
 function renderAchievements() {
-    console.log("--- Achievement Render Indítása ---");
-
     const grid = document.getElementById('achievementsGrid');
+    
+    // Biztonsági ellenőrzés: csak akkor fusson, ha létezik a rács (tehát a user nézetben vagyunk)
     if (!grid) return; 
 
-    // 1. Adatok biztonságos betöltése
+    // 1. Adatok betöltése
     let userData = null;
     try {
         userData = JSON.parse(localStorage.getItem('userData'));
     } catch (e) {
-        console.error("Hiba a localStorage olvasásakor:", e);
+        console.error("Hiba az adatok olvasásakor:", e);
     }
-
+    
+    // Ha nincs adat, inicializáljuk üresen
     if (!userData) userData = { achievements: { unlocked: [] } };
     if (!userData.achievements) userData.achievements = { unlocked: [] };
 
     const unlockedIds = (userData.achievements.unlocked || []).map(a => a.id);
     const unlockedCount = unlockedIds.length;
-    console.log(`Feloldott achievementek száma: ${unlockedCount}`);
 
-    // 2. LEVELS ellenőrzése (Ez szokott lenni a hiba forrása!)
+    // 2. Szintek ellenőrzése (LEVELS tömbnek léteznie kell a kód elején!)
     if (typeof LEVELS === 'undefined') {
-        console.error("HIBA: A 'LEVELS' változó nem található! Győződj meg róla, hogy a 'js.js' fájl elején definiálva van.");
-        document.getElementById('achievementProgressText').textContent = "Hiba: LEVELS változó hiányzik!";
+        console.error("HIBA: A 'LEVELS' változó nincs definiálva!");
         return;
     }
 
-    // 3. Szint meghatározása
+    // 3. Jelenlegi és Következő szint meghatározása
     let currentLevelIndex = 0;
     for (let i = LEVELS.length - 1; i >= 0; i--) {
         if (unlockedCount >= LEVELS[i].min) {
@@ -2697,61 +2696,72 @@ function renderAchievements() {
     const currentLevel = LEVELS[currentLevelIndex];
     const nextLevel = LEVELS[currentLevelIndex + 1];
 
-    console.log(`Jelenlegi szint: ${currentLevel.name} (Min: ${currentLevel.min})`);
-
-    // 4. Progress Bar frissítése
+    // 4. Progress Bar frissítése (A kért logika: Következő szintig hátralévő)
     const progressBar = document.getElementById('achievementProgressBar');
     const progressText = document.getElementById('achievementProgressText');
     const levelBadge = document.getElementById('currentLevelDisplay');
     
     if (progressBar && progressText) {
         if (nextLevel) {
-            const currentLevelFloor = currentLevel.min;
-            const nextLevelCeiling = nextLevel.min;
+            // -- MATEMATIKA A SZINTLÉPÉSHEZ --
             
-            // Matematika ellenőrzése
-            const progressInThisLevel = Math.max(0, unlockedCount - currentLevelFloor);
-            const neededForNextLevel = Math.max(1, nextLevelCeiling - currentLevelFloor); // 0 osztás elkerülése
-            const remaining = Math.max(0, nextLevelCeiling - unlockedCount);
+            // Honnan indul ez a szint? (Pl. "Lelkes" szint 5-nél kezdődik)
+            const levelStart = currentLevel.min;
+            
+            // Hova kell eljutni? (Pl. "Haladó" szint 10-nél van)
+            const levelEnd = nextLevel.min;
+            
+            // Hányat szereztünk meg EBBEN a szintben? (Jelenlegi - Szint kezdete)
+            const progressInLevel = unlockedCount - levelStart;
+            
+            // Mennyi a teljes távolság a két szint között? (Szint vége - Szint kezdete)
+            const totalDistance = levelEnd - levelStart;
+            
+            // Mennyi hiányzik még?
+            const remaining = levelEnd - unlockedCount;
 
-            console.log(`Számítás: ${progressInThisLevel} / ${neededForNextLevel} (Még ${remaining})`);
+            // Százalék számítása (0% és 100% között)
+            let percent = (progressInLevel / totalDistance) * 100;
+            // Biztonsági korlátok (ne menjen 0 alá vagy 100 fölé)
+            percent = Math.max(0, Math.min(100, percent));
 
-            let percent = (progressInThisLevel / neededForNextLevel) * 100;
-            if (isNaN(percent)) percent = 0; // NaN védelem
-
+            // -- MEGJELENÍTÉS --
             progressBar.style.width = `${percent}%`;
-            progressText.innerHTML = `
-                <span style="font-weight:700; color: white;">${progressInThisLevel} / ${neededForNextLevel}</span> 
-                <span style="font-size: 0.85em; color: #ddd; margin-left: 5px;">
-                    (Még <b>${remaining} db</b> a "${nextLevel.name}" szinthez)
-                </span>`;
             
+            // Szöveg frissítése: "Jelenlegi / Cél (Még X db a következőhöz)"
+            progressText.innerHTML = `
+                <span style="font-weight:bold; margin-right:5px;">${unlockedCount} / ${levelEnd}</span>
+                <span style="font-size: 0.9em; opacity: 0.9;">
+                    (Még <b>${remaining} db</b> a "${nextLevel.name}" szinthez)
+                </span>
+            `;
+            
+            // Színátmenet a jelenlegi szint színéből a következőbe
             progressBar.style.background = `linear-gradient(90deg, ${currentLevel.color}, ${nextLevel.color})`;
 
         } else {
-            // Max szint
+            // Ha elérte a maximum szintet (nincs nextLevel)
             progressBar.style.width = '100%';
             progressBar.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)';
             progressText.innerHTML = `🏆 MAX SZINT ELÉRVE! (${unlockedCount} db)`;
         }
     }
 
-    // 5. Badge frissítése
+    // 5. Badge (Címke) frissítése
     if (levelBadge) {
         levelBadge.textContent = currentLevel.name;
         levelBadge.style.background = currentLevel.color;
-        levelBadge.style.boxShadow = `0 0 15px ${currentLevel.color}`;
+        levelBadge.style.boxShadow = `0 0 10px ${currentLevel.color}`;
     }
 
-    // 6. Kártyák kirajzolása (Grid)
+    // 6. Ikonok kirajzolása (Grid)
     grid.innerHTML = '';
-    
-    // Ellenőrizzük, hogy az ACHIEVEMENTS változó létezik-e
     if (typeof ACHIEVEMENTS !== 'undefined') {
         ACHIEVEMENTS.forEach(achi => {
             const isUnlocked = unlockedIds.includes(achi.id);
             const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
             const statusIcon = isUnlocked ? '✅' : '🔒';
+            // Szürke szűrő, ha nincs feloldva
             const iconStyle = !isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : '';
 
             let dateStr = '';
@@ -2771,10 +2781,9 @@ function renderAchievements() {
             `;
             grid.insertAdjacentHTML('beforeend', html);
         });
-    } else {
-        console.error("HIBA: Az 'ACHIEVEMENTS' tömb nem található!");
     }
 
+    // Badge választó frissítése (ha van beállítások menü)
     if (typeof updateBadgeSelector === 'function') {
         updateBadgeSelector(currentLevel.name, userData.badge);
     }
@@ -2915,6 +2924,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
