@@ -200,9 +200,14 @@
                     <span class="icon">💡</span>
                     <span class="label">Ötletláda</span>
                 </button>
+                
                 <button class="nav-item" data-tab-content="user-recap-content">
                     <span class="icon">📈</span>
                     <span class="label">Visszatekintő</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-achievements-content">
+                    <span class="icon">🏆</span>
+                    <span class="label">Eredmények</span>
                 </button>
                 <button class="nav-item" data-tab-content="user-account-content">
                     <span class="icon">👤</span>
@@ -381,6 +386,24 @@
                     </section>
                 </div>
 
+                <div class="main-tab-pane" id="user-achievements-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Eredmények és Szintek 🏆</h3>
+            <div class="level-progress-container">
+                <div class="current-level-badge" id="currentLevelDisplay">Kezdő</div>
+                <div class="level-bar-wrapper">
+                    <div class="level-bar-fill" id="achievementProgressBar" style="width: 0%"></div>
+                    <span class="level-text" id="achievementProgressText">0 / 50</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="achievements-grid" id="achievementsGrid">
+            </div>
+    </section>
+</div>
+
                 <!-- FIÓKOM TAB -->
                 <div class="main-tab-pane" id="user-account-content">
                     <section class="card">
@@ -440,6 +463,18 @@
 
                             <div class="setting-item">
                                 <div class="setting-info">
+                                    <h4>Megjelenített Rang 🎖️</h4>
+                                    <p>Válaszd ki, melyik rangod jelenjen meg a neved mellett.</p>
+                                </div>
+                                <div class="badge-selector-wrapper">
+                                    <select id="userBadgeSelector" class="badge-dropdown">
+                                        <option value="">Nincs</option>
+                                        </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
                                     <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
                                     <p>Google Authenticator használata a belépéshez.</p>
                                 </div>
@@ -454,6 +489,7 @@
             </div>
         </main>
     </div>
+    
 
     <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
     <div class="fab-container" id="fabContainer">
@@ -1178,6 +1214,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
