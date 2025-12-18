@@ -102,106 +102,40 @@ export default async function handler(req, res) {
             }
 
             case 'REGISTER_USER': {
-                const { name, email, password } = req.body;
-                if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
-                
-                // Jelszó ellenőrzés
-                const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-                if (!passwordRegex.test(password)) {
-                    return res.status(400).json({ 
-                        error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
-                    });
-                }
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+    
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ 
+            error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
+        });
+    }
 
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const users = usersResponse.data.values || [];
-                
-                if (users.some(row => row[1] === email)) {
-                    return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
-                }
-            
-                const hashedPassword = await bcrypt.hash(password, 10);
-                
-                // --- ÚJ RÉSZ: Recovery Key Generálás ---
-                const recoveryKey = "KEY-" + Math.floor(100000 + Math.random() * 900000);
-                // ---------------------------------------
+    const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+    const userExists = users.data.values?.some(row => row[1] === email);
+    if (userExists) return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // ÚJ: Alapértelmezett achievements objektum
+    const defaultAchievements = {
+        unlocked: [] // Üres tömb - még nincs semmi feloldva
+    };
+    
+    // Új sor: A, B, C, D, E, F (Achievements), G (Badge)
+    // F oszlop: JSON.stringify(achievements)
+    // G oszlop: Alapértelmezett badge (üres vagy "Kezdő")
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: USERS_SHEET,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [[name, email, hashedPassword, '', 'FALSE', JSON.stringify(defaultAchievements), '']] },
+    });
+    
+    return res.status(201).json({ message: "Sikeres regisztráció!" });
+}
 
-                const defaultAchievements = { unlocked: [] };
-                
-                // Sorrend: A:Név, B:Email, C:Jelszó, D:2FA_Secret, E:2FA_Enabled, F:Achievements, G:Badge, H:RECOVERY_KEY
-                // A H oszlop a 8. hely (index 7), ezért kell az üres stringek után
-                const newRow = [
-                    name, 
-                    email, 
-                    hashedPassword, 
-                    '',      // D: 2FA Secret
-                    'FALSE', // E: 2FA Enabled
-                    JSON.stringify(defaultAchievements), // F: Achievements
-                    '',      // G: Badge
-                    recoveryKey // H: RECOVERY KEY (Ide mentjük!)
-                ];
-
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: USERS_SHEET,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [newRow] },
-                });
-                
-                // Visszaküldjük a kulcsot a frontendnek!
-                return res.status(201).json({ 
-                    message: "Sikeres regisztráció!",
-                    recoveryKey: recoveryKey 
-                });
-            }
-
-            // --- ÚJ: JELSZÓ HELYREÁLLÍTÁS KULCCSAL (Email helyett) ---
-            case 'RESET_PASSWORD_WITH_KEY': {
-                const { email, key, newPassword } = req.body;
-
-                // 1. Felhasználók lekérése
-                const usersResponse = await sheets.spreadsheets.values.get({ 
-                    spreadsheetId: SPREADSHEET_ID, 
-                    range: USERS_SHEET 
-                });
-                const rows = usersResponse.data.values || [];
-                
-                // 2. Keresés Email és Kulcs alapján
-                let targetRowIndex = -1;
-                
-                // A H oszlop az index 7 (0-tól számolva: A=0, ..., H=7)
-                const userRow = rows.find((row, index) => {
-                    if (row[1] === email && row[7] === key) { // row[1]=Email, row[7]=RecoveryKey
-                        targetRowIndex = index; // Ez a tömb indexe
-                        return true;
-                    }
-                    return false;
-                });
-
-                if (targetRowIndex === -1) {
-                    return res.status(400).json({ error: "Hibás email cím vagy biztonsági kulcs!" });
-                }
-
-                // 3. Jelszó frissítése
-                const newHashedPassword = await bcrypt.hash(newPassword, 10);
-                
-                // A Sheet sor száma = tömb index + 1 (ha nincs fejléc) vagy + 2?
-                // Mivel a range az egész sheetet kéri, és feltételezzük, hogy az 1. sor a fejléc,
-                // de a values.get visszaadja a fejlécet is (ha van).
-                // Biztonságosabb megoldás: 'USERS_SHEET!C' + (targetRowIndex + 1)
-                
-                const rangeToUpdate = `${USERS_SHEET}!C${targetRowIndex + 1}`; // C oszlop a Jelszó
-
-                await sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: rangeToUpdate,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [[newHashedPassword]] },
-                });
-
-                return res.status(200).json({ message: "Jelszó sikeresen megváltoztatva!" });
-            }
-            
             case 'LOGIN_USER': {
     const { email, password } = req.body;
     const usersResponse = await sheets.spreadsheets.values.get({ 
@@ -899,8 +833,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
-
-
 
 
 
