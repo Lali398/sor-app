@@ -1794,6 +1794,38 @@ input:checked + .slider:before {
         font-size: 1rem;
     }
 }
+/* === SEGÍTSÉG GOMB (VENDÉG NÉZET) === */
+.support-section {
+    animation: slideUp 1s ease-out 0.7s both;
+}
+
+.support-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto;
+}
+
+.support-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 30px rgba(52, 152, 219, 0.4);
+}
+
+.support-icon {
+    font-size: 1.1rem;
+}
+
 
 
 
