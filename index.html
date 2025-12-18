@@ -36,6 +36,9 @@
                         <div class="card-header">
                             <h2>Bejelentkezés</h2>
                         </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <a href="#" id="forgotPasswordLink" style="color: #b19cd9; font-size: 0.9rem; text-decoration: none;">Elfelejtett jelszó?</a>
+                        </div>
                         <form class="auth-form" id="loginForm">
                             <div class="input-group">
                                 <input type="email" id="loginEmail" placeholder=" " required>
@@ -508,6 +511,40 @@
             </button>
         </div>
         <button class="fab-main" id="fabMainBtn">+</button>
+    </div>
+</div>
+
+    
+<!-- ELFELEJTETT JELSZO -->
+    <div class="modal" id="forgotPasswordModal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeForgotModal()">&times;</span>
+        <h3>Jelszó visszaállítása 🔐</h3>
+        
+        <form id="forgotEmailForm">
+            <p style="margin-bottom: 20px; color: #ccc;">Add meg az email címed, és küldünk egy ellenőrző kódot.</p>
+            <div class="input-group">
+                <input type="email" id="forgotEmailInput" placeholder=" " required>
+                <label>Email cím</label>
+            </div>
+            <button type="submit" class="auth-btn">Kód küldése</button>
+        </form>
+
+        <form id="forgotResetForm" style="display: none;">
+            <p style="margin-bottom: 20px; color: #27ae60;">Kódot elküldtük! Írd be alább:</p>
+            
+            <div class="input-group">
+                <input type="text" id="resetCodeInput" placeholder=" " required maxlength="6">
+                <label>6 jegyű kód</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="resetNewPassword" placeholder=" " required>
+                <label>Új jelszó</label>
+            </div>
+
+            <button type="submit" class="auth-btn">Jelszó mentése</button>
+        </form>
     </div>
 </div>
 
@@ -1214,6 +1251,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
