@@ -888,26 +888,42 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
                     
-                    // --- 4. ÖTLETEK TÖRLÉSE (Opcionális, ha az ötleteket is törölni akarod) ---
-                    // Ha a felhasználó ötleteit is törölni akarod, ide írhatsz egy hasonló blokkot az IDEAS_SHEET-re.
+                   // --- 4. ÖTLETEK TÖRLÉSE (IDEAS_SHEET) ---
+                    const ideasRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
+                    const allIdeas = ideasRes.data.values || [];
 
-                    return res.status(200).json({ message: "Fiók és adatok sikeresen törölve." });
+                    const cleanIdeas = allIdeas.filter((row, index) => {
+                        if (index === 0) return true; 
+                        return row[5] !== userEmail; // 5-ös index az email
+                    });
+
+                    if (cleanIdeas.length !== allIdeas.length) {
+                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: IDEAS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanIdeas }
+                        });
+                    }
+
+                    return res.status(200).json({ message: "Fiók, adatok és ötletek sikeresen törölve." });
 
                 } catch (error) {
                     console.error("Törlési hiba:", error);
                     return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
                 }
-            }
+            } // DELETE_USER vége
+
             default:
                 return res.status(400).json({ error: "Ismeretlen művelet." });
-        } // Switch lezárása
+        } // Switch vége
 
     } catch (error) {
-        // Ez a FŐ hibakezelő, ami elkapja a szerverhibákat (pl. google api hiba, connection error)
-        console.error("Szerver hiba:", error);
-        return res.status(500).json({ error: "Szerverhiba történt: " + error.message });
+        console.error("API Hiba:", error);
+        return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
-} // Handler függvény lezárása
+} // Handler vége
 
 
 
