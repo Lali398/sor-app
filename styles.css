@@ -1958,16 +1958,27 @@ input:checked + .slider:before {
     transform: translateX(-50%) translateY(0);
 }
 /* --- LEGÖRDÜLŐ MENÜ (SELECT) JAVÍTÁSA --- */
+select,
 select.form-control {
-    /* Maga a mező háttere sötét legyen */
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #e0e0e0;
+    background-color: #240046 !important; /* Sötétlila háttér */
+    color: #e0e0e0 !important;            /* Világosszürke szöveg */
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Ez a rész a kinyíló lista elemeit szinezi át */
+/* A legördülő lista elemei (Option) */
+select option,
 select.form-control option {
-    background-color: #10002b; /* Az oldal sötétlila alapszíne */
-    color: #e0e0e0;            /* Világos betűszín */
+    background-color: #10002b !important; /* Mélyebb lila háttér a listának */
+    color: #e0e0e0 !important;            /* Világos szöveg, hogy látszódjon */
+}
+
+/* Fókusz állapot (amikor ráklikkelsz) */
+select:focus,
+select.form-control:focus {
+    background-color: #240046 !important;
+    color: #ffffff !important;
+    outline: none !important;
+    border-color: #b19cd9 !important;
 }
 
 
