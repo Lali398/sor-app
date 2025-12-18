@@ -3008,7 +3008,31 @@ if (forgotForm) {
         }
     });
 }
+    // === ÚJ "MENŐ" MODAL KEZELÉSE ===
+
+// Kód másolása vágólapra
+window.copyRecoveryCode = function() {
+    const code = document.getElementById('newRecoveryCodeDisplay').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        // Visszajelzés animáció
+        const feedback = document.getElementById('copyFeedback');
+        feedback.style.opacity = '1';
+        setTimeout(() => { feedback.style.opacity = '0'; }, 2000);
+    }).catch(err => {
+        console.error('Nem sikerült másolni', err);
+    });
+}
+
+// A kód ablak bezárása -> Irány a Login
+window.closeRecoveryModal = function() {
+    document.getElementById('recoveryCodeModal').classList.remove('active');
+    // Kis késleltetéssel beúsztatjuk a logint
+    setTimeout(() => {
+        loginCard.classList.add('active');
+    }, 300);
+}
 });
+
 
 
 
