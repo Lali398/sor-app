@@ -658,8 +658,9 @@
     <div class="modal-content">
         <span class="modal-close" onclick="closeForgotModal()">&times;</span>
         <h3>Jelszó visszaállítása 🔐</h3>
-        <p style="color: #aaa; font-size: 0.9em; margin-bottom: 15px;">
-            Add meg az email címedet és a regisztrációkor kapott <b>Biztonsági Kulcsodat</b> (pl. REC-123...).
+        <p style="color: #aaa; font-size: 0.9em; margin-bottom: 20px; line-height: 1.5;">
+            Add meg az email címedet és a regisztrációkor kapott <br>
+            <b style="color: #f39c12;">Helyreállítási Kulcsot</b> (pl. KEY-839201).
         </p>
         
         <form id="resetWithKeyForm">
@@ -667,14 +668,17 @@
                 <input type="email" id="resetEmail" placeholder=" " required>
                 <label>Email cím</label>
             </div>
+            
             <div class="input-group">
                 <input type="text" id="resetKey" placeholder=" " required>
-                <label>Biztonsági Kulcs</label>
+                <label>Helyreállítási Kulcs</label>
             </div>
+            
             <div class="input-group">
                 <input type="password" id="resetNewPass" placeholder=" " required>
                 <label>Új jelszó</label>
             </div>
+
             <button type="submit" class="auth-btn">Jelszó cseréje</button>
         </form>
     </div>
@@ -1241,6 +1245,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
