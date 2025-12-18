@@ -2816,30 +2816,47 @@ function showAchievementToast(achi) {
 // vagy kibővítjük a `switchToUserView`-t.
 
 const originalUserViewInit = switchToUserView;
+
 switchToUserView = function() {
-    originalUserViewInit();
-    
-    // Kicsit várunk, hogy az adatok (beers/drinks) betöltődjenek a változókba
-    setTimeout(() => {
+    // 1. Lefuttatjuk az eredeti inicializálást (betölti a söröket, beállításokat)
+    originalUserViewInit(); 
+
+    // 2. Biztosítjuk, hogy az italok is betöltődjenek (ha még nem történt meg)
+    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+
+    // 3. Várakozunk kicsit, hogy az API válaszok (sörök + italok) megérkezzenek
+    // Fontos: Itt hívjuk meg a checkAchievements-t, hogy újraszámolja a százalékokat!
+    setTimeout(async () => {
+        // Ellenőrizzük, vannak-e betöltött adatok
+        if (currentUserBeers.length > 0 || currentUserDrinks.length > 0) {
+            console.log("Adatok betöltve, Achievementek ellenőrzése...");
+            
+            // FONTOS: Ez számolja ki a progress-t az aktuális listák alapján!
+            await checkAchievements(); 
+        }
+        
+        // Frissítjük a vizuális elemeket (Rács + Header Badge)
         renderAchievements();
         updateHeaderBadge();
-    }, 800);
+        
+    }, 1500); // 1.5 mp késleltetés, hogy biztosan meglegyen minden adat a szerverről
 };
 
 // Figyeljük a változásokat (Ha hozzáadunk sört/italt, fusson le az ellenőrzés)
 const originalAddBeer = handleAddBeer;
 handleAddBeer = async function(e) {
-    await originalAddBeer(e); // Eredeti futtatása
-    setTimeout(() => { checkAchievements(); }, 1500); // Ellenőrzés utána
+    await originalAddBeer(e);
+    // Sikeres hozzáadás után ellenőrzés
+    setTimeout(() => { checkAchievements(); }, 1500); 
 };
 
 const originalAddDrink = handleAddDrink;
 handleAddDrink = async function(e) {
     await originalAddDrink(e);
+    // Sikeres hozzáadás után ellenőrzés
     setTimeout(() => { checkAchievements(); }, 1500);
 };
-
-}); // document.addEventListener VÉGE
+});
 
 
 
