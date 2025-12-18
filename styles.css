@@ -2108,6 +2108,65 @@ select.form-control:focus {
 .copy-btn:active {
     transform: scale(0.9);
 }
+/* === Fiók Törlés "Danger Zone" Stílusok === */
+
+.delete-zone-card {
+    border: 2px solid #ff4444 !important;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+    background: #1a0505 !important; /* Sötét vöröses-fekete háttér */
+    color: white;
+    padding: 30px !important;
+    max-width: 450px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.skull-icon-anim {
+    font-size: 3rem;
+    animation: pulseRed 1.5s infinite;
+}
+
+@keyframes pulseRed {
+    0% { transform: scale(1); text-shadow: 0 0 0 rgba(255, 68, 68, 0.7); }
+    50% { transform: scale(1.1); text-shadow: 0 0 20px rgba(255, 68, 68, 0); }
+    100% { transform: scale(1); text-shadow: 0 0 0 rgba(255, 68, 68, 0); }
+}
+
+.danger-input-container input {
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    background: #000;
+    border: 2px solid #555;
+    color: #ff4444;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+}
+
+.danger-input-container input:focus {
+    border-color: #ff4444;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
+    outline: none;
+}
+
+/* Ha a gomb aktív */
+#finalDeleteBtn:not([disabled]) {
+    opacity: 1 !important;
+    cursor: pointer !important;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
 
 
 
