@@ -406,21 +406,23 @@ case 'GET_ACHIEVEMENTS': {
                 
                 // JAVÍTOTT SORREND:
                 const newRow = [
-                    new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
-                    userData.name,   // B: Név
-                    beerName,        // C: Sör neve
-                    location,        // D: Főzési hely (Megcserélve a típussal)
-                    type,            // E: Típus
-                    look,            // F: Külalak
-                    smell,           // G: Illat
-                    taste,           // H: Íz
-                    totalScore,      // I: Összpontszám (Alkohol % helyett)
-                    avgScore,        // J: Átlag (Összpontszám helyett)
-                    numPercentage,   // K: Alkohol % (Átlag helyett)
-                    notes || '',     // L: Jegyzetek
-                    'Nem',           // M: Jóváhagyva?
-                    userData.email   // N: Email
-                ];
+                new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
+                userData.name,   // B: Név
+                beerName,        // C: Sör neve
+                location,        // D: Főzési hely
+                type,            // E: Típus
+                look,            // F: Külalak
+                smell,           // G: Illat
+                taste,           // H: Íz
+                // --- ITT VAN A HIBA, EZT KELL CSERÉLNI: ---
+                numPercentage,   // I: Alkohol % (Ide kerüljön a százalék!)
+                totalScore,      // J: Összpontszám (Ide a pontszám!)
+                avgScore,        // K: Átlag (Ide az átlag!)
+                // ------------------------------------------
+                notes || '',     // L: Jegyzetek
+                'Nem',           // M: Jóváhagyva?
+                userData.email   // N: Email
+            ];
                 
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
@@ -552,21 +554,23 @@ case 'GET_ACHIEVEMENTS': {
     const avgScore = (totalScore / 3).toFixed(1).replace('.', ',');
     
     const updatedRow = [
-        targetRow[0],       // A: Dátum (megtartjuk az eredetit)
-        userData.name,      // B: Név
-        beerName,           // C: Sör neve
-        location,           // D: Főzési hely
-        type,               // E: Típus
-        look,               // F: Külalak
-        smell,              // G: Illat
-        taste,              // H: Íz
-        totalScore,         // I: Összpontszám
-        avgScore,           // J: Átlag
-        numPercentage,      // K: Alkohol %
-        notes || '',        // L: Jegyzetek
-        targetRow[12],      // M: Jóváhagyva?
-        userData.email      // N: Email
-    ];
+    targetRow[0],    // A: Dátum
+    userData.name,   // B: Név
+    beerName,        // C: Sör neve
+    location,        // D: Főzési hely
+    type,            // E: Típus
+    look,            // F: Külalak
+    smell,           // G: Illat
+    taste,           // H: Íz
+    // --- ITT IS CSERÉLNI KELL: ---
+    numPercentage,   // I: Alkohol % 
+    totalScore,      // J: Összpontszám
+    avgScore,        // J: Átlag
+    // -----------------------------
+    notes || '',     // L: Jegyzetek
+    targetRow[12],   // M: Jóváhagyva?
+    userData.email   // N: Email
+];
     
     const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
@@ -829,6 +833,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
