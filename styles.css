@@ -1825,13 +1825,7 @@ input:checked + .slider:before {
 .support-icon {
     font-size: 1.1rem;
 }
-/* Segítség gomb elrejtése bejelentkezés után */
-.admin-view .support-section,
-.admin-view .guestSupportBtn,
-body:not(.guest-mode) .support-section,
-body:not(.guest-mode) #guestSupportBtn {
-    display: none !important;
-}
+
 
 
 
