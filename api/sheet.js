@@ -102,84 +102,132 @@ export default async function handler(req, res) {
             }
 
             case 'REGISTER_USER': {
-                const { name, email, password } = req.body;
-                if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
-                // Regex: legalább 1 szám, legalább 1 spec. karakter, min 8 hossz
-                const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-                
-                if (!passwordRegex.test(password)) {
-                    return res.status(400).json({ 
-                        error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
-                    });
-                }
-              
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+    
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ 
+            error: "A jelszó nem megfelelő! (Min. 8 karakter, 1 szám és 1 speciális karakter szükséges)" 
+        });
+    }
 
-                const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const userExists = users.data.values?.some(row => row[1] === email);
-                if (userExists) return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
-                
-                const hashedPassword = await bcrypt.hash(password, 10);
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: USERS_SHEET,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [[name, email, hashedPassword]] },
-                });
-                return res.status(201).json({ message: "Sikeres regisztráció!" });
-            }
+    const users = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+    const userExists = users.data.values?.some(row => row[1] === email);
+    if (userExists) return res.status(409).json({ error: "Ez az e-mail cím már regisztrálva van." });
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // ÚJ: Alapértelmezett achievements objektum
+    const defaultAchievements = {
+        unlocked: [] // Üres tömb - még nincs semmi feloldva
+    };
+    
+    // Új sor: A, B, C, D, E, F (Achievements), G (Badge)
+    // F oszlop: JSON.stringify(achievements)
+    // G oszlop: Alapértelmezett badge (üres vagy "Kezdő")
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: USERS_SHEET,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [[name, email, hashedPassword, '', 'FALSE', JSON.stringify(defaultAchievements), '']] },
+    });
+    
+    return res.status(201).json({ message: "Sikeres regisztráció!" });
+}
 
             case 'LOGIN_USER': {
-                const { email, password } = req.body;
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                
-                // Megkeressük a sort, ahol az email egyezik
-                const rows = usersResponse.data.values || [];
-                const rowIndex = rows.findIndex(row => row[1] === email);
-                
-                if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-                
-                const userRow = rows[rowIndex];
-                const isPasswordValid = await bcrypt.compare(password, userRow[2]);
-                if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+    const { email, password } = req.body;
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` // Most már A-tól G-ig kérjük
+    });
+    
+    const rows = usersResponse.data.values || [];
+    const rowIndex = rows.findIndex(row => row[1] === email);
+    
+    if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+    
+    const userRow = rows[rowIndex];
+    const isPasswordValid = await bcrypt.compare(password, userRow[2]);
+    if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
 
-                // 2FA ELLENŐRZÉS (E oszlop - index 4)
-                const is2FAEnabled = userRow[4] === 'TRUE';
+    // 2FA ellenőrzés (E oszlop - index 4)
+    const is2FAEnabled = userRow[4] === 'TRUE';
 
-                if (is2FAEnabled) {
-                    // Ha be van kapcsolva, NEM adunk tokent, csak jelezzük a kliensnek
-                    return res.status(200).json({ 
-                        require2fa: true, 
-                        tempEmail: email // Ezt visszaküldjük, hogy a kliens tudja kinek kell a kódot küldeni
-                    });
-                }
-                
-                // Hagyományos belépés
-                const user = { name: userRow[0], email: userRow[1], has2FA: false };
-                const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
-                return res.status(200).json({ token, user });
-            }
-
+    if (is2FAEnabled) {
+        return res.status(200).json({ 
+            require2fa: true, 
+            tempEmail: email
+        });
+    }
+    
+    // ÚJ: Achievements betöltése (F oszlop - index 5)
+    let achievements = { unlocked: [] };
+    try {
+        if (userRow[5]) {
+            achievements = JSON.parse(userRow[5]);
+        }
+    } catch (e) {
+        console.warn("Achievements parse error:", e);
+    }
+    
+    // ÚJ: Badge betöltése (G oszlop - index 6)
+    const badge = userRow[6] || '';
+    
+    // Hagyományos belépés
+    const user = { 
+        name: userRow[0], 
+        email: userRow[1], 
+        has2FA: false,
+        achievements: achievements, // ÚJ
+        badge: badge // ÚJ
+    };
+    
+    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ token, user });
+}
             case 'VERIFY_2FA_LOGIN': {
-                const { email, token: inputToken } = req.body;
-                
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const rows = usersResponse.data.values || [];
-                const userRow = rows.find(row => row[1] === email);
+    const { email, token: inputToken } = req.body;
+    
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` 
+    });
+    const rows = usersResponse.data.values || [];
+    const userRow = rows.find(row => row[1] === email);
 
-                if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
+    if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
 
-                const secret = userRow[3]; // D oszlop: Secret
-                
-                // Kód ellenőrzése
-                const isValid = authenticator.check(inputToken, secret);
+    const secret = userRow[3];
+    const isValid = authenticator.check(inputToken, secret);
 
-                if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
+    if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
 
-                // Sikeres belépés
-                const user = { name: userRow[0], email: userRow[1], has2FA: true };
-                const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
-                return res.status(200).json({ token: jwtToken, user });
-            }
+    // ÚJ: Achievements betöltése
+    let achievements = { unlocked: [] };
+    try {
+        if (userRow[5]) {
+            achievements = JSON.parse(userRow[5]);
+        }
+    } catch (e) {
+        console.warn("Achievements parse error:", e);
+    }
+    
+    const badge = userRow[6] || '';
+
+    // Sikeres belépés
+    const user = { 
+        name: userRow[0], 
+        email: userRow[1], 
+        has2FA: true,
+        achievements: achievements,
+        badge: badge
+    };
+    
+    const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ token: jwtToken, user });
+}
 
             case 'MANAGE_2FA': {
                 const userData = verifyUser(req);
@@ -241,6 +289,83 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: "Ismeretlen művelet." });
             }
 
+case 'UPDATE_ACHIEVEMENTS': {
+    const userData = verifyUser(req);
+    const { achievements, badge } = req.body;
+    
+    // Validálás
+    if (!achievements || typeof achievements !== 'object') {
+        return res.status(400).json({ error: "Hibás achievements formátum!" });
+    }
+    
+    // Users tábla lekérése
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` 
+    });
+    
+    const rows = usersResponse.data.values || [];
+    const rowIndex = rows.findIndex(row => row[1] === userData.email);
+    
+    if (rowIndex === -1) {
+        return res.status(404).json({ error: "Felhasználó nem található." });
+    }
+    
+    // JSON stringgé alakítás
+    const achievementsJson = JSON.stringify(achievements);
+    const badgeValue = badge || '';
+    
+    // F és G oszlop frissítése (index 5 és 6)
+    const range = `${USERS_SHEET}!F${rowIndex + 1}:G${rowIndex + 1}`;
+    
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: range,
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: [[achievementsJson, badgeValue]] }
+    });
+    
+    return res.status(200).json({ 
+        message: "Achievements sikeresen mentve!",
+        achievements: achievements,
+        badge: badgeValue
+    });
+}
+
+// 5. ÚJ (OPCIONÁLIS): GET_ACHIEVEMENTS - külön lekéréshez ha kell
+case 'GET_ACHIEVEMENTS': {
+    const userData = verifyUser(req);
+    
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` 
+    });
+    
+    const rows = usersResponse.data.values || [];
+    const userRow = rows.find(row => row[1] === userData.email);
+    
+    if (!userRow) {
+        return res.status(404).json({ error: "Felhasználó nem található." });
+    }
+    
+    // Achievements és badge betöltése
+    let achievements = { unlocked: [] };
+    try {
+        if (userRow[5]) {
+            achievements = JSON.parse(userRow[5]);
+        }
+    } catch (e) {
+        console.warn("Achievements parse error:", e);
+    }
+    
+    const badge = userRow[6] || '';
+    
+    return res.status(200).json({ 
+        achievements: achievements,
+        badge: badge
+    });
+}
+            
             case 'GET_USER_BEERS': {
                 const userData = verifyUser(req);
                 const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
@@ -704,6 +829,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba a szerveroldali feldolgozás során.", details: error.message });
     }
 }
+
 
 
 
