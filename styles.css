@@ -2166,6 +2166,83 @@ select.form-control:focus {
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
+/* --- ÚJ CSS: HEADER ÖSSZECSUKÁS --- */
+
+/* A gomb stílusa */
+.header-toggle-btn {
+    position: absolute;
+    bottom: -15px; /* Kilógatjuk kicsit alulra */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50; /* Sötét háttér, hogy látszódjon */
+    color: #fff;
+    border: none;
+    border-radius: 0 0 10px 10px; /* Lekerekítés alul */
+    width: 40px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 20px;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.header-toggle-btn:hover {
+    background: #34495e;
+}
+
+/* Ha össze van csukva, forduljon meg a nyíl */
+.header-toggle-btn.rotated {
+    transform: translateX(-50%) rotate(180deg);
+}
+
+/* HEADER ANIMÁCIÓK */
+.admin-header {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible; /* Fontos a gomb kilógása miatt */
+    /* Biztosítjuk, hogy a padding is animálódjon */
+}
+
+/* ÖSSZECSUKOTT ÁLLAPOT (Compact Mode) */
+.admin-header.manual-collapsed {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    height: auto !important; /* Vagy fix magasság, ha ugrál */
+    background: rgba(16, 0, 43, 0.95) !important; /* Sötét háttér */
+}
+
+/* Ilyenkor elrejtjük az üdvözlő szöveget és a rangot */
+.admin-header.manual-collapsed #userWelcomeMessage {
+    display: none; /* Vagy opacity: 0; pointer-events: none; az animációhoz */
+}
+
+/* A statisztikákat és a kilépés gombot igazítjuk */
+.admin-header.manual-collapsed .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* A statisztika dobozokat kicsit összéb húzzuk */
+.admin-header.manual-collapsed .stat-box {
+    padding: 2px 10px;
+    font-size: 0.9em;
+}
+
+/* DASHBOARD IGAZÍTÁS */
+/* Amikor a body megkapja ezt a class-t, feljebb húzzuk a tartalmat */
+body.header-is-collapsed .dashboard-container {
+    padding-top: 80px !important; /* Kisebb helyet hagyunk */
+    transition: padding-top 0.3s ease;
+}
+
+/* Alapállapotban a dashboard padding átmenetes legyen */
+.dashboard-container {
+    transition: padding-top 0.3s ease;
+}
+
 
 
 
