@@ -654,6 +654,106 @@ async function markIdeaAsDone(index) {
         }
     }
 
+    // === ELFELEJTETT JELSZÓ KEZELÉSE ===
+
+const forgotLink = document.getElementById('forgotPasswordLink');
+const forgotModal = document.getElementById('forgotPasswordModal');
+const forgotEmailForm = document.getElementById('forgotEmailForm');
+const forgotResetForm = document.getElementById('forgotResetForm');
+
+// Modal megnyitása
+if(forgotLink) {
+    forgotLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Reseteljük a nézetet az első lépésre
+        forgotEmailForm.style.display = 'block';
+        forgotResetForm.style.display = 'none';
+        document.getElementById('forgotEmailInput').value = '';
+        
+        forgotModal.classList.add('active');
+    });
+}
+
+// Modal bezárása (globálisan is elérhető legyen)
+window.closeForgotModal = function() {
+    if(forgotModal) forgotModal.classList.remove('active');
+}
+
+// 1. LÉPÉS: Kód kérése
+forgotEmailForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgotEmailInput').value;
+    const btn = forgotEmailForm.querySelector('button');
+    
+    setLoading(btn, true);
+
+    try {
+        const response = await fetch('/api/sheet', { // Vagy a te Script URL-ed
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'REQUEST_RESET_CODE', email: email })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+        showSuccess("Kód elküldve az email címedre!");
+        
+        // Váltás a 2. lépésre
+        forgotEmailForm.style.display = 'none';
+        forgotResetForm.style.display = 'block';
+        
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        setLoading(btn, false);
+    }
+});
+
+// 2. LÉPÉS: Jelszó cseréje
+forgotResetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgotEmailInput').value; // Az előző lépésből
+    const code = document.getElementById('resetCodeInput').value;
+    const newPass = document.getElementById('resetNewPassword').value;
+    const btn = forgotResetForm.querySelector('button');
+
+    if(newPass.length < 6) {
+        showError("A jelszó túl rövid!");
+        return;
+    }
+
+    setLoading(btn, true);
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'CONFIRM_PASSWORD_RESET', 
+                email: email,
+                code: code,
+                newPassword: newPass
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+        showSuccess("Sikeres jelszócsere! Most már bejelentkezhetsz.");
+        closeForgotModal();
+        
+        // Opcionális: Visszaváltás loginra
+        document.getElementById('registerCard').classList.remove('active');
+        document.getElementById('loginCard').classList.add('active');
+
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        setLoading(btn, false);
+    }
+});
+
     // --- ÚJ: FELHASZNÁLÓI FIÓK KEZELÉSE ---
     
     async function handleChangePassword(e) {
@@ -2940,6 +3040,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
