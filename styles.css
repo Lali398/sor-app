@@ -2041,28 +2041,25 @@ select.form-control:focus {
 .sidebar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(243, 156, 18, 0.8); /* Erősebb szín ha ráviszed az egeret */
 }
-/* === RECOVERY KÓD "MENŐ" STÍLUSOK === */
+/* === JAVÍTOTT RECOVERY STÍLUSOK === */
 
-/* A kártya, ami megjelenik regisztráció után */
+/* Biztosítjuk, hogy a modal középen legyen és ne lógjon ki */
+#recoveryCodeModal .modal-content {
+    max-width: 450px; /* Ne legyen túl széles */
+    width: 90%;       /* Mobilon se lógjon ki */
+    margin: 0 auto;   /* Középre igazítás */
+}
+
 .recovery-reveal-card {
-    border: 2px solid #00ff88; /* Neon zöld keret */
+    border: 2px solid #00ff88 !important;
     box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-    background: rgba(16, 30, 20, 0.95); /* Sötétzöldes fekete háttér */
+    background: #101e14 !important; /* Sötét háttér fixen */
+    color: white;
+    padding: 30px !important;
+    text-align: center;
 }
 
-/* Animált lakat ikon */
-.lock-icon-anim {
-    font-size: 3rem;
-    animation: unlockPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes unlockPop {
-    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-    50% { transform: scale(1.2) rotate(10deg); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-/* A "Széf" konténer a kódnak */
+/* A kód doboz - flexbox javítás, hogy ne csússzon szét */
 .code-vault-container {
     background: #000;
     border: 2px dashed #444;
@@ -2071,40 +2068,30 @@ select.form-control:focus {
     margin: 20px 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; /* Kód balra, gomb jobbra */
     gap: 10px;
-    position: relative;
-    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box; /* Hogy a padding ne nyomja szét */
 }
 
-/* Maga a kód stílusa */
 .code-vault-container code {
     font-family: 'Courier New', monospace;
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* Kicsit kisebb, hogy kiférjen */
     font-weight: 800;
-    color: #ffd700; /* Arany szín */
-    letter-spacing: 4px;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-    flex-grow: 1;
+    color: #ffd700;
+    letter-spacing: 2px;
+    word-break: break-all; /* Ha túl hosszú, törje el */
 }
 
-/* Másolás gomb */
 .copy-btn {
     background: #333;
     border: 1px solid #555;
     color: white;
-    padding: 10px;
+    padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
-}
-.copy-btn:hover {
-    background: #555;
-    transform: scale(1.1);
-    border-color: #fff;
-}
-.copy-btn:active {
-    transform: scale(0.9);
+    font-size: 1.2rem;
+    flex-shrink: 0; /* A gomb ne nyomódjon össze */
 }
 
 
