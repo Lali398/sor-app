@@ -3128,16 +3128,30 @@ window.closeForgotModal = function() {
     document.getElementById('loginCard').classList.add('active'); // Login visszahozása
 }
 
-// Form beküldése
+// Form beküldése (Elfelejtett jelszó)
 const forgotForm = document.getElementById('forgotPasswordForm');
 if (forgotForm) {
     forgotForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const email = document.getElementById('forgotEmail').value;
         const code = document.getElementById('forgotRecoveryCode').value;
         const newPass = document.getElementById('forgotNewPassword').value;
+        // ÚJ: Megerősítő jelszó kiolvasása
+        const confirmPass = document.getElementById('forgotNewPasswordConfirm').value;
+        
         const btn = forgotForm.querySelector('.auth-btn');
 
+        // 1. ÚJ ELLENŐRZÉS: Egyezés vizsgálata
+        if (newPass !== confirmPass) {
+            showError("A két jelszó nem egyezik!");
+            // Opcionális: töröljük a jelszó mezőket, hogy újraírhassa
+            document.getElementById('forgotNewPassword').value = '';
+            document.getElementById('forgotNewPasswordConfirm').value = '';
+            return;
+        }
+
+        // 2. Hossz ellenőrzése
         if (newPass.length < 8) {
             showError("Az új jelszó túl rövid (min. 8 karakter)!");
             return;
@@ -3148,7 +3162,6 @@ if (forgotForm) {
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Nincs token, mert elfelejtette a jelszavát (public endpoint)
                 body: JSON.stringify({ action: 'RESET_PASSWORD', email, recoveryCode: code, newPassword: newPass })
             });
             const result = await response.json();
@@ -3189,6 +3202,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
