@@ -342,7 +342,9 @@ function renderUserDrinks(drinks) {
     }
     drinks.forEach((drink, index) => {
         const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
-       const formattedAvg = drink.avg ? parseFloat(drink.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
+        const calculatedAvg = scoreSum / 3;
+        const formattedAvg = calculatedAvg.toFixed(2);
         const row = `
             <tr>
                 <td>${formattedDate}</td>
@@ -2938,6 +2940,7 @@ handleAddDrink = async function(e) {
     setTimeout(() => { checkAchievements(); }, 1500);
 };
 });
+
 
 
 
