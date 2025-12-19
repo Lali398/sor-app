@@ -3235,7 +3235,9 @@ window.closeRecoveryModal = function() {
         loginCard.classList.add('active');
     }, 300);
 }
+}
 });
+
 
 
 
