@@ -3224,7 +3224,7 @@ window.copyRecoveryCode = function() {
         setTimeout(() => { feedback.style.opacity = '0'; }, 2000);
     }).catch(err => {
         console.error('Nem sikerült másolni', err);
-    });
+    }
 
 // A kód ablak bezárása -> Irány a Login
 window.closeRecoveryModal = function() {
@@ -3235,6 +3235,7 @@ window.closeRecoveryModal = function() {
     }, 300);
 }
 });
+
 
 
 
