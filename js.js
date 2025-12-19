@@ -3234,9 +3234,8 @@ window.closeRecoveryModal = function() {
     setTimeout(() => {
         loginCard.classList.add('active');
     }, 300);
-}
-}
 });
+
 
 
 
