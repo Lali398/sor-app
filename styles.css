@@ -2242,6 +2242,61 @@ body.header-is-collapsed .dashboard-container {
 .dashboard-container {
     transition: padding-top 0.3s ease;
 }
+/* === FEJLÉC ÖSSZECSUKOTT ÁLLAPOT FINOMHANGOLÁS === */
+
+/* Amikor a fejléc össze van csukva (.manual-collapsed) */
+.admin-header.manual-collapsed .header-stat-item {
+    /* Kicsit kisebbre vesszük a statisztika dobozokat */
+    padding: 5px 10px;
+    background: transparent; /* Eltüntetjük a doboz hátterét, hogy tisztább legyen */
+    border: none;
+}
+
+/* 1. ELREJTJÜK a darabszámokat (Sörök, Italok száma) */
+/* A :nth-child(1) és (3) a sör/ital DARABSZÁM, ezeket elrejtjük */
+.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(1),
+.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(3) {
+    display: none; 
+}
+
+/* 2. KIEMELJÜK az Átlagokat */
+/* Csak az ikon és az érték maradjon, a felirat ("Sör Átlag") tűnjön el, hogy kompaktabb legyen */
+.admin-header.manual-collapsed .stat-label-small {
+    display: none;
+}
+
+.admin-header.manual-collapsed .stat-value-small {
+    font-size: 1.2rem; /* Nagyobb betűméret a számnak */
+    color: #ffd700; /* Arany szín a kiemeléshez */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.admin-header.manual-collapsed .stat-icon-small {
+    font-size: 1.2rem; /* Ikon méret igazítása */
+}
+
+/* Logo és Üdvözlés elrejtése a helytakarékosság miatt */
+.admin-header.manual-collapsed .logo {
+    display: none;
+}
+
+/* Kijelentkezés gomb tömörítése - csak az ikon maradjon */
+.admin-header.manual-collapsed #userLogoutBtn span:last-child {
+    display: none; /* A "Kijelentkezés" szöveg eltűnik */
+}
+.admin-header.manual-collapsed #userLogoutBtn {
+    padding: 5px 10px; /* Kisebb gomb */
+    background: rgba(255, 68, 68, 0.2); /* Pirosas háttér */
+}
+
+/* Layout igazítása összecsukva */
+.admin-header.manual-collapsed .header-content-grid {
+    display: flex;
+    justify-content: space-between; /* Átlagok balra, Kilépés jobbra */
+    width: 100%;
+    gap: 0;
+}
+
 
 
 
