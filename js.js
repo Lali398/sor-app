@@ -1179,18 +1179,20 @@ function setupAdminRecap() {
     beers.forEach((beer, index) => {
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        
+        // ITT A VÁLTOZÁS: data-label attribútumok hozzáadása
         const row = `
             <tr>
-                <td>${formattedDate}</td>
-                <td>${beer.beerName}</td>
-                <td>${beer.location}</td>
-                <td>${beer.beerPercentage || 0}%</td>
-                <td>${beer.look || 0}</td>
-                <td>${beer.smell || 0}</td>
-                <td>${beer.taste || 0}</td>
-                <td>${beer.totalScore || 0}</td>
-                <td class="average-cell">${formattedAvg}</td>
-                <td><button class="edit-btn" onclick="openEditBeerModal(${index})">✏️</button></td>
+                <td data-label="Dátum">${formattedDate}</td>
+                <td data-label="Sör neve" class="mobile-card-title">${beer.beerName}</td>
+                <td data-label="Főzési hely">${beer.location}</td>
+                <td data-label="Alkohol %">${beer.beerPercentage || 0}%</td>
+                <td data-label="Külalak">${beer.look || 0}</td>
+                <td data-label="Illat">${beer.smell || 0}</td>
+                <td data-label="Íz">${beer.taste || 0}</td>
+                <td data-label="Összpontszám">${beer.totalScore || 0}</td>
+                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
+                <td data-label="Művelet"><button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button></td>
             </tr>
         `;
         userBeerTableBody.insertAdjacentHTML('beforeend', row);
@@ -3235,6 +3237,7 @@ window.closeRecoveryModal = function() {
         }
     }
 });
+
 
 
 
