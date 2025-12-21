@@ -2296,55 +2296,7 @@ body.header-is-collapsed .dashboard-container {
     width: 100%;
     gap: 0;
 }
-/* === TELJES RESET A DUPLA GÖRGETŐSÁV ELLEN === */
-html {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100%;
-    overflow-x: hidden;
-}
 
-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto; /* Csak egy görgetősáv engedélyezése */
-    display: flex;
-    flex-direction: column;
-}
-
-/* A kurzor ne foglaljon helyet a dokumentum elején */
-#beerCursor {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    width: 60px;
-    height: 60px;
-    z-index: 999999;
-    pointer-events: none;
-    /* Eltoljuk a képernyőről, amíg nincs mozgás, így nem csinál üres helyet */
-    transform: translate(-100px, -100px); 
-    display: none;
-}
-
-body.custom-cursor-active #beerCursor {
-    display: block !important;
-}
-
-/* Fejléc kényszerítése a tetejére */
-.admin-header {
-    margin-top: 0 !important;
-    position: sticky; /* Vagy relative, de semmiképp ne legyen felette üres rész */
-    top: 0;
-    z-index: 1000;
-}
-
-/* Ha van a main-content-nek vagy containernek margója, azt is nullázzuk */
-.admin-view, .guest-view {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-}
 
 
 
