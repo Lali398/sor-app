@@ -2296,38 +2296,42 @@ body.header-is-collapsed .dashboard-container {
     width: 100%;
     gap: 0;
 }
-/* === HÉZAG JAVÍTÁSA AZ OLDAL TETEJÉN === */
+/* === VÉGLEGES JAVÍTÁS: GAP ELTÜNTETÉSE + KURZOR VISSZAHOZÁSA === */
 
-/* 1. A kurzor elem kivonása a dokumentum folyamból */
-/* Ha ez nem fixed, akkor egy üres sorként viselkedik a lap tetején */
-#beerCursor, .beer-cursor-img {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    pointer-events: none; /* Átkattintható legyen */
-    z-index: 9999;
-    width: 0;  /* Biztonság kedvéért, ne foglaljon helyet */
-    height: 0;
-}
-
-/* 2. Margin Collapse javítása */
-/* Ez megakadályozza, hogy a belső elemek margója letolja az oldalt */
-body, html {
+/* 1. Alap beállítások kényszerítése */
+html, body {
     margin: 0 !important;
     padding: 0 !important;
+    width: 100%;
+    overflow-x: hidden;
 }
 
-/* Ez a trükk (padding: 0.1px) "bezárja" a belső margókat a dobozba */
-.admin-view, .guest-view, .container {
-    margin-top: 0 !important;
-    padding-top: 0.1px; /* Ez láthatatlan, de megfogja a csúszást */
+/* 2. Ez a "hack" megakadályozza, hogy az első elem margója (pl. címsor) 
+   lejjebb tolja az egész oldalt (Margin Collapse) */
+body::before {
+    content: '';
+    display: block;
+    height: 1px;      /* Minimális méret */
+    margin-top: -1px; /* Rögtön vissza is húzzuk */
 }
 
-/* A fejléc biztosan tapadjon a tetejére */
-.admin-header {
-    margin-top: 0 !important;
-    top: 0 !important;
+/* 3. A Kurzor javítása: Legyen fix helyen (ne tolja el a lapot), de legyen mérete! */
+#beerCursor, .beer-cursor-img {
+    position: fixed !important; /* KULCSFONTOSSÁGÚ: Kiemeli a folyamból, nem foglal helyet */
+    top: 0;
+    left: 0;
+    width: 60px !important;     /* VISSZAADJUK A MÉRETÉT, hogy látszódjon */
+    height: 60px !important;
+    pointer-events: none;       /* Átkattintható legyen */
+    z-index: 999999;            /* Mindig legfelül */
+    display: none;              /* Alapból rejtett (JS kapcsolja be) */
 }
+
+/* Ha a JS bekapcsolja, akkor jelenjen meg */
+body.custom-cursor-active #beerCursor {
+    display: block !important;
+}
+
 
 
 
