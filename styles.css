@@ -2296,39 +2296,7 @@ body.header-is-collapsed .dashboard-container {
     width: 100%;
     gap: 0;
 }
-/* === ÖSSZECSUKOTT FEJLÉC IKON CSERE === */
 
-/* 1. SÖR ÁTLAG (2. elem a sorban) */
-.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(2) .stat-icon {
-    font-size: 0 !important; /* Eltüntetjük az eredeti ikont */
-    position: relative;     /* Hogy a helyére tudjuk pozícionálni az újat */
-    display: inline-block;
-    width: 25px;            /* Helyet csinálunk az új ikonnak */
-}
-
-.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(2) .stat-icon::before {
-    content: '🍺';          /* IDE JÖN AZ ÚJ SÖR EMOJI */
-    font-size: 1.4rem;      /* Az új ikon mérete */
-    position: absolute;
-    top: -2px;              /* Finomhangolás függőlegesen */
-    left: 0;
-}
-
-/* 2. ITAL ÁTLAG (4. elem a sorban) */
-.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(4) .stat-icon {
-    font-size: 0 !important; /* Eltüntetjük az eredeti ikont */
-    position: relative;
-    display: inline-block;
-    width: 25px;
-}
-
-.admin-header.manual-collapsed .header-stats .header-stat-item:nth-child(4) .stat-icon::before {
-    content: '🍹';          /* IDE JÖN AZ ÚJ ITAL EMOJI (Választhatsz mást is: 🥃, 🍷, 🍸) */
-    font-size: 1.4rem;      /* Az új ikon mérete */
-    position: absolute;
-    top: -2px;
-    left: 0;
-}
 
 
 
