@@ -2925,14 +2925,20 @@ function renderAchievements() {
             progressBar.style.width = `${percent}%`;
             progressBar.style.background = `linear-gradient(90deg, ${currentLevel.color}, ${nextLevel.color})`;
             
-            // Szöveg kiírása
+            // JAVÍTOTT KIÍRÁS:
+            const percentRounded = Math.round(percent);
+            
             progressText.innerHTML = `
-                <span style="font-weight:bold; margin-right:5px; text-shadow: 1px 1px 2px black;">${unlockedCount} / ${levelEnd}</span>
-                <span style="font-size: 0.9em; opacity: 0.9; text-shadow: 1px 1px 2px black;">
-                    (Még <b>${remaining} db</b> a "${nextLevel.name}" szinthez)
-                </span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 250px;">
+                    <span style="font-weight:bold; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
+                        ${unlockedCount} / ${levelEnd}
+                    </span>
+                    <span style="font-size: 0.85rem; color: #eee; text-shadow: 0 1px 3px rgba(0,0,0,0.8); white-space: nowrap;">
+                        Még <b>${remaining} db</b> <span style="color: #ffd700;">(${percentRounded}%)</span>
+                    </span>
+                </div>
             `;
-
+            
         } else {
             // MAX SZINT ELÉRVE
             console.log(">>> MAX SZINT ELÉRVE");
@@ -3239,6 +3245,7 @@ window.closeRecoveryModal = function() {
         }
     }
 });
+
 
 
 
