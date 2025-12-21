@@ -2605,6 +2605,17 @@ select.cool-select {
     width: 0;
     height: 0;
 }
+.level-text {
+    position: absolute;
+    right: 0;
+    top: -22px; /* Kicsit feljebb toljuk */
+    font-size: 0.8rem;
+    color: #aaa;
+    width: 100%; /* Teljes szélesség */
+    display: flex;
+    justify-content: flex-end; /* Jobbra igazítás */
+}
+
 
 
 
