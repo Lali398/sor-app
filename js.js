@@ -2715,41 +2715,148 @@ if(guestSupportBtn) {
 
 // --- KONFIGURÁCIÓ: 50 ACHIEVEMENT ---
 const ACHIEVEMENTS = [
-    // --- MENNYISÉG (12 db) ---
-    { id: 'cnt_1', icon: '🍺', title: 'Első korty', desc: 'Értékelj 1 sört', check: (b, d) => b.length >= 1 },
-    { id: 'cnt_5', icon: '🖐️', title: 'Bemelegítés', desc: 'Értékelj 5 sört', check: (b, d) => b.length >= 5 },
-    { id: 'cnt_10', icon: '🔟', title: 'Amatőr', desc: 'Értékelj 10 sört', check: (b, d) => b.length >= 10 },
-    { id: 'cnt_25', icon: '🥉', title: 'Rendszeres', desc: 'Értékelj 25 sört', check: (b, d) => b.length >= 25 },
-    { id: 'cnt_50', icon: '🥈', title: 'Profi', desc: 'Értékelj 50 sört', check: (b, d) => b.length >= 50 },
-    { id: 'cnt_100', icon: '🥇', title: 'Sörmester', desc: 'Értékelj 100 sört', check: (b, d) => b.length >= 100 },
-    { id: 'drk_1', icon: '🍹', title: 'Kóstoló', desc: 'Értékelj 1 italt', check: (b, d) => d.length >= 1 },
-    { id: 'drk_10', icon: '🍸', title: 'Mixer', desc: 'Értékelj 10 italt', check: (b, d) => d.length >= 10 },
-    { id: 'drk_50', icon: '🥂', title: 'Sommelier', desc: 'Értékelj 50 italt', check: (b, d) => d.length >= 50 },
-    { id: 'total_10', icon: '🚀', title: 'Kezdő I.', desc: 'Összesen 10 értékelés (Sör+Ital)', check: (b, d) => (b.length + d.length) >= 10 },
-    { id: 'total_50', icon: '🔥', title: 'Haladó II.', desc: 'Összesen 50 értékelés', check: (b, d) => (b.length + d.length) >= 50 },
-    { id: 'total_200', icon: '👑', title: 'Legenda', desc: 'Összesen 200 értékelés', check: (b, d) => (b.length + d.length) >= 200 },
+    // --- MENNYISÉG ---
+    { 
+        id: 'cnt_1', icon: '🍺', title: 'Első korty', desc: 'Értékelj 1 sört', 
+        check: (b, d) => b.length >= 1,
+        getProgress: (b, d) => ({ current: b.length, target: 1 }) 
+    },
+    { 
+        id: 'cnt_5', icon: '🖐️', title: 'Bemelegítés', desc: 'Értékelj 5 sört', 
+        check: (b, d) => b.length >= 5,
+        getProgress: (b, d) => ({ current: b.length, target: 5 })
+    },
+    { 
+        id: 'cnt_10', icon: '🔟', title: 'Amatőr', desc: 'Értékelj 10 sört', 
+        check: (b, d) => b.length >= 10,
+        getProgress: (b, d) => ({ current: b.length, target: 10 })
+    },
+    { 
+        id: 'cnt_25', icon: '🥉', title: 'Rendszeres', desc: 'Értékelj 25 sört', 
+        check: (b, d) => b.length >= 25,
+        getProgress: (b, d) => ({ current: b.length, target: 25 })
+    },
+    { 
+        id: 'cnt_50', icon: '🥈', title: 'Profi', desc: 'Értékelj 50 sört', 
+        check: (b, d) => b.length >= 50,
+        getProgress: (b, d) => ({ current: b.length, target: 50 })
+    },
+    { 
+        id: 'cnt_100', icon: '🥇', title: 'Sörmester', desc: 'Értékelj 100 sört', 
+        check: (b, d) => b.length >= 100,
+        getProgress: (b, d) => ({ current: b.length, target: 100 })
+    },
+    { 
+        id: 'drk_1', icon: '🍹', title: 'Kóstoló', desc: 'Értékelj 1 italt', 
+        check: (b, d) => d.length >= 1,
+        getProgress: (b, d) => ({ current: d.length, target: 1 })
+    },
+    { 
+        id: 'drk_10', icon: '🍸', title: 'Mixer', desc: 'Értékelj 10 italt', 
+        check: (b, d) => d.length >= 10,
+        getProgress: (b, d) => ({ current: d.length, target: 10 })
+    },
+    { 
+        id: 'drk_50', icon: '🥂', title: 'Sommelier', desc: 'Értékelj 50 italt', 
+        check: (b, d) => d.length >= 50,
+        getProgress: (b, d) => ({ current: d.length, target: 50 })
+    },
+    { 
+        id: 'total_10', icon: '🚀', title: 'Kezdő I.', desc: 'Összesen 10 értékelés (Sör+Ital)', 
+        check: (b, d) => (b.length + d.length) >= 10,
+        getProgress: (b, d) => ({ current: b.length + d.length, target: 10 })
+    },
+    { 
+        id: 'total_50', icon: '🔥', title: 'Haladó II.', desc: 'Összesen 50 értékelés', 
+        check: (b, d) => (b.length + d.length) >= 50,
+        getProgress: (b, d) => ({ current: b.length + d.length, target: 50 })
+    },
+    { 
+        id: 'total_200', icon: '👑', title: 'Legenda', desc: 'Összesen 200 értékelés', 
+        check: (b, d) => (b.length + d.length) >= 200,
+        getProgress: (b, d) => ({ current: b.length + d.length, target: 200 })
+    },
 
-    // --- PONTSZÁMOK (8 db) ---
-    { id: 'score_max', icon: '😍', title: 'Mennyei', desc: 'Adj 10/10 pontot valamire', check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) >= 10) },
-    { id: 'score_min', icon: '🤢', title: 'Moslék', desc: 'Adj 2 pont alatt valamire', check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) > 0 && parseFloat(x.avg) < 2) },
-    { id: 'score_perf_look', icon: '👀', title: 'Szépkilátás', desc: '10-es Külalak', check: (b, d) => [...b, ...d].some(x => parseFloat(x.look) === 10) },
-    { id: 'score_perf_smell', icon: '👃', title: 'Illatfelhő', desc: '10-es Illat', check: (b, d) => [...b, ...d].some(x => parseFloat(x.smell) === 10) },
-    { id: 'score_perf_taste', icon: '👅', title: 'Ízorgia', desc: '10-es Íz', check: (b, d) => [...b, ...d].some(x => parseFloat(x.taste) === 10) },
-    { id: 'avg_high', icon: '📈', title: 'Szigorú', desc: 'Az átlagod 8 felett van (min 5 teszt)', check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) > 8 },
-    { id: 'avg_low', icon: '📉', title: 'Kritikus', desc: 'Az átlagod 4 alatt van (min 5 teszt)', check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) < 4 },
-    { id: 'precision', icon: '🎯', title: 'Tizedes', desc: 'Adj nem egész pontszámot (pl. 7.5)', check: (b, d) => [...b, ...d].some(x => x.avg % 1 !== 0) },
+    // --- PONTSZÁMOK ---
+    { 
+        id: 'score_max', icon: '😍', title: 'Mennyei', desc: 'Adj 10/10 pontot valamire', 
+        check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) >= 10),
+        getProgress: (b, d) => ({ current: [...b, ...d].filter(x => parseFloat(x.avg) >= 10).length, target: 1 })
+    },
+    { 
+        id: 'score_min', icon: '🤢', title: 'Moslék', desc: 'Adj 2 pont alatt valamire', 
+        check: (b, d) => [...b, ...d].some(x => parseFloat(x.avg) > 0 && parseFloat(x.avg) < 2),
+        getProgress: (b, d) => ({ current: [...b, ...d].filter(x => parseFloat(x.avg) > 0 && parseFloat(x.avg) < 2).length, target: 1 })
+    },
+    // (A "check" függvények maradnak, de ahol nehéz progress-t számolni, ott manuálisan 0/1-et adunk vissza)
+    { id: 'score_perf_look', icon: '👀', title: 'Szépkilátás', desc: '10-es Külalak', check: (b, d) => [...b, ...d].some(x => parseFloat(x.look) === 10), getProgress: (b, d) => ({ current: [...b, ...d].some(x => parseFloat(x.look) === 10) ? 1 : 0, target: 1 }) },
+    { id: 'score_perf_smell', icon: '👃', title: 'Illatfelhő', desc: '10-es Illat', check: (b, d) => [...b, ...d].some(x => parseFloat(x.smell) === 10), getProgress: (b, d) => ({ current: [...b, ...d].some(x => parseFloat(x.smell) === 10) ? 1 : 0, target: 1 }) },
+    { id: 'score_perf_taste', icon: '👅', title: 'Ízorgia', desc: '10-es Íz', check: (b, d) => [...b, ...d].some(x => parseFloat(x.taste) === 10), getProgress: (b, d) => ({ current: [...b, ...d].some(x => parseFloat(x.taste) === 10) ? 1 : 0, target: 1 }) },
+    
+    // Átlagoknál az aktuális átlagot mutatjuk
+    { 
+        id: 'avg_high', icon: '📈', title: 'Szigorú', desc: 'Az átlagod 8 felett van (min 5 teszt)', 
+        check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) > 8,
+        getProgress: (b, d) => ({ current: calculateTotalAvg(b,d).toFixed(1), target: 8, suffix: 'pont' })
+    },
+    { 
+        id: 'avg_low', icon: '📉', title: 'Kritikus', desc: 'Az átlagod 4 alatt van (min 5 teszt)', 
+        check: (b, d) => (b.length+d.length) > 5 && calculateTotalAvg(b,d) < 4,
+        getProgress: (b, d) => ({ current: calculateTotalAvg(b,d).toFixed(1), target: 4, suffix: 'pont', inverse: true }) // inverse: minél kisebb, annál jobb
+    },
+    { id: 'precision', icon: '🎯', title: 'Tizedes', desc: 'Adj nem egész pontszámot (pl. 7.5)', check: (b, d) => [...b, ...d].some(x => x.avg % 1 !== 0), getProgress: (b, d) => ({ current: [...b, ...d].some(x => x.avg % 1 !== 0) ? 1 : 0, target: 1 }) },
 
-    // --- TÍPUSOK (10 db) ---
-    { id: 'type_ipa', icon: '🌲', title: 'Komlófej', desc: '3 db IPA típusú sör', check: (b) => b.filter(x => x.type.toLowerCase().includes('ipa')).length >= 3 },
-    { id: 'type_lager', icon: '🍞', title: 'Klasszikus', desc: '5 db Lager/Pilsner', check: (b) => b.filter(x => /lager|pils/i.test(x.type)).length >= 5 },
-    { id: 'type_stout', icon: '☕', title: 'Feketeöves', desc: '3 db Stout/Porter', check: (b) => b.filter(x => /stout|porter|barna/i.test(x.type)).length >= 3 },
-    { id: 'type_fruit', icon: '🍒', title: 'Gyümölcsös', desc: '3 db Gyümölcsös sör', check: (b) => b.filter(x => /gyüm|meggy|málna/i.test(x.type)).length >= 3 },
-    { id: 'type_biza', icon: 'wheat', title: 'Búzamező', desc: '3 db Búzasör', check: (b) => b.filter(x => /búza|wheat|weiss/i.test(x.type)).length >= 3 },
-    { id: 'cat_wine', icon: '🍷', title: 'Borász', desc: '3 db Bor', check: (b, d) => d.filter(x => x.category === 'Bor').length >= 3 },
-    { id: 'cat_spirit', icon: '🥃', title: 'Rövid', desc: '5 db Tömény (Pálinka, Whisky, stb.)', check: (b, d) => d.filter(x => ['Pálinka', 'Whisky', 'Vodka', 'Rum', 'Gin', 'Likőr'].includes(x.category)).length >= 5 },
-    { id: 'type_cocktail', icon: '🍹', title: 'Koktélkirály', desc: '3 db Koktél', check: (b, d) => d.filter(x => x.category === 'Koktél').length >= 3 },
-    { id: 'type_champagne', icon: '🥂', title: 'Pezsgő pillanat', desc: '3 db Pezsgő', check: (b, d) => d.filter(x => x.category === 'Pezsgő').length >= 3 },
-    { id: 'type_alcohol_free', icon: '🧃', title: 'Józan Élet', desc: '3 db Alkoholmentes tétel', check: (b, d) => [...b, ...d].filter(x => x.type === 'Nem alkoholos').length >= 3 }
+    // --- TÍPUSOK ---
+    { 
+        id: 'type_ipa', icon: '🌲', title: 'Komlófej', desc: '3 db IPA típusú sör', 
+        check: (b) => b.filter(x => x.type.toLowerCase().includes('ipa')).length >= 3,
+        getProgress: (b) => ({ current: b.filter(x => x.type.toLowerCase().includes('ipa')).length, target: 3 })
+    },
+    { 
+        id: 'type_lager', icon: '🍞', title: 'Klasszikus', desc: '5 db Lager/Pilsner', 
+        check: (b) => b.filter(x => /lager|pils/i.test(x.type)).length >= 5,
+        getProgress: (b) => ({ current: b.filter(x => /lager|pils/i.test(x.type)).length, target: 5 })
+    },
+    { 
+        id: 'type_stout', icon: '☕', title: 'Feketeöves', desc: '3 db Stout/Porter', 
+        check: (b) => b.filter(x => /stout|porter|barna/i.test(x.type)).length >= 3,
+        getProgress: (b) => ({ current: b.filter(x => /stout|porter|barna/i.test(x.type)).length, target: 3 })
+    },
+    { 
+        id: 'type_fruit', icon: '🍒', title: 'Gyümölcsös', desc: '3 db Gyümölcsös sör', 
+        check: (b) => b.filter(x => /gyüm|meggy|málna/i.test(x.type)).length >= 3,
+        getProgress: (b) => ({ current: b.filter(x => /gyüm|meggy|málna/i.test(x.type)).length, target: 3 })
+    },
+    { 
+        id: 'type_biza', icon: 'wheat', title: 'Búzamező', desc: '3 db Búzasör', 
+        check: (b) => b.filter(x => /búza|wheat|weiss/i.test(x.type)).length >= 3,
+        getProgress: (b) => ({ current: b.filter(x => /búza|wheat|weiss/i.test(x.type)).length, target: 3 })
+    },
+    { 
+        id: 'cat_wine', icon: '🍷', title: 'Borász', desc: '3 db Bor', 
+        check: (b, d) => d.filter(x => x.category === 'Bor').length >= 3,
+        getProgress: (b, d) => ({ current: d.filter(x => x.category === 'Bor').length, target: 3 })
+    },
+    { 
+        id: 'cat_spirit', icon: '🥃', title: 'Rövid', desc: '5 db Tömény (Pálinka, Whisky...)', 
+        check: (b, d) => d.filter(x => ['Pálinka', 'Whisky', 'Vodka', 'Rum', 'Gin', 'Likőr'].includes(x.category)).length >= 5,
+        getProgress: (b, d) => ({ current: d.filter(x => ['Pálinka', 'Whisky', 'Vodka', 'Rum', 'Gin', 'Likőr'].includes(x.category)).length, target: 5 })
+    },
+    { 
+        id: 'type_cocktail', icon: '🍹', title: 'Koktélkirály', desc: '3 db Koktél', 
+        check: (b, d) => d.filter(x => x.category === 'Koktél').length >= 3,
+        getProgress: (b, d) => ({ current: d.filter(x => x.category === 'Koktél').length, target: 3 })
+    },
+    { 
+        id: 'type_champagne', icon: '🥂', title: 'Pezsgő pillanat', desc: '3 db Pezsgő', 
+        check: (b, d) => d.filter(x => x.category === 'Pezsgő').length >= 3,
+        getProgress: (b, d) => ({ current: d.filter(x => x.category === 'Pezsgő').length, target: 3 })
+    },
+    { 
+        id: 'type_alcohol_free', icon: '🧃', title: 'Józan Élet', desc: '3 db Alkoholmentes tétel', 
+        check: (b, d) => [...b, ...d].filter(x => x.type === 'Nem alkoholos').length >= 3,
+        getProgress: (b, d) => ({ current: [...b, ...d].filter(x => x.type === 'Nem alkoholos').length, target: 3 })
+    }
 ];
 
 // --- RANGOK (SZINTEK) ---
@@ -2959,7 +3066,7 @@ function renderAchievements() {
 
     // --- 6. IKONOK KIRAJZOLÁSA ---
     grid.innerHTML = '';
-    // Ellenőrizzük, hogy az ACHIEVEMENTS tömb létezik-e (Globális változó)
+    
     if (typeof ACHIEVEMENTS !== 'undefined') {
         ACHIEVEMENTS.forEach(achi => {
             const isUnlocked = unlockedIds.includes(achi.id);
@@ -2968,9 +3075,41 @@ function renderAchievements() {
             const iconStyle = !isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : '';
 
             let dateStr = '';
+            let progressHtml = ''; // Ebbe tesszük a progress bar-t
+
             if (isUnlocked) {
                 const data = userData.achievements.unlocked.find(u => u.id === achi.id);
                 if (data && data.date) dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${data.date}</div>`;
+            } else {
+                // Ha ZÁROLVA van, számoljuk ki a folyamatot
+                if (achi.getProgress) {
+                    const allBeers = currentUserBeers || []; // Biztos ami biztos
+                    const allDrinks = currentUserDrinks || [];
+                    
+                    const p = achi.getProgress(allBeers, allDrinks);
+                    
+                    // Százalék számítás
+                    let percent = 0;
+                    if (p.inverse) {
+                         // Pl. átlag: minél kisebb, annál jobb, ezt most egyszerűsítve csak kiírjuk
+                         percent = 0; 
+                    } else {
+                        percent = (p.current / p.target) * 100;
+                    }
+                    // Limitálás 100%-ra
+                    percent = Math.min(100, Math.max(0, percent));
+                    
+                    const unit = p.suffix || ''; // pl "pont"
+
+                    progressHtml = `
+                        <div class="achi-progress-container">
+                            <div class="achi-progress-text">${p.current} / ${p.target} ${unit}</div>
+                            <div class="achi-progress-bar-bg">
+                                <div class="achi-progress-bar-fill" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
             }
 
             const html = `
@@ -2979,7 +3118,7 @@ function renderAchievements() {
                 <div class="achi-title">${achi.title}</div>
                 <div class="achi-desc">${achi.desc}</div>
                 ${dateStr}
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
+                ${progressHtml} <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
             </div>
             `;
             grid.insertAdjacentHTML('beforeend', html);
@@ -3245,6 +3384,7 @@ window.closeRecoveryModal = function() {
         }
     }
 });
+
 
 
 
