@@ -393,13 +393,17 @@
     <section class="card">
         <header class="card-header">
             <h3>Eredmények és Szintek 🏆</h3>
-            <div class="level-progress-container">
-                <div class="current-level-badge" id="currentLevelDisplay">Kezdő</div>
-                <div class="level-bar-wrapper">
-                    <div class="level-bar-fill" id="achievementProgressBar" style="width: 0%"></div>
-                    <span class="level-text" id="achievementProgressText">0 / 50</span>
-                </div>
-            </div>
+           <div class="level-progress-container">
+    <div class="current-level-badge" id="currentLevelDisplay">Kezdő</div>
+    
+    <div style="flex: 1; position: relative;">
+        <span class="level-text" id="achievementProgressText" style="width: 100%; top: -25px;">0 / 50</span>
+        
+        <div class="level-bar-wrapper" style="width: 100%;">
+            <div class="level-bar-fill" id="achievementProgressBar" style="width: 0%"></div>
+        </div>
+    </div>
+</div>
         </header>
         
         <div class="achievements-grid" id="achievementsGrid">
@@ -1327,6 +1331,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
