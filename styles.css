@@ -2586,6 +2586,27 @@ select.cool-select {
     background-position: right 10px center;
     background-size: 15px;
 }
+/* === LÁTHATATLAN SCROLLBAR A MODALOKHOZ === */
+
+/* 1. Beállítjuk a maximális magasságot és a görgetést */
+.beer-upload-card, 
+.drink-upload-card {
+    max-height: 85vh; /* A képernyő magasságának max 85%-a */
+    overflow-y: auto !important; /* Függőleges görgetés engedélyezése */
+    
+    /* Firefox specifikus elrejtés */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;  /* IE és Edge */
+}
+
+/* 2. Chrome, Safari és Opera böngészők elrejtése */
+.beer-upload-card::-webkit-scrollbar,
+.drink-upload-card::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 
 
 
