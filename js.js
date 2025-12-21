@@ -3203,7 +3203,37 @@ window.closeRecoveryModal = function() {
         loginCard.classList.add('active');
     }, 300);
 }
+    // ======================================================
+    // === ÚJ: FEJLÉC ÖSSZECSUKÁS (HEADER TOGGLE) ===
+    // ======================================================
+    const headerToggleBtn = document.getElementById('headerToggleBtn');
+    const userHeader = document.getElementById('userHeader');
+    
+    if (headerToggleBtn && userHeader) {
+        headerToggleBtn.addEventListener('click', function() {
+            // 1. Osztályok kapcsolása a fejlécen és a gombon
+            userHeader.classList.toggle('manual-collapsed');
+            this.classList.toggle('rotated');
+            
+            // 2. Body osztály kapcsolása (ha a tartalomnak feljebb kell csúsznia)
+            document.body.classList.toggle('header-is-collapsed');
+            
+            // 3. Menő effekt: Ha összecsukjuk, mentsük el a localStorage-ba
+            // Így frissítés után is összecsukva marad, ha úgy hagytad
+            const isCollapsed = userHeader.classList.contains('manual-collapsed');
+            localStorage.setItem('headerCollapsedPreference', isCollapsed);
+        });
+
+        // +1. Betöltéskor ellenőrizzük a mentett állapotot
+        const savedState = localStorage.getItem('headerCollapsedPreference');
+        if (savedState === 'true') {
+            userHeader.classList.add('manual-collapsed');
+            headerToggleBtn.classList.add('rotated');
+            document.body.classList.add('header-is-collapsed');
+        }
+    }
 });
+
 
 
 
