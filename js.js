@@ -359,20 +359,22 @@ function renderUserDrinks(drinks) {
         const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
         const calculatedAvg = scoreSum / 3;
         const formattedAvg = calculatedAvg.toFixed(2);
+        
+        // ITT A VÁLTOZÁS: data-label attribútumok hozzáadása
         const row = `
             <tr>
-                <td>${formattedDate}</td>
-                <td>${drink.drinkName}</td>
-                <td>${drink.category}</td>
-                <td>${drink.type}</td>
-                <td>${drink.location}</td>
-                <td>${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
-                <td>${drink.look || 0}</td>
-                <td>${drink.smell || 0}</td>
-                <td>${drink.taste || 0}</td>
-                <td>${drink.totalScore || 0}</td>
-                <td class="average-cell">${formattedAvg}</td>
-                <td><button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️</button></td>
+                <td data-label="Dátum">${formattedDate}</td>
+                <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
+                <td data-label="Kategória">${drink.category}</td>
+                <td data-label="Típus">${drink.type}</td>
+                <td data-label="Hely">${drink.location}</td>
+                <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
+                <td data-label="Külalak">${drink.look || 0}</td>
+                <td data-label="Illat">${drink.smell || 0}</td>
+                <td data-label="Íz">${drink.taste || 0}</td>
+                <td data-label="Összpontszám">${drink.totalScore || 0}</td>
+                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
+                <td data-label="Művelet"><button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button></td>
             </tr>
         `;
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
@@ -3237,6 +3239,7 @@ window.closeRecoveryModal = function() {
         }
     }
 });
+
 
 
 
