@@ -1167,64 +1167,64 @@
     
     <!-- SZERKESZTŐ MODAL (Sörök) -->
 <div class="modal-overlay" id="editBeerModal">
-    <div class="modal-content">
-        <header class="modal-header">
-            <h3>Sör szerkesztése</h3>
-            <button class="modal-close" onclick="closeEditBeerModal()">&times;</button>
-        </header>
-        <form id="editBeerForm" class="config-form">
+    <div class="modal-content beer-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon beer-bounce">🍺</div>
+            <h3>Sör Szerkesztése</h3>
+            <p>Adatok pontosítása</p>
+            <button class="modal-close-abs" onclick="closeEditBeerModal()">✕</button>
+        </div>
+
+        <form id="editBeerForm" class="cool-form">
             <input type="hidden" id="editBeerIndex">
             
-            <div class="input-group">
-                <input type="text" id="editBeerName" required>
-                <label for="editBeerName">Sör neve</label>
-                <span class="input-highlight"></span>
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Sör Neve</label>
+                    <input type="text" id="editBeerName" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Típus</label>
+                    <input type="text" id="editBeerType" required>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Alkohol %</label>
+                    <input type="number" id="editBeerPercentage" min="0" max="100" step="0.1" required>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Főzési hely</label>
+                    <input type="text" id="editBeerLocation" required>
+                </div>
             </div>
             
-            <div class="input-group">
-                <input type="text" id="editBeerType" required>
-                <label for="editBeerType">Típus</label>
-                <span class="input-highlight"></span>
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="editBeerLook" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="editBeerSmell" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="editBeerTaste" min="0" max="10" step="0.1" required>
+                </div>
             </div>
             
-            <div class="input-group">
-                <input type="text" id="editBeerLocation" required>
-                <label for="editBeerLocation">Főzési hely</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editBeerPercentage" min="0" max="100" step="0.1" required>
-                <label for="editBeerPercentage">Alkohol %</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editBeerLook" min="0" max="10" step="0.1" required>
-                <label for="editBeerLook">Külalak (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editBeerSmell" min="0" max="10" step="0.1" required>
-                <label for="editBeerSmell">Illat (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editBeerTaste" min="0" max="10" step="0.1" required>
-                <label for="editBeerTaste">Íz (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
                 <input type="text" id="editBeerNotes">
-                <label for="editBeerNotes">Jegyzetek</label>
-                <span class="input-highlight"></span>
             </div>
             
-            <button type="submit" class="auth-btn">
-                <span class="btn-text">Módosítások mentése</span>
+            <button type="submit" class="auth-btn beer-submit-btn">
+                <span class="btn-text">Módosítások mentése 💾</span>
                 <span class="btn-loading">
                     <div class="spinner"></div>
                 </span>
@@ -1232,88 +1232,90 @@
         </form>
     </div>
 </div>
-
+    
 <!-- SZERKESZTŐ MODAL (Italok) -->
 <div class="modal-overlay" id="editDrinkModal">
-    <div class="modal-content">
-        <header class="modal-header">
-            <h3>Ital szerkesztése</h3>
-            <button class="modal-close" onclick="closeEditDrinkModal()">&times;</button>
-        </header>
-        <form id="editDrinkForm" class="config-form">
+    <div class="modal-content drink-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon drink-shake">🍹</div>
+            <h3>Ital Szerkesztése</h3>
+            <p>Receptúra frissítése</p>
+            <button class="modal-close-abs" onclick="closeEditDrinkModal()">✕</button>
+        </div>
+
+        <form id="editDrinkForm" class="cool-form">
             <input type="hidden" id="editDrinkIndex">
             
-            <div class="input-group">
-                <input type="text" id="editDrinkName" required>
-                <label for="editDrinkName">Ital neve</label>
-                <span class="input-highlight"></span>
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Ital Neve</label>
+                    <input type="text" id="editDrinkName" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Kategória</label>
+                    <select id="editDrinkCategory" required class="cool-select">
+                        <option value="" disabled>Válassz kategóriát</option>
+                        <option value="Energia ital">⚡ Energia ital</option>
+                        <option value="Bor">🍷 Bor</option>
+                        <option value="Pezsgő">🥂 Pezsgő</option>
+                        <option value="Vermut">🍸 Vermut</option>
+                        <option value="Pálinka">🥃 Pálinka</option>
+                        <option value="Whisky">🥃 Whisky</option>
+                        <option value="Vodka">🍾 Vodka</option>
+                        <option value="Rum">🍹 Rum</option>
+                        <option value="Gin">🍸 Gin</option>
+                        <option value="Likőr">🍷 Likőr</option>
+                        <option value="Koktél">🍹 Koktél</option>
+                        <option value="Üdítő">🥤 Üdítő</option>
+                        <option value="Egyéb">❓ Egyéb</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Jelleg</label>
+                    <select id="editDrinkType" required class="cool-select">
+                        <option value="Alkoholos">🍺 Alkoholos</option>
+                        <option value="Nem alkoholos">🚫 Nem alkoholos</option>
+                    </select>
+                </div>
+                
+                <div class="cool-input-group full-width">
+                    <label>Hely / Származás</label>
+                    <input type="text" id="editDrinkLocation" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Alkohol %</label>
+                    <input type="number" id="editDrinkPercentage" min="0" max="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="editDrinkLook" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="editDrinkSmell" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="editDrinkTaste" min="0" max="10" step="0.1" required>
+                </div>
             </div>
             
-            <div class="input-group">
-                <select id="editDrinkCategory" required style="width: 100%; padding: 15px 0; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none;">
-                    <option value="" disabled>Válassz kategóriát</option>
-                    <option value="Energia ital">⚡ Energia ital</option>
-                    <option value="Bor">🍷 Bor</option>
-                    <option value="Pezsgő">🥂 Pezsgő</option>
-                    <option value="Vermut">🍸 Vermut</option>
-                    <option value="Pálinka">🥃 Pálinka</option>
-                    <option value="Whisky">🥃 Whisky</option>
-                    <option value="Vodka">🍾 Vodka</option>
-                    <option value="Rum">🍹 Rum</option>
-                    <option value="Gin">🍸 Gin</option>
-                    <option value="Likőr">🍷 Likőr</option>
-                    <option value="Koktél">🍹 Koktél</option>
-                    <option value="Üdítő">🥤 Üdítő</option>
-                    <option value="Egyéb">❓ Egyéb</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <select id="editDrinkType" required style="width: 100%; padding: 15px 0; font-size: 16px; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.3); background: transparent; color: #ffffff; outline: none;">
-                    <option value="" disabled>Alkoholos vagy nem?</option>
-                    <option value="Alkoholos">🍺 Alkoholos</option>
-                    <option value="Nem alkoholos">🚫 Nem alkoholos</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="editDrinkLocation" required>
-                <label for="editDrinkLocation">Hely / Származás</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editDrinkPercentage" min="0" max="100" step="0.1">
-                <label for="editDrinkPercentage">Alkohol %</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editDrinkLook" min="0" max="10" step="0.1" required>
-                <label for="editDrinkLook">Külalak (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editDrinkSmell" min="0" max="10" step="0.1" required>
-                <label for="editDrinkSmell">Illat (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
-                <input type="number" id="editDrinkTaste" min="0" max="10" step="0.1" required>
-                <label for="editDrinkTaste">Íz (0-10)</label>
-                <span class="input-highlight"></span>
-            </div>
-            
-            <div class="input-group">
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
                 <input type="text" id="editDrinkNotes">
-                <label for="editDrinkNotes">Jegyzetek</label>
-                <span class="input-highlight"></span>
             </div>
             
-            <button type="submit" class="auth-btn">
-                <span class="btn-text">Módosítások mentése</span>
+            <button type="submit" class="auth-btn drink-submit-btn">
+                <span class="btn-text">Módosítások mentése 💾</span>
                 <span class="btn-loading">
                     <div class="spinner"></div>
                 </span>
@@ -1325,6 +1327,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
