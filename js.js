@@ -22,16 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Egérmozgás figyelése
     document.addEventListener('mousemove', (e) => {
-        // requestAnimationFrame a simább mozgásért
-        requestAnimationFrame(() => {
-            // Elmentjük az aktuális egér pozíciót a stílusba (CSS változóként is lehetne, de így közvetlenebb)
-            // Viszont a transform felülírása miatt a rotate-et is mindig bele kell írnunk.
-            // Ezért egyszerűbb, ha globális változókban tároljuk az X, Y-t.
-            window.mouseX = e.clientX;
-            window.mouseY = e.clientY;
-            updateCursorPosition(e.clientX, e.clientY);
-        });
+    if (!document.body.classList.contains('custom-cursor-active')) return;
+    
+    // Csak az első mozdulatnál jelenjen meg, ha eddig rejtve volt
+    if (beerCursor.style.display === 'none' || beerCursor.style.opacity === '0') {
+        beerCursor.style.display = 'block';
+    }
+
+    requestAnimationFrame(() => {
+        // x és y pozíció frissítése
+        updateCursorPosition(e.clientX, e.clientY);
     });
+});
 
     // 2. GÖRGETÉS EFFEKT (IVÁS / DŐLÉS)
     window.addEventListener('scroll', () => {
@@ -3233,6 +3235,7 @@ window.closeRecoveryModal = function() {
         }
     }
 });
+
 
 
 
