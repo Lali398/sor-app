@@ -2401,6 +2401,192 @@ body.header-is-collapsed .dashboard-container {
         margin-top: 5px;
     }
 }
+/* === MENŐ FELTÖLTŐ MODALOK STÍLUSA === */
+
+/* 1. SÖR KÁRTYA (ARANY TÉMA) */
+.beer-upload-card {
+    background: linear-gradient(145deg, #1a1000 0%, #000000 100%) !important;
+    border: 2px solid #ffb700 !important;
+    box-shadow: 0 0 40px rgba(255, 183, 0, 0.2), inset 0 0 20px rgba(255, 183, 0, 0.1) !important;
+    padding: 0 !important; /* Reset padding */
+    overflow: hidden;
+    max-width: 500px !important;
+}
+
+.beer-submit-btn {
+    background: linear-gradient(135deg, #f39c12, #d35400) !important;
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+    font-weight: 800;
+    margin-top: 20px;
+    letter-spacing: 1px;
+}
+
+/* 2. ITAL KÁRTYA (NEON LILA/KÉK TÉMA) */
+.drink-upload-card {
+    background: linear-gradient(145deg, #15002b 0%, #000000 100%) !important;
+    border: 2px solid #d946ef !important;
+    box-shadow: 0 0 40px rgba(217, 70, 239, 0.2), inset 0 0 20px rgba(217, 70, 239, 0.1) !important;
+    padding: 0 !important;
+    overflow: hidden;
+    max-width: 500px !important;
+}
+
+.drink-submit-btn {
+    background: linear-gradient(135deg, #8e2de2, #4a00e0) !important;
+    box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+    font-weight: 800;
+    margin-top: 20px;
+    letter-spacing: 1px;
+}
+
+/* KÖZÖS HERO FEJLÉC */
+.modal-hero-header {
+    padding: 30px 20px 20px 20px;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-icon {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+/* Animációk */
+.beer-bounce { animation: bounceBeer 2s infinite ease-in-out; }
+@keyframes bounceBeer {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.drink-shake { animation: shakeDrink 2s infinite ease-in-out; }
+@keyframes shakeDrink {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+.modal-hero-header h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.modal-hero-header p {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.modal-close-abs {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.modal-close-abs:hover { background: rgba(255,255,255,0.3); }
+
+/* GRID FORM LAYOUT */
+.cool-form {
+    padding: 25px;
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.full-width { grid-column: 1 / -1; }
+
+/* MENŐ INPUT MEZŐK */
+.cool-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cool-input-group label {
+    font-size: 0.8rem;
+    color: #bbb;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-left: 5px;
+}
+
+.cool-input-group input, 
+.cool-input-group select {
+    background: rgba(0,0,0,0.4) !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 12px !important;
+    padding: 12px 15px !important;
+    color: white !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease;
+    width: 100%;
+    outline: none;
+}
+
+/* SÖR INPUT FÓKUSZ */
+.beer-upload-card input:focus, 
+.beer-upload-card select:focus {
+    border-color: #ffb700 !important;
+    box-shadow: 0 0 10px rgba(255, 183, 0, 0.3);
+    transform: translateY(-2px);
+    background: rgba(0,0,0,0.6) !important;
+}
+
+/* ITAL INPUT FÓKUSZ */
+.drink-upload-card input:focus, 
+.drink-upload-card select:focus {
+    border-color: #d946ef !important;
+    box-shadow: 0 0 10px rgba(217, 70, 239, 0.3);
+    transform: translateY(-2px);
+    background: rgba(0,0,0,0.6) !important;
+}
+
+/* ÉRTÉKELŐ RÁCS (Külalak/Illat/Íz) */
+.score-grid-title {
+    margin: 20px 0 10px 0;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 5px;
+}
+
+.score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.score-grid input {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem !important;
+}
+
+/* SELECT MEZŐK MOBILRA */
+select.cool-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 15px;
+}
+
 
 
 
