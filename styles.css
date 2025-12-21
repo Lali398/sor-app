@@ -2296,6 +2296,112 @@ body.header-is-collapsed .dashboard-container {
     width: 100%;
     gap: 0;
 }
+/* === MOBIL KÁRTYA NÉZET (TABLE TRANSFORMATION) === */
+@media (max-width: 768px) {
+    /* 1. Táblázat szerkezetének "megtörése" */
+    .table-container table, 
+    .table-container thead, 
+    .table-container tbody, 
+    .table-container th, 
+    .table-container td, 
+    .table-container tr { 
+        display: block; 
+    }
+
+    /* 2. Fejléc elrejtése (de hozzáférhető marad) */
+    .table-container thead tr { 
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    /* 3. Sorok átalakítása KÁRTYÁKKÁ */
+    .table-container tr {
+        background: rgba(255, 255, 255, 0.05); /* Glass hatás */
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        margin-bottom: 25px;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        position: relative;
+    }
+
+    /* 4. Cellák formázása */
+    .table-container td { 
+        /* Reset */
+        border: none;
+        border-bottom: 1px solid rgba(255,255,255,0.05); 
+        position: relative;
+        padding-left: 50%; /* Hely a címkének */
+        text-align: right;
+        min-height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        color: #e0e0e0;
+    }
+
+    .table-container td:last-child {
+        border-bottom: none;
+        padding-top: 15px;
+        justify-content: center;
+        padding-left: 0;
+    }
+
+    /* 5. Címkék (pl. "Főzési hely:") beillesztése */
+    .table-container td::before { 
+        content: attr(data-label); /* JS-ből jön az adat! */
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-right: 10px; 
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: #9ca3af; /* Szürkés címke */
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* 6. A "Menő" Cím (Sör/Ital neve) Kiemelése */
+    .table-container td.mobile-card-title {
+        display: block;
+        text-align: center;
+        padding-left: 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+        border-bottom: 2px solid rgba(255,255,255,0.1);
+        padding-bottom: 10px;
+    }
+    
+    /* A cím mellől tüntessük el a "Sör neve" feliratot, mert egyértelmű */
+    .table-container td.mobile-card-title::before {
+        content: '';
+    }
+
+    /* 7. Átlag pontszám kiemelése */
+    .table-container td.average-cell {
+        color: #ffd700; /* Arany szín */
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    /* 8. Szerkesztés gomb teljes szélességben */
+    .edit-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-radius: 8px;
+        margin-top: 5px;
+    }
+}
+
 
 
 
