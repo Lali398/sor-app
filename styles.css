@@ -2296,6 +2296,39 @@ body.header-is-collapsed .dashboard-container {
     width: 100%;
     gap: 0;
 }
+/* === HÉZAG JAVÍTÁSA AZ OLDAL TETEJÉN === */
+
+/* 1. A kurzor elem kivonása a dokumentum folyamból */
+/* Ha ez nem fixed, akkor egy üres sorként viselkedik a lap tetején */
+#beerCursor, .beer-cursor-img {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Átkattintható legyen */
+    z-index: 9999;
+    width: 0;  /* Biztonság kedvéért, ne foglaljon helyet */
+    height: 0;
+}
+
+/* 2. Margin Collapse javítása */
+/* Ez megakadályozza, hogy a belső elemek margója letolja az oldalt */
+body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ez a trükk (padding: 0.1px) "bezárja" a belső margókat a dobozba */
+.admin-view, .guest-view, .container {
+    margin-top: 0 !important;
+    padding-top: 0.1px; /* Ez láthatatlan, de megfogja a csúszást */
+}
+
+/* A fejléc biztosan tapadjon a tetejére */
+.admin-header {
+    margin-top: 0 !important;
+    top: 0 !important;
+}
+
 
 
 
