@@ -973,6 +973,175 @@ case 'EDIT_USER_DRINK': {
 
                 return res.status(200).json({ message: "Ajánlás sikeresen módosítva!" });
             }
+
+                 // === TÖRLÉSI FUNKCIÓK ===
+                
+                case 'DELETE_USER_BEER': {
+                    const userData = verifyUser(req);
+                    const { index } = req.body;
+                    
+                    const beersResponse = await sheets.spreadsheets.values.get({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: GUEST_BEERS_SHEET 
+                    });
+                    
+                    const allRows = beersResponse.data.values || [];
+                    const userRows = allRows.filter(row => row[13] === userData.email);
+                    
+                    if (index < 0 || index >= userRows.length) {
+                        return res.status(400).json({ error: "Érvénytelen index" });
+                    }
+                    
+                    const targetRow = userRows[index];
+                    const globalIndex = allRows.indexOf(targetRow);
+                    
+                    // Töröljük a sort: minden sor marad, kivéve a célt
+                    const cleanRows = allRows.filter((_, idx) => idx !== globalIndex);
+                    
+                    // Frissítjük a Sheet-et
+                    await sheets.spreadsheets.values.clear({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: GUEST_BEERS_SHEET 
+                    });
+                    
+                    if (cleanRows.length > 0) {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: GUEST_BEERS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanRows }
+                        });
+                    }
+                    
+                    return res.status(200).json({ message: "Sör sikeresen törölve!" });
+                }
+                
+                case 'DELETE_USER_DRINK': {
+                    const userData = verifyUser(req);
+                    const { index } = req.body;
+                    
+                    const drinksResponse = await sheets.spreadsheets.values.get({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: GUEST_DRINKS_SHEET 
+                    });
+                    
+                    const allRows = drinksResponse.data.values || [];
+                    const userRows = allRows.filter(row => row[13] === userData.email);
+                    
+                    if (index < 0 || index >= userRows.length) {
+                        return res.status(400).json({ error: "Érvénytelen index" });
+                    }
+                    
+                    const targetRow = userRows[index];
+                    const globalIndex = allRows.indexOf(targetRow);
+                    
+                    const cleanRows = allRows.filter((_, idx) => idx !== globalIndex);
+                    
+                    await sheets.spreadsheets.values.clear({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: GUEST_DRINKS_SHEET 
+                    });
+                    
+                    if (cleanRows.length > 0) {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: GUEST_DRINKS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanRows }
+                        });
+                    }
+                    
+                    return res.status(200).json({ message: "Ital sikeresen törölve!" });
+                }
+                
+                case 'DELETE_USER_IDEA': {
+                    const userData = verifyUser(req);
+                    const { index } = req.body;
+                    
+                    const ideasResponse = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${IDEAS_SHEET}!A:F`
+                    });
+                    
+                    const allRows = ideasResponse.data.values || [];
+                    
+                    // Csak azokat az ötleteket nézzük, amik a useré ÉS még nem készek
+                    const userPendingIdeas = allRows
+                        .map((row, idx) => ({ row, originalIndex: idx }))
+                        .filter(item => {
+                            if (item.originalIndex === 0) return false; // Fejléc
+                            const row = item.row;
+                            return row[5] === userData.email && row[3] !== 'Megcsinálva';
+                        });
+                    
+                    if (index < 0 || index >= userPendingIdeas.length) {
+                        return res.status(400).json({ error: "Érvénytelen index vagy már nem törölhető!" });
+                    }
+                    
+                    const targetOriginalIndex = userPendingIdeas[index].originalIndex;
+                    const cleanRows = allRows.filter((_, idx) => idx !== targetOriginalIndex);
+                    
+                    await sheets.spreadsheets.values.clear({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: `${IDEAS_SHEET}!A:F` 
+                    });
+                    
+                    if (cleanRows.length > 0) {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: `${IDEAS_SHEET}!A:F`,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanRows }
+                        });
+                    }
+                    
+                    return res.status(200).json({ message: "Ötlet sikeresen törölve!" });
+                }
+                
+                case 'DELETE_USER_RECOMMENDATION': {
+                    const userData = verifyUser(req);
+                    const { originalIndex } = req.body;
+                    
+                    // Ellenőrizzük, hogy a sajátja-e
+                    const rowIndex = parseInt(originalIndex) + 1;
+                    const rangeCheck = `${RECOMMENDATIONS_SHEET}!C${rowIndex}`;
+                    
+                    const checkResponse = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: rangeCheck
+                    });
+                    
+                    const ownerEmail = checkResponse.data.values ? checkResponse.data.values[0][0] : null;
+                    
+                    if (ownerEmail !== userData.email) {
+                        return res.status(403).json({ error: "Csak a saját ajánlásodat törölheted!" });
+                    }
+                    
+                    // Törlés
+                    const recResponse = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${RECOMMENDATIONS_SHEET}!A:I`
+                    });
+                    
+                    const allRows = recResponse.data.values || [];
+                    const cleanRows = allRows.filter((_, idx) => idx !== originalIndex);
+                    
+                    await sheets.spreadsheets.values.clear({ 
+                        spreadsheetId: SPREADSHEET_ID, 
+                        range: `${RECOMMENDATIONS_SHEET}!A:I` 
+                    });
+                    
+                    if (cleanRows.length > 0) {
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: `${RECOMMENDATIONS_SHEET}!A:I`,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanRows }
+                        });
+                    }
+                    
+                    return res.status(200).json({ message: "Ajánlás sikeresen törölve!" });
+                }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1077,6 +1246,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
