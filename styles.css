@@ -3033,6 +3033,124 @@ select.cool-select {
 .delete-rec-btn:hover::after {
     opacity: 1;
 }
+/* === EXTRA STÍLUSOK A TÖRLÉS MODALOKHOZ === */
+/* Illeszd be a styles.css fájl végére */
+
+/* Sör törlés - Arany téma */
+#deleteBeerModal .delete-zone-card {
+    border-color: #f39c12 !important;
+    box-shadow: 0 0 30px rgba(243, 156, 18, 0.2);
+}
+
+/* Ital törlés - Lila téma */
+#deleteDrinkModal .delete-zone-card {
+    border-color: #d946ef !important;
+    box-shadow: 0 0 30px rgba(217, 70, 239, 0.2);
+}
+
+/* Ötlet törlés - Kék téma */
+#deleteIdeaModal .delete-zone-card {
+    border-color: #3498db !important;
+    box-shadow: 0 0 30px rgba(52, 152, 219, 0.2);
+}
+
+/* Ajánlás törlés - Zöld téma */
+#deleteRecModal .delete-zone-card {
+    border-color: #00b09b !important;
+    box-shadow: 0 0 30px rgba(0, 176, 155, 0.2);
+}
+
+/* Scroll a részleteknél */
+#deleteIdeaText,
+#deleteRecDesc {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+#deleteIdeaText::-webkit-scrollbar,
+#deleteRecDesc::-webkit-scrollbar {
+    width: 4px;
+}
+
+#deleteIdeaText::-webkit-scrollbar-thumb,
+#deleteRecDesc::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+/* Mobil optimalizálás */
+@media (max-width: 768px) {
+    .delete-zone-card {
+        max-width: 95%;
+        padding: 20px !important;
+    }
+    
+    .skull-icon-anim {
+        font-size: 2.5rem !important;
+    }
+    
+    .danger-input-container input {
+        font-size: 1rem;
+        padding: 12px;
+    }
+    
+    /* Gombok egymás alá mobilon */
+    .delete-zone-card .auth-btn {
+        width: 100%;
+    }
+    
+    .delete-zone-card > div > div[style*="display: flex"] {
+        flex-direction: column;
+    }
+}
+
+/* Extra animációk */
+@keyframes dangerPulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(255, 68, 68, 0.2); 
+    }
+    50% { 
+        box-shadow: 0 0 40px rgba(255, 68, 68, 0.4); 
+    }
+}
+
+#finalDeleteBeerBtn:not([disabled]),
+#finalDeleteDrinkBtn:not([disabled]),
+#finalDeleteIdeaBtn:not([disabled]),
+#finalDeleteRecBtn:not([disabled]) {
+    animation: dangerPulse 2s infinite;
+}
+
+/* Speciális ikon animációk */
+#deleteBeerModal .skull-icon-anim { animation: bounceBeer 2s infinite ease-in-out; }
+#deleteDrinkModal .skull-icon-anim { animation: shakeDrink 2s infinite ease-in-out; }
+#deleteIdeaModal .skull-icon-anim { animation: pulse 2s infinite ease-in-out; }
+#deleteRecModal .skull-icon-anim { animation: pulseRed 2s infinite ease-in-out; }
+
+/* Részletek doboz hover effekt */
+#deleteBeerModal > div > div[style*="background: rgba(243, 156, 18"],
+#deleteDrinkModal > div > div[style*="background: rgba(217, 70, 239"],
+#deleteIdeaModal > div > div[style*="background: rgba(52, 152, 219"],
+#deleteRecModal > div > div[style*="background: rgba(0, 176, 155"] {
+    transition: all 0.3s ease;
+}
+
+#deleteBeerModal > div > div[style*="background: rgba(243, 156, 18"]:hover {
+    background: rgba(243, 156, 18, 0.2) !important;
+}
+
+#deleteDrinkModal > div > div[style*="background: rgba(217, 70, 239"]:hover {
+    background: rgba(217, 70, 239, 0.2) !important;
+}
+
+#deleteIdeaModal > div > div[style*="background: rgba(52, 152, 219"]:hover {
+    background: rgba(52, 152, 219, 0.2) !important;
+}
+
+#deleteRecModal > div > div[style*="background: rgba(0, 176, 155"]:hover {
+    background: rgba(0, 176, 155, 0.2) !important;
+}
+
 
 
 
