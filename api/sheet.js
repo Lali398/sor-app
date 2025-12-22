@@ -11,6 +11,7 @@ const USERS_SHEET = 'Felhasználók';
 const GUEST_BEERS_SHEET = 'Vendég Sör Teszt';
 const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 const IDEAS_SHEET = 'Vendég ötletek';
+const RECOMMENDATIONS_SHEET = 'Vendég sör ajánló';
 const SUPPORT_SHEET = 'Hibajelentések';
 
 const COL_INDEXES = {
@@ -846,6 +847,84 @@ case 'EDIT_USER_DRINK': {
                 
                 return res.status(200).json({ message: "Státusz sikeresen frissítve! ✅" });
             }
+            case 'ADD_RECOMMENDATION': {
+                const userData = verifyUser(req);
+                const { itemName, itemType, description, isAnonymous } = req.body;
+
+                if (!itemName || !itemType) return res.status(400).json({ error: "Név és típus kötelező!" });
+
+                const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                
+                // A:Dátum, B:Név, C:Email, D:Tétel, E:Típus, F:Leírás, G:Anonim
+                const newRow = [
+                    timestamp,
+                    userData.name,
+                    userData.email,
+                    itemName,
+                    itemType,
+                    description || '',
+                    isAnonymous ? 'TRUE' : 'FALSE'
+                ];
+
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${RECOMMENDATIONS_SHEET}!A:G`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [newRow] }
+                });
+
+                return res.status(201).json({ message: "Ajánlás sikeresen beküldve! 📢" });
+            }
+
+            case 'GET_RECOMMENDATIONS': {
+                const userData = verifyUser(req);
+
+                // 1. Ajánlások lekérése
+                const recResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${RECOMMENDATIONS_SHEET}!A:G`
+                });
+
+                // 2. Felhasználók lekérése a rangok miatt
+                const usersResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${USERS_SHEET}!A:G`
+                });
+
+                const allRows = recResponse.data.values || [];
+                const allUsers = usersResponse.data.values || [];
+
+                // Email -> Badge map
+                const userBadges = {};
+                allUsers.forEach(row => {
+                    if (row[1] && row[6]) userBadges[row[1]] = row[6];
+                });
+
+                // Adatok formázása
+                const recommendations = allRows.map((row, index) => {
+                    if (index === 0) return null; // Fejléc kihagyása
+                    if (!row || row.length === 0) return null;
+
+                    const isAnon = row[6] === 'TRUE';
+                    const email = row[2];
+                    
+                    // Ha anonim, rejtjük a nevet és a rangot
+                    let displayName = isAnon ? 'Anonymus 🕵️' : (row[1] || 'Ismeretlen');
+                    let displayBadge = isAnon ? '' : (userBadges[email] || '');
+
+                    return {
+                        date: row[0] ? row[0].substring(0, 10) : '',
+                        submitter: displayName,
+                        badge: displayBadge,
+                        itemName: row[3],
+                        type: row[4],
+                        description: row[5] || '',
+                        isAnon: isAnon
+                    };
+                }).filter(item => item !== null).reverse(); // Legújabb elöl
+
+                return res.status(200).json(recommendations);
+            }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -950,6 +1029,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
