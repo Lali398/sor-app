@@ -3426,6 +3426,49 @@ select.cool-select {
 .view-drink-content::-webkit-scrollbar-track {
     background: transparent;
 }
+/* === VIEW MODAL GÖRGETÉS JAVÍTÁS === */
+.view-modal-card {
+    /* Sötét háttér glassmorphism */
+    background: rgba(15, 0, 30, 0.95) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    /* Görgetés engedélyezése */
+    max-height: 90vh;
+    overflow-y: auto !important;
+    
+    /* LÁTHATÓ scrollbar (fontos!) */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
+}
+
+/* Chrome/Safari scrollbar stílus */
+.view-modal-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.view-modal-card::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.view-modal-card::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+}
+
+.view-modal-card::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Tartalom padding finomhangolás */
+.view-beer-content,
+.view-drink-content {
+    padding: 25px !important;
+    max-height: none !important; /* Engedjük hogy a szülő kontrollálja */
+    overflow: visible !important; /* Ne legyen dupla scroll */
+}
+
 
 
 
