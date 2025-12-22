@@ -4450,7 +4450,111 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
+    // === TITKOS ADMIN BELÉPÉS LOGIKA ===
+
+// 1. Titkos aktiválás: 5 gyors kattintás a logóra
+let logoClickCount = 0;
+let logoClickTimer;
+
+const logoElement = document.querySelector('.beer-icon'); // A főoldali sör ikon
+
+if (logoElement) {
+    logoElement.style.cursor = 'pointer'; // Hogy látszódjon, kattintható
+    logoElement.addEventListener('click', () => {
+        logoClickCount++;
+        
+        // Visszajelzés (opcionális: picit megremeg)
+        logoElement.style.transform = `scale(${1 + logoClickCount * 0.1})`;
+        setTimeout(() => logoElement.style.transform = 'scale(1)', 100);
+
+        clearTimeout(logoClickTimer);
+
+        if (logoClickCount === 5) {
+            // SIKER: 5 kattintás megvolt
+            openSecretPinModal();
+            logoClickCount = 0;
+        } else {
+            // Ha nem kattint újra 1 másodpercen belül, reset
+            logoClickTimer = setTimeout(() => {
+                logoClickCount = 0;
+            }, 1000);
+        }
+    });
+}
+
+// 2. PIN Modal kezelése
+function openSecretPinModal() {
+    const modal = document.getElementById('secretPinModal');
+    const input = document.getElementById('secretPinInput');
+    modal.classList.add('active');
+    setTimeout(() => input.focus(), 100); // Fókusz a mezőre
+}
+
+window.closeSecretPinModal = function() {
+    document.getElementById('secretPinModal').classList.remove('active');
+    document.getElementById('secretPinInput').value = '';
+    logoClickCount = 0;
+}
+
+// 3. PIN Beküldése és Ellenőrzése
+const secretPinForm = document.getElementById('secretPinForm');
+if (secretPinForm) {
+    secretPinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const pinInput = document.getElementById('secretPinInput').value;
+        const btn = secretPinForm.querySelector('.auth-btn');
+        
+        if (pinInput.length < 6) {
+            showError("A kód 6 számjegyű!");
+            return;
+        }
+
+        setLoading(btn, true);
+
+        try {
+            // Küldés a szervernek ellenőrzésre
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'VERIFY_ADMIN_PIN', 
+                    pin: pinInput 
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // SIKER!
+                showSuccess("Hozzáférés engedélyezve! Üdv, Főnök. 🕵️‍♂️");
+                closeSecretPinModal();
+                
+                // Megnyitjuk az EREDETI admin bejelentkezést
+                // Kis késleltetés a vizuális effekt miatt
+                setTimeout(() => {
+                    document.getElementById('adminModal').classList.add('active');
+                }, 500);
+                
+            } else {
+                throw new Error(result.error || "Hibás kód!");
+            }
+
+        } catch (error) {
+            showError(error.message);
+            // Hiba esetén töröljük a mezőt és remegtetjük
+            const input = document.getElementById('secretPinInput');
+            input.value = '';
+            input.classList.add('shake-anim'); // Ha van shake animációd
+            setTimeout(() => input.classList.remove('shake-anim'), 500);
+            input.focus();
+        } finally {
+            setLoading(btn, false);
+        }
+    });
+}
 });
+
 
 
 
