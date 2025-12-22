@@ -1381,6 +1381,9 @@ input:checked + .slider:before {
     color: #fff;
     line-height: 1.4;
     margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 .fame-footer {
     font-size: 0.8rem;
@@ -1409,10 +1412,16 @@ input:checked + .slider:before {
     color: #fff;
     font-size: 1rem;
     margin-bottom: 5px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 .pending-content p {
     color: #ccc;
     font-size: 0.9rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 .pending-status {
     background: rgba(52, 152, 219, 0.2);
@@ -2665,6 +2674,7 @@ select.cool-select {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    overflow: hidden
 }
 
 .rec-card:hover {
@@ -2694,6 +2704,9 @@ select.cool-select {
     font-size: 1.2rem;
     font-weight: 700;
     color: white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .rec-type-badge {
@@ -2711,6 +2724,9 @@ select.cool-select {
     margin-bottom: 15px;
     flex-grow: 1;
     font-style: italic;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .rec-footer {
@@ -2794,6 +2810,9 @@ select.cool-select {
     color: #96c93d; /* Zöldes kiemelés a kategóriának */
     font-weight: 500;
     margin-top: 4px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Szerkesztés Gomb */
@@ -2951,6 +2970,7 @@ select.cool-select {
     justify-content: space-between;
     align-items: center;
     gap: 15px;
+    overflow: hidden
 }
 
 /* 6. MOBIL OPTIMALIZÁCIÓ */
@@ -3150,6 +3170,7 @@ select.cool-select {
 #deleteRecModal > div > div[style*="background: rgba(0, 176, 155"]:hover {
     background: rgba(0, 176, 155, 0.2) !important;
 }
+
 
 
 
