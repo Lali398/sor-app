@@ -2738,98 +2738,114 @@ select.cool-select {
     color: #777;
     font-size: 0.75rem;
 }
-/* === AJÁNLÓ RENDSZER STÍLUSOK (ÚJ) === */
+/* === AJÁNLÓ RENDSZER - VÉGLEGES STÍLUSOK === */
 
-/* Szűrő Sáv a Fejlécben */
+/* Szűrő Sáv Elrendezése */
 .rec-filters {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 15px;
     align-items: center;
-    background: rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
 }
 
-/* Szűrő Checkbox konténer */
+.rec-filters .cool-select {
+    min-width: 140px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Szűrő Checkbox - Szebben elrendezve */
 .checkbox-wrapper-filter {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #b0b0b0;
+    gap: 10px;
+    color: #e0e0e0;
     font-size: 0.9rem;
     cursor: pointer;
-    margin-left: auto; /* Jobbra tolja a checkboxot */
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    transition: background 0.3s;
 }
 
-.checkbox-wrapper-filter input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #667eea;
+.checkbox-wrapper-filter:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-/* Nincs találat üzenet */
-.rec-no-results {
-    text-align: center;
-    color: #aaa;
-    grid-column: 1 / -1;
-    padding: 20px;
-    font-style: italic;
+/* Kártya belső elrendezés javítása */
+.rec-card {
+    position: relative; /* A szerkesztő gomb miatt */
+    padding: 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-/* Kártya fejléc kiegészítés (Kategória kiírása) */
+.rec-header {
+    padding-right: 35px; /* Helyet hagyunk a ceruzának */
+}
+
 .rec-sub-info {
-    font-size: 0.8rem;
-    color: #aaa;
-    margin-top: 2px;
+    font-size: 0.85rem;
+    color: #96c93d; /* Zöldes kiemelés a kategóriának */
     font-weight: 500;
+    margin-top: 4px;
 }
 
-/* Szerkesztés Gomb (Lebegő ceruza) */
+/* Szerkesztés Gomb */
 .edit-rec-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    top: 15px;
+    right: 15px;
+    background: rgba(52, 152, 219, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.4);
+    color: #3498db;
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .edit-rec-btn:hover {
     background: #3498db;
-    transform: scale(1.1);
-    border-color: #3498db;
+    color: white;
+    transform: rotate(-10deg) scale(1.1);
 }
 
-/* "Módosítva" címke */
+/* Meta adatok és Módosítva jelző */
+.rec-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
 .rec-edited-tag {
     font-size: 0.7rem;
     color: #7f8c8d;
     font-style: italic;
-    margin-left: 5px;
-    display: block; /* Új sorba kerüljön mobilon ha kell */
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
-.rec-meta {
-    text-align: right;
+.rec-no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1.1rem;
 }
 
-/* Apró badge igazítás */
-.user-badge-display.tiny {
-    font-size: 0.7em;
-    padding: 1px 6px;
-}
 
 
 
