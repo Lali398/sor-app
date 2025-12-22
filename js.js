@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
-   
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // ---(globális) ÁLLAPOT ---
     
@@ -1430,8 +1430,12 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
-    modalClose.addEventListener('click', closeAdminModal);
 
+    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
+    modalClose.addEventListener('click', closeAdminModal);
+    adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
+    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
 
 
    // ======================================================
@@ -4446,153 +4450,7 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
-    // === TITKOS ADMIN BELÉPÉS LOGIKA ===
-
-// 1. Titkos aktiválás: 5 gyors kattintás a logóra
-let logoClickCount = 0;
-let logoClickTimer;
-
-const logoElement = document.querySelector('.beer-icon'); // A főoldali sör ikon
-
-if (logoElement) {
-    logoElement.style.cursor = 'pointer'; // Hogy látszódjon, kattintható
-    logoElement.addEventListener('click', () => {
-        logoClickCount++;
-        
-        // Visszajelzés (opcionális: picit megremeg)
-        logoElement.style.transform = `scale(${1 + logoClickCount * 0.1})`;
-        setTimeout(() => logoElement.style.transform = 'scale(1)', 100);
-
-        clearTimeout(logoClickTimer);
-
-        if (logoClickCount === 5) {
-            // SIKER: 5 kattintás megvolt
-            openSecretPinModal();
-            logoClickCount = 0;
-        } else {
-            // Ha nem kattint újra 1 másodpercen belül, reset
-            logoClickTimer = setTimeout(() => {
-                logoClickCount = 0;
-            }, 1000);
-        }
-    });
-}
-
-// 2. PIN Modal kezelése
-function openSecretPinModal() {
-    const modal = document.getElementById('secretPinModal');
-    const input = document.getElementById('secretPinInput');
-    modal.classList.add('active');
-    setTimeout(() => input.focus(), 100); // Fókusz a mezőre
-}
-
-window.closeSecretPinModal = function() {
-    document.getElementById('secretPinModal').classList.remove('active');
-    document.getElementById('secretPinInput').value = '';
-    logoClickCount = 0;
-}
-
-// 3. PIN Beküldése és Ellenőrzése (JAVÍTOTT VERZIÓ)
-const secretPinForm = document.getElementById('secretPinForm');
-if (secretPinForm) {
-    secretPinForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const pinInput = document.getElementById('secretPinInput').value;
-        const btn = secretPinForm.querySelector('.auth-btn');
-        
-        if (pinInput.length < 6) {
-            showError("A kód 6 számjegyű!");
-            return;
-        }
-
-        setLoading(btn, true);
-
-        try {
-            // 1. PIN kód ellenőrzése
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action: 'VERIFY_ADMIN_PIN', 
-                    pin: pinInput 
-                })
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                // SIKERES PIN!
-                showSuccess("PIN elfogadva! Adatok betöltése... 🕵️‍♂️");
-                closeSecretPinModal();
-                
-                // --- ITT A VÁLTOZTATÁS: AUTOMATIKUS BELÉPÉS ---
-                // Nem nyitjuk meg az ablakot, hanem a háttérben lekérjük az adatokat
-                try {
-                    const loginResponse = await fetch('/api/sheet', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            action: 'GET_DATA', 
-                            username: 'admin', // Hardcoded alapértelmezett admin
-                            password: 'sor'    // Hardcoded alapértelmezett jelszó
-                        })
-                    });
-                    
-                    const loginResult = await loginResponse.json();
-                    if (!loginResponse.ok) throw new Error(loginResult.error || "Hiba az adatok lekérésekor");
-
-                    // Adatok mentése a globális változókba
-                    beersData = loginResult.beers || [];
-                    usersData = loginResult.users || [];
-                    filteredBeers = [...beersData]; 
-
-                    // Token és profil mentése
-                    if (loginResult.adminToken) {
-                        localStorage.setItem('userToken', loginResult.adminToken);
-                        localStorage.setItem('userData', JSON.stringify({ 
-                            name: 'Adminisztrátor', 
-                            email: 'admin@sortablazat.hu', 
-                            isAdmin: true 
-                        }));
-                    } else {
-                        // Ha nincs token (régi backend), csinálunk egy "fake" logint, hogy működjön
-                        localStorage.setItem('userData', JSON.stringify({ isAdmin: true, name: 'Admin' }));
-                    }
-
-                    // VÉGREHAJTJUK A NÉZETVÁLTÁST
-                    setTimeout(() => {
-                        switchToAdminView();
-                    }, 500);
-
-                } catch (dataError) {
-                    console.error("Adatbetöltési hiba:", dataError);
-                    showError("Sikeres PIN, de nem sikerült betölteni az adatokat.");
-                }
-                // ----------------------------------------------
-                
-            } else {
-                throw new Error(result.error || "Hibás kód!");
-            }
-
-        } catch (error) {
-            showError(error.message);
-            // Hiba esetén töröljük a mezőt és remegtetjük
-            const input = document.getElementById('secretPinInput');
-            input.value = '';
-            input.classList.add('shake-anim'); 
-            setTimeout(() => input.classList.remove('shake-anim'), 500);
-            input.focus();
-        } finally {
-            setLoading(btn, false);
-        }
-    });
-}
 });
-
-
-
-
 
 
 
