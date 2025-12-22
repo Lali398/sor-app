@@ -1573,10 +1573,172 @@
             </div>
         </div>
     </div>
-</div>    
+</div>
+<!-- ILLESZD BE AZ INDEX.HTML-BE A TÖBBI MODAL UTÁN (deleteRecModal után) -->
+
+<!-- SÖR TELJES ADAT MEGTEKINTÉSE MODAL -->
+<div class="modal-overlay" id="viewBeerModal">
+    <div class="modal-content beer-upload-card" style="max-width: 600px;">
+        <div class="modal-hero-header">
+            <div class="hero-icon beer-bounce">🍺</div>
+            <h3>Sör Teljes Adatai</h3>
+            <p>Minden információ egy helyen</p>
+            <button class="modal-close-abs" onclick="closeViewBeerModal()">✕</button>
+        </div>
+
+        <div class="view-beer-content" style="padding: 25px;">
+            <!-- Sör neve és típus -->
+            <div class="view-section">
+                <div class="view-main-title" id="viewBeerName">Dreher Gold</div>
+                <div class="view-subtitle" id="viewBeerType">Lager</div>
+            </div>
+
+            <!-- Fő adatok grid -->
+            <div class="view-info-grid">
+                <div class="view-info-item">
+                    <span class="view-label">📍 Főzési hely</span>
+                    <span class="view-value" id="viewBeerLocation">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">🍻 Alkohol %</span>
+                    <span class="view-value" id="viewBeerPercentage">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">📅 Dátum</span>
+                    <span class="view-value" id="viewBeerDate">-</span>
+                </div>
+            </div>
+
+            <!-- Értékelés kártyák -->
+            <div class="view-scores">
+                <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">📊 Értékelés</h4>
+                <div class="view-score-grid">
+                    <div class="view-score-card">
+                        <div class="score-icon">👀</div>
+                        <div class="score-label">Külalak</div>
+                        <div class="score-number" id="viewBeerLook">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👃</div>
+                        <div class="score-label">Illat</div>
+                        <div class="score-number" id="viewBeerSmell">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👅</div>
+                        <div class="score-label">Íz</div>
+                        <div class="score-number" id="viewBeerTaste">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Összesítés -->
+            <div class="view-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Összpontszám</span>
+                    <span class="summary-big" id="viewBeerTotal">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-big highlight" id="viewBeerAvg">0.0</span>
+                </div>
+            </div>
+
+            <!-- Jegyzetek -->
+            <div class="view-notes" id="viewBeerNotesSection" style="display: none;">
+                <h4 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">📝 Jegyzetek</h4>
+                <div class="notes-box" id="viewBeerNotes">
+                    Nincs megjegyzés
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ITAL TELJES ADAT MEGTEKINTÉSE MODAL -->
+<div class="modal-overlay" id="viewDrinkModal">
+    <div class="modal-content drink-upload-card" style="max-width: 600px;">
+        <div class="modal-hero-header">
+            <div class="hero-icon drink-shake">🍹</div>
+            <h3>Ital Teljes Adatai</h3>
+            <p>Minden információ egy helyen</p>
+            <button class="modal-close-abs" onclick="closeViewDrinkModal()">✕</button>
+        </div>
+
+        <div class="view-drink-content" style="padding: 25px;">
+            <!-- Ital neve és kategória -->
+            <div class="view-section">
+                <div class="view-main-title" id="viewDrinkName">Gin Tonic</div>
+                <div class="view-subtitle">
+                    <span id="viewDrinkCategory">Koktél</span> • <span id="viewDrinkType">Alkoholos</span>
+                </div>
+            </div>
+
+            <!-- Fő adatok grid -->
+            <div class="view-info-grid">
+                <div class="view-info-item">
+                    <span class="view-label">📍 Hely</span>
+                    <span class="view-value" id="viewDrinkLocation">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">🍸 Alkohol %</span>
+                    <span class="view-value" id="viewDrinkPercentage">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">📅 Dátum</span>
+                    <span class="view-value" id="viewDrinkDate">-</span>
+                </div>
+            </div>
+
+            <!-- Értékelés kártyák -->
+            <div class="view-scores">
+                <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">📊 Értékelés</h4>
+                <div class="view-score-grid">
+                    <div class="view-score-card">
+                        <div class="score-icon">👀</div>
+                        <div class="score-label">Külalak</div>
+                        <div class="score-number" id="viewDrinkLook">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👃</div>
+                        <div class="score-label">Illat</div>
+                        <div class="score-number" id="viewDrinkSmell">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👅</div>
+                        <div class="score-label">Íz</div>
+                        <div class="score-number" id="viewDrinkTaste">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Összesítés -->
+            <div class="view-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Összpontszám</span>
+                    <span class="summary-big" id="viewDrinkTotal">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-big highlight" id="viewDrinkAvg">0.0</span>
+                </div>
+            </div>
+
+            <!-- Jegyzetek -->
+            <div class="view-notes" id="viewDrinkNotesSection" style="display: none;">
+                <h4 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">📝 Jegyzetek</h4>
+                <div class="notes-box" id="viewDrinkNotes">
+                    Nincs megjegyzés
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
