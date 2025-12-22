@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
-    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+   
 
     // ---(globális) ÁLLAPOT ---
     
@@ -4552,6 +4552,7 @@ if (secretPinForm) {
     });
 }
 });
+
 
 
 
