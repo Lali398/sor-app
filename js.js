@@ -4494,7 +4494,7 @@ window.closeSecretPinModal = function() {
     logoClickCount = 0;
 }
 
-// 3. PIN Beküldése és Ellenőrzése
+// 3. PIN Beküldése és Ellenőrzése (JAVÍTOTT VERZIÓ)
 const secretPinForm = document.getElementById('secretPinForm');
 if (secretPinForm) {
     secretPinForm.addEventListener('submit', async (e) => {
@@ -4511,7 +4511,7 @@ if (secretPinForm) {
         setLoading(btn, true);
 
         try {
-            // Küldés a szervernek ellenőrzésre
+            // 1. PIN kód ellenőrzése
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -4524,15 +4524,54 @@ if (secretPinForm) {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // SIKER!
-                showSuccess("Hozzáférés engedélyezve! Üdv, Főnök. 🕵️‍♂️");
+                // SIKERES PIN!
+                showSuccess("PIN elfogadva! Adatok betöltése... 🕵️‍♂️");
                 closeSecretPinModal();
                 
-                // Megnyitjuk az EREDETI admin bejelentkezést
-                // Kis késleltetés a vizuális effekt miatt
-                setTimeout(() => {
-                    document.getElementById('adminModal').classList.add('active');
-                }, 500);
+                // --- ITT A VÁLTOZTATÁS: AUTOMATIKUS BELÉPÉS ---
+                // Nem nyitjuk meg az ablakot, hanem a háttérben lekérjük az adatokat
+                try {
+                    const loginResponse = await fetch('/api/sheet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            action: 'GET_DATA', 
+                            username: 'admin', // Hardcoded alapértelmezett admin
+                            password: 'sor'    // Hardcoded alapértelmezett jelszó
+                        })
+                    });
+                    
+                    const loginResult = await loginResponse.json();
+                    if (!loginResponse.ok) throw new Error(loginResult.error || "Hiba az adatok lekérésekor");
+
+                    // Adatok mentése a globális változókba
+                    beersData = loginResult.beers || [];
+                    usersData = loginResult.users || [];
+                    filteredBeers = [...beersData]; 
+
+                    // Token és profil mentése
+                    if (loginResult.adminToken) {
+                        localStorage.setItem('userToken', loginResult.adminToken);
+                        localStorage.setItem('userData', JSON.stringify({ 
+                            name: 'Adminisztrátor', 
+                            email: 'admin@sortablazat.hu', 
+                            isAdmin: true 
+                        }));
+                    } else {
+                        // Ha nincs token (régi backend), csinálunk egy "fake" logint, hogy működjön
+                        localStorage.setItem('userData', JSON.stringify({ isAdmin: true, name: 'Admin' }));
+                    }
+
+                    // VÉGREHAJTJUK A NÉZETVÁLTÁST
+                    setTimeout(() => {
+                        switchToAdminView();
+                    }, 500);
+
+                } catch (dataError) {
+                    console.error("Adatbetöltési hiba:", dataError);
+                    showError("Sikeres PIN, de nem sikerült betölteni az adatokat.");
+                }
+                // ----------------------------------------------
                 
             } else {
                 throw new Error(result.error || "Hibás kód!");
@@ -4543,7 +4582,7 @@ if (secretPinForm) {
             // Hiba esetén töröljük a mezőt és remegtetjük
             const input = document.getElementById('secretPinInput');
             input.value = '';
-            input.classList.add('shake-anim'); // Ha van shake animációd
+            input.classList.add('shake-anim'); 
             setTimeout(() => input.classList.remove('shake-anim'), 500);
             input.focus();
         } finally {
@@ -4552,6 +4591,7 @@ if (secretPinForm) {
     });
 }
 });
+
 
 
 
