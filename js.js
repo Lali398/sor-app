@@ -3535,6 +3535,8 @@ document.addEventListener('click', (e) => {
         loadRecommendations();
     }
 });
+});
+
 
 
 
