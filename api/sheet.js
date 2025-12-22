@@ -849,13 +849,13 @@ case 'EDIT_USER_DRINK': {
             }
             case 'ADD_RECOMMENDATION': {
                 const userData = verifyUser(req);
-                const { itemName, itemType, description, isAnonymous } = req.body;
+                // Bővítettük: category paraméter is jön
+                const { itemName, itemType, category, description, isAnonymous } = req.body;
 
                 if (!itemName || !itemType) return res.status(400).json({ error: "Név és típus kötelező!" });
-
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
                 
-                // A:Dátum, B:Név, C:Email, D:Tétel, E:Típus, F:Leírás, G:Anonim
+                // Oszlopok: A:Dátum, B:Név, C:Email, D:Tétel, E:Típus, F:Leírás, G:Anonim, H:Kategória, I:Módosítva
                 const newRow = [
                     timestamp,
                     userData.name,
@@ -863,12 +863,15 @@ case 'EDIT_USER_DRINK': {
                     itemName,
                     itemType,
                     description || '',
-                    isAnonymous ? 'TRUE' : 'FALSE'
+                    isAnonymous ? 'TRUE' : 'FALSE',
+                    category || 'Egyéb', // H oszlop: Kategória
+                    'FALSE'              // I oszlop: Módosítva (alapból nem)
                 ];
 
+                // A range-et bővítettük A:I-re
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${RECOMMENDATIONS_SHEET}!A:G`,
+                    range: `${RECOMMENDATIONS_SHEET}!A:I`,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
@@ -878,14 +881,11 @@ case 'EDIT_USER_DRINK': {
 
             case 'GET_RECOMMENDATIONS': {
                 const userData = verifyUser(req);
-
-                // 1. Ajánlások lekérése
+                // Lekérjük az A:I tartományt (Kategória és Módosítva is kell)
                 const recResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${RECOMMENDATIONS_SHEET}!A:G`
+                    range: `${RECOMMENDATIONS_SHEET}!A:I`
                 });
-
-                // 2. Felhasználók lekérése a rangok miatt
                 const usersResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${USERS_SHEET}!A:G`
@@ -893,37 +893,85 @@ case 'EDIT_USER_DRINK': {
 
                 const allRows = recResponse.data.values || [];
                 const allUsers = usersResponse.data.values || [];
-
-                // Email -> Badge map
+                
                 const userBadges = {};
                 allUsers.forEach(row => {
                     if (row[1] && row[6]) userBadges[row[1]] = row[6];
                 });
 
-                // Adatok formázása
                 const recommendations = allRows.map((row, index) => {
-                    if (index === 0) return null; // Fejléc kihagyása
+                    if (index === 0) return null; 
                     if (!row || row.length === 0) return null;
 
                     const isAnon = row[6] === 'TRUE';
                     const email = row[2];
                     
-                    // Ha anonim, rejtjük a nevet és a rangot
                     let displayName = isAnon ? 'Anonymus 🕵️' : (row[1] || 'Ismeretlen');
                     let displayBadge = isAnon ? '' : (userBadges[email] || '');
 
+                    // Ellenőrizzük, hogy a jelenlegi user-e a tulajdonos (a szerkesztés gombhoz)
+                    const isMine = (email === userData.email);
+
                     return {
+                        originalIndex: index, // Fontos a szerkesztéshez! (Ez a sor száma - 1)
                         date: row[0] ? row[0].substring(0, 10) : '',
                         submitter: displayName,
+                        email: email, // Kliens oldalon is kellhet az ellenőrzéshez
                         badge: displayBadge,
                         itemName: row[3],
                         type: row[4],
                         description: row[5] || '',
-                        isAnon: isAnon
+                        isAnon: isAnon,
+                        category: row[7] || 'Egyéb', // Kategória
+                        isEdited: row[8] === 'TRUE', // Módosítva flag
+                        isMine: isMine // Saját-e?
                     };
-                }).filter(item => item !== null).reverse(); // Legújabb elöl
+                }).filter(item => item !== null).reverse();
 
                 return res.status(200).json(recommendations);
+            }
+
+            case 'EDIT_RECOMMENDATION': {
+                const userData = verifyUser(req);
+                const { originalIndex, itemName, itemType, category, description, isAnonymous } = req.body;
+                
+                // 1. Lekérjük az adott sort ellenőrzésre
+                // A sheet sor indexe: originalIndex + 1 (mert a tömb 0-tól indul, sheet 1-től)
+                const rowIndex = parseInt(originalIndex) + 1;
+                const rangeCheck = `${RECOMMENDATIONS_SHEET}!C${rowIndex}`; // C oszlop az Email
+                
+                const checkResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: rangeCheck
+                });
+                
+                const ownerEmail = checkResponse.data.values ? checkResponse.data.values[0][0] : null;
+
+                // Biztonsági ellenőrzés: Csak a sajátját szerkesztheti!
+                if (ownerEmail !== userData.email) {
+                    return res.status(403).json({ error: "Csak a saját ajánlásodat módosíthatod!" });
+                }
+
+                // 2. Frissítés
+                // Oszlopok, amiket írunk: D(ItemName), E(Type), F(Desc), G(Anon), H(Cat), I(Edited)
+                const updateRange = `${RECOMMENDATIONS_SHEET}!D${rowIndex}:I${rowIndex}`;
+                const newValues = [
+                    itemName,
+                    itemType,
+                    description,
+                    isAnonymous ? 'TRUE' : 'FALSE',
+                    category,
+                    'TRUE' // I oszlop: Módosítva flag BEÁLLÍTÁSA
+                ];
+
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: updateRange,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [newValues] }
+                });
+
+                return res.status(200).json({ message: "Ajánlás sikeresen módosítva!" });
             }
             
             case 'DELETE_USER': {
@@ -1029,6 +1077,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
