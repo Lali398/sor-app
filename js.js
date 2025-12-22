@@ -2360,6 +2360,11 @@ switchToUserView = function() {
 
      // ⬇️ EZT A SORT ADD HOZZÁ! ⬇️
     if (typeof loadUserDrinks === 'function') loadUserDrinks(); // Ez betölti az italokat
+    if (typeof loadRecommendations === 'function') {
+        setTimeout(() => {
+            loadRecommendations(); // Betöltjük az ajánlásokat is
+        }, 500); // Kis késleltetés, hogy ne akadjon minden egyszerre
+    }
 
     // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
@@ -3667,6 +3672,7 @@ document.addEventListener('click', (e) => {
     }
 });
 });
+
 
 
 
