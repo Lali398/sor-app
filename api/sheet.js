@@ -1142,6 +1142,25 @@ case 'EDIT_USER_DRINK': {
                     
                     return res.status(200).json({ message: "Ajánlás sikeresen törölve!" });
                 }
+
+            case 'VERIFY_ADMIN_PIN': {
+            const { pin } = req.body;
+            // A kódot a Vercel környezeti változóiból olvassuk ki
+            const serverPin = process.env.ADMIN_ACCESS_PIN;
+        
+            if (!serverPin) {
+                return res.status(500).json({ error: "Szerver konfigurációs hiba: Nincs beállítva PIN." });
+            }
+        
+            // Biztonságos összehasonlítás
+            if (pin === serverPin) {
+                return res.status(200).json({ success: true });
+            } else {
+                // Mű késleltetés a brute-force ellen (opcionális, de ajánlott)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return res.status(401).json({ error: "Hibás PIN kód!" });
+            }
+        }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1246,6 +1265,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
