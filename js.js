@@ -329,7 +329,10 @@ async function loadUserDrinks() {
         }
         
         // 1. Globális változó frissítése
-        currentUserDrinks = drinks;
+        currentUserDrinks = drinks.map((drink, index) => ({
+        ...drink,
+        originalIndex: index
+    }));
         
         // 2. Táblázat frissítése
         renderUserDrinks(drinks);
@@ -348,41 +351,7 @@ async function loadUserDrinks() {
     }
 }
 
-// 2. ITALOK MEGJELENÍTÉSE
-function renderUserDrinks(drinks) {
-    userDrinkTableBody.innerHTML = '';
-    if (!drinks || drinks.length === 0) {
-        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
-        return;
-    }
-    drinks.forEach((drink, index) => {
-        const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
-        const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
-        const calculatedAvg = scoreSum / 3;
-        const formattedAvg = calculatedAvg.toFixed(2);
-        
-        const row = `
-            <tr>
-                <td data-label="Dátum">${formattedDate}</td>
-                <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
-                <td data-label="Kategória">${drink.category}</td>
-                <td data-label="Típus">${drink.type}</td>
-                <td data-label="Hely">${drink.location}</td>
-                <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
-                <td data-label="Külalak">${drink.look || 0}</td>
-                <td data-label="Illat">${drink.smell || 0}</td>
-                <td data-label="Íz">${drink.taste || 0}</td>
-                <td data-label="Összpontszám">${drink.totalScore || 0}</td>
-                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet">
-                    <button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserDrink(${index})">🗑️ Törlés</button>
-                </td>
-            </tr>
-        `;
-        userDrinkTableBody.insertAdjacentHTML('beforeend', row);
-    });
-}
+
 
     // === ÖTLET LÁDA FUNKCIÓK ===
 
@@ -1173,7 +1142,10 @@ function setupAdminRecap() {
         }
         
         // 1. Globális változó frissítése
-        currentUserBeers = beers; 
+        currentUserBeers = beers.map((beer, index) => ({
+        ...beer,
+        originalIndex: index
+    }));
         
         // 2. Táblázat és statisztikák frissítése
         renderUserBeers(beers);
@@ -4243,7 +4215,14 @@ function renderUserBeers(beers) {
         userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
         return;
     }
-    beers.forEach((beer, index) => {
+    
+    // FONTOS: Itt a 'beer' objektumból vesszük ki az 'originalIndex'-et!
+    beers.forEach((beer) => {  // Itt már nem is feltétlenül kell a második 'index' paraméter
+        
+        // Ha véletlenül nincs originalIndex (pl. régi cache miatt), akkor fallback megoldásként keressük meg
+        // De az 1. lépés miatt lennie kell.
+        const safeIndex = (beer.originalIndex !== undefined) ? beer.originalIndex : currentUserBeers.indexOf(beer);
+
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
         
@@ -4259,9 +4238,9 @@ function renderUserBeers(beers) {
                 <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
                 <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
-                    <button class="view-btn" onclick="openViewBeerModal(${index})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserBeer(${index})">🗑️ Törlés</button>
+                    <button class="view-btn" onclick="openViewBeerModal(${safeIndex})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditBeerModal(${safeIndex})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${safeIndex})">🗑️ Törlés</button>
                 </td>
             </tr>
         `;
@@ -4276,7 +4255,11 @@ function renderUserDrinks(drinks) {
         userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
         return;
     }
-    drinks.forEach((drink, index) => {
+    
+    drinks.forEach((drink) => {
+        // ITT IS: safeIndex használata az eredeti pozícióhoz
+        const safeIndex = (drink.originalIndex !== undefined) ? drink.originalIndex : currentUserDrinks.indexOf(drink);
+
         const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
         const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
         const calculatedAvg = scoreSum / 3;
@@ -4296,9 +4279,9 @@ function renderUserDrinks(drinks) {
                 <td data-label="Összpontszám">${drink.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
                 <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
-                    <button class="view-btn" onclick="openViewDrinkModal(${index})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserDrink(${index})">🗑️ Törlés</button>
+                    <button class="view-btn" onclick="openViewDrinkModal(${safeIndex})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️ Törlés</button>
                 </td>
             </tr>
         `;
@@ -4452,6 +4435,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
