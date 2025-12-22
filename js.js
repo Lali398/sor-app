@@ -4243,9 +4243,49 @@ function renderUserBeers(beers) {
         userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
         return;
     }
-    beers.forEach((beer, index) => {
+    
+    // AUTOMATIKUS RENDEZÉS: Ha van aktív rendezés, alkalmazzuk, különben alapértelmezett (dátum szerinti csökkenő)
+    let sortedBeers = [...beers];
+    if (currentSort.beer.column && currentSort.beer.direction) {
+        // Van aktív rendezés, alkalmazzuk
+        const column = currentSort.beer.column;
+        const direction = currentSort.beer.direction;
+        const dataType = document.querySelector(`#user-beers-content th[data-sort="${column}"]`)?.dataset.type || 'string';
+        
+        sortedBeers.sort((a, b) => {
+            let valA = a[column];
+            let valB = b[column];
+            
+            if (dataType === 'number') {
+                valA = parseFloat(valA) || 0;
+                valB = parseFloat(valB) || 0;
+            } else if (dataType === 'date') {
+                valA = new Date(valA || '1970-01-01').getTime();
+                valB = new Date(valB || '1970-01-01').getTime();
+            } else {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            }
+            
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    } else {
+        // ALAPÉRTELMEZETT: Dátum szerint csökkenő (legfrissebb felül)
+        sortedBeers.sort((a, b) => {
+            const dateA = new Date(a.date || '1970-01-01').getTime();
+            const dateB = new Date(b.date || '1970-01-01').getTime();
+            return dateB - dateA; // Csökkenő sorrend
+        });
+    }
+    
+    sortedBeers.forEach((beer, index) => {
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        
+        // Az eredeti index kell a gombokhoz (currentUserBeers-ből)
+        const originalIndex = beers.indexOf(beer);
         
         const row = `
             <tr>
@@ -4259,9 +4299,9 @@ function renderUserBeers(beers) {
                 <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
                 <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
-                    <button class="view-btn" onclick="openViewBeerModal(${index})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserBeer(${index})">🗑️ Törlés</button>
+                    <button class="view-btn" onclick="openViewBeerModal(${originalIndex})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditBeerModal(${originalIndex})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${originalIndex})">🗑️ Törlés</button>
                 </td>
             </tr>
         `;
@@ -4452,6 +4492,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
