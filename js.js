@@ -3703,61 +3703,72 @@ document.addEventListener('click', (e) => {
 
 // 1. SÖR TÖRLÉSE
 window.deleteUserBeer = async function(index) {
-    const beer = currentUserBeers[index];
-    const beerName = beer.beerName || 'Ismeretlen sör';
+    if (!confirm("Biztosan törölni akarod ezt a sört? Ez a művelet nem visszavonható!")) {
+        return;
+    }
     
-    // Modal megnyitása
-    openDeleteConfirmModal('Sör', beerName, async () => {
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
-                },
-                body: JSON.stringify({ action: 'DELETE_USER_BEER', index: index })
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
-            
-            showSuccess('Sör sikeresen törölve! 🗑️');
-            loadUserData();
-        } catch (error) {
-            console.error("Törlési hiba:", error);
-            showError(error.message || "Nem sikerült törölni a sört.");
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_BEER', 
+                index: index 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
         }
-    });
+        
+        showSuccess('Sör sikeresen törölve! 🗑️');
+        loadUserData(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni a sört.");
+    }
 }
-    
+
 // 2. ITAL TÖRLÉSE
 window.deleteUserDrink = async function(index) {
-    const drink = currentUserDrinks[index];
-    const drinkName = drink.drinkName || 'Ismeretlen ital';
+    if (!confirm("Biztosan törölni akarod ezt az italt? Ez a művelet nem visszavonható!")) {
+        return;
+    }
     
-    openDeleteConfirmModal('Ital', drinkName, async () => {
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
-                },
-                body: JSON.stringify({ action: 'DELETE_USER_DRINK', index: index })
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Szerverhiba');
-            
-            showSuccess('Ital sikeresen törölve! 🗑️');
-            loadUserDrinks();
-        } catch (error) {
-            console.error("Törlési hiba:", error);
-            showError(error.message || "Nem sikerült törölni az italt.");
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_DRINK', 
+                index: index 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
         }
-    });
+        
+        showSuccess('Ital sikeresen törölve! 🗑️');
+        loadUserDrinks(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az italt.");
+    }
 }
-    
+
 // 3. ÖTLET TÖRLÉSE
 window.deleteUserIdea = async function(index) {
     if (!confirm("Biztosan törölni akarod ezt az ötletet? Ez a művelet nem visszavonható!")) {
@@ -3825,62 +3836,8 @@ window.deleteUserRecommendation = async function(originalIndex) {
         showError(error.message || "Nem sikerült törölni az ajánlást.");
     }
 }
-// === TÖRLÉS MEGERŐSÍTŐ MODAL ===
-
-let currentDeleteAction = null;
-
-// Modal megnyitása
-function openDeleteConfirmModal(type, itemName, onConfirm) {
-    const modal = document.getElementById('deleteConfirmModal');
-    const title = document.getElementById('deleteModalTitle');
-    const icon = document.getElementById('deleteItemIcon');
-    const name = document.getElementById('deleteItemName');
-    const confirmBtn = document.getElementById('confirmDeleteBtn');
-    
-    // Ikon és cím beállítása típus szerint
-    const typeConfig = {
-        'Sör': { icon: '🍺', title: 'Sör törlése' },
-        'Ital': { icon: '🍹', title: 'Ital törlése' },
-        'Ötlet': { icon: '💡', title: 'Ötlet törlése' },
-        'Ajánlás': { icon: '📢', title: 'Ajánlás törlése' }
-    };
-    
-    const config = typeConfig[type] || { icon: '🗑️', title: 'Törlés megerősítése' };
-    
-    title.textContent = config.title;
-    icon.textContent = config.icon;
-    name.textContent = itemName;
-    
-    // Törlés funkció mentése
-    currentDeleteAction = onConfirm;
-    
-    // Gomb eseménykezelő
-    confirmBtn.onclick = () => {
-        if (currentDeleteAction) {
-            currentDeleteAction();
-        }
-        closeDeleteConfirmModal();
-    };
-    
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// Modal bezárása
-function closeDeleteConfirmModal() {
-    const modal = document.getElementById('deleteConfirmModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    currentDeleteAction = null;
-}
-
-// Globális függvények a modalhoz
-window.openDeleteConfirmModal = openDeleteConfirmModal;
-window.closeDeleteConfirmModal = closeDeleteConfirmModal;
     
 });
-
-
 
 
 
