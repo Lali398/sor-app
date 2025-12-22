@@ -1192,37 +1192,7 @@ function setupAdminRecap() {
         showError(error.message || "Nem sikerült betölteni a söreidet.");
     }
 }
-    // 1. SÖRÖK MEGJELENÍTÉSE
-function renderUserBeers(beers) {
-    userBeerTableBody.innerHTML = '';
-    if (!beers || beers.length === 0) {
-        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
-        return;
-    }
-    beers.forEach((beer, index) => {
-        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
-        const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
-        
-        const row = `
-            <tr>
-                <td data-label="Dátum">${formattedDate}</td>
-                <td data-label="Sör neve" class="mobile-card-title">${beer.beerName}</td>
-                <td data-label="Főzési hely">${beer.location}</td>
-                <td data-label="Alkohol %">${beer.beerPercentage || 0}%</td>
-                <td data-label="Külalak">${beer.look || 0}</td>
-                <td data-label="Illat">${beer.smell || 0}</td>
-                <td data-label="Íz">${beer.taste || 0}</td>
-                <td data-label="Összpontszám">${beer.totalScore || 0}</td>
-                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet">
-                    <button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserBeer(${index})">🗑️ Törlés</button>
-                </td>
-            </tr>
-        `;
-        userBeerTableBody.insertAdjacentHTML('beforeend', row);
-    });
-}
+    
     
     function updateUserStats(beers) {
     // 1. Fejléc statisztikák frissítése (ha léteznek)
@@ -4482,6 +4452,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
