@@ -4160,7 +4160,183 @@ window.confirmDeleteRec = async function() {
         btn.disabled = false;
     }
 }
+    // === TELJES ADAT MEGTEKINTÉS FUNKCIÓK ===
+// ILLESZD BE A JS.JS FÁJL VÉGÉRE
+
+// === 1. SÖR TELJES ADATAI ===
+window.openViewBeerModal = function(index) {
+    const beer = currentUserBeers[index];
+    if (!beer) return;
+
+    // Modal megnyitása
+    const modal = document.getElementById('viewBeerModal');
+    
+    // Adatok beállítása
+    document.getElementById('viewBeerName').textContent = beer.beerName;
+    document.getElementById('viewBeerType').textContent = beer.type || 'N/A';
+    document.getElementById('viewBeerLocation').textContent = beer.location || '-';
+    document.getElementById('viewBeerPercentage').textContent = beer.beerPercentage ? `${beer.beerPercentage}%` : '-';
+    
+    // Dátum formázása
+    const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : '-';
+    document.getElementById('viewBeerDate').textContent = formattedDate;
+    
+    // Pontszámok
+    document.getElementById('viewBeerLook').textContent = beer.look || 0;
+    document.getElementById('viewBeerSmell').textContent = beer.smell || 0;
+    document.getElementById('viewBeerTaste').textContent = beer.taste || 0;
+    document.getElementById('viewBeerTotal').textContent = beer.totalScore || 0;
+    
+    // Átlag formázása
+    const avgValue = parseFloat(beer.avg.toString().replace(',', '.')) || 0;
+    document.getElementById('viewBeerAvg').textContent = avgValue.toFixed(2);
+    
+    // Jegyzetek kezelése
+    const notesSection = document.getElementById('viewBeerNotesSection');
+    const notesBox = document.getElementById('viewBeerNotes');
+    
+    if (beer.notes && beer.notes.trim() !== '') {
+        notesBox.textContent = beer.notes;
+        notesSection.style.display = 'block';
+    } else {
+        notesSection.style.display = 'none';
+    }
+    
+    // Modal megjelenítése
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+window.closeViewBeerModal = function() {
+    const modal = document.getElementById('viewBeerModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// === 2. ITAL TELJES ADATAI ===
+window.openViewDrinkModal = function(index) {
+    const drink = currentUserDrinks[index];
+    if (!drink) return;
+
+    // Modal megnyitása
+    const modal = document.getElementById('viewDrinkModal');
+    
+    // Adatok beállítása
+    document.getElementById('viewDrinkName').textContent = drink.drinkName;
+    document.getElementById('viewDrinkCategory').textContent = drink.category || 'N/A';
+    document.getElementById('viewDrinkType').textContent = drink.type || 'N/A';
+    document.getElementById('viewDrinkLocation').textContent = drink.location || '-';
+    document.getElementById('viewDrinkPercentage').textContent = drink.drinkPercentage ? `${drink.drinkPercentage}%` : '-';
+    
+    // Dátum formázása
+    const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : '-';
+    document.getElementById('viewDrinkDate').textContent = formattedDate;
+    
+    // Pontszámok
+    document.getElementById('viewDrinkLook').textContent = drink.look || 0;
+    document.getElementById('viewDrinkSmell').textContent = drink.smell || 0;
+    document.getElementById('viewDrinkTaste').textContent = drink.taste || 0;
+    document.getElementById('viewDrinkTotal').textContent = drink.totalScore || 0;
+    
+    // Átlag formázása
+    const avgValue = parseFloat(drink.avg.toString().replace(',', '.')) || 0;
+    document.getElementById('viewDrinkAvg').textContent = avgValue.toFixed(2);
+    
+    // Jegyzetek kezelése
+    const notesSection = document.getElementById('viewDrinkNotesSection');
+    const notesBox = document.getElementById('viewDrinkNotes');
+    
+    if (drink.notes && drink.notes.trim() !== '') {
+        notesBox.textContent = drink.notes;
+        notesSection.style.display = 'block';
+    } else {
+        notesSection.style.display = 'none';
+    }
+    
+    // Modal megjelenítése
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+window.closeViewDrinkModal = function() {
+    const modal = document.getElementById('viewDrinkModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// === 3. TÁBLÁZAT FRISSÍTÉSEK (renderUserBeers és renderUserDrinks módosítása) ===
+
+// CSERÉLD LE A RÉGI renderUserBeers FÜGGVÉNYT EZZEL:
+function renderUserBeers(beers) {
+    userBeerTableBody.innerHTML = '';
+    if (!beers || beers.length === 0) {
+        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        return;
+    }
+    beers.forEach((beer, index) => {
+        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
+        const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        
+        const row = `
+            <tr>
+                <td data-label="Dátum">${formattedDate}</td>
+                <td data-label="Sör neve" class="mobile-card-title">${beer.beerName}</td>
+                <td data-label="Főzési hely">${beer.location}</td>
+                <td data-label="Alkohol %">${beer.beerPercentage || 0}%</td>
+                <td data-label="Külalak">${beer.look || 0}</td>
+                <td data-label="Illat">${beer.smell || 0}</td>
+                <td data-label="Íz">${beer.taste || 0}</td>
+                <td data-label="Összpontszám">${beer.totalScore || 0}</td>
+                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
+                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button class="view-btn" onclick="openViewBeerModal(${index})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${index})">🗑️ Törlés</button>
+                </td>
+            </tr>
+        `;
+        userBeerTableBody.insertAdjacentHTML('beforeend', row);
+    });
+}
+
+// CSERÉLD LE A RÉGI renderUserDrinks FÜGGVÉNYT EZZEL:
+function renderUserDrinks(drinks) {
+    userDrinkTableBody.innerHTML = '';
+    if (!drinks || drinks.length === 0) {
+        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
+        return;
+    }
+    drinks.forEach((drink, index) => {
+        const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
+        const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
+        const calculatedAvg = scoreSum / 3;
+        const formattedAvg = calculatedAvg.toFixed(2);
+        
+        const row = `
+            <tr>
+                <td data-label="Dátum">${formattedDate}</td>
+                <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
+                <td data-label="Kategória">${drink.category}</td>
+                <td data-label="Típus">${drink.type}</td>
+                <td data-label="Hely">${drink.location}</td>
+                <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
+                <td data-label="Külalak">${drink.look || 0}</td>
+                <td data-label="Illat">${drink.smell || 0}</td>
+                <td data-label="Íz">${drink.taste || 0}</td>
+                <td data-label="Összpontszám">${drink.totalScore || 0}</td>
+                <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
+                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button class="view-btn" onclick="openViewDrinkModal(${index})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserDrink(${index})">🗑️ Törlés</button>
+                </td>
+            </tr>
+        `;
+        userDrinkTableBody.insertAdjacentHTML('beforeend', row);
+    });
+}
 });
+
 
 
 
