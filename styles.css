@@ -3468,6 +3468,53 @@ select.cool-select {
     max-height: none !important; /* Engedjük hogy a szülő kontrollálja */
     overflow: visible !important; /* Ne legyen dupla scroll */
 }
+/* === RENDEZÉS (SORTING) STÍLUSOK === */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 25px !important;
+    transition: background 0.2s ease;
+}
+
+.sortable:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.sort-arrow {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.sortable.sort-asc .sort-arrow::before {
+    content: '▲';
+    color: #667eea;
+    font-weight: bold;
+}
+
+.sortable.sort-desc .sort-arrow::before {
+    content: '▼';
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* Mobil optimalizálás */
+@media (max-width: 768px) {
+    .sortable {
+        padding-right: 15px !important;
+    }
+    
+    .sort-arrow {
+        right: 5px;
+        font-size: 0.6rem;
+    }
+}
+
 
 
 
