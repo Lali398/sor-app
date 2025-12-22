@@ -312,20 +312,38 @@
                 
                 <!-- AJÁNLÁSOK TAB -->
                 <div class="main-tab-pane" id="user-recommendations-content">
-                    <section class="card">
-                        <header class="card-header">
-                            <h3>Közösségi Ajánló 📢</h3>
-                            <button class="action-btn" onclick="openRecModal()" style="font-size: 0.9rem; padding: 8px 15px;">
-                                + Új Ajánlás
-                            </button>
-                        </header>
-                        
-                        <div id="recommendationsList" class="recommendations-grid">
-                            <div class="recap-spinner"></div>
-                        </div>
-                    </section>
+    <section class="card">
+        <header class="card-header" style="flex-direction: column; align-items: stretch; gap: 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Közösségi Ajánló 📢</h3>
+                <button class="action-btn" onclick="openRecModal()" style="font-size: 0.9rem; padding: 8px 15px;">
+                    + Új Ajánlás
+                </button>
+            </div>
+            
+            <div class="rec-filters">
+                <select id="filterRecType" class="cool-select" style="max-width: 120px;">
+                    <option value="all">Minden típus</option>
+                    <option value="Sör">🍺 Csak Sör</option>
+                    <option value="Ital">🍹 Csak Ital</option>
+                </select>
+                
+                <select id="filterRecCategory" class="cool-select" style="flex-grow:1;">
+                    <option value="all">Összes kategória</option>
+                    </select>
+                
+                <div class="checkbox-wrapper-filter">
+                     <input type="checkbox" id="filterMyRecs">
+                     <label for="filterMyRecs">Csak a sajátjaim</label>
                 </div>
-
+            </div>
+        </header>
+        
+        <div id="recommendationsList" class="recommendations-grid">
+            <div class="recap-spinner"></div>
+        </div>
+    </section>
+</div>
                 <!-- ÖTLETLÁDA TAB -->
                 <div class="main-tab-pane" id="user-ideas-content">
                     <section class="card idea-submit-card">
@@ -694,29 +712,37 @@
     <div class="modal-content beer-upload-card" style="border-color: #00b09b !important;">
         <div class="modal-hero-header">
             <div class="hero-icon">📢</div>
-            <h3>Mit ajánlasz?</h3>
+            <h3 id="recModalTitle">Mit ajánlasz?</h3>
             <p>Oszd meg a többiekkel a tutit!</p>
             <button class="modal-close-abs" onclick="closeRecModal()">✕</button>
         </div>
 
         <form id="addRecForm" class="cool-form">
+            <input type="hidden" id="recEditIndex" value="-1">
+
             <div class="input-grid">
                 <div class="cool-input-group full-width">
                     <label>Ajánlott Sör/Ital neve</label>
                     <input type="text" id="recItemName" placeholder="Pl. Guinness Draught" required>
                 </div>
 
-                <div class="cool-input-group full-width">
+                <div class="cool-input-group">
                     <label>Típus</label>
-                    <select id="recItemType" required class="cool-select">
+                    <select id="recItemType" required class="cool-select" onchange="updateRecCategoryOptions()">
                         <option value="Sör">🍺 Sör</option>
-                        <option value="Ital">🍹 Ital / Koktél / Rövid</option>
+                        <option value="Ital">🍹 Ital</option>
                     </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Kategória</label>
+                    <select id="recCategory" required class="cool-select">
+                        </select>
                 </div>
 
                 <div class="cool-input-group full-width">
                     <label>Miért ajánlod? (Leírás)</label>
-                    <textarea id="recDescription" placeholder="Hol kapható? Milyen az íze? Miért különleges?" 
+                    <textarea id="recDescription" placeholder="Hol kapható? Milyen az íze?" 
                     style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; padding: 15px; outline: none; min-height: 80px;"></textarea>
                 </div>
             </div>
@@ -733,7 +759,7 @@
             </div>
 
             <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #00b09b, #96c93d); margin-top: 20px;">
-                <span class="btn-text">AJÁNLÁS BEKÜLDÉSE 🚀</span>
+                <span class="btn-text" id="recSubmitBtnText">AJÁNLÁS BEKÜLDÉSE 🚀</span>
                 <span class="btn-loading"><div class="spinner"></div></span>
             </button>
         </form>
@@ -1407,6 +1433,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
