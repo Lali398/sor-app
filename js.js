@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadUserDrinks() {
     const user = JSON.parse(localStorage.getItem('userData'));
-    if (!user) return; // Ha nincs user, csendben kilépünk (ne dobjon hibát ha épp guest nézetben hívódik)
+    if (!user) return;
 
     try {
         const response = await fetch('/api/sheet', {
@@ -317,37 +317,44 @@ async function loadUserDrinks() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_DRINKS' })
         });
-        
         const drinks = await response.json();
         
         if (!response.ok) {
-            // Itt nem dobunk 401 hibát azonnal, mert lehet, hogy a loadUserData már kezelte
             if (response.status !== 401) {
                 throw new Error(drinks.error || 'Szerverhiba');
             }
             return;
         }
         
-        // 1. Globális változó frissítése
+        // 1. Globális változó frissítése (Eredeti indexxel!)
         currentUserDrinks = drinks.map((drink, index) => ({
-        ...drink,
-        originalIndex: index
-    }));
-        
-        // 2. Táblázat frissítése
-        renderUserDrinks(drinks);
-        updateUserDrinkStats(drinks);
+            ...drink,
+            originalIndex: index
+        }));
 
-        // 3. --- ÚJ RÉSZ: ACHIEVEMENTEK AZONNALI ELLENŐRZÉSE ---
+        // --- ÚJ RÉSZ: ITALOK RENDEZÉSE ---
+        if (currentSort.drink.column && currentSort.drink.direction) {
+            sortAndRenderDrinks(currentSort.drink.column, currentSort.drink.dataType, currentSort.drink.direction);
+            
+            // Nyilak visszaállítása
+            setTimeout(() => {
+                const header = document.querySelector(`#user-drinks-content .sortable[data-sort="${currentSort.drink.column}"]`);
+                if (header) updateSortArrows('drink', header, currentSort.drink.direction);
+            }, 100);
+        } else {
+            renderUserDrinks(currentUserDrinks);
+        }
+        // ---------------------------------
+
+        updateUserDrinkStats(drinks);
+        
         if (typeof checkAchievements === 'function') {
             await checkAchievements();
-            renderAchievements(); // UI frissítése azonnal
+            renderAchievements();
         }
-        // -----------------------------------------------------
 
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
-        // Itt nem feltétlenül kell showError, hogy ne zavarja a fő folyamatot
     }
 }
 
@@ -1112,7 +1119,6 @@ function setupAdminRecap() {
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
-        // Ha nincs user, de a user nézeten vagyunk, dobjuk ki
         if(document.getElementById('userView').style.display !== 'none') {
              showError('Nem vagy bejelentkezve.');
              switchToGuestView();
@@ -1120,16 +1126,13 @@ function setupAdminRecap() {
         return;
     }
     
-    // Üdvözlő szöveg frissítése
     if(userWelcomeMessage) userWelcomeMessage.textContent = `Szia, ${user.name}!`;
-
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_USER_BEERS' })
         });
-        
         const beers = await response.json();
         
         if (!response.ok) {
@@ -1141,23 +1144,36 @@ function setupAdminRecap() {
             throw new Error(beers.error || 'Szerverhiba');
         }
         
-        // 1. Globális változó frissítése
+        // 1. Globális változó frissítése (Eredeti indexxel, amit az előbb beszéltünk!)
         currentUserBeers = beers.map((beer, index) => ({
-        ...beer,
-        originalIndex: index
-    }));
-        
-        // 2. Táblázat és statisztikák frissítése
-        renderUserBeers(beers);
-        updateUserStats(beers);
+            ...beer,
+            originalIndex: index
+        }));
 
-        // 3. --- ÚJ RÉSZ: ACHIEVEMENTEK AZONNALI ELLENŐRZÉSE ---
-        // Csak akkor, ha a checkAchievements függvény már létezik
+        // --- ÚJ RÉSZ: RENDEZÉS ELLENŐRZÉSE ---
+        // Ha van aktív rendezés, akkor azt alkalmazzuk, különben sima renderelés
+        if (currentSort.beer.column && currentSort.beer.direction) {
+            sortAndRenderBeers(currentSort.beer.column, currentSort.beer.dataType, currentSort.beer.direction);
+            
+            // Fontos: A nyilakat is vissza kell rakni a helyére!
+            // Megkeressük a megfelelő fejlécet
+            setTimeout(() => {
+                const header = document.querySelector(`#user-beers-content .sortable[data-sort="${currentSort.beer.column}"]`);
+                if (header) updateSortArrows('beer', header, currentSort.beer.direction);
+            }, 100);
+        } else {
+            // Ha nincs rendezés, akkor az alap (szerver szerinti) sorrend
+            renderUserBeers(currentUserBeers);
+        }
+        // --------------------------------------
+
+        updateUserStats(currentUserBeers); // Megjegyzés: itt currentUserBeers-t használunk a beers helyett, de mindegy mert ugyanaz
+
+        // Achievementek
         if (typeof checkAchievements === 'function') {
             await checkAchievements();
-            renderAchievements(); // UI frissítése azonnal
+            renderAchievements(); 
         }
-        // -----------------------------------------------------
 
     } catch (error) {
         console.error("Hiba a felhasználói adatok betöltésekor:", error);
@@ -4291,8 +4307,8 @@ function renderUserDrinks(drinks) {
     // === TÁBLÁZAT RENDEZÉS (SORTING) FUNKCIÓ ===
 
 let currentSort = {
-    beer: { column: null, direction: null },
-    drink: { column: null, direction: null }
+    beer: { column: null, direction: null, dataType: null },
+    drink: { column: null, direction: null, dataType: null }
 };
 
 // Rendezés inicializálása
@@ -4332,12 +4348,12 @@ function sortTable(tableType, column, dataType, headerElement) {
         newDirection = 'desc';
     }
     
-    // Frissítjük az állapotot
-    currentSort[tableType] = { column, direction: newDirection };
-    
+    // ÚJ RÉSZ: Elmentjük a dataType-ot is, hogy újratöltésnél tudjuk használni!
+    currentSort[tableType] = { column, direction: newDirection, dataType: dataType };
+
     // Vizuális frissítés (nyilak)
     updateSortArrows(tableType, headerElement, newDirection);
-    
+
     // Adatok rendezése
     if (tableType === 'beer') {
         sortAndRenderBeers(column, dataType, newDirection);
@@ -4435,6 +4451,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
