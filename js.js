@@ -3384,76 +3384,144 @@ window.closeRecoveryModal = function() {
         }
     }
     // ======================================================
-// === AJÁNLÓ RENDSZER (KÖZÖSSÉGI TAB) ===
+// === AJÁNLÓ RENDSZER (LOGIKA) ===
 // ======================================================
 
-// 1. Modal Megnyitása / Bezárása
-window.openRecModal = function() {
-    // FAB bezárása ha nyitva van
+// Kategória definíciók
+const REC_CATEGORIES = {
+    'Sör': ['IPA', 'Lager', 'Pilsner', 'Stout', 'Porter', 'Búza', 'Gyümölcsös', 'Ale', 'Egyéb'],
+    'Ital': ['Energia ital', 'Bor', 'Pezsgő', 'Vermut', 'Pálinka', 'Whisky', 'Vodka', 'Rum', 'Gin', 'Likőr', 'Koktél', 'Üdítő', 'Egyéb']
+};
+
+let allRecommendationsData = []; // Helyi tároló a szűréshez
+
+// 1. Dinamikus kategória betöltő (Modalhoz)
+window.updateRecCategoryOptions = function(selectedValue = null) {
+    const typeSelect = document.getElementById('recItemType');
+    const catSelect = document.getElementById('recCategory');
+    
+    // Ha véletlenül nincs meg az elem (pl. admin nézetben vagyunk), ne dobjon hibát
+    if(!typeSelect || !catSelect) return;
+
+    const currentType = typeSelect.value;
+    catSelect.innerHTML = ''; // Törlés
+    
+    const categories = REC_CATEGORIES[currentType] || ['Egyéb'];
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        if (selectedValue && cat === selectedValue) option.selected = true;
+        catSelect.appendChild(option);
+    });
+}
+
+// 2. Modal Megnyitása (ÚJ vagy SZERKESZTÉS)
+window.openRecModal = function(editIndex = -1) {
     const fabContainer = document.getElementById('fabContainer');
     if(fabContainer) fabContainer.classList.remove('active');
 
-    document.getElementById('addRecModal').classList.add('active');
+    const modal = document.getElementById('addRecModal');
+    const form = document.getElementById('addRecForm');
+    const title = document.getElementById('recModalTitle');
+    const btnText = document.getElementById('recSubmitBtnText');
+    const indexInput = document.getElementById('recEditIndex');
+
+    if (editIndex === -1) {
+        // --- ÚJ LÉTREHOZÁSA ---
+        form.reset();
+        title.textContent = "Mit ajánlasz?";
+        btnText.textContent = "AJÁNLÁS BEKÜLDÉSE 🚀";
+        indexInput.value = "-1";
+        updateRecCategoryOptions(); // Default betöltés
+    } else {
+        // --- SZERKESZTÉS ---
+        const rec = allRecommendationsData.find(r => r.originalIndex === editIndex);
+        if (!rec) return;
+
+        title.textContent = "Ajánlás Szerkesztése ✏️";
+        btnText.textContent = "MÓDOSÍTÁS MENTÉSE 💾";
+        indexInput.value = editIndex;
+
+        document.getElementById('recItemName').value = rec.itemName;
+        document.getElementById('recItemType').value = rec.type;
+        document.getElementById('recDescription').value = rec.description;
+        document.getElementById('recAnonymous').checked = rec.isAnon;
+        
+        // Kategóriák frissítése és a mentett érték kiválasztása
+        updateRecCategoryOptions(rec.category);
+    }
+
+    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 window.closeRecModal = function() {
     document.getElementById('addRecModal').classList.remove('active');
-    document.getElementById('addRecForm').reset();
     document.body.style.overflow = 'auto';
 }
 
-// 2. Ajánlás beküldése
+// 3. Beküldés / Mentés kezelése
 const addRecForm = document.getElementById('addRecForm');
 if (addRecForm) {
     addRecForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const originalIndex = parseInt(document.getElementById('recEditIndex').value);
         const itemName = document.getElementById('recItemName').value;
         const itemType = document.getElementById('recItemType').value;
+        const category = document.getElementById('recCategory').value;
         const description = document.getElementById('recDescription').value;
         const isAnonymous = document.getElementById('recAnonymous').checked;
         const btn = addRecForm.querySelector('.auth-btn');
 
+        const action = originalIndex === -1 ? 'ADD_RECOMMENDATION' : 'EDIT_RECOMMENDATION';
+
         setLoading(btn, true);
 
         try {
+            const bodyData = { 
+                action, 
+                itemName, 
+                itemType, 
+                category, 
+                description, 
+                isAnonymous 
+            };
+
+            if (originalIndex !== -1) {
+                bodyData.originalIndex = originalIndex;
+            }
+
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                 },
-                body: JSON.stringify({ 
-                    action: 'ADD_RECOMMENDATION', 
-                    itemName, 
-                    itemType, 
-                    description, 
-                    isAnonymous 
-                })
+                body: JSON.stringify(bodyData)
             });
 
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Hiba történt.");
 
-            showSuccess("Ajánlás sikeresen beküldve! 📢");
+            showSuccess(originalIndex === -1 ? "Ajánlás sikeresen beküldve! 📢" : "Sikeres módosítás! ✅");
             closeRecModal();
-            loadRecommendations(); // Lista azonnali frissítése
+            loadRecommendations(); 
 
         } catch (error) {
-            showError(error.message || "Nem sikerült beküldeni az ajánlást.");
+            showError(error.message);
         } finally {
             setLoading(btn, false);
         }
     });
 }
 
-// 3. Ajánlások betöltése és renderelése
+// 4. Betöltés
 async function loadRecommendations() {
     const container = document.getElementById('recommendationsList');
     if (!container) return;
-
-    // Töltésjelző
+    
     container.innerHTML = '<div class="recap-spinner"></div>';
 
     try {
@@ -3467,75 +3535,124 @@ async function loadRecommendations() {
         });
 
         const recs = await response.json();
+        allRecommendationsData = recs || []; 
 
-        container.innerHTML = ''; // Törlés
-
-        if (!recs || recs.length === 0) {
-            container.innerHTML = `
-                <div style="grid-column: 1/-1; text-align:center; color:#aaa; padding: 40px;">
-                    <div style="font-size: 3rem; margin-bottom: 10px;">📭</div>
-                    <p>Még nincsenek ajánlások. <br>Légy te az első!</p>
-                </div>`;
-            return;
-        }
-
-        recs.forEach(item => {
-            // Szín és ikon beállítása típus alapján
-            const isBeer = item.type === 'Sör';
-            const typeClass = isBeer ? 'type-beer' : 'type-drink';
-            const typeIcon = isBeer ? '🍺' : '🍹';
-            
-            // Anonim stílus kezelése
-            const userClass = item.isAnon ? 'rec-user anon' : 'rec-user';
-            
-            // Ha nem anonim, és van rangja, megjelenítjük
-            const badgeHtml = (item.badge && !item.isAnon) 
-                ? `<span class="user-badge-display" style="font-size: 0.7em;">${item.badge}</span>` 
-                : '';
-
-            const html = `
-            <div class="rec-card ${typeClass}">
-                <div class="rec-header">
-                    <div class="rec-item-name">${item.itemName}</div>
-                    <div class="rec-type-badge">${typeIcon} ${item.type}</div>
-                </div>
-                
-                <div class="rec-desc">
-                    "${item.description}"
-                </div>
-                
-                <div class="rec-footer">
-                    <div class="${userClass}">
-                        <span>${item.isAnon ? '🕵️' : '👤'}</span>
-                        <span>${item.submitter}</span>
-                        ${badgeHtml}
-                    </div>
-                    <div class="rec-date">${item.date}</div>
-                </div>
-            </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        });
+        applyRecFilters(); 
 
     } catch (error) {
-        console.error("Hiba az ajánlások betöltésekor:", error);
-        container.innerHTML = '<p class="error" style="text-align:center;">Nem sikerült betölteni az ajánlásokat.</p>';
+        console.error("Hiba:", error);
+        container.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
 
-// 4. Integrálás a meglévő tab-kezelőbe
-// Ezt a kódot hagyd itt, ez biztosítja, hogy kattintáskor betöltsön
+// 5. Szűrés és Kirajzolás
+function applyRecFilters() {
+    const container = document.getElementById('recommendationsList');
+    const filterType = document.getElementById('filterRecType').value;
+    const filterCat = document.getElementById('filterRecCategory').value;
+    const filterMyRecs = document.getElementById('filterMyRecs').checked;
+
+    container.innerHTML = '';
+
+    const filtered = allRecommendationsData.filter(item => {
+        if (filterType !== 'all' && item.type !== filterType) return false;
+        if (filterCat !== 'all' && item.category !== filterCat) return false;
+        if (filterMyRecs && !item.isMine) return false;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<p class="rec-no-results">Nincs találat a szűrésre.</p>`;
+        return;
+    }
+
+    filtered.forEach(item => {
+        const isBeer = item.type === 'Sör';
+        const typeClass = isBeer ? 'type-beer' : 'type-drink';
+        const typeIcon = isBeer ? '🍺' : '🍹';
+        const userClass = item.isAnon ? 'rec-user anon' : 'rec-user';
+        
+        const badgeHtml = (item.badge && !item.isAnon) 
+            ? `<span class="user-badge-display tiny">${item.badge}</span>` : '';
+
+        // Csak akkor rakunk gombot, ha az övé (isMine)
+        const editBtnHtml = item.isMine 
+            ? `<button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>` 
+            : '';
+            
+        const editedHtml = item.isEdited 
+            ? `<span class="rec-edited-tag">(módosítva)</span>` 
+            : '';
+
+        const html = `
+        <div class="rec-card ${typeClass}">
+            ${editBtnHtml}
+            <div class="rec-header">
+                <div>
+                    <div class="rec-item-name">${item.itemName}</div>
+                    <div class="rec-sub-info">${item.category}</div>
+                </div>
+                <div class="rec-type-badge">${typeIcon} ${item.type}</div>
+            </div>
+            
+            <div class="rec-desc">
+                "${item.description}"
+            </div>
+            
+            <div class="rec-footer">
+                <div class="${userClass}">
+                    <span>${item.isAnon ? '🕵️' : '👤'}</span>
+                    <span>${item.submitter}</span>
+                    ${badgeHtml}
+                </div>
+                <div class="rec-meta">
+                    <div class="rec-date">${item.date}</div>
+                    ${editedHtml}
+                </div>
+            </div>
+        </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+// 6. Eseménykezelők a szűréshez
+const filterTypeEl = document.getElementById('filterRecType');
+if(filterTypeEl) {
+    filterTypeEl.addEventListener('change', (e) => {
+        const type = e.target.value;
+        const catSelect = document.getElementById('filterRecCategory');
+        
+        catSelect.innerHTML = '<option value="all">Összes kategória</option>';
+        
+        if (type !== 'all' && REC_CATEGORIES[type]) {
+            REC_CATEGORIES[type].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+            });
+        }
+        applyRecFilters();
+    });
+}
+
+const filterCatEl = document.getElementById('filterRecCategory');
+if(filterCatEl) filterCatEl.addEventListener('change', applyRecFilters);
+
+const filterMyRecsEl = document.getElementById('filterMyRecs');
+if(filterMyRecsEl) filterMyRecsEl.addEventListener('change', applyRecFilters);
+
+// Tab kattintás figyelése
 document.addEventListener('click', (e) => {
-    // Megnézzük, hogy navigációs gombra kattintott-e
     const btn = e.target.closest('.nav-item');
     if (!btn) return;
-    
-    // Ha az ajánlások tabra kattintott
     if (btn.dataset.tabContent === 'user-recommendations-content') {
         loadRecommendations();
     }
 });
 });
+
 
 
 
