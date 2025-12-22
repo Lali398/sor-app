@@ -199,6 +199,10 @@
                     <span class="icon">🍹</span>
                     <span class="label">Italjaim</span>
                 </button>
+                <button class="nav-item" data-tab-content="user-recommendations-content">
+                    <span class="icon">📢</span>
+                    <span class="label">Ajánlások</span>
+                </button>
                 <button class="nav-item" data-tab-content="user-ideas-content">
                     <span class="icon">💡</span>
                     <span class="label">Ötletláda</span>
@@ -306,6 +310,22 @@
                     </section>
                 </div>
                 
+                <!-- AJÁNLÁSOK TAB -->
+                <div class="main-tab-pane" id="user-recommendations-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Közösségi Ajánló 📢</h3>
+                            <button class="action-btn" onclick="openRecModal()" style="font-size: 0.9rem; padding: 8px 15px;">
+                                + Új Ajánlás
+                            </button>
+                        </header>
+                        
+                        <div id="recommendationsList" class="recommendations-grid">
+                            <div class="recap-spinner"></div>
+                        </div>
+                    </section>
+                </div>
+
                 <!-- ÖTLETLÁDA TAB -->
                 <div class="main-tab-pane" id="user-ideas-content">
                     <section class="card idea-submit-card">
@@ -509,6 +529,10 @@
                 <span class="emoji">🍹</span>
                 <span class="tooltip">Ital hozzáadása</span>
             </button>
+            <button class="fab-option" onclick="openRecModal()">
+                <span class="emoji">📢</span>
+                <span class="tooltip">Ajánlás írása</span>
+            </button>
             <button class="fab-option" onclick="openSupportModal()">
                 <span class="emoji">❓</span>
                 <span class="tooltip">Segítség kérése</span>
@@ -658,6 +682,58 @@
 
             <button type="submit" class="auth-btn drink-submit-btn">
                 <span class="btn-text">ITAL KEVERÉSE 🍸</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+    
+    <!-- ÁJÁNLÁS MOADAL -->
+
+    <div class="modal-overlay" id="addRecModal">
+    <div class="modal-content beer-upload-card" style="border-color: #00b09b !important;">
+        <div class="modal-hero-header">
+            <div class="hero-icon">📢</div>
+            <h3>Mit ajánlasz?</h3>
+            <p>Oszd meg a többiekkel a tutit!</p>
+            <button class="modal-close-abs" onclick="closeRecModal()">✕</button>
+        </div>
+
+        <form id="addRecForm" class="cool-form">
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Ajánlott Sör/Ital neve</label>
+                    <input type="text" id="recItemName" placeholder="Pl. Guinness Draught" required>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Típus</label>
+                    <select id="recItemType" required class="cool-select">
+                        <option value="Sör">🍺 Sör</option>
+                        <option value="Ital">🍹 Ital / Koktél / Rövid</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Miért ajánlod? (Leírás)</label>
+                    <textarea id="recDescription" placeholder="Hol kapható? Milyen az íze? Miért különleges?" 
+                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; padding: 15px; outline: none; min-height: 80px;"></textarea>
+                </div>
+            </div>
+
+            <div class="setting-item" style="background: rgba(0,0,0,0.2); padding: 10px 15px; margin-top: 15px; border-radius: 10px;">
+                <div class="setting-info">
+                    <h4 style="font-size: 0.9rem; margin: 0;">Anonim beküldés 🕵️</h4>
+                    <p style="font-size: 0.75rem; margin: 0; color: #aaa;">A neved és a rangod rejtve marad.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="recAnonymous">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #00b09b, #96c93d); margin-top: 20px;">
+                <span class="btn-text">AJÁNLÁS BEKÜLDÉSE 🚀</span>
                 <span class="btn-loading"><div class="spinner"></div></span>
             </button>
         </form>
@@ -1331,6 +1407,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
