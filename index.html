@@ -1429,10 +1429,155 @@
         </form>
     </div>
 </div>
-    
+<!-- TÖRLÉS MODALOK - Illeszd be az index.html fájlba a deleteAccountModal UTÁN -->
+
+<!-- 1. SÖR TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteBeerModal">
+    <div class="modal-content delete-zone-card">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">🍺💀</div>
+            <h3 style="text-align: center; color: #f39c12; text-shadow: 0 0 10px rgba(243, 156, 18, 0.6); font-size: 1.5rem; margin: 0;">SÖR MEGSEMMISÍTÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan törölni akarod ezt a sörtesztet?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Ez a művelet NEM VISSZAVONHATÓ! A sör örökre eltűnik!</span>
+            </p>
+            
+            <div style="background: rgba(243, 156, 18, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteBeerName" style="font-size: 1.2rem; font-weight: 700; color: #f39c12; margin-bottom: 5px;"></div>
+                <div id="deleteBeerDetails" style="font-size: 0.9rem; color: #aaa;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteBeerConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteBeerModal()" style="background: #333; color: white;">
+                    Mégsem 😅
+                </button>
+                <button class="auth-btn" id="finalDeleteBeerBtn" onclick="confirmDeleteBeer()" disabled style="background: linear-gradient(135deg, #f39c12, #d35400); opacity: 0.5; cursor: not-allowed;">
+                    Sör Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. ITAL TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteDrinkModal">
+    <div class="modal-content delete-zone-card" style="border-color: #d946ef !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">🍹💀</div>
+            <h3 style="text-align: center; color: #d946ef; text-shadow: 0 0 10px rgba(217, 70, 239, 0.6); font-size: 1.5rem; margin: 0;">ITAL KIÖNTÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan kiöntöd ezt az italt?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Nincs visszaút! Az ital lefolyón leér!</span>
+            </p>
+            
+            <div style="background: rgba(217, 70, 239, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteDrinkName" style="font-size: 1.2rem; font-weight: 700; color: #d946ef; margin-bottom: 5px;"></div>
+                <div id="deleteDrinkDetails" style="font-size: 0.9rem; color: #aaa;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteDrinkConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteDrinkModal()" style="background: #333; color: white;">
+                    Mégsem 🙈
+                </button>
+                <button class="auth-btn" id="finalDeleteDrinkBtn" onclick="confirmDeleteDrink()" disabled style="background: linear-gradient(135deg, #8e2de2, #4a00e0); opacity: 0.5; cursor: not-allowed;">
+                    Ital Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. ÖTLET TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteIdeaModal">
+    <div class="modal-content delete-zone-card" style="border-color: #3498db !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">💡💀</div>
+            <h3 style="text-align: center; color: #3498db; text-shadow: 0 0 10px rgba(52, 152, 219, 0.6); font-size: 1.5rem; margin: 0;">ÖTLET ELVETÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan elveted ezt az ötletedet?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">A törlés után nem lehet visszaállítani!</span>
+            </p>
+            
+            <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 100px; overflow-y: auto;">
+                <div id="deleteIdeaText" style="font-size: 0.9rem; color: #e0e0e0; font-style: italic;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteIdeaConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteIdeaModal()" style="background: #333; color: white;">
+                    Mégsem 🤔
+                </button>
+                <button class="auth-btn" id="finalDeleteIdeaBtn" onclick="confirmDeleteIdea()" disabled style="background: linear-gradient(135deg, #3498db, #2980b9); opacity: 0.5; cursor: not-allowed;">
+                    Ötlet Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. AJÁNLÁS TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteRecModal">
+    <div class="modal-content delete-zone-card" style="border-color: #00b09b !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">📢💀</div>
+            <h3 style="text-align: center; color: #00b09b; text-shadow: 0 0 10px rgba(0, 176, 155, 0.6); font-size: 1.5rem; margin: 0;">AJÁNLÁS VISSZAVONÁS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan visszavonod ezt az ajánlásodat?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Mások már nem fogják látni!</span>
+            </p>
+            
+            <div style="background: rgba(0, 176, 155, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteRecName" style="font-size: 1.2rem; font-weight: 700; color: #00b09b; margin-bottom: 5px;"></div>
+                <div id="deleteRecDetails" style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;"></div>
+                <div id="deleteRecDesc" style="font-size: 0.85rem; color: #ccc; font-style: italic; max-height: 60px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteRecConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteRecModal()" style="background: #333; color: white;">
+                    Mégsem 🙊
+                </button>
+                <button class="auth-btn" id="finalDeleteRecBtn" onclick="confirmDeleteRec()" disabled style="background: linear-gradient(135deg, #00b09b, #96c93d); opacity: 0.5; cursor: not-allowed;">
+                    Ajánlás Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>    
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
