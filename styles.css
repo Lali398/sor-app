@@ -3033,6 +3033,70 @@ select.cool-select {
 .delete-rec-btn:hover::after {
     opacity: 1;
 }
+/* --- GOMBOK ELRENDEZÉSE A LISTÁBAN (Javítás) --- */
+
+/* Ez szétválasztja a gombokat, hogy ne érjenek össze */
+.rec-action-btns, 
+.pending-actions {
+    display: flex;
+    gap: 15px; /* Ez a kulcs! 15px helyet hagy a gombok között */
+    align-items: center;
+    justify-content: flex-end; /* Jobbra igazítás */
+    margin-top: 10px;
+}
+
+/* Kicsit pofásabb törlés gomb a listában */
+.delete-btn-mini, 
+.delete-rec-btn, 
+.delete-idea-btn {
+    background: rgba(255, 60, 60, 0.2); /* Enyhe piros háttér */
+    border: 1px solid rgba(255, 60, 60, 0.4);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.delete-btn-mini:hover, 
+.delete-rec-btn:hover {
+    background: rgba(255, 60, 60, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* --- MODAL STÍLUS KIEGÉSZÍTÉS --- */
+
+/* A gombok egymás mellett legyenek a modal alján */
+.buttons-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Másodlagos gomb (Mégse) */
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Veszélyes gomb (Törlés) */
+.danger-btn {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+}
+
+.modal-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    display: block;
+    text-align: center;
+}
+
+.center-text {
+    text-align: center;
+}
+
 
 
 
