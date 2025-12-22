@@ -3383,7 +3383,159 @@ window.closeRecoveryModal = function() {
             document.body.classList.add('header-is-collapsed');
         }
     }
+    // ======================================================
+// === AJÁNLÓ RENDSZER (KÖZÖSSÉGI TAB) ===
+// ======================================================
+
+// 1. Modal Megnyitása / Bezárása
+window.openRecModal = function() {
+    // FAB bezárása ha nyitva van
+    const fabContainer = document.getElementById('fabContainer');
+    if(fabContainer) fabContainer.classList.remove('active');
+
+    document.getElementById('addRecModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+window.closeRecModal = function() {
+    document.getElementById('addRecModal').classList.remove('active');
+    document.getElementById('addRecForm').reset();
+    document.body.style.overflow = 'auto';
+}
+
+// 2. Ajánlás beküldése
+const addRecForm = document.getElementById('addRecForm');
+if (addRecForm) {
+    addRecForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const itemName = document.getElementById('recItemName').value;
+        const itemType = document.getElementById('recItemType').value;
+        const description = document.getElementById('recDescription').value;
+        const isAnonymous = document.getElementById('recAnonymous').checked;
+        const btn = addRecForm.querySelector('.auth-btn');
+
+        setLoading(btn, true);
+
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                },
+                body: JSON.stringify({ 
+                    action: 'ADD_RECOMMENDATION', 
+                    itemName, 
+                    itemType, 
+                    description, 
+                    isAnonymous 
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+            showSuccess("Ajánlás sikeresen beküldve! 📢");
+            closeRecModal();
+            loadRecommendations(); // Lista azonnali frissítése
+
+        } catch (error) {
+            showError(error.message || "Nem sikerült beküldeni az ajánlást.");
+        } finally {
+            setLoading(btn, false);
+        }
+    });
+}
+
+// 3. Ajánlások betöltése és renderelése
+async function loadRecommendations() {
+    const container = document.getElementById('recommendationsList');
+    if (!container) return;
+
+    // Töltésjelző
+    container.innerHTML = '<div class="recap-spinner"></div>';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_RECOMMENDATIONS' })
+        });
+
+        const recs = await response.json();
+
+        container.innerHTML = ''; // Törlés
+
+        if (!recs || recs.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align:center; color:#aaa; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">📭</div>
+                    <p>Még nincsenek ajánlások. <br>Légy te az első!</p>
+                </div>`;
+            return;
+        }
+
+        recs.forEach(item => {
+            // Szín és ikon beállítása típus alapján
+            const isBeer = item.type === 'Sör';
+            const typeClass = isBeer ? 'type-beer' : 'type-drink';
+            const typeIcon = isBeer ? '🍺' : '🍹';
+            
+            // Anonim stílus kezelése
+            const userClass = item.isAnon ? 'rec-user anon' : 'rec-user';
+            
+            // Ha nem anonim, és van rangja, megjelenítjük
+            const badgeHtml = (item.badge && !item.isAnon) 
+                ? `<span class="user-badge-display" style="font-size: 0.7em;">${item.badge}</span>` 
+                : '';
+
+            const html = `
+            <div class="rec-card ${typeClass}">
+                <div class="rec-header">
+                    <div class="rec-item-name">${item.itemName}</div>
+                    <div class="rec-type-badge">${typeIcon} ${item.type}</div>
+                </div>
+                
+                <div class="rec-desc">
+                    "${item.description}"
+                </div>
+                
+                <div class="rec-footer">
+                    <div class="${userClass}">
+                        <span>${item.isAnon ? '🕵️' : '👤'}</span>
+                        <span>${item.submitter}</span>
+                        ${badgeHtml}
+                    </div>
+                    <div class="rec-date">${item.date}</div>
+                </div>
+            </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+
+    } catch (error) {
+        console.error("Hiba az ajánlások betöltésekor:", error);
+        container.innerHTML = '<p class="error" style="text-align:center;">Nem sikerült betölteni az ajánlásokat.</p>';
+    }
+}
+
+// 4. Integrálás a meglévő tab-kezelőbe
+// Ezt a kódot hagyd itt, ez biztosítja, hogy kattintáskor betöltsön
+document.addEventListener('click', (e) => {
+    // Megnézzük, hogy navigációs gombra kattintott-e
+    const btn = e.target.closest('.nav-item');
+    if (!btn) return;
+    
+    // Ha az ajánlások tabra kattintott
+    if (btn.dataset.tabContent === 'user-recommendations-content') {
+        loadRecommendations();
+    }
 });
+
 
 
 
