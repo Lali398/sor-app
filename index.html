@@ -107,17 +107,6 @@
                     </div>
                 </div>
 
-                <div class="admin-section">
-                    <button class="admin-btn" id="adminBtn">
-                        <span class="admin-icon">👑</span>
-                        <span class="admin-text">Gabz és Lajos</span>
-                        <div class="admin-shine"></div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
      <div class="support-section" style="margin-top: 0px;">
             <button class="support-btn" id="guestSupportBtn">
                 <span class="support-icon">❓</span>
@@ -1734,10 +1723,36 @@
     </div>
 </div>
 
+        <!-- ADMIN LOGIN -->
+<div class="modal-overlay" id="secretPinModal">
+    <div class="modal-content" style="text-align: center; max-width: 350px;">
+        <header class="modal-header" style="justify-content: center; border: none; margin-bottom: 10px;">
+            <h3 style="color: #e0e0e0;">🔐 Admin Hozzáférés</h3>
+            <button class="modal-close-abs" onclick="closeSecretPinModal()">✕</button>
+        </header>
+        
+        <p style="color: #aaa; margin-bottom: 20px; font-size: 0.9rem;">
+            Add meg a 6 jegyű biztonsági kódot a folytatáshoz.
+        </p>
+
+        <form id="secretPinForm">
+            <div class="input-group">
+                <input type="password" id="secretPinInput" maxlength="6" inputmode="numeric" placeholder="******" 
+                       style="text-align: center; font-size: 2rem; letter-spacing: 10px; font-weight: bold; color: #ffd700;" required>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #333, #555); margin-top: 15px;">
+                <span class="btn-text">Belépés</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
