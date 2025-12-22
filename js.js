@@ -3657,11 +3657,17 @@ if(filterMyRecsEl) filterMyRecsEl.addEventListener('change', applyRecFilters);
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.nav-item');
     if (!btn) return;
+    
+    // Ha az Ajánlások tabra kattintunk, MINDIG újratöltjük az adatokat
     if (btn.dataset.tabContent === 'user-recommendations-content') {
+        // Először töröljük a régit
+        allRecommendationsData = [];
+        // Aztán betöltjük az újat
         loadRecommendations();
     }
 });
 });
+
 
 
 
