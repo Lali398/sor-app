@@ -4335,7 +4335,154 @@ function renderUserDrinks(drinks) {
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
     });
 }
+    // === TÁBLÁZAT RENDEZÉS (SORTING) FUNKCIÓ ===
+
+let currentSort = {
+    beer: { column: null, direction: null },
+    drink: { column: null, direction: null }
+};
+
+// Rendezés inicializálása
+function initTableSorting() {
+    // Sörös táblázat fejlécek
+    const beerHeaders = document.querySelectorAll('#user-beers-content .sortable');
+    beerHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.sort;
+            const type = header.dataset.type;
+            sortTable('beer', column, type, header);
+        });
+    });
+
+    // Italos táblázat fejlécek
+    const drinkHeaders = document.querySelectorAll('#user-drinks-content .sortable');
+    drinkHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const column = header.dataset.sort;
+            const type = header.dataset.type;
+            sortTable('drink', column, type, header);
+        });
+    });
+}
+
+// Rendezési logika
+function sortTable(tableType, column, dataType, headerElement) {
+    const currentState = currentSort[tableType];
+    
+    // Irány meghatározása: null -> asc -> desc -> null
+    let newDirection;
+    if (currentState.column !== column) {
+        newDirection = 'asc'; // Új oszlop, növekvő
+    } else if (currentState.direction === null || currentState.direction === 'desc') {
+        newDirection = 'asc';
+    } else {
+        newDirection = 'desc';
+    }
+    
+    // Frissítjük az állapotot
+    currentSort[tableType] = { column, direction: newDirection };
+    
+    // Vizuális frissítés (nyilak)
+    updateSortArrows(tableType, headerElement, newDirection);
+    
+    // Adatok rendezése
+    if (tableType === 'beer') {
+        sortAndRenderBeers(column, dataType, newDirection);
+    } else {
+        sortAndRenderDrinks(column, dataType, newDirection);
+    }
+}
+
+// Vizuális nyilak frissítése
+function updateSortArrows(tableType, activeHeader, direction) {
+    // Összes nyíl törlése az adott táblázatból
+    const container = tableType === 'beer' 
+        ? document.querySelector('#user-beers-content') 
+        : document.querySelector('#user-drinks-content');
+    
+    if (!container) return;
+    
+    container.querySelectorAll('.sortable').forEach(header => {
+        header.classList.remove('sort-asc', 'sort-desc');
+    });
+    
+    // Aktív oszlop jelölése
+    if (direction === 'asc') {
+        activeHeader.classList.add('sort-asc');
+    } else {
+        activeHeader.classList.add('sort-desc');
+    }
+}
+
+// SÖRÖK rendezése és kirajzolása
+function sortAndRenderBeers(column, dataType, direction) {
+    if (!currentUserBeers || currentUserBeers.length === 0) return;
+    
+    const sorted = [...currentUserBeers].sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+        
+        // Típus szerinti összehasonlítás
+        if (dataType === 'number') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+        } else if (dataType === 'date') {
+            valA = new Date(valA || '1970-01-01').getTime();
+            valB = new Date(valB || '1970-01-01').getTime();
+        } else {
+            valA = (valA || '').toString().toLowerCase();
+            valB = (valB || '').toString().toLowerCase();
+        }
+        
+        if (valA < valB) return direction === 'asc' ? -1 : 1;
+        if (valA > valB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    renderUserBeers(sorted);
+}
+
+// ITALOK rendezése és kirajzolása
+function sortAndRenderDrinks(column, dataType, direction) {
+    if (!currentUserDrinks || currentUserDrinks.length === 0) return;
+    
+    const sorted = [...currentUserDrinks].sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+        
+        // Típus szerinti összehasonlítás
+        if (dataType === 'number') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+        } else if (dataType === 'date') {
+            valA = new Date(valA || '1970-01-01').getTime();
+            valB = new Date(valB || '1970-01-01').getTime();
+        } else {
+            valA = (valA || '').toString().toLowerCase();
+            valB = (valB || '').toString().toLowerCase();
+        }
+        
+        if (valA < valB) return direction === 'asc' ? -1 : 1;
+        if (valA > valB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    renderUserDrinks(sorted);
+}
+
+// Inicializálás a switchToUserView frissítéséhez
+// Keress rá a meglévő switchToUserView függvényre és add hozzá a végéhez:
+const originalSwitchToUserViewSorting = switchToUserView;
+switchToUserView = function() {
+    originalSwitchToUserViewSorting();
+    
+    // Rendezés inicializálása kis késleltetéssel
+    setTimeout(() => {
+        initTableSorting();
+    }, 500);
+};
 });
+
 
 
 
