@@ -1430,8 +1430,6 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
-
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -4554,6 +4552,7 @@ if (secretPinForm) {
     });
 }
 });
+
 
 
 
