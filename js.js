@@ -3836,8 +3836,332 @@ window.deleteUserRecommendation = async function(originalIndex) {
         showError(error.message || "Nem sikerült törölni az ajánlást.");
     }
 }
+    // === TÖRLÉS MODALOK - JavaScript Logika ===
+// Illeszd be a js.js fájl végére (a deleteUserBeer, deleteUserDrink stb. függvények HELYETT)
+
+// === GLOBÁLIS VÁLTOZÓK A TÖRLÉSHEZ ===
+let deletePendingIndex = null;
+let deletePendingData = null;
+
+// =========================================
+// === 1. SÖR TÖRLÉS ===
+// =========================================
+
+window.deleteUserBeer = function(index) {
+    // Modal megnyitása
+    const modal = document.getElementById('deleteBeerModal');
+    const input = document.getElementById('deleteBeerConfirmInput');
+    const btn = document.getElementById('finalDeleteBeerBtn');
     
+    // Adatok betöltése
+    const beer = currentUserBeers[index];
+    if (!beer) return;
+    
+    deletePendingIndex = index;
+    
+    // Részletek megjelenítése
+    document.getElementById('deleteBeerName').textContent = beer.beerName;
+    document.getElementById('deleteBeerDetails').textContent = 
+        `${beer.type} • ${beer.location} • Átlag: ${beer.avg}`;
+    
+    // Reset
+    input.value = '';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    modal.classList.add('active');
+    
+    // Input figyelés
+    input.oninput = function() {
+        if (this.value === 'TÖRLÉS') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
+window.closeDeleteBeerModal = function() {
+    document.getElementById('deleteBeerModal').classList.remove('active');
+    deletePendingIndex = null;
+}
+
+window.confirmDeleteBeer = async function() {
+    const btn = document.getElementById('finalDeleteBeerBtn');
+    const input = document.getElementById('deleteBeerConfirmInput');
+    
+    if (input.value !== 'TÖRLÉS') return;
+    
+    btn.innerText = "Törlés folyamatban...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_BEER', 
+                index: deletePendingIndex 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Sör sikeresen törölve! 🗑️');
+        closeDeleteBeerModal();
+        loadUserData(); // Újratöltés
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni a sört.");
+        btn.innerText = "Sör Törlése 🗑️";
+        btn.disabled = false;
+    }
+}
+
+// =========================================
+// === 2. ITAL TÖRLÉS ===
+// =========================================
+
+window.deleteUserDrink = function(index) {
+    const modal = document.getElementById('deleteDrinkModal');
+    const input = document.getElementById('deleteDrinkConfirmInput');
+    const btn = document.getElementById('finalDeleteDrinkBtn');
+    
+    const drink = currentUserDrinks[index];
+    if (!drink) return;
+    
+    deletePendingIndex = index;
+    
+    document.getElementById('deleteDrinkName').textContent = drink.drinkName;
+    document.getElementById('deleteDrinkDetails').textContent = 
+        `${drink.category} • ${drink.location} • Átlag: ${drink.avg}`;
+    
+    input.value = '';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    modal.classList.add('active');
+    
+    input.oninput = function() {
+        if (this.value === 'TÖRLÉS') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
+window.closeDeleteDrinkModal = function() {
+    document.getElementById('deleteDrinkModal').classList.remove('active');
+    deletePendingIndex = null;
+}
+
+window.confirmDeleteDrink = async function() {
+    const btn = document.getElementById('finalDeleteDrinkBtn');
+    const input = document.getElementById('deleteDrinkConfirmInput');
+    
+    if (input.value !== 'TÖRLÉS') return;
+    
+    btn.innerText = "Törlés folyamatban...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_DRINK', 
+                index: deletePendingIndex 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Ital sikeresen törölve! 🗑️');
+        closeDeleteDrinkModal();
+        loadUserDrinks();
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az italt.");
+        btn.innerText = "Ital Törlése 🗑️";
+        btn.disabled = false;
+    }
+}
+
+// =========================================
+// === 3. ÖTLET TÖRLÉS ===
+// =========================================
+
+window.deleteUserIdea = function(index) {
+    const modal = document.getElementById('deleteIdeaModal');
+    const input = document.getElementById('deleteIdeaConfirmInput');
+    const btn = document.getElementById('finalDeleteIdeaBtn');
+    
+    deletePendingIndex = index;
+    
+    // Az ötlet szövegét meg kell keresni az adatok között
+    // Ez a loadUserIdeas függvénytől függ, hogyan tárolja
+    const ideaText = document.querySelectorAll('.pending-idea-card h4')[index]?.textContent || 'Ötlet';
+    
+    document.getElementById('deleteIdeaText').textContent = `"${ideaText}"`;
+    
+    input.value = '';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    modal.classList.add('active');
+    
+    input.oninput = function() {
+        if (this.value === 'TÖRLÉS') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
+window.closeDeleteIdeaModal = function() {
+    document.getElementById('deleteIdeaModal').classList.remove('active');
+    deletePendingIndex = null;
+}
+
+window.confirmDeleteIdea = async function() {
+    const btn = document.getElementById('finalDeleteIdeaBtn');
+    const input = document.getElementById('deleteIdeaConfirmInput');
+    
+    if (input.value !== 'TÖRLÉS') return;
+    
+    btn.innerText = "Törlés folyamatban...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_IDEA', 
+                index: deletePendingIndex 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Ötlet sikeresen törölve! 🗑️');
+        closeDeleteIdeaModal();
+        loadUserIdeas();
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az ötletet.");
+        btn.innerText = "Ötlet Törlése 🗑️";
+        btn.disabled = false;
+    }
+}
+
+// =========================================
+// === 4. AJÁNLÁS TÖRLÉS ===
+// =========================================
+
+window.deleteUserRecommendation = function(originalIndex) {
+    const modal = document.getElementById('deleteRecModal');
+    const input = document.getElementById('deleteRecConfirmInput');
+    const btn = document.getElementById('finalDeleteRecBtn');
+    
+    deletePendingIndex = originalIndex;
+    
+    // Az ajánlás adatait meg kell keresni
+    const rec = allRecommendationsData.find(r => r.originalIndex === originalIndex);
+    if (!rec) return;
+    
+    document.getElementById('deleteRecName').textContent = rec.itemName;
+    document.getElementById('deleteRecDetails').textContent = 
+        `${rec.type} • ${rec.category}`;
+    document.getElementById('deleteRecDesc').textContent = rec.description;
+    
+    input.value = '';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    
+    modal.classList.add('active');
+    
+    input.oninput = function() {
+        if (this.value === 'TÖRLÉS') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
+window.closeDeleteRecModal = function() {
+    document.getElementById('deleteRecModal').classList.remove('active');
+    deletePendingIndex = null;
+}
+
+window.confirmDeleteRec = async function() {
+    const btn = document.getElementById('finalDeleteRecBtn');
+    const input = document.getElementById('deleteRecConfirmInput');
+    
+    if (input.value !== 'TÖRLÉS') return;
+    
+    btn.innerText = "Törlés folyamatban...";
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_RECOMMENDATION', 
+                originalIndex: deletePendingIndex 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) throw new Error(result.error || 'Szerverhiba');
+        
+        showSuccess('Ajánlás sikeresen törölve! 🗑️');
+        closeDeleteRecModal();
+        loadRecommendations();
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az ajánlást.");
+        btn.innerText = "Ajánlás Törlése 🗑️";
+        btn.disabled = false;
+    }
+}
 });
+
 
 
 
