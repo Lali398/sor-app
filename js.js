@@ -348,6 +348,7 @@ async function loadUserDrinks() {
     }
 }
 
+// 2. ITALOK MEGJELENÍTÉSE
 function renderUserDrinks(drinks) {
     userDrinkTableBody.innerHTML = '';
     if (!drinks || drinks.length === 0) {
@@ -360,7 +361,6 @@ function renderUserDrinks(drinks) {
         const calculatedAvg = scoreSum / 3;
         const formattedAvg = calculatedAvg.toFixed(2);
         
-        // ITT A VÁLTOZÁS: data-label attribútumok hozzáadása
         const row = `
             <tr>
                 <td data-label="Dátum">${formattedDate}</td>
@@ -374,7 +374,10 @@ function renderUserDrinks(drinks) {
                 <td data-label="Íz">${drink.taste || 0}</td>
                 <td data-label="Összpontszám">${drink.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet"><button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button></td>
+                <td data-label="Művelet">
+                    <button class="edit-btn" onclick="openEditDrinkModal(${index})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserDrink(${index})">🗑️ Törlés</button>
+                </td>
             </tr>
         `;
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
@@ -417,12 +420,11 @@ async function handleIdeaSubmit(e) {
     }
 }
 
-// 2. Ötletek betöltése (User oldal) - BADGE TÁMOGATÁSSAL
+// 3. ÖTLETEK BETÖLTÉSE (BADGE TÁMOGATÁSSAL + TÖRLÉS)
 async function loadUserIdeas() {
     const hallContainer = document.getElementById('hallOfFameList');
     const pendingContainer = document.getElementById('pendingIdeasList');
     
-    // Töltésjelző
     hallContainer.innerHTML = '<div class="recap-spinner"></div>';
     
     try {
@@ -434,7 +436,6 @@ async function loadUserIdeas() {
         const ideas = await response.json();
         if (!response.ok) throw new Error("Nem sikerült betölteni az ötleteket.");
         
-        // Takarítás
         hallContainer.innerHTML = '';
         pendingContainer.innerHTML = '';
         
@@ -443,17 +444,23 @@ async function loadUserIdeas() {
             return;
         }
 
+        // Aktuális felhasználó email-je
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        const currentUserEmail = userData ? userData.email : null;
+
         let hasFame = false;
+        let pendingIndex = 0; // Számláló a törölhető ötletekhez
+
         ideas.forEach(item => {
             const isDone = (item.status === 'Megcsinálva');
+            const isOwner = (item.email === currentUserEmail);
             
-            // Badge HTML generálása (ha van badge)
             const badgeHtml = item.badge 
-                ? `<span class="fame-badge" style="background: rgba(255,215,0,0.2); color: #ffd700; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-left: 5px; border: 1px solid rgba(255,215,0,0.3);">${item.badge}</span>` 
+                ? `<span class="fame-badge">${item.badge}</span>` 
                 : '';
 
             if (isDone) {
-                // DICSŐSÉGFAL KÁRTYA
+                // DICSŐSÉGFAL
                 hasFame = true;
                 const card = `
                 <div class="fame-card">
@@ -461,7 +468,8 @@ async function loadUserIdeas() {
                         <span class="fame-avatar">👑</span>
                         <span class="fame-name">
                             ${item.submitter}
-                            ${badgeHtml} </span>
+                            ${badgeHtml}
+                        </span>
                     </div>
                     <div class="fame-idea">"${item.idea}"</div>
                     <div class="fame-footer">
@@ -471,6 +479,11 @@ async function loadUserIdeas() {
                 hallContainer.insertAdjacentHTML('beforeend', card);
             } else {
                 // VÁRAKOZÓ LISTA
+                // Csak a saját, nem elfogadott ötleteinél jelenik meg törlés gomb
+                const deleteBtn = isOwner 
+                    ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
+                    : '';
+
                 const card = `
                 <div class="pending-idea-card">
                     <div class="pending-content">
@@ -479,9 +492,15 @@ async function loadUserIdeas() {
                             Beküldte: ${item.submitter} ${badgeHtml} • ${item.date}
                         </p>
                     </div>
-                    <div class="pending-status">⏳ ${item.status}</div>
+                    <div class="pending-actions">
+                        <div class="pending-status">⏳ ${item.status}</div>
+                        ${deleteBtn}
+                    </div>
                 </div>`;
                 pendingContainer.insertAdjacentHTML('beforeend', card);
+                
+                // Csak a nem kész ötleteket számláljuk (mert csak ezeket lehet törölni)
+                pendingIndex++;
             }
         });
         
@@ -1173,7 +1192,8 @@ function setupAdminRecap() {
         showError(error.message || "Nem sikerült betölteni a söreidet.");
     }
 }
-    function renderUserBeers(beers) {
+    // 1. SÖRÖK MEGJELENÍTÉSE
+function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
     if (!beers || beers.length === 0) {
         userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
@@ -1183,7 +1203,6 @@ function setupAdminRecap() {
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
         
-        // ITT A VÁLTOZÁS: data-label attribútumok hozzáadása
         const row = `
             <tr>
                 <td data-label="Dátum">${formattedDate}</td>
@@ -1195,7 +1214,10 @@ function setupAdminRecap() {
                 <td data-label="Íz">${beer.taste || 0}</td>
                 <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet"><button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button></td>
+                <td data-label="Művelet">
+                    <button class="edit-btn" onclick="openEditBeerModal(${index})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${index})">🗑️ Törlés</button>
+                </td>
             </tr>
         `;
         userBeerTableBody.insertAdjacentHTML('beforeend', row);
@@ -3560,7 +3582,7 @@ async function loadRecommendations() {
     }
 }
 
-// 5. Szűrés és Kirajzolás
+// 5. AJÁNLÁSOK SZŰRÉSE ÉS MEGJELENÍTÉSE (TÖRLÉS GOMBBAL)
 function applyRecFilters() {
     const container = document.getElementById('recommendationsList');
     const filterType = document.getElementById('filterRecType').value;
@@ -3590,9 +3612,12 @@ function applyRecFilters() {
         const badgeHtml = (item.badge && !item.isAnon) 
             ? `<span class="user-badge-display tiny">${item.badge}</span>` : '';
 
-        // Csak akkor rakunk gombot, ha az övé (isMine)
-        const editBtnHtml = item.isMine 
-            ? `<button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>` 
+        // SZERKESZTÉS ÉS TÖRLÉS GOMBOK - csak ha a sajátja
+        const actionBtns = item.isMine 
+            ? `
+                <button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>
+                <button class="delete-rec-btn" onclick="deleteUserRecommendation(${item.originalIndex})" title="Törlés">🗑️</button>
+              ` 
             : '';
             
         const editedHtml = item.isEdited 
@@ -3601,7 +3626,9 @@ function applyRecFilters() {
 
         const html = `
         <div class="rec-card ${typeClass}">
-            ${editBtnHtml}
+            <div class="rec-action-btns">
+                ${actionBtns}
+            </div>
             <div class="rec-header">
                 <div>
                     <div class="rec-item-name">${item.itemName}</div>
@@ -3671,7 +3698,147 @@ document.addEventListener('click', (e) => {
         loadRecommendations();
     }
 });
+// === TÖRLÉSI FUNKCIÓK ===
+// Illeszd be a js.js fájl végére
+
+// 1. SÖR TÖRLÉSE
+window.deleteUserBeer = async function(index) {
+    if (!confirm("Biztosan törölni akarod ezt a sört? Ez a művelet nem visszavonható!")) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_BEER', 
+                index: index 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        
+        showSuccess('Sör sikeresen törölve! 🗑️');
+        loadUserData(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni a sört.");
+    }
+}
+
+// 2. ITAL TÖRLÉSE
+window.deleteUserDrink = async function(index) {
+    if (!confirm("Biztosan törölni akarod ezt az italt? Ez a művelet nem visszavonható!")) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_DRINK', 
+                index: index 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        
+        showSuccess('Ital sikeresen törölve! 🗑️');
+        loadUserDrinks(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az italt.");
+    }
+}
+
+// 3. ÖTLET TÖRLÉSE
+window.deleteUserIdea = async function(index) {
+    if (!confirm("Biztosan törölni akarod ezt az ötletet? Ez a művelet nem visszavonható!")) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_IDEA', 
+                index: index 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        
+        showSuccess('Ötlet sikeresen törölve! 🗑️');
+        loadUserIdeas(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az ötletet.");
+    }
+}
+
+// 4. AJÁNLÁS TÖRLÉSE
+window.deleteUserRecommendation = async function(originalIndex) {
+    if (!confirm("Biztosan törölni akarod ezt az ajánlást? Ez a művelet nem visszavonható!")) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ 
+                action: 'DELETE_USER_RECOMMENDATION', 
+                originalIndex: originalIndex 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Szerverhiba');
+        }
+        
+        showSuccess('Ajánlás sikeresen törölve! 🗑️');
+        loadRecommendations(); // Újratöltjük a listát
+        
+    } catch (error) {
+        console.error("Törlési hiba:", error);
+        showError(error.message || "Nem sikerült törölni az ajánlást.");
+    }
+}
+    
 });
+
 
 
 
