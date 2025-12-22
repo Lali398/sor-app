@@ -3170,6 +3170,263 @@ select.cool-select {
 #deleteRecModal > div > div[style*="background: rgba(0, 176, 155"]:hover {
     background: rgba(0, 176, 155, 0.2) !important;
 }
+/* === TELJES ADAT MEGTEKINTÉS MODAL STÍLUSOK === */
+/* ILLESZD BE A STYLES.CSS FÁJL VÉGÉRE */
+
+/* 1. VIEW GOMB A TÁBLÁZATBAN */
+.view-btn {
+    padding: 5px 10px;
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.view-btn:hover {
+    background: linear-gradient(135deg, #8e44ad, #732d91);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+}
+
+/* 2. MODAL TARTALOM ELRENDEZÉS */
+.view-section {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.view-main-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.view-subtitle {
+    font-size: 1.1rem;
+    color: #c0c0c0;
+    font-weight: 500;
+}
+
+/* 3. INFO GRID (Főzési hely, Alkohol %, Dátum) */
+.view-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.view-info-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.view-label {
+    font-size: 0.75rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.view-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 4. ÉRTÉKELÉS KÁRTYÁK */
+.view-scores {
+    margin-bottom: 25px;
+}
+
+.view-score-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.view-score-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.view-score-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.score-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.score-label {
+    font-size: 0.8rem;
+    color: #b0b0b0;
+    margin-bottom: 5px;
+}
+
+.score-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+}
+
+/* 5. ÖSSZESÍTÉS SZEKCIÓ */
+.view-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    margin-bottom: 25px;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-big {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+}
+
+.summary-big.highlight {
+    background: linear-gradient(135deg, #ffd700, #f39c12);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* 6. JEGYZETEK DOBOZ */
+.view-notes {
+    margin-top: 20px;
+}
+
+.notes-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    color: #e0e0e0;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    font-style: italic;
+}
+
+/* 7. MOBIL OPTIMALIZÁLÁS */
+@media (max-width: 768px) {
+    .view-main-title {
+        font-size: 1.5rem;
+    }
+    
+    .view-score-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .view-summary {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .summary-big {
+        font-size: 2rem;
+    }
+    
+    .view-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* View gomb teljes szélességben mobilon */
+    .view-btn {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 8. ANIMÁCIÓK */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-overlay.active .view-beer-content,
+.modal-overlay.active .view-drink-content {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+/* 9. SCROLLBAR A MODAL-BAN */
+.view-beer-content,
+.view-drink-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.view-beer-content::-webkit-scrollbar,
+.view-drink-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.view-beer-content::-webkit-scrollbar-thumb,
+.view-drink-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.view-beer-content::-webkit-scrollbar-track,
+.view-drink-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 
 
 
