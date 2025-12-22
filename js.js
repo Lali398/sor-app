@@ -1073,6 +1073,7 @@ function setupAdminRecap() {
         beersData = []; 
         usersData = [];
         filteredBeers = [];
+        allRecommendationsData = []; 
         
         // 3. UI elemek "takarítása"
         const achiGrid = document.getElementById('achievementsGrid');
@@ -2343,6 +2344,15 @@ switchToUserView = function() {
     
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
+    
+    // === ÚJ SOROK - BIZTONSÁGOS RESET ===
+    allRecommendationsData = []; // Ajánlások törlése az új user betöltése előtt
+    
+    // Töröljük az ajánlások konténert is, hogy ne látszódjanak régi adatok
+    const recList = document.getElementById('recommendationsList');
+    if (recList) {
+        recList.innerHTML = '<div class="recap-spinner"></div>';
+    }
     
     // Adatok betöltése (ha léteznek a függvények a scope-ban)
     if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
@@ -3652,6 +3662,7 @@ document.addEventListener('click', (e) => {
     }
 });
 });
+
 
 
 
