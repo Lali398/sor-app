@@ -1431,9 +1431,8 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
     modalClose.addEventListener('click', closeAdminModal);
-    adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
-    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
-    
+
+
 
    // ======================================================
 // === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
@@ -4493,7 +4492,7 @@ window.closeSecretPinModal = function() {
     logoClickCount = 0;
 }
 
-// 3. PIN Beküldése és Ellenőrzése (JAVÍTOTT - NÉZETVÁLTÁSSAL)
+// 3. PIN Beküldése és Ellenőrzése (JAVÍTOTT VERZIÓ)
 const secretPinForm = document.getElementById('secretPinForm');
 if (secretPinForm) {
     secretPinForm.addEventListener('submit', async (e) => {
@@ -4524,30 +4523,31 @@ if (secretPinForm) {
 
             if (response.ok && result.success) {
                 // SIKERES PIN!
-                showSuccess("PIN elfogadva! Belépés... 🕵️‍♂️");
+                showSuccess("PIN elfogadva! Adatok betöltése... 🕵️‍♂️");
                 closeSecretPinModal();
                 
-                // AUTOMATIKUS BELÉPÉS ADATLEKÉRÉSSEL
+                // --- ITT A VÁLTOZTATÁS: AUTOMATIKUS BELÉPÉS ---
+                // Nem nyitjuk meg az ablakot, hanem a háttérben lekérjük az adatokat
                 try {
                     const loginResponse = await fetch('/api/sheet', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             action: 'GET_DATA', 
-                            username: 'admin', 
-                            password: 'sor'    
+                            username: 'admin', // Hardcoded alapértelmezett admin
+                            password: 'sor'    // Hardcoded alapértelmezett jelszó
                         })
                     });
                     
                     const loginResult = await loginResponse.json();
                     if (!loginResponse.ok) throw new Error(loginResult.error || "Hiba az adatok lekérésekor");
 
-                    // Adatok mentése
+                    // Adatok mentése a globális változókba
                     beersData = loginResult.beers || [];
                     usersData = loginResult.users || [];
                     filteredBeers = [...beersData]; 
 
-                    // Token mentése
+                    // Token és profil mentése
                     if (loginResult.adminToken) {
                         localStorage.setItem('userToken', loginResult.adminToken);
                         localStorage.setItem('userData', JSON.stringify({ 
@@ -4556,33 +4556,20 @@ if (secretPinForm) {
                             isAdmin: true 
                         }));
                     } else {
+                        // Ha nincs token (régi backend), csinálunk egy "fake" logint, hogy működjön
                         localStorage.setItem('userData', JSON.stringify({ isAdmin: true, name: 'Admin' }));
                     }
 
-                    // --- ITT A JAVÍTÁS: KÖZVETLEN NÉZETVÁLTÁS ---
+                    // VÉGREHAJTJUK A NÉZETVÁLTÁST
                     setTimeout(() => {
-                        // 1. Vendég nézet elrejtése
-                        document.getElementById('guestView').classList.add('hidden');
-                        
-                        // 2. Admin nézet megjelenítése
-                        const adminView = document.getElementById('adminView');
-                        adminView.classList.remove('hidden');
-                        adminView.classList.add('active');
-
-                        // 3. Adatok kirajzolása a táblázatba
-                        renderTable('admin1');
-                        if (typeof renderUsers === 'function') renderUsers();
-                        if (typeof updateStats === 'function') updateStats();
-                        
-                        // 4. Görgetés a tetejére
-                        window.scrollTo(0,0);
+                        switchToAdminView();
                     }, 500);
-                    // ---------------------------------------------
 
                 } catch (dataError) {
                     console.error("Adatbetöltési hiba:", dataError);
                     showError("Sikeres PIN, de nem sikerült betölteni az adatokat.");
                 }
+                // ----------------------------------------------
                 
             } else {
                 throw new Error(result.error || "Hibás kód!");
@@ -4590,6 +4577,7 @@ if (secretPinForm) {
 
         } catch (error) {
             showError(error.message);
+            // Hiba esetén töröljük a mezőt és remegtetjük
             const input = document.getElementById('secretPinInput');
             input.value = '';
             input.classList.add('shake-anim'); 
@@ -4601,9 +4589,6 @@ if (secretPinForm) {
     });
 }
 });
-
-
-
 
 
 
