@@ -102,48 +102,6 @@ export default async function handler(req, res) {
                 return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
             }
 
-
-            // 2. EZ AZ ÚJ RÉSZ (EZT SZÚRD BE A GET_DATA ALÁ) - Ez a PIN kódos belépés
-            case 'ADMIN_LOGIN_WITH_PIN': {
-                const { pin } = req.body;
-                
-                // PIN ellenőrzése (Ha nincs beállítva a Vercelen, '123456' a tartalék)
-                const correctPin = process.env.ADMIN_PIN || '123456';
-
-                if (!pin || pin !== correctPin) {
-                    return res.status(401).json({ error: 'Helytelen PIN kód!' });
-                }
-
-                // Admin token generálása
-                const adminToken = jwt.sign(
-                    { email: 'admin@sortablazat.hu', name: 'Főnök', isAdmin: true }, 
-                    process.env.JWT_SECRET, 
-                    { expiresIn: '1d' }
-                );
-
-                // Adatok lekérése az adminnak
-                const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
-                const allRows = sörökResponse.data.values || [];
-                const allBeers = [];
-                
-                allRows.forEach(row => {
-                    const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
-                    if (beer1) allBeers.push(beer1);
-                    const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
-                    if (beer2) allBeers.push(beer2);
-                });
-
-                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-                const users = usersResponse.data.values || [];
-
-                return res.status(200).json({ 
-                    message: 'Sikeres titkos belépés',
-                    adminToken: adminToken,
-                    beers: allBeers,
-                    users: users
-                });
-            }
-
             case 'REGISTER_USER': {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
@@ -1288,9 +1246,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
-
-
-
 
 
 
