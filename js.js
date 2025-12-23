@@ -1455,9 +1455,6 @@ function setupAdminRecap() {
         });
     }
     
-    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
-    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
-
 
    // ======================================================
 // === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
@@ -4581,6 +4578,7 @@ if (adminPinForm) {
     });
 }
 });
+
 
 
 
