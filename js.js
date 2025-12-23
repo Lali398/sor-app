@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
 
-    async function handleAdminPinLogin(e) {
+    async function handleAdminLogin(e) {
     e.preventDefault();
     const pinInput = document.getElementById('adminPinInput').value;
     const submitBtn = adminPinForm.querySelector('.auth-btn');
@@ -1426,7 +1426,7 @@ function setupAdminRecap() {
     }
 
     // --- Eseménykezelők ---
-    adminForm.addEventListener('submit', handleAdminPinLogin);
+    adminForm.addEventListener('submit', handleAdminLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
@@ -4501,6 +4501,7 @@ if (adminPinForm) {
     adminPinForm.addEventListener('submit', handleAdminPinLogin);
 }
 });
+
 
 
 
