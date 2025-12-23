@@ -70,26 +70,23 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-                // A frontendről érkező adat. A PIN-t a 'password' mezőben várjuk.
-                const { password } = req.body;
+                const { username, password } = req.body;
                 
-                // PIN kód ellenőrzése a környezeti változóból
-                const envPin = process.env.ADMIN_PIN;
-
-                // Ha nincs beállítva a szerveren a PIN, vagy nem egyezik a kapottal:
-                if (!envPin || password !== envPin) {
-                    return res.status(401).json({ error: 'Hibás PIN kód!' });
+                // Admin jelszó ellenőrzés (admin / sor)
+                if (username !== 'admin' || password !== 'sor') {
+                    return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
                 }
                 
-                // Admin token generálása (ez a rész változatlan marad)
+                // --- EZ A RÉSZ HIÁNYOZHATOTT VAGY VOLT HIBÁS ---
+                // Admin token generálása
                 const adminToken = jwt.sign(
-                    { 
-                        email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
+                    { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
                     process.env.JWT_SECRET, 
                     { expiresIn: '1d' }
                 );
+                // ------------------------------------------------
 
-                // Adatok lekérése (ez is változatlan marad)
+                // Adatok lekérése
                 const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
                 const allRows = sörökResponse.data.values || [];
                 const allBeers = [];
@@ -101,6 +98,7 @@ export default async function handler(req, res) {
                     if (beer2) allBeers.push(beer2);
                 });
                 
+                // Visszaküldjük az adminToken-t is!
                 return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
             }
 
@@ -1248,7 +1246,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
-
 
 
 
