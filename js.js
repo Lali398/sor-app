@@ -1397,28 +1397,52 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
-    // 1. Eltüntetjük a Vendég nézetet (a nyitó oldalt)
+    // 1. Vendég nézet TELJES kikapcsolása
     const guestView = document.getElementById('guestView');
     if (guestView) {
-        guestView.style.display = 'none'; // Vagy guestView.classList.remove('active'); attól függ hogy van a CSS
+        guestView.style.display = 'none';
+        guestView.style.visibility = 'hidden';
+        guestView.style.pointerEvents = 'none';
+    }
+    
+    // 2. Support gomb elrejtése (ha még látszik)
+    const guestSupportBtn = document.getElementById('guestSupportBtn');
+    if(guestSupportBtn) guestSupportBtn.style.display = 'none';
+
+    // 3. User nézet kikapcsolása
+    const userView = document.getElementById('userView');
+    if(userView) {
+        userView.style.display = 'none';
+        userView.style.visibility = 'hidden';
     }
 
-    // 2. Megjelenítjük az Admin nézetet
+    // 4. Admin nézet aktiválása
     const adminView = document.getElementById('adminView');
     if (adminView) {
-        adminView.style.display = 'block'; // Vagy flex, a design-tól függően
+        adminView.style.display = 'block';
+        adminView.style.visibility = 'visible';
+        adminView.style.pointerEvents = 'auto';
         
-        // Ha van 'active' osztály alapú megjelenítés a CSS-ben:
         setTimeout(() => {
             adminView.classList.add('active');
         }, 10);
     }
-
-    // 3. Betöltjük az adatokat (táblázat renderelése)
-    loadAdminData();
     
-    // Biztosítjuk, hogy a body görgethető legyen admin módban
-    document.body.style.overflow = 'auto'; 
+    // 5. Body beállítások
+    document.body.classList.add('admin-view-active');
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.overflow = 'auto'; // ⬅️ Fontos!
+    
+    // 6. Kurzor inicializálás (EZ HIÁNYZOTT!)
+    loadUserPreferences('admin_user');
+    
+    // 7. Admin funkciók inicializálása
+    initializeMainTabs(adminView);
+    loadAdminData();
+    initializeLiveSearch();
+    setupStatistics();
+    setupAdminRecap();
 }
 
     // --- Eseménykezelők ---
@@ -4496,6 +4520,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
