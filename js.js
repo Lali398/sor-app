@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = e.target;
         const isClickable = target.closest(`
             button, a, input, select, textarea, label,
-            .auth-btn, .admin-btn, .header-btn, .stat-tab-btn, 
+            .auth-btn, .header-btn, .stat-tab-btn, 
             .recap-btn, .suggestion-item, .switch-auth, 
             .clear-search, .modal-close, .kpi-card, .chart-container
         `);
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
-    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // ---(globális) ÁLLAPOT ---
     
@@ -158,58 +158,60 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAdminLogin(e) {
-        e.preventDefault();
-        const usernameInput = document.getElementById('adminUsername').value;
-        const passwordInput = document.getElementById('adminPassword').value;
-        const submitBtn = adminForm.querySelector('.auth-btn');
+    e.preventDefault();
+    const pinInput = document.getElementById('adminPin').value; // Csak a PIN-t olvassuk ki
+    const submitBtn = adminForm.querySelector('.auth-btn');
 
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
-
-            // Adatok mentése a változókba
-            beersData = result.beers || [];
-            usersData = result.users || [];
-            filteredBeers = [...beersData]; 
-            
-            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
-            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
-            if (result.adminToken) {
-                console.log("Admin token sikeresen mentve!"); // Debug üzenet
-                localStorage.setItem('userToken', result.adminToken);
-                
-                // Admin profil mentése a működéshez
-                localStorage.setItem('userData', JSON.stringify({ 
-                    name: 'Adminisztrátor', 
-                    email: 'admin@sortablazat.hu', 
-                    isAdmin: true 
-                }));
-            } else {
-                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
-            }
-            // =====================================
-            
-            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
-            
-            setTimeout(() => {
-                closeAdminModal();
-                switchToAdminView();
-            }, 1000);
-
-        } catch (error) {
-            console.error("Bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
-        } finally {
-            setLoading(submitBtn, false);
-        }
+    // Egyszerű kliens oldali validáció
+    if (pinInput.length < 4) {
+        showError('A PIN kód túl rövid!');
+        return;
     }
+
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            // Itt csak a PIN-t küldjük a szervernek
+            body: JSON.stringify({ action: 'GET_DATA', pin: pinInput })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
+
+        // Adatok mentése
+        beersData = result.beers || [];
+        usersData = result.users || [];
+        filteredBeers = [...beersData]; 
+        
+        if (result.adminToken) {
+            console.log("Admin token sikeresen mentve!");
+            localStorage.setItem('userToken', result.adminToken);
+            localStorage.setItem('userData', JSON.stringify({ 
+                name: 'Adminisztrátor', 
+                email: 'admin@sortablazat.hu', 
+                isAdmin: true 
+            }));
+        } else {
+            console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
+        }
+        
+        showSuccess('Sikeres Admin bejelentkezés!');
+        // Input törlése biztonsági okból
+        document.getElementById('adminPin').value = '';
+        
+        setTimeout(() => {
+            closeAdminModal();
+            switchToAdminView();
+        }, 1000);
+    } catch (error) {
+        console.error("Bejelentkezési hiba:", error);
+        showError(error.message || 'Hibás PIN kód!');
+        document.getElementById('adminPin').value = ''; // Hibás kódnál töröljük a mezőt
+    } finally {
+        setLoading(submitBtn, false);
+    }
+}
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -1397,23 +1399,30 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
+    // 1. Eltüntetjük a Vendég nézetet (a nyitó oldalt)
+    const guestView = document.getElementById('guestView');
+    if (guestView) {
+        guestView.style.display = 'none'; // Vagy guestView.classList.remove('active'); attól függ hogy van a CSS
     }
+
+    // 2. Megjelenítjük az Admin nézetet
+    const adminView = document.getElementById('adminView');
+    if (adminView) {
+        adminView.style.display = 'block'; // Vagy flex, a design-tól függően
+        
+        // Ha van 'active' osztály alapú megjelenítés a CSS-ben:
+        setTimeout(() => {
+            adminView.classList.add('active');
+        }, 10);
+    }
+
+    // 3. Betöltjük az adatokat (táblázat renderelése)
+    renderTable(); 
+    renderStatsChart();
+    
+    // Biztosítjuk, hogy a body görgethető legyen admin módban
+    document.body.style.overflow = 'auto'; 
+}
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -1430,8 +1439,6 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
-
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -4450,4 +4457,133 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
+    // === ÚJ TITKOS ADMIN BELÉPÉS (5 kattintás a logóra) ===
+    const secretLogo = document.getElementById('secretAdminLogo');
+    let secretClickCount = 0;
+    let secretClickTimeout;
+
+    if (secretLogo) {
+        secretLogo.addEventListener('click', (e) => {
+            // Megakadályozzuk a dupla kattintásos kijelölést
+            e.preventDefault(); 
+            
+            secretClickCount++;
+
+            // Pici vizuális visszajelzés (opcionális console log)
+            // console.log(`Kattintás: ${secretClickCount}`);
+
+            // Ha ez az első kattintás a sorozatban, indítjuk az időzítőt
+            if (secretClickCount === 1) {
+                secretClickTimeout = setTimeout(() => {
+                    secretClickCount = 0; // Ha letelt az idő (2 mp), nullázzuk
+                }, 2000); 
+            }
+
+            // Ha elértük az 5 kattintást
+            if (secretClickCount >= 5) {
+                clearTimeout(secretClickTimeout); // Időzítő törlése
+                secretClickCount = 0; // Számláló nullázása
+                
+                // Admin modal megnyitása
+                const adminModal = document.getElementById('adminModal');
+                if (adminModal) {
+                    adminModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Opcionális: fókusz a felhasználónév mezőre
+                    setTimeout(() => {
+                    const pinField = document.getElementById('adminPin');
+                    if(pinField) pinField.focus();
+                    }, 100);
+                }
+            }
+        });
+    }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
