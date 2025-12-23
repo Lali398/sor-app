@@ -1426,7 +1426,7 @@ function setupAdminRecap() {
     }
 
     // --- Eseménykezelők ---
-    adminForm.addEventListener('submit', handleAdminLogin);
+    adminForm.addEventListener('submit', handleAdminPinLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
@@ -4501,6 +4501,7 @@ if (adminPinForm) {
     adminPinForm.addEventListener('submit', handleAdminPinLogin);
 }
 });
+
 
 
 
