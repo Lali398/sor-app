@@ -1954,6 +1954,8 @@ window.addEventListener('scroll', function() {
         initializeLiveSearch();
         setupStatistics();
         setupAdminRecap();
+        renderTable(); 
+        renderStatsChart();
 
         // Beállítások betöltése Adminnak
         loadUserPreferences('admin_user');
@@ -4500,6 +4502,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
