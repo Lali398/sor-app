@@ -69,53 +69,66 @@ export default async function handler(req, res) {
 
         switch (action) {
             
+            case 'GET_DATA': {
+                try {
+                    const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
+                    const allRows = sörökResponse.data.values || [];
+                    const allBeers = [];
+                    
+                    allRows.forEach(row => {
+                        const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
+                        if (beer1) allBeers.push(beer1);
+                        const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
+                        if (beer2) allBeers.push(beer2);
+                    });
+
+                    return res.status(200).json(allBeers);
+                } catch (error) {
+                    console.error("GET_DATA hiba:", error);
+                    return res.status(500).json({ error: "Nem sikerült betölteni az adatokat." });
+                }
+            }
+
+            // 2. EZ AZ ÚJ RÉSZ (EZT SZÚRD BE A GET_DATA ALÁ) - Ez a PIN kódos belépés
             case 'ADMIN_LOGIN_WITH_PIN': {
-    const { pin } = req.body;
-    
-    // A Vercel környezeti változóból olvassuk ki a helyes kódot
-    const correctPin = process.env.ADMIN_PIN;
+                const { pin } = req.body;
+                
+                // PIN ellenőrzése (Ha nincs beállítva a Vercelen, '123456' a tartalék)
+                const correctPin = process.env.ADMIN_PIN || '123456';
 
-    // Ellenőrzés
-    if (!pin || pin !== correctPin) {
-        return res.status(401).json({ error: 'Hibás PIN kód!' });
-    }
+                if (!pin || pin !== correctPin) {
+                    return res.status(401).json({ error: 'Helytelen PIN kód!' });
+                }
 
-    // Ha jó a kód, generálunk egy Admin Tokent
-    const adminToken = jwt.sign(
-        { 
-            email: 'admin@sortablazat.hu', 
-            name: 'Admin', 
-            isAdmin: true 
-        }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: '1d' }
-    );
+                // Admin token generálása
+                const adminToken = jwt.sign(
+                    { email: 'admin@sortablazat.hu', name: 'Főnök', isAdmin: true }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: '1d' }
+                );
 
-    // Visszaküldjük a tokent és az adatokat (ugyanazt, amit a GET_DATA küldött volna)
-    // Megjegyzés: Ha az adatok lekérése külön van, itt elég csak a tokent visszaadni,
-    // de a te kódodban a login egyben kéri le az adatokat is.
-    
-    const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
-    const allRows = sörökResponse.data.values || [];
-    const allBeers = [];
-    
-    allRows.forEach(row => {
-        const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
-        if (beer1) allBeers.push(beer1);
-        const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
-        if (beer2) allBeers.push(beer2);
-    });
+                // Adatok lekérése az adminnak
+                const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
+                const allRows = sörökResponse.data.values || [];
+                const allBeers = [];
+                
+                allRows.forEach(row => {
+                    const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
+                    if (beer1) allBeers.push(beer1);
+                    const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
+                    if (beer2) allBeers.push(beer2);
+                });
 
-    const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
-    const users = usersResponse.data.values || [];
+                const usersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
+                const users = usersResponse.data.values || [];
 
-    return res.status(200).json({ 
-        message: 'Sikeres admin belépés',
-        adminToken: adminToken,
-        beers: allBeers,
-        users: users
-    });
-}
+                return res.status(200).json({ 
+                    message: 'Sikeres titkos belépés',
+                    adminToken: adminToken,
+                    beers: allBeers,
+                    users: users
+                });
+            }
 
             case 'REGISTER_USER': {
     const { name, email, password } = req.body;
@@ -1261,6 +1274,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
