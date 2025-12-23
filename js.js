@@ -4,25 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
-    // --- TITKOS ADMIN GOMB ESEMÉNY ---
-if (secretAdminBtn) {
-    secretAdminBtn.addEventListener('click', () => {
-        // Kis animáció, hogy látszódjon a kattintás
-        secretAdminBtn.style.transform = "scale(1.2) rotate(15deg)";
-        setTimeout(() => secretAdminBtn.style.transform = "", 300);
-
-        // Megnyitjuk a PIN modalt
-        if (adminPinModal) {
-            adminPinModal.classList.add('active');
-            // Fókuszt teszünk a mezőbe, és töröljük az előző tartalmat
-            const pinInput = document.getElementById('adminPinInput');
-            if (pinInput) {
-                pinInput.value = '';
-                setTimeout(() => pinInput.focus(), 100);
-            }
-        }
-    });
-}
 
 // Modal bezárása (X gomb vagy kattintás kívülre - opcionális segédfüggvény)
 window.closeAdminPinModal = function() {
@@ -178,6 +159,27 @@ window.closeAdminPinModal = function() {
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
 
+
+    // --- TITKOS ADMIN GOMB ESEMÉNY ---
+if (secretAdminBtn) {
+    secretAdminBtn.addEventListener('click', () => {
+        // Kis animáció, hogy látszódjon a kattintás
+        secretAdminBtn.style.transform = "scale(1.2) rotate(15deg)";
+        setTimeout(() => secretAdminBtn.style.transform = "", 300);
+
+        // Megnyitjuk a PIN modalt
+        if (adminPinModal) {
+            adminPinModal.classList.add('active');
+            // Fókuszt teszünk a mezőbe, és töröljük az előző tartalmat
+            const pinInput = document.getElementById('adminPinInput');
+            if (pinInput) {
+                pinInput.value = '';
+                setTimeout(() => pinInput.focus(), 100);
+            }
+        }
+    });
+}
+    
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
@@ -4493,6 +4495,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
