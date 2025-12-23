@@ -1110,26 +1110,25 @@
 
     <!-- ADMIN MODAL -->
     <div class="modal-overlay" id="adminModal">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h3>Gabz és Lajos bejelentkezés</h3>
-                <button id="modalClose" class="modal-close">&times;</button>
-            </header>
-            <form id="adminForm">
-                <div class="input-group">
-                    <input type="text" id="adminUsername" placeholder=" " required>
-                    <label for="adminUsername">Felhasználónév</label>
-                    <span class="input-highlight"></span>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="adminPassword" placeholder=" " required>
-                    <label for="adminPassword">Jelszó</label>
-                    <span class="input-highlight"></span>
-                </div>
-                <button type="submit" class="auth-btn">Bejelentkezés</button>
-            </form>
-        </div>
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Admin Belépés</h3>
+            <button id="modalClose" class="modal-close">&times;</button>
+        </header>
+        <form id="adminForm">
+            <div class="input-group">
+                <input type="password" id="adminPin" placeholder=" " maxlength="6" inputmode="numeric" required 
+                       style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; font-weight: bold; color: #ffd700;">
+                <label for="adminPin" style="text-align: center; width: 100%;">6 számjegyű PIN</label>
+                <span class="input-highlight"></span>
+            </div>
+            <button type="submit" class="auth-btn">Belépés</button>
+        </form>
     </div>
+</div>
+
+
+    
 <div class="modal-overlay" id="setup2FAModal">
     <div class="modal-content">
         <header class="modal-header">
@@ -1738,6 +1737,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
