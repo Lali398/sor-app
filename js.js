@@ -203,7 +203,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             closeAdminModal();
             switchToAdminView();
-            renderTable();
         }, 1000);
     } catch (error) {
         console.error("Bejelentkezési hiba:", error);
@@ -1955,8 +1954,6 @@ window.addEventListener('scroll', function() {
         initializeLiveSearch();
         setupStatistics();
         setupAdminRecap();
-        renderTable(); 
-        renderStatsChart();
 
         // Beállítások betöltése Adminnak
         loadUserPreferences('admin_user');
@@ -4503,6 +4500,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
