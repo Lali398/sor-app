@@ -3514,6 +3514,18 @@ select.cool-select {
         font-size: 0.6rem;
     }
 }
+/* Titkos admin belépő ikon stílusa */
+#secretAdminLogo {
+    cursor: pointer;       /* Mutassa, hogy kattintható */
+    user-select: none;     /* Ne lehessen kijelölni a szöveget */
+    -webkit-user-select: none;
+    transition: transform 0.1s ease;
+}
+
+#secretAdminLogo:active {
+    transform: scale(0.9); /* Pici nyomás effekt kattintáskor */
+}
+
 
 
 
