@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = e.target;
         const isClickable = target.closest(`
             button, a, input, select, textarea, label,
-            .auth-btn, .admin-btn, .header-btn, .stat-tab-btn, 
+            .auth-btn, .header-btn, .stat-tab-btn, 
             .recap-btn, .suggestion-item, .switch-auth, 
             .clear-search, .modal-close, .kpi-card, .chart-container
         `);
@@ -4500,6 +4500,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
