@@ -176,10 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
             
-            // Adatok mentése
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
+            
+            // FONTOS: Frissítsük a globális változót is, amit a többi függvény használ
+            // Ha a te kódodban más a neve (pl. allBeers), írd át arra!
             
             if (result.adminToken) {
                 localStorage.setItem('userToken', result.adminToken);
@@ -188,15 +190,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
+                // Frissítjük a globális állapotot is
+                currentUser = { name: 'Adminisztrátor', isAdmin: true };
             }
 
             showSuccess('Sikeres belépés!');
             
-            // Mező törlése biztonsági okból
-            document.getElementById('adminPassword').value = '';
-
             setTimeout(() => {
                 closeAdminModal();
+                // Előbb inicializáljuk a nézetet, aztán váltunk
+                renderAdminBeers(); 
                 switchToAdminView();
             }, 1000);
 
@@ -4483,6 +4486,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
