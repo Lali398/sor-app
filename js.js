@@ -1438,7 +1438,7 @@ function setupAdminRecap() {
     recapControls.addEventListener('click', handleRecapPeriodClick);
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
-    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    function closeAdminModal() { adminModal.classList.remove('active'); }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
 
 
@@ -4497,6 +4497,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
