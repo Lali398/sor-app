@@ -107,16 +107,6 @@
                     </div>
                 </div>
 
-                <div class="admin-section">
-                    <button class="admin-btn" id="adminBtn">
-                        <span class="admin-icon">👑</span>
-                        <span class="admin-text">Gabz és Lajos</span>
-                        <div class="admin-shine"></div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
      <div class="support-section" style="margin-top: 0px;">
             <button class="support-btn" id="guestSupportBtn">
@@ -1734,10 +1724,35 @@
     </div>
 </div>
 
+        <div class="modal-overlay" id="adminPinModal">
+    <div class="modal-content" style="text-align: center; border: 2px solid #ffd700; background: #1a1000;">
+        <header class="modal-header" style="justify-content: center; border-bottom: none;">
+            <h3 style="color: #ffd700;">Titkos Admin Zóna 🤫</h3>
+            <button class="modal-close" onclick="closeAdminPinModal()" style="position: absolute; right: 20px;">&times;</button>
+        </header>
+        
+        <p style="color: #ccc; margin-bottom: 20px;">Add meg a 6 számjegyű hozzáférési kódot:</p>
+
+        <form id="adminPinForm">
+            <div class="input-group" style="margin-bottom: 20px;">
+                <input type="password" id="adminPinInput" maxlength="6" placeholder="******" 
+                       style="text-align: center; font-size: 2rem; letter-spacing: 10px; color: #ffd700; border-bottom: 2px solid #ffd700;" required>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #ffd700, #f39c12); color: #000;">
+                <span class="btn-text">Belépés</span>
+                <span class="btn-loading"><div class="spinner" style="border-color: #000; border-top-color: transparent;"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+
+        
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
