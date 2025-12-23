@@ -159,10 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleAdminLogin(e) {
     e.preventDefault();
-    const pinInput = document.getElementById('adminPin').value; // Csak a PIN-t olvassuk ki
+    const pinInput = document.getElementById('adminPin').value;
     const submitBtn = adminForm.querySelector('.auth-btn');
 
-    // Egyszerű kliens oldali validáció
     if (pinInput.length < 4) {
         showError('A PIN kód túl rövid!');
         return;
@@ -173,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Itt csak a PIN-t küldjük a szervernek
             body: JSON.stringify({ action: 'GET_DATA', pin: pinInput })
         });
         const result = await response.json();
@@ -197,18 +195,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         showSuccess('Sikeres Admin bejelentkezés!');
-        // Input törlése biztonsági okból
         document.getElementById('adminPin').value = '';
         
         setTimeout(() => {
             closeAdminModal();
-            loadAdminData();
+            // ✅ CSAK EZ MARAD:
             switchToAdminView();
         }, 1000);
     } catch (error) {
         console.error("Bejelentkezési hiba:", error);
         showError(error.message || 'Hibás PIN kód!');
-        document.getElementById('adminPin').value = ''; // Hibás kódnál töröljük a mezőt
+        document.getElementById('adminPin').value = '';
     } finally {
         setLoading(submitBtn, false);
     }
@@ -4500,6 +4497,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
