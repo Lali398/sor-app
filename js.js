@@ -4483,13 +4483,17 @@ switchToUserView = function() {
                     adminModal.classList.add('active');
                     document.body.style.overflow = 'hidden';
                     
-                    // MÓDOSÍTÁS ITT: Fókusz a PIN mezőre
+                    // Opcionális: fókusz a felhasználónév mezőre
                     setTimeout(() => {
-                        const pinField = document.getElementById('adminPin');
-                        if(pinField) pinField.focus();
+                    const pinField = document.getElementById('adminPin');
+                    if(pinField) pinField.focus();
                     }, 100);
                 }
+            }
+        });
+    }
 });
+
 
 
 
