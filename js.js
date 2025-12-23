@@ -219,7 +219,7 @@ if (adminPinModal) {
     });
 }
 
-// === FORM BEKÜLDÉSE (PIN KÓD) ===
+// === FORM BEKÜLDÉSE ===
 if (adminPinForm) {
     adminPinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -250,10 +250,9 @@ if (adminPinForm) {
                 throw new Error(result.error || 'Helytelen PIN kód!');
             }
             
-            // Sikeres belépés!
+            // Sikeres belépés! Token és adatok mentése
             if (result.adminToken) {
                 localStorage.setItem('userToken', result.adminToken);
-                // Admin adatok mentése, hogy a rendszer ne dobja ki
                 localStorage.setItem('userData', JSON.stringify({ 
                     name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
@@ -261,20 +260,18 @@ if (adminPinForm) {
                 }));
             }
             
-            // ADATOK BETÖLTÉSE A VÁLTOZÓKBA
-            // Fontos: Üres tömböt adunk, ha nincs adat, hogy ne fagyjon le a .length
+            // Adatok mentése
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData];
             
             showSuccess('🔐 Sikeres titkos belépés!');
             
-            // Bezárjuk a modalt és váltunk
             setTimeout(() => {
                 closeAdminPinModal();
                 switchToAdminView();
-            }, 500);
-
+            }, 1000);
+            
         } catch (error) {
             console.error("PIN belépési hiba:", error);
             showError(error.message || 'Helytelen PIN kód!');
@@ -1477,44 +1474,23 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
-    // 1. Gombok és egyéb nézetek elrejtése
-    const guestSupportBtn = document.getElementById('guestSupportBtn');
-    if(guestSupportBtn) guestSupportBtn.style.display = 'none';
-    
-    // Nézetek kezelése
-    if(guestView) guestView.style.display = 'none';
-    if(userView) userView.style.display = 'none';
-    if(adminView) adminView.style.display = 'block';
+        document.body.classList.add('custom-cursor-active');
+        guestView.style.display = 'none';
+        userView.style.display = 'none';
+        adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
 
-    // Háttér beállítása
-    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-    document.body.style.backgroundAttachment = 'fixed';
-    
-    // Kurzor beállítása (ha van mentett preferencia)
-    loadUserPreferences('admin_user');
+        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
 
-    // 2. Adatok és funkciók betöltése
-    initializeMainTabs(adminView);
-    loadAdminData();
-    initializeLiveSearch();
-    
-    if (typeof setupStatistics === 'function') setupStatistics();
-    if (typeof setupAdminRecap === 'function') setupAdminRecap();
+        // Fő fülek inicializálása az admin nézeten
+        initializeMainTabs(adminView);
 
-    // 3. KÉNYSZERÍTETT TAB FRISSÍTÉS (Ez oldja meg az üres tartalmat)
-    // Megkeressük az aktív tabot és "rákattintunk" virtuálisan, hogy a tartalom is megjelenjen
-    const activeTabBtn = adminView.querySelector('.main-tab-btn.active');
-    if (activeTabBtn) {
-        const targetId = activeTabBtn.dataset.tabContent;
-        const targetPane = document.getElementById(targetId);
-        if (targetPane) {
-            // Minden panelt elrejtünk admin nézeten belül
-            adminView.querySelectorAll('.main-tab-pane').forEach(p => p.classList.remove('active'));
-            // Az aktívat megjelenítjük
-            targetPane.classList.add('active');
-        }
+        loadAdminData();
+        initializeLiveSearch();
+        setupStatistics(); // Statisztika fül inicializálása
+        setupAdminRecap();
     }
-}
 
     // --- Eseménykezelők ---
     
@@ -2031,6 +2007,8 @@ window.addEventListener('scroll', function() {
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
+        loadUserPreferences('admin_user');
+        originalSwitchToAdminView();
         const guestSupportBtn = document.getElementById('guestSupportBtn');
         if(guestSupportBtn) guestSupportBtn.style.display = 'none';
 
@@ -2661,7 +2639,9 @@ if(sidebarLogout) {
 // Inicializálás nézetváltáskor
 const originalSwitchToUserViewUpdate = switchToUserView;
 switchToUserView = function() {
-    originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
+    originalSwitchToUserViewUpdate(); // ⬅️ EZ JÓ
+    setTimeout(initScrollAnimation, 100);
+};
     
     // Név frissítése a sidebarban is
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -4548,8 +4528,6 @@ switchToUserView = function() {
     }, 500);
 };
 });
-
-
 
 
 
