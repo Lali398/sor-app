@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const adminView = document.getElementById('adminView');
     const guestView = document.getElementById('guestView');
-    const userView = document.getElementById('userView');
+    const userView = document.getElementById('userView')
     const adminForm = document.getElementById('adminForm');
     const liveSearchInput = document.getElementById('liveSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
@@ -131,10 +131,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const editBeerForm = document.getElementById('editBeerForm');
     const editDrinkModal = document.getElementById('editDrinkModal');
     const editDrinkForm = document.getElementById('editDrinkForm');
-    const guestBeerIcon = document.querySelector('#guestView .beer-icon');
-    const adminPinModal = document.getElementById('adminPinModal');
-    const adminPinForm = document.getElementById('adminPinForm');
-    const adminPinInput = document.getElementById('adminPinInput');
     
     
     // STATISZTIKA ELEMEK
@@ -142,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
-    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
 
     // ---(globális) ÁLLAPOT ---
     
@@ -156,137 +152,64 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentUserDrinks = [];
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
-    let adminClickCount = 0;
-    let adminClickTimer = null;
 
-    if (guestBeerIcon) {
-    guestBeerIcon.addEventListener('click', () => {
-        adminClickCount++;
-        
-        // Vizuális visszajelzés (ikon "rázkódás")
-        guestBeerIcon.style.animation = 'none';
-        setTimeout(() => {
-            guestBeerIcon.style.animation = 'bounce 0.3s ease';
-        }, 10);
-        
-        // Ha 5x rákattintottak
-        if (adminClickCount === 5) {
-            openAdminPinModal();
-            adminClickCount = 0; // Reset
-            clearTimeout(adminClickTimer);
-        }
-        
-        // Timer reset - ha 2 másodpercen belül nem kattint újra, nullázódik a számláló
-        clearTimeout(adminClickTimer);
-        adminClickTimer = setTimeout(() => {
-            adminClickCount = 0;
-        }, 2000);
-    });
-}
+    // ======================================================
+    // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
+    // ======================================================
 
-// === MODAL MEGNYITÁSA ===
-function openAdminPinModal() {
-    if (!adminPinModal) return;
-    
-    adminPinModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Input fókusz kis késleltetéssel
-    setTimeout(() => {
-        if (adminPinInput) adminPinInput.focus();
-    }, 300);
-    
-    // Reset form
-    if (adminPinForm) adminPinForm.reset();
-}
-
-// === MODAL BEZÁRÁSA ===
-window.closeAdminPinModal = function() {
-    if (!adminPinModal) return;
-    
-    adminPinModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    
-    if (adminPinForm) adminPinForm.reset();
-}
-
-// === MODAL BEZÁRÁSA KÍVÜLRE KATTINTVA ===
-if (adminPinModal) {
-    adminPinModal.addEventListener('click', (e) => {
-        if (e.target === adminPinModal) {
-            closeAdminPinModal();
-        }
-    });
-}
-
-// === FORM BEKÜLDÉSE ===
-if (adminPinForm) {
-    adminPinForm.addEventListener('submit', async (e) => {
+    async function handleAdminLogin(e) {
         e.preventDefault();
-        
-        const pin = adminPinInput.value.trim();
-        const submitBtn = adminPinForm.querySelector('.auth-btn');
-        
-        if (!pin || pin.length !== 6) {
-            showError("Add meg a 6 számjegyű PIN kódot!");
-            return;
-        }
-        
+        const usernameInput = document.getElementById('adminUsername').value;
+        const passwordInput = document.getElementById('adminPassword').value;
+        const submitBtn = adminForm.querySelector('.auth-btn');
+
         setLoading(submitBtn, true);
-        
         try {
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action: 'ADMIN_LOGIN_WITH_PIN', 
-                    pin: pin 
-                })
+                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
             });
             
             const result = await response.json();
+            if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
+
+            // Adatok mentése a változókba
+            beersData = result.beers || [];
+            usersData = result.users || [];
+            filteredBeers = [...beersData]; 
             
-            if (!response.ok) {
-                throw new Error(result.error || 'Helytelen PIN kód!');
-            }
-            
-            // Sikeres belépés! Token és adatok mentése
+            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
+            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
             if (result.adminToken) {
+                console.log("Admin token sikeresen mentve!"); // Debug üzenet
                 localStorage.setItem('userToken', result.adminToken);
+                
+                // Admin profil mentése a működéshez
                 localStorage.setItem('userData', JSON.stringify({ 
                     name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
+            } else {
+                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
             }
+            // =====================================
             
-            // Adatok mentése
-            beersData = result.beers || [];
-            usersData = result.users || [];
-            filteredBeers = [...beersData];
-            
-            showSuccess('🔐 Sikeres titkos belépés!');
+            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
             
             setTimeout(() => {
-                closeAdminPinModal();
+                closeAdminModal();
                 switchToAdminView();
             }, 1000);
-            
+
         } catch (error) {
-            console.error("PIN belépési hiba:", error);
-            showError(error.message || 'Helytelen PIN kód!');
-            adminPinInput.value = '';
-            adminPinInput.focus();
+            console.error("Bejelentkezési hiba:", error);
+            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
         } finally {
             setLoading(submitBtn, false);
         }
-    });
-}
-    // ======================================================
-    // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
-    // ======================================================
-
-    
+    }
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -1493,7 +1416,7 @@ function setupAdminRecap() {
     }
 
     // --- Eseménykezelők ---
-    
+    adminForm.addEventListener('submit', handleAdminLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
@@ -1508,6 +1431,10 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
+    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
+    modalClose.addEventListener('click', closeAdminModal);
+    adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
+    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
 
 
@@ -2007,8 +1934,6 @@ window.addEventListener('scroll', function() {
     // Admin nézet váltásakor betöltjük a beállítást
     const originalSwitchToAdminView = switchToAdminView;
     switchToAdminView = function() {
-        loadUserPreferences('admin_user');
-        originalSwitchToAdminView();
         const guestSupportBtn = document.getElementById('guestSupportBtn');
         if(guestSupportBtn) guestSupportBtn.style.display = 'none';
 
@@ -2639,9 +2564,7 @@ if(sidebarLogout) {
 // Inicializálás nézetváltáskor
 const originalSwitchToUserViewUpdate = switchToUserView;
 switchToUserView = function() {
-    originalSwitchToUserViewUpdate(); // ⬅️ EZ JÓ
-    setTimeout(initScrollAnimation, 100);
-};
+    originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
     
     // Név frissítése a sidebarban is
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -4528,6 +4451,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
