@@ -1430,8 +1430,6 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
-
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -4450,7 +4448,50 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
+    // === ÚJ TITKOS ADMIN BELÉPÉS (5 kattintás a logóra) ===
+    const secretLogo = document.getElementById('secretAdminLogo');
+    let secretClickCount = 0;
+    let secretClickTimeout;
+
+    if (secretLogo) {
+        secretLogo.addEventListener('click', (e) => {
+            // Megakadályozzuk a dupla kattintásos kijelölést
+            e.preventDefault(); 
+            
+            secretClickCount++;
+
+            // Pici vizuális visszajelzés (opcionális console log)
+            // console.log(`Kattintás: ${secretClickCount}`);
+
+            // Ha ez az első kattintás a sorozatban, indítjuk az időzítőt
+            if (secretClickCount === 1) {
+                secretClickTimeout = setTimeout(() => {
+                    secretClickCount = 0; // Ha letelt az idő (2 mp), nullázzuk
+                }, 2000); 
+            }
+
+            // Ha elértük az 5 kattintást
+            if (secretClickCount >= 5) {
+                clearTimeout(secretClickTimeout); // Időzítő törlése
+                secretClickCount = 0; // Számláló nullázása
+                
+                // Admin modal megnyitása
+                const adminModal = document.getElementById('adminModal');
+                if (adminModal) {
+                    adminModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Opcionális: fókusz a felhasználónév mezőre
+                    setTimeout(() => {
+                        const userField = document.getElementById('adminUsername');
+                        if(userField) userField.focus();
+                    }, 100);
+                }
+            }
+        });
+    }
 });
+
 
 
 
