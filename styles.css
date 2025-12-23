@@ -3525,6 +3525,17 @@ select.cool-select {
 #secretAdminLogo:active {
     transform: scale(0.9); /* Pici nyomás effekt kattintáskor */
 }
+/* === MODAL NYITOTT ÃLLAPOT === */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* === ADMIN NÃ‰ZET HÃTTÃ‰R === */
+body.admin-view-active {
+    background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%) !important;
+    background-attachment: fixed !important;
+}
+
 
 
 
