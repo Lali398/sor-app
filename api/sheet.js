@@ -70,40 +70,37 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-    const { pin } = req.body; // username, password helyett pin-t várunk
-    const correctPin = process.env.ADMIN_PIN;
+                const { username, password } = req.body;
+                
+                // Admin jelszó ellenőrzés (admin / sor)
+                if (username !== 'admin' || password !== 'sor') {
+                    return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
+                }
+                
+                // --- EZ A RÉSZ HIÁNYOZHATOTT VAGY VOLT HIBÁS ---
+                // Admin token generálása
+                const adminToken = jwt.sign(
+                    { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: '1d' }
+                );
+                // ------------------------------------------------
 
-    // Ellenőrizzük, hogy be van-e állítva a szerveren a kód
-    if (!correctPin) {
-        return res.status(500).json({ error: 'Szerver hiba: Nincs beállítva Admin PIN.' });
-    }
-
-    // PIN ellenőrzés
-    if (pin !== correctPin) {
-        return res.status(401).json({ error: 'Hibás Admin PIN kód!' });
-    }
-    
-    // Admin token generálása (ez a rész marad változatlan)
-    const adminToken = jwt.sign(
-        { 
-            email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
-            process.env.JWT_SECRET, 
-            { expiresIn: '1d' }
-    );
-
-    // Adatok lekérése (ez is marad változatlan)
-    const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
-    const allRows = sörökResponse.data.values || [];
-    const allBeers = [];
-    allRows.forEach(row => {
-        const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
-        if (beer1) allBeers.push(beer1);
-        const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
-        if (beer2) allBeers.push(beer2);
-    });
-    
-    return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
-}
+                // Adatok lekérése
+                const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
+                const allRows = sörökResponse.data.values || [];
+                const allBeers = [];
+                
+                allRows.forEach(row => {
+                    const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
+                    if (beer1) allBeers.push(beer1);
+                    const beer2 = transformRowToBeer(row, COL_INDEXES.admin2, 'admin2');
+                    if (beer2) allBeers.push(beer2);
+                });
+                
+                // Visszaküldjük az adminToken-t is!
+                return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
+            }
 
             case 'REGISTER_USER': {
     const { name, email, password } = req.body;
@@ -1249,7 +1246,6 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
-
 
 
 
