@@ -4,11 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
-
-// Modal bezárása (X gomb vagy kattintás kívülre - opcionális segédfüggvény)
-window.closeAdminPinModal = function() {
-    if (adminPinModal) adminPinModal.classList.remove('active');
-}
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -109,11 +104,8 @@ window.closeAdminPinModal = function() {
     });
     
     const adminView = document.getElementById('adminView');
-    const adminPinModal = document.getElementById('adminPinModal');
-    const adminPinForm = document.getElementById('adminPinForm');
-    const secretAdminBtn = document.querySelector('#loginCard .beer-icon');
     const guestView = document.getElementById('guestView');
-    const userView = document.getElementById('userView')
+    const userView = document.getElementById('userView');
     const adminForm = document.getElementById('adminForm');
     const liveSearchInput = document.getElementById('liveSearchInput');
     const searchSuggestions = document.getElementById('searchSuggestions');
@@ -139,6 +131,10 @@ window.closeAdminPinModal = function() {
     const editBeerForm = document.getElementById('editBeerForm');
     const editDrinkModal = document.getElementById('editDrinkModal');
     const editDrinkForm = document.getElementById('editDrinkForm');
+    const guestBeerIcon = document.querySelector('#guestView .beer-icon');
+    const adminPinModal = document.getElementById('adminPinModal');
+    const adminPinForm = document.getElementById('adminPinForm');
+    const adminPinInput = document.getElementById('adminPinInput');
     
     
     // STATISZTIKA ELEMEK
@@ -146,6 +142,8 @@ window.closeAdminPinModal = function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
+    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+
     // ---(globális) ÁLLAPOT ---
     
     let beersData = [];
@@ -158,99 +156,137 @@ window.closeAdminPinModal = function() {
     let currentUserDrinks = [];
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
+    let adminClickCount = 0;
+    let adminClickTimer = null;
 
+    if (guestBeerIcon) {
+    guestBeerIcon.addEventListener('click', () => {
+        adminClickCount++;
+        
+        // Vizuális visszajelzés (ikon "rázkódás")
+        guestBeerIcon.style.animation = 'none';
+        setTimeout(() => {
+            guestBeerIcon.style.animation = 'bounce 0.3s ease';
+        }, 10);
+        
+        // Ha 5x rákattintottak
+        if (adminClickCount === 5) {
+            openAdminPinModal();
+            adminClickCount = 0; // Reset
+            clearTimeout(adminClickTimer);
+        }
+        
+        // Timer reset - ha 2 másodpercen belül nem kattint újra, nullázódik a számláló
+        clearTimeout(adminClickTimer);
+        adminClickTimer = setTimeout(() => {
+            adminClickCount = 0;
+        }, 2000);
+    });
+}
 
-    // --- TITKOS ADMIN GOMB ESEMÉNY ---
-if (secretAdminBtn) {
-    secretAdminBtn.addEventListener('click', () => {
-        // Kis animáció, hogy látszódjon a kattintás
-        secretAdminBtn.style.transform = "scale(1.2) rotate(15deg)";
-        setTimeout(() => secretAdminBtn.style.transform = "", 300);
+// === MODAL MEGNYITÁSA ===
+function openAdminPinModal() {
+    if (!adminPinModal) return;
+    
+    adminPinModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Input fókusz kis késleltetéssel
+    setTimeout(() => {
+        if (adminPinInput) adminPinInput.focus();
+    }, 300);
+    
+    // Reset form
+    if (adminPinForm) adminPinForm.reset();
+}
 
-        // Megnyitjuk a PIN modalt
-        if (adminPinModal) {
-            adminPinModal.classList.add('active');
-            // Fókuszt teszünk a mezőbe, és töröljük az előző tartalmat
-            const pinInput = document.getElementById('adminPinInput');
-            if (pinInput) {
-                pinInput.value = '';
-                setTimeout(() => pinInput.focus(), 100);
-            }
+// === MODAL BEZÁRÁSA ===
+window.closeAdminPinModal = function() {
+    if (!adminPinModal) return;
+    
+    adminPinModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    if (adminPinForm) adminPinForm.reset();
+}
+
+// === MODAL BEZÁRÁSA KÍVÜLRE KATTINTVA ===
+if (adminPinModal) {
+    adminPinModal.addEventListener('click', (e) => {
+        if (e.target === adminPinModal) {
+            closeAdminPinModal();
         }
     });
 }
-    
+
+// === FORM BEKÜLDÉSE ===
+if (adminPinForm) {
+    adminPinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const pin = adminPinInput.value.trim();
+        const submitBtn = adminPinForm.querySelector('.auth-btn');
+        
+        if (!pin || pin.length !== 6) {
+            showError("Add meg a 6 számjegyű PIN kódot!");
+            return;
+        }
+        
+        setLoading(submitBtn, true);
+        
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'ADMIN_LOGIN_WITH_PIN', 
+                    pin: pin 
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Helytelen PIN kód!');
+            }
+            
+            // Sikeres belépés! Token és adatok mentése
+            if (result.adminToken) {
+                localStorage.setItem('userToken', result.adminToken);
+                localStorage.setItem('userData', JSON.stringify({ 
+                    name: 'Adminisztrátor', 
+                    email: 'admin@sortablazat.hu', 
+                    isAdmin: true 
+                }));
+            }
+            
+            // Adatok mentése
+            beersData = result.beers || [];
+            usersData = result.users || [];
+            filteredBeers = [...beersData];
+            
+            showSuccess('🔐 Sikeres titkos belépés!');
+            
+            setTimeout(() => {
+                closeAdminPinModal();
+                switchToAdminView();
+            }, 1000);
+            
+        } catch (error) {
+            console.error("PIN belépési hiba:", error);
+            showError(error.message || 'Helytelen PIN kód!');
+            adminPinInput.value = '';
+            adminPinInput.focus();
+        } finally {
+            setLoading(submitBtn, false);
+        }
+    });
+}
     // ======================================================
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
 
-    async function handleAdminPinLogin(e) {
-    e.preventDefault();
     
-    const pinInput = document.getElementById('adminPinInput');
-    const pin = pinInput.value;
-    const submitBtn = adminPinForm.querySelector('.auth-btn');
-
-    // Alap ellenőrzés
-    if (pin.length < 4) {
-        showError("Túl rövid a PIN kód!");
-        return;
-    }
-
-    setLoading(submitBtn, true);
-
-    try {
-        // Küldés a szervernek
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                action: 'ADMIN_LOGIN_WITH_PIN', // Ez fontos, ezt figyeli a backend
-                pin: pin 
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Hibás PIN kód!');
-        }
-
-        // --- SIKERES BELÉPÉS ---
-        
-        // 1. Token mentése
-        localStorage.setItem('userToken', result.adminToken);
-        
-        // 2. Admin státusz mentése (hogy frissítésnél is admin maradj)
-        localStorage.setItem('userData', JSON.stringify({ 
-            name: 'Admin', 
-            email: 'admin@system', 
-            isAdmin: true 
-        }));
-
-        // 3. Adatok betöltése a válaszból (ha a backend visszaküldi)
-        if (result.beers) beersData = result.beers;
-        if (result.users) usersData = result.users;
-
-        showSuccess('Üdvözlet a Vezérlőpultban! 🫡');
-        
-        // Modal bezárása és nézetváltás
-        closeAdminPinModal();
-        switchToAdminView();
-
-    } catch (error) {
-        console.error("Admin login hiba:", error);
-        showError(error.message);
-        
-        // Hiba esetén töröljük a mezőt és megrázzuk (vizuális visszajelzés)
-        pinInput.value = '';
-        pinInput.classList.add('shake-anim');
-        setTimeout(() => pinInput.classList.remove('shake-anim'), 500);
-        
-    } finally {
-        setLoading(submitBtn, false);
-    }
-}
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -1457,14 +1493,12 @@ function setupAdminRecap() {
     }
 
     // --- Eseménykezelők ---
+    
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
     loginForm.addEventListener('submit', handleGuestLogin);
     registerForm.addEventListener('submit', handleGuestRegister);
-    if (adminPinForm) {
-    adminPinForm.addEventListener('submit', handleAdminPinLogin);
-}
     
     // Felhasználói nézet eseménykezelői
     userLogoutBtn.addEventListener('click', switchToGuestView);
@@ -1473,6 +1507,9 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
+
+    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
+
 
    // ======================================================
 // === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
@@ -4487,12 +4524,6 @@ switchToUserView = function() {
     }, 500);
 };
 });
-
-
-
-
-
-
 
 
 
