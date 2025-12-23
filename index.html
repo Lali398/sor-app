@@ -26,7 +26,7 @@
 
             <div class="main-content">
                 <div class="logo-section">
-                    <div class="beer-icon" id="secretLogoClick" style="cursor: pointer;">🍺</div>
+                    <div class="beer-icon">🍺</div>
                     <h1 class="app-title">Sör Táblázat</h1>
                     <p class="app-subtitle">Gabz és Lajos sör értékelő rendszere</p>
                 </div>
@@ -107,6 +107,16 @@
                     </div>
                 </div>
 
+                <div class="admin-section">
+                    <button class="admin-btn" id="adminBtn">
+                        <span class="admin-icon">👑</span>
+                        <span class="admin-text">Gabz és Lajos</span>
+                        <div class="admin-shine"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
      <div class="support-section" style="margin-top: 0px;">
             <button class="support-btn" id="guestSupportBtn">
@@ -1102,26 +1112,24 @@
     <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
             <header class="modal-header">
-                <h3>Admin Belépés</h3>
+                <h3>Gabz és Lajos bejelentkezés</h3>
                 <button id="modalClose" class="modal-close">&times;</button>
             </header>
-   
             <form id="adminForm">
                 <div class="input-group">
-                    <input type="password" id="adminPassword" placeholder=" " required maxlength="6" inputmode="numeric">
-                    <label for="adminPassword">6 jegyű PIN kód</label>
+                    <input type="text" id="adminUsername" placeholder=" " required>
+                    <label for="adminUsername">Felhasználónév</label>
                     <span class="input-highlight"></span>
                 </div>
-                
-                <button type="submit" class="auth-btn">
-                    <span class="btn-text">Belépés</span>
-                    <span class="btn-loading"><div class="spinner"></div></span>
-                </button>
+                <div class="input-group">
+                    <input type="password" id="adminPassword" placeholder=" " required>
+                    <label for="adminPassword">Jelszó</label>
+                    <span class="input-highlight"></span>
+                </div>
+                <button type="submit" class="auth-btn">Bejelentkezés</button>
             </form>
         </div>
     </div>
-
-    
 <div class="modal-overlay" id="setup2FAModal">
     <div class="modal-content">
         <header class="modal-header">
@@ -1730,7 +1738,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
 
 
 
