@@ -1473,8 +1473,6 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
-    switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
-
 
    // ======================================================
 // === EGYSÉGESÍTETT STORY / RECAP RENDSZER (ADMIN ÉS USER) ===
@@ -4489,6 +4487,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
