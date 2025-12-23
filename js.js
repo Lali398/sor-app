@@ -1438,7 +1438,7 @@ function setupAdminRecap() {
     recapControls.addEventListener('click', handleRecapPeriodClick);
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
-    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto';  }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
 
 
@@ -1944,8 +1944,7 @@ window.addEventListener('scroll', function() {
         guestView.style.display = 'none';
         userView.style.display = 'none';
         adminView.style.display = 'block';
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
+        document.body.classList.add('admin-view-active');
         initializeMainTabs(adminView);
         loadAdminData();
         initializeLiveSearch();
@@ -4497,6 +4496,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
