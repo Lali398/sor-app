@@ -4450,46 +4450,6 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
-    // === TITKOS ADMIN LOGIKA (5 KATTINTÁS) ===
-const secretTrigger = document.getElementById('secretBeerTrigger');
-
-if (secretTrigger) {
-    secretTrigger.addEventListener('click', (e) => {
-        // Megakadályozzuk a buborék effektet ha zavarna, de maradhat is
-        
-        secretClickCount++;
-        
-        // Ha ez az első kattintás, indítunk egy időzítőt
-        if (secretClickCount === 1) {
-            secretClickTimer = setTimeout(() => {
-                secretClickCount = 0; // 1.5 mp után nullázzuk, ha nem volt meg az 5
-            }, 1500); 
-        }
-
-        // Ha elértük az 5-öt
-        if (secretClickCount === 5) {
-            clearTimeout(secretClickTimer);
-            secretClickCount = 0;
-            openAdminPinModal();
-        }
-    });
-}
-
-// Modal kezelés
-window.openAdminPinModal = function() {
-    adminPinModal.classList.add('active');
-    document.getElementById('adminPinInput').value = '';
-    document.getElementById('adminPinInput').focus();
-}
-
-window.closeAdminPinModal = function() {
-    adminPinModal.classList.remove('active');
-}
-
-// Form beküldése
-if (adminPinForm) {
-    adminPinForm.addEventListener('submit', handleAdminPinLogin);
-}
 });
 
 
