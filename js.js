@@ -4450,7 +4450,117 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
+    // js.js
+
+// === 1. TITKOS KATTINTÁS FIGYELÉSE (5x) ===
+let beerClickCount = 0;
+let beerClickTimer = null;
+
+const logoIcon = document.querySelector('.beer-icon'); // A főoldali nagy sör ikon
+
+if (logoIcon) {
+    logoIcon.style.cursor = 'pointer'; // Jelezzük, hogy kattintható
+    
+    logoIcon.addEventListener('click', (e) => {
+        // Buborék effekt (ha van)
+        if (typeof createBeerBubbles === 'function') createBeerBubbles(e.clientX, e.clientY);
+
+        beerClickCount++;
+        
+        // Visszajelzés animáció (kicsit összenyomódik)
+        logoIcon.style.transform = 'scale(0.9)';
+        setTimeout(() => logoIcon.style.transform = 'scale(1)', 100);
+
+        if (beerClickCount === 5) {
+            openAdminPinModal();
+            beerClickCount = 0; // Reset
+            clearTimeout(beerClickTimer);
+        } else {
+            // Reseteljük a számlálót, ha 2 másodpercig nem kattint újra
+            clearTimeout(beerClickTimer);
+            beerClickTimer = setTimeout(() => {
+                beerClickCount = 0;
+            }, 800); // 0.8 másodperc van a következő kattintásra
+        }
+    });
+}
+
+// === 2. MODAL KEZELÉS ===
+function openAdminPinModal() {
+    const modal = document.getElementById('adminPinModal');
+    const input = document.getElementById('adminPinInput');
+    modal.classList.add('active');
+    setTimeout(() => input.focus(), 100); // Fókusz a mezőre
+}
+
+window.closeAdminPinModal = function() {
+    document.getElementById('adminPinModal').classList.remove('active');
+    document.getElementById('adminPinInput').value = '';
+}
+
+// === 3. PIN BEKÜLDÉSE ===
+const adminPinForm = document.getElementById('adminPinForm');
+
+if (adminPinForm) {
+    adminPinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const pinInput = document.getElementById('adminPinInput').value;
+        const submitBtn = adminPinForm.querySelector('.auth-btn');
+        
+        setLoading(submitBtn, true);
+
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'ADMIN_LOGIN_WITH_PIN', 
+                    pin: pinInput 
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error || 'Hibás PIN kód!');
+
+            // SIKERES BELÉPÉS
+            // Adatok mentése globális változókba (ahogy a régi kódodban volt)
+            beersData = result.beers || [];
+            usersData = result.users || []; // Ha visszaküldöd a usereket is
+            filteredBeers = [...beersData];
+
+            if (result.adminToken) {
+                localStorage.setItem('userToken', result.adminToken);
+                // Admin profil mentése a működéshez
+                localStorage.setItem('userData', JSON.stringify({ 
+                    name: 'Főnök', 
+                    email: 'admin@sortablazat.hu', 
+                    isAdmin: true 
+                }));
+            }
+
+            showSuccess('Üdv a fedélzeten, Főnök! 🍺');
+            closeAdminPinModal();
+            
+            // Átváltás Admin nézetre
+            switchToAdminView();
+
+        } catch (error) {
+            console.error(error);
+            showError(error.message);
+            // Hiba esetén rázkódás animáció az inputon
+            const input = document.getElementById('adminPinInput');
+            input.style.animation = 'shake 0.5s';
+            setTimeout(() => input.style.animation = '', 500);
+            input.value = '';
+        } finally {
+            setLoading(submitBtn, false);
+        }
+    });
+}
 });
+
 
 
 
