@@ -158,58 +158,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================
 
     async function handleAdminLogin(e) {
-        e.preventDefault();
-        // A 'adminPassword' inputban most már a PIN kód van
-        const pinInput = document.getElementById('adminPassword').value;
-        const submitBtn = adminForm.querySelector('.auth-btn');
+    e.preventDefault();
+    const pinInput = document.getElementById('adminPassword').value;
+    const submitBtn = adminForm.querySelector('.auth-btn');
 
-        setLoading(submitBtn, true);
+    setLoading(submitBtn, true);
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'GET_DATA', 
+                password: pinInput // Itt küldjük a PIN-t
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
         
-        try {
-            // Csak a jelszót (PIN-t) küldjük, a username nem kell
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'GET_DATA', password: pinInput })
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
-            
-            beersData = result.beers || [];
-            usersData = result.users || [];
-            filteredBeers = [...beersData]; 
-            
-            // FONTOS: Frissítsük a globális változót is, amit a többi függvény használ
-            // Ha a te kódodban más a neve (pl. allBeers), írd át arra!
-            
-            if (result.adminToken) {
-                localStorage.setItem('userToken', result.adminToken);
-                localStorage.setItem('userData', JSON.stringify({ 
-                    name: 'Adminisztrátor', 
-                    email: 'admin@sortablazat.hu', 
-                    isAdmin: true 
-                }));
-                // Frissítjük a globális állapotot is
-                currentUser = { name: 'Adminisztrátor', isAdmin: true };
-            }
-
-            showSuccess('Sikeres belépés!');
-            
-            setTimeout(() => {
-                closeAdminModal();
-                // Előbb inicializáljuk a nézetet, aztán váltunk
-                renderAdminBeers(); 
-                switchToAdminView();
-            }, 1000);
-
-        } catch (error) {
-            console.error("Bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás PIN kód!');
-        } finally {
-            setLoading(submitBtn, false);
+        beersData = result.beers || [];
+        usersData = result.users || [];
+        filteredBeers = [...beersData]; 
+        
+        if (result.adminToken) {
+            localStorage.setItem('userToken', result.adminToken);
+            // Admin adatok mentése, hogy az oldal újratöltéskor is tudja
+            localStorage.setItem('userData', JSON.stringify({ 
+                name: 'Adminisztrátor', 
+                email: 'admin@sortablazat.hu', 
+                isAdmin: true 
+            }));
         }
+
+        showSuccess('Sikeres belépés!');
+        
+        // Modal bezárása és nézetváltás
+        setTimeout(() => {
+            closeAdminModal();
+            switchToAdminView(); 
+        }, 500);
+
+    } catch (error) {
+        console.error("Bejelentkezési hiba:", error);
+        showError(error.message || 'Hibás PIN kód!');
+    } finally {
+        setLoading(submitBtn, false);
     }
+}
     
     // ======================================================
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
@@ -1397,23 +1393,50 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
+    // 1. Reseteljük a görgetést (ha modal nyitva maradt volna)
+    document.body.style.overflow = 'auto'; 
+    
+    // 2. Háttér beállítása
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
+
+    // 3. Nézetek kezelése - Explicit módon
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+
+    if(guestView) guestView.style.display = 'none';
+    if(userView) userView.style.display = 'none';
+    
+    if(adminView) {
         adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
+        
+        // 4. JAVÍTÁS: Biztosítjuk, hogy az első fül aktív legyen!
+        // Ha nincs aktív tab, a tartalom rejtve marad.
+        const defaultTabBtn = adminView.querySelector('.main-tab-btn[data-tab-content="admin-dashboard-content"]');
+        if (defaultTabBtn) {
+            defaultTabBtn.click(); // Szimulálunk egy kattintást, hogy betöltődjön
+        } else {
+            // Fallback, ha a click nem működne: manuálisan megjelenítjük
+            const dashboardContent = document.getElementById('admin-dashboard-content');
+            if(dashboardContent) dashboardContent.style.display = 'block';
+        }
     }
+
+    // Segítség gomb elrejtése
+    const guestSupportBtn = document.getElementById('guestSupportBtn');
+    if(guestSupportBtn) guestSupportBtn.style.display = 'none';
+
+    // Funkciók inicializálása
+    initializeMainTabs(adminView);
+    loadAdminData(); // Adatok betöltése
+    initializeLiveSearch();
+    setupStatistics();
+    setupAdminRecap();
+    
+    // Beállítások betöltése
+    loadUserPreferences('admin_user'); 
+}
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -3223,43 +3246,54 @@ function showAchievementToast(achi) {
 const originalUserViewInit = switchToUserView;
 
 switchToUserView = function() {
-    // 1. Lefuttatjuk az eredeti inicializálást (betölti a söröket, beállításokat)
-    originalUserViewInit(); 
+    document.body.style.overflow = 'auto'; // GÖRGETÉS JAVÍTÁSA
+    
+    const guestView = document.getElementById('guestView');
+    const userView = document.getElementById('userView');
+    const adminView = document.getElementById('adminView');
+    const guestSupportBtn = document.getElementById('guestSupportBtn');
 
-    // 2. Biztosítjuk, hogy az italok is betöltődjenek (ha még nem történt meg)
-    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+    if(guestView) guestView.style.display = 'none';
+    if(adminView) adminView.style.display = 'none';
+    if(guestSupportBtn) guestSupportBtn.style.display = 'none';
 
-    // 3. Várakozunk kicsit, hogy az API válaszok (sörök + italok) megérkezzenek
-    // Fontos: Itt hívjuk meg a checkAchievements-t, hogy újraszámolja a százalékokat!
-    setTimeout(async () => {
-        // Ellenőrizzük, vannak-e betöltött adatok
-        if (currentUserBeers.length > 0 || currentUserDrinks.length > 0) {
-            console.log("Adatok betöltve, Achievementek ellenőrzése...");
-            
-            // FONTOS: Ez számolja ki a progress-t az aktuális listák alapján!
-            await checkAchievements(); 
+    if(userView) {
+        userView.style.display = 'block';
+        
+        // JAVÍTÁS: Első tab aktiválása (Söreim)
+        const defaultTabBtn = document.querySelector('.nav-item[data-tab-content="user-beers-content"]');
+        if (defaultTabBtn) {
+            // Csak akkor kattintunk, ha még nem aktív, hogy ne villogjon
+            if (!defaultTabBtn.classList.contains('active')) {
+                defaultTabBtn.click();
+            }
         }
-        
-        // Frissítjük a vizuális elemeket (Rács + Header Badge)
-        renderAchievements();
-        updateHeaderBadge();
-        
-    }, 1500); // 1.5 mp késleltetés, hogy biztosan meglegyen minden adat a szerverről
-};
+    }
 
-// Figyeljük a változásokat (Ha hozzáadunk sört/italt, fusson le az ellenőrzés)
-const originalAddBeer = handleAddBeer;
-handleAddBeer = async function(e) {
-    await originalAddBeer(e);
-    // Sikeres hozzáadás után ellenőrzés
-    setTimeout(() => { checkAchievements(); }, 1500); 
-};
+    document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
+    document.body.style.backgroundAttachment = 'fixed';
 
-const originalAddDrink = handleAddDrink;
-handleAddDrink = async function(e) {
-    await originalAddDrink(e);
-    // Sikeres hozzáadás után ellenőrzés
-    setTimeout(() => { checkAchievements(); }, 1500);
+    // Adatok betöltése
+    allRecommendationsData = [];
+    
+    if (typeof loadUserData === 'function') loadUserData();
+    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+    
+    if (typeof loadRecommendations === 'function') {
+        setTimeout(() => loadRecommendations(), 500);
+    }
+
+    updateSettingsUI();
+    
+    // Achievementek ellenőrzése késleltetve
+    setTimeout(async () => {
+        if (typeof checkAchievements === 'function') await checkAchievements();
+        if (typeof renderAchievements === 'function') renderAchievements();
+        if (typeof updateHeaderBadge === 'function') updateHeaderBadge();
+    }, 1500);
+    
+    // Scroll animációk
+    if (typeof initScrollAnimation === 'function') setTimeout(initScrollAnimation, 100);
 };
     // === JELSZÓ HELYREÁLLÍTÁS ===
 
@@ -4449,43 +4483,50 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
-    // === ÚJ: TITKOS ADMIN BELÉPÉS (5 KATTINTÁS A LOGÓRA) ===
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-    const secretLogo = document.getElementById('secretLogoClick');
+    // === TITKOS ADMIN BELÉPÉS (5 KATTINTÁS A LOGÓRA) ===
+const secretLogo = document.getElementById('secretLogoClick');
+let logoClickCount = 0;
+let logoClickTimer = null;
 
-    if (secretLogo) {
-        secretLogo.addEventListener('click', (e) => {
-            // Effekt a kattintásnál (opcionális, de jól néz ki)
+if (secretLogo) {
+    secretLogo.addEventListener('click', (e) => {
+        // Effekt (buborék)
+        if (typeof createBeerBubbles === 'function') {
             createBeerBubbles(e.clientX, e.clientY);
+        }
+        
+        logoClickCount++;
+
+        // Időzítő indítása az első kattintásnál
+        if (logoClickCount === 1) {
+            logoClickTimer = setTimeout(() => {
+                logoClickCount = 0; // Reset 2mp után
+            }, 2000);
+        }
+
+        // 5. kattintásnál
+        if (logoClickCount === 5) {
+            clearTimeout(logoClickTimer);
+            logoClickCount = 0;
             
-            logoClickCount++;
-
-            // Ha ez az első kattintás, indítjuk az időzítőt (2 másodperc van beütni az 5-öt)
-            if (logoClickCount === 1) {
-                logoClickTimer = setTimeout(() => {
-                    logoClickCount = 0; // Reset, ha letelt az idő
-                }, 2000);
-            }
-
-            // Ha megvan az 5. kattintás
-            if (logoClickCount === 5) {
-                clearTimeout(logoClickTimer);
-                logoClickCount = 0;
-                
-                // Modal megnyitása
-                adminModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                
+            // Modal megnyitása
+            const modal = document.getElementById('adminModal');
+            if (modal) {
+                modal.classList.add('active');
                 // Fókusz a PIN mezőre
                 setTimeout(() => {
                     const passInput = document.getElementById('adminPassword');
-                    if(passInput) passInput.focus();
+                    if(passInput) {
+                        passInput.value = ''; // Töröljük az előzőt
+                        passInput.focus();
+                    }
                 }, 100);
             }
-        });
-    }
+        }
+    });
+}
 });
+
 
 
 
