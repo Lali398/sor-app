@@ -157,57 +157,73 @@ document.addEventListener('DOMContentLoaded', function() {
     // === FŐ FUNKCIÓK (SZERVER KOMMUNIKÁCIÓ) ===
     // ======================================================
 
-    async function handleAdminLogin(e) {
+    // Admin belépés - JAVÍTOTT VERZIÓ
+async function handleAdminLogin(e) {
     e.preventDefault();
-    const pinInput = document.getElementById('adminPin').value; // Csak a PIN-t olvassuk ki
+    const usernameInput = document.getElementById('adminUsername').value;
+    const passwordInput = document.getElementById('adminPassword').value;
     const submitBtn = adminForm.querySelector('.auth-btn');
 
-    // Egyszerű kliens oldali validáció
-    if (pinInput.length < 4) {
-        showError('A PIN kód túl rövid!');
-        return;
-    }
-
     setLoading(submitBtn, true);
+    
     try {
+        // 1. Adatok lekérése a szerverről
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Itt csak a PIN-t küldjük a szervernek
-            body: JSON.stringify({ action: 'GET_DATA', pin: pinInput })
+            body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
         });
+        
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
 
-        // Adatok mentése
+        // 2. Globális változók frissítése
         beersData = result.beers || [];
         usersData = result.users || [];
         filteredBeers = [...beersData]; 
         
+        // 3. Admin token mentése (hogy a frissítés gomb később működjön)
         if (result.adminToken) {
-            console.log("Admin token sikeresen mentve!");
             localStorage.setItem('userToken', result.adminToken);
             localStorage.setItem('userData', JSON.stringify({ 
                 name: 'Adminisztrátor', 
                 email: 'admin@sortablazat.hu', 
                 isAdmin: true 
             }));
-        } else {
-            console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
         }
-        
-        showSuccess('Sikeres Admin bejelentkezés!');
-        // Input törlése biztonsági okból
-        document.getElementById('adminPin').value = '';
-        
+
+        showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
+
+        // 4. Nézetváltás és KÉNYSZERÍTETT MEGJELENÍTÉS
+        // A késleltetés és a sorrend kritikus!
         setTimeout(() => {
             closeAdminModal();
             switchToAdminView();
-        }, 1000);
+            
+            // EZ A LÉNYEG: Még egyszer, explicit meghívjuk a renderelést, 
+            // miután a nézet már biztosan látható (display: block)
+            console.log("Admin adatok kényszerített renderelése...");
+            
+            // Táblázat kirajzolása
+            renderBeerTable(filteredBeers);
+            
+            // Statisztikák és kereső frissítése
+            updateSearchResultsInfo();
+            updateIndexedAverage();
+            
+            // Grafikonok újrarajzolása (ha van adat)
+            if (beersData.length > 0) {
+                renderAllCharts(beersData);
+            }
+            
+            // Admin Recap (visszatekintő) inicializálása
+            if (typeof setupAdminRecap === 'function') setupAdminRecap();
+
+        }, 500); // Fél másodpercet várunk, hogy a DOM felépüljön
+
     } catch (error) {
         console.error("Bejelentkezési hiba:", error);
-        showError(error.message || 'Hibás PIN kód!');
-        document.getElementById('adminPin').value = ''; // Hibás kódnál töröljük a mezőt
+        showError(error.message || 'Hibás PIN kód vagy jelszó!');
     } finally {
         setLoading(submitBtn, false);
     }
@@ -4500,6 +4516,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
