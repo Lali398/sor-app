@@ -159,45 +159,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleAdminLogin(e) {
         e.preventDefault();
-        const usernameInput = document.getElementById('adminUsername').value;
-        const passwordInput = document.getElementById('adminPassword').value;
+        // A 'adminPassword' inputban most már a PIN kód van
+        const pinInput = document.getElementById('adminPassword').value;
         const submitBtn = adminForm.querySelector('.auth-btn');
 
         setLoading(submitBtn, true);
+        
         try {
+            // Csak a jelszót (PIN-t) küldjük, a username nem kell
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
+                body: JSON.stringify({ action: 'GET_DATA', password: pinInput })
             });
             
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
-
-            // Adatok mentése a változókba
+            
+            // Adatok mentése
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
             
-            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
-            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
             if (result.adminToken) {
-                console.log("Admin token sikeresen mentve!"); // Debug üzenet
                 localStorage.setItem('userToken', result.adminToken);
-                
-                // Admin profil mentése a működéshez
                 localStorage.setItem('userData', JSON.stringify({ 
                     name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
-            } else {
-                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
             }
-            // =====================================
+
+            showSuccess('Sikeres belépés!');
             
-            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
-            
+            // Mező törlése biztonsági okból
+            document.getElementById('adminPassword').value = '';
+
             setTimeout(() => {
                 closeAdminModal();
                 switchToAdminView();
@@ -205,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error("Bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
+            showError(error.message || 'Hibás PIN kód!');
         } finally {
             setLoading(submitBtn, false);
         }
@@ -4450,7 +4447,44 @@ switchToUserView = function() {
         initTableSorting();
     }, 500);
 };
+    // === ÚJ: TITKOS ADMIN BELÉPÉS (5 KATTINTÁS A LOGÓRA) ===
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+    const secretLogo = document.getElementById('secretLogoClick');
+
+    if (secretLogo) {
+        secretLogo.addEventListener('click', (e) => {
+            // Effekt a kattintásnál (opcionális, de jól néz ki)
+            createBeerBubbles(e.clientX, e.clientY);
+            
+            logoClickCount++;
+
+            // Ha ez az első kattintás, indítjuk az időzítőt (2 másodperc van beütni az 5-öt)
+            if (logoClickCount === 1) {
+                logoClickTimer = setTimeout(() => {
+                    logoClickCount = 0; // Reset, ha letelt az idő
+                }, 2000);
+            }
+
+            // Ha megvan az 5. kattintás
+            if (logoClickCount === 5) {
+                clearTimeout(logoClickTimer);
+                logoClickCount = 0;
+                
+                // Modal megnyitása
+                adminModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Fókusz a PIN mezőre
+                setTimeout(() => {
+                    const passInput = document.getElementById('adminPassword');
+                    if(passInput) passInput.focus();
+                }, 100);
+            }
+        });
+    }
 });
+
 
 
 
