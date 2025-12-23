@@ -1457,7 +1457,6 @@ function setupAdminRecap() {
     }
 
     // --- Eseménykezelők ---
-    adminForm.addEventListener('submit', handleAdminLogin);
     logoutBtn.addEventListener('click', switchToGuestView);
     refreshBtn.addEventListener('click', loadAdminData);
 
@@ -4495,6 +4494,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
