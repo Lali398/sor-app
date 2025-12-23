@@ -1417,8 +1417,7 @@ function setupAdminRecap() {
     }
 
     // 3. Betöltjük az adatokat (táblázat renderelése)
-    renderTable(); 
-    renderStatsChart();
+    loadAdminData();
     
     // Biztosítjuk, hogy a body görgethető legyen admin módban
     document.body.style.overflow = 'auto'; 
@@ -4500,6 +4499,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
