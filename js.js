@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         setTimeout(() => {
             closeAdminModal();
+            loadAdminData();
             switchToAdminView();
         }, 1000);
     } catch (error) {
@@ -4499,6 +4500,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
