@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statTabButtons = document.getElementById('statTabButtons');
     const statPanes = document.querySelectorAll('.stat-pane');
     
-    const loginCard = document.getElementById('loginCard'), registerCard = document.getElementById('registerCard'), switchAuthLinks = document.querySelectorAll('.switch-auth'), adminBtn = document.getElementById('adminBtn'), adminModal = document.getElementById('adminModal'), modalClose = document.getElementById('modalClose'), logoutBtn = document.getElementById('logoutBtn'), refreshBtn = document.getElementById('refreshBtn');
+    const loginCard = document.getElementById('loginCard');
 
     // ---(globális) ÁLLAPOT ---
     
@@ -1430,7 +1430,30 @@ function setupAdminRecap() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
+    // --- BIZTONSÁGOS ESEMÉNYKEZELŐK ---
+    
+    // Régi admin gomb (ha mégis visszakerülne, nem okoz hibát ha nincs ott)
+    const oldAdminBtn = document.getElementById('adminBtn');
+    if (oldAdminBtn) {
+        oldAdminBtn.addEventListener('click', () => {
+            if(adminModal) {
+                adminModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    }
 
+    // Modal bezáró X gomb
+    if (modalClose) {
+        modalClose.addEventListener('click', closeAdminModal);
+    }
+
+    // Modal háttérre kattintás (bezárás)
+    if (adminModal) {
+        adminModal.addEventListener('click', e => {
+            if (e.target === adminModal) closeAdminModal();
+        });
+    }
     
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
     switchAuthLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); if (this.dataset.target === 'register') { loginCard.classList.remove('active'); setTimeout(() => registerCard.classList.add('active'), 300); } else { registerCard.classList.remove('active'); setTimeout(() => loginCard.classList.add('active'), 300); } }); });
@@ -4558,6 +4581,7 @@ if (adminPinForm) {
     });
 }
 });
+
 
 
 
