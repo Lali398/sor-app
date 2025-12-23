@@ -203,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             closeAdminModal();
             switchToAdminView();
+            renderTable();
         }, 1000);
     } catch (error) {
         console.error("Bejelentkezési hiba:", error);
@@ -4502,6 +4503,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
