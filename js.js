@@ -1399,23 +1399,30 @@ function setupAdminRecap() {
         renderAllCharts(beersData); // STATISZTIKÁK KIRAJZOLÁSA
     }
     function switchToAdminView() {
-        document.body.classList.add('custom-cursor-active');
-        guestView.style.display = 'none';
-        userView.style.display = 'none';
-        adminView.style.display = 'block';
-        document.body.style.background = '#f8fafc';
-
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
-
-        // Fő fülek inicializálása az admin nézeten
-        initializeMainTabs(adminView);
-
-        loadAdminData();
-        initializeLiveSearch();
-        setupStatistics(); // Statisztika fül inicializálása
-        setupAdminRecap();
+    // 1. Eltüntetjük a Vendég nézetet (a nyitó oldalt)
+    const guestView = document.getElementById('guestView');
+    if (guestView) {
+        guestView.style.display = 'none'; // Vagy guestView.classList.remove('active'); attól függ hogy van a CSS
     }
+
+    // 2. Megjelenítjük az Admin nézetet
+    const adminView = document.getElementById('adminView');
+    if (adminView) {
+        adminView.style.display = 'block'; // Vagy flex, a design-tól függően
+        
+        // Ha van 'active' osztály alapú megjelenítés a CSS-ben:
+        setTimeout(() => {
+            adminView.classList.add('active');
+        }, 10);
+    }
+
+    // 3. Betöltjük az adatokat (táblázat renderelése)
+    renderTable(); 
+    renderStatsChart();
+    
+    // Biztosítjuk, hogy a body görgethető legyen admin módban
+    document.body.style.overflow = 'auto'; 
+}
 
     // --- Eseménykezelők ---
     adminForm.addEventListener('submit', handleAdminLogin);
@@ -4493,6 +4500,7 @@ switchToUserView = function() {
         });
     }
 });
+
 
 
 
