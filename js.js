@@ -4539,6 +4539,7 @@ switchToUserView = function() {
     // Rendezés inicializálása kis késleltetéssel
     setTimeout(() => {
         initTableSorting();
+        initUserSearch();
     }, 500);
 };
     window.acceptCookies = function() {
@@ -4551,7 +4552,59 @@ switchToUserView = function() {
         }, 500); // Ha van transition, várjuk meg
     }
 }
+    // === FELHASZNÁLÓI ÉLŐKERESÉS FUNKCIÓK ===
+
+function initUserSearch() {
+    // 1. SÖRÖK KERESÉSE
+    const beerInput = document.getElementById('userBeerSearchInput');
+    
+    if (beerInput) {
+        beerInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            
+            // Ha üres a kereső, mindent mutatunk
+            if (!term) {
+                renderUserBeers(currentUserBeers);
+                return;
+            }
+
+            // Szűrés (Név, Típus, Hely, Jegyzet alapján)
+            const filtered = currentUserBeers.filter(beer => 
+                (beer.beerName && beer.beerName.toLowerCase().includes(term)) ||
+                (beer.type && beer.type.toLowerCase().includes(term)) ||
+                (beer.location && beer.location.toLowerCase().includes(term)) ||
+                (beer.notes && beer.notes.toLowerCase().includes(term))
+            );
+
+            renderUserBeers(filtered);
+        });
+    }
+
+    // 2. ITALOK KERESÉSE
+    const drinkInput = document.getElementById('userDrinkSearchInput');
+    
+    if (drinkInput) {
+        drinkInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            
+            if (!term) {
+                renderUserDrinks(currentUserDrinks);
+                return;
+            }
+
+            const filtered = currentUserDrinks.filter(drink => 
+                (drink.drinkName && drink.drinkName.toLowerCase().includes(term)) ||
+                (drink.category && drink.category.toLowerCase().includes(term)) ||
+                (drink.location && drink.location.toLowerCase().includes(term)) ||
+                (drink.notes && drink.notes.toLowerCase().includes(term))
+            );
+
+            renderUserDrinks(filtered);
+        });
+    }
+}
 });
+
 
 
 
