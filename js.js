@@ -1,5 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // === 18+ KORHATÁR ELLENŐRZÉS ===
+    function checkAgeVerification() {
+        // Megnézzük, hogy a felhasználó igazolta-e már korábban
+        const isVerified = localStorage.getItem('ageVerified') === 'true';
+        
+        if (!isVerified) {
+            const ageModal = document.getElementById('ageVerificationModal');
+            if (ageModal) {
+                // Megjelenítjük a modalt
+                ageModal.classList.add('active');
+                // Letiltjuk a görgetést, hogy ne lásson semmit mögötte
+                document.body.style.overflow = 'hidden';
+            }
+        }
+    }
+
+    // Globális függvény, hogy a HTML gombok elérjék
+    window.verifyAge = function(isOver18) {
+        if (isOver18) {
+            // Ha elmúlt 18 -> Elmentjük és bezárjuk
+            localStorage.setItem('ageVerified', 'true');
+            const ageModal = document.getElementById('ageVerificationModal');
+            
+            // Animációval tüntetjük el
+            ageModal.style.opacity = '0';
+            setTimeout(() => {
+                ageModal.classList.remove('active');
+                ageModal.style.opacity = ''; // Reset
+                document.body.style.overflow = 'auto'; // Görgetés visszaállítása
+            }, 500);
+            
+            showSuccess("Jó szórakozást! Fogyassz felelősséggel! 🍺");
+        } else {
+            // Ha nem múlt el 18 -> Átirányítás
+            window.location.href = "https://www.google.com";
+        }
+    }
+
+    // Azonnali ellenőrzés indítása
+    checkAgeVerification();
+
     if (typeof Chart !== 'undefined') {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
@@ -4451,6 +4492,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
