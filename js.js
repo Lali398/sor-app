@@ -4535,6 +4535,7 @@ function sortAndRenderDrinks(column, dataType, direction) {
 const originalSwitchToUserViewSorting = switchToUserView;
 switchToUserView = function() {
     originalSwitchToUserViewSorting();
+    setTimeout(initAllUserSearches, 500);
     
     // Rendezés inicializálása kis késleltetéssel
     setTimeout(() => {
@@ -4603,7 +4604,151 @@ function initUserSearch() {
         });
     }
 }
+    // ======================================================
+// === ÚJ: FELHASZNÁLÓI ÉLŐ KERESÉS (GENERIC) ===
+// ======================================================
+
+function setupUserLiveSearch(config) {
+    const input = document.getElementById(config.inputId);
+    const clearBtn = document.getElementById(config.clearId);
+    const suggestionsBox = document.getElementById(config.suggestionsId);
+    const infoBox = document.getElementById(config.infoId);
+    
+    // Ha valamelyik elem nem létezik (pl. admin nézetben), kilépünk
+    if (!input || !clearBtn || !suggestionsBox || !infoBox) return;
+
+    let selectedIndex = -1;
+
+    // 1. INPUT ESEMÉNY (Gépelés)
+    input.addEventListener('input', () => {
+        const searchTerm = input.value.trim().toLowerCase();
+        
+        // Törlés gomb kezelése
+        clearBtn.style.display = searchTerm ? 'flex' : 'none';
+
+        // Adatok lekérése (dinamikusan, hogy mindig a frisset lássa)
+        const allData = config.getData(); 
+        
+        if (!searchTerm) {
+            suggestionsBox.style.display = 'none';
+            infoBox.textContent = `${allData.length} tétel összesen`;
+            infoBox.style.color = '';
+            // Resetelés az eredeti listára
+            config.renderFunction(allData);
+            return;
+        }
+
+        // Szűrés
+        const filtered = allData.filter(item => {
+            const name = (item[config.nameField] || '').toLowerCase();
+            const type = (item[config.typeField] || '').toLowerCase();
+            const loc = (item.location || '').toLowerCase();
+            const notes = (item.notes || '').toLowerCase();
+            
+            return name.includes(searchTerm) || 
+                   type.includes(searchTerm) || 
+                   loc.includes(searchTerm) || 
+                   notes.includes(searchTerm);
+        });
+
+        // Eredmény info
+        if (filtered.length === 0) {
+            infoBox.textContent = `Nincs találat: "${searchTerm}"`;
+            infoBox.style.color = '#e74c3c';
+        } else {
+            infoBox.textContent = `${filtered.length} találat ${allData.length} tételből`;
+            infoBox.style.color = '#3498db';
+        }
+
+        // Javaslatok generálása (max 5)
+        const suggestions = filtered.slice(0, 5).map(item => ({
+            text: item[config.nameField],
+            type: item[config.typeField]
+        }));
+        
+        renderUserSuggestions(suggestions, suggestionsBox, searchTerm, input, () => {
+             // Ha rákattint egy javaslatra, újra lefuttatjuk a keresést pontosan arra
+             input.dispatchEvent(new Event('input'));
+        });
+
+        // Táblázat frissítése
+        config.renderFunction(filtered);
+    });
+
+    // 2. TÖRLÉS GOMB
+    clearBtn.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+        input.dispatchEvent(new Event('input')); // Triggereljük a resetet
+    });
+
+    // 3. FÓKUSZ KEZELÉS (Javaslatok elrejtése/megjelenítése)
+    input.addEventListener('focus', () => {
+        if (input.value.trim()) suggestionsBox.style.display = 'block';
+    });
+    
+    // Késleltetett blur, hogy a kattintás érzékelhető legyen
+    input.addEventListener('blur', () => {
+        setTimeout(() => suggestionsBox.style.display = 'none', 200);
+    });
+}
+
+// Segédfüggvény: Javaslatok kirajzolása (User verzió)
+function renderUserSuggestions(list, container, searchTerm, inputElem, onSelect) {
+    if (list.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.innerHTML = list.map((item, index) => `
+        <div class="suggestion-item" data-val="${item.text}">
+            <span class="suggestion-icon">🔍</span>
+            <span class="suggestion-text">${highlightSearchTerm(item.text, searchTerm)}</span>
+            <span class="suggestion-type">${item.type}</span>
+        </div>
+    `).join('');
+
+    container.style.display = 'block';
+
+    // Kattintás figyelés
+    container.querySelectorAll('.suggestion-item').forEach(el => {
+        el.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Ne vegye el a fókuszt azonnal
+            inputElem.value = el.dataset.val;
+            container.style.display = 'none';
+            onSelect();
+        });
+    });
+}
+
+// Inicializáló függvény (Ezt hívjuk meg a User nézet betöltésekor)
+function initAllUserSearches() {
+    // SÖR KERESŐ KONFIGURÁCIÓ
+    setupUserLiveSearch({
+        inputId: 'userBeerSearchInput',
+        clearId: 'userBeerClearSearch',
+        suggestionsId: 'userBeerSuggestions',
+        infoId: 'userBeerResultsInfo',
+        getData: () => currentUserBeers, // A globális sör tömb
+        renderFunction: renderUserBeers, // A globális render függvény
+        nameField: 'beerName',
+        typeField: 'type'
+    });
+
+    // ITAL KERESŐ KONFIGURÁCIÓ
+    setupUserLiveSearch({
+        inputId: 'userDrinkSearchInput',
+        clearId: 'userDrinkClearSearch',
+        suggestionsId: 'userDrinkSuggestions',
+        infoId: 'userDrinkResultsInfo',
+        getData: () => currentUserDrinks, // A globális ital tömb
+        renderFunction: renderUserDrinks, // A globális render függvény
+        nameField: 'drinkName',
+        typeField: 'category' // Itt a kategória a fő típus
+    });
+}
 });
+
 
 
 
