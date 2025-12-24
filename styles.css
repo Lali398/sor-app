@@ -1468,14 +1468,13 @@ input:checked + .slider:before {
 /* Oldalsáv stílusok */
 .dashboard-sidebar {
     width: 260px;
-    top: 100px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(15px);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     position: fixed;
-    height: calc(100vh - 100px);
+    height: 100vh;
     z-index: 100;
     transition: transform 0.3s ease;
 }
@@ -3571,7 +3570,6 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
-
 
 
 
