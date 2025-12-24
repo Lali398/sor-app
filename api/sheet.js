@@ -70,27 +70,37 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-                const { username, password } = req.body;
+                // A request body-ból kivesszük a pin-t
+                const { pin } = req.body;
                 
-                // Admin jelszó ellenőrzés (admin / sor)
-                if (username !== 'admin' || password !== 'sor') {
-                    return res.status(401).json({ error: 'Hibás admin felhasználónév vagy jelszó' });
+                // Környezeti változó lekérése
+                const correctPin = process.env.ADMIN_PIN;
+
+                // Biztonsági ellenőrzés: ha nincs beállítva env var, ne engedjen be senkit
+                if (!correctPin) {
+                    return res.status(500).json({ error: 'Szerver hiba: ADMIN_PIN nincs beállítva a Vercelen!' });
+                }
+
+                // PIN ellenőrzése
+                // Stringgé alakítjuk mindkettőt a biztonság kedvéért, és trim-eljük
+                if (String(pin).trim() !== String(correctPin).trim()) {
+                    // Késleltetés brute-force ellen (opcionális, de ajánlott)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return res.status(401).json({ error: 'Hibás PIN kód!' });
                 }
                 
-                // --- EZ A RÉSZ HIÁNYOZHATOTT VAGY VOLT HIBÁS ---
-                // Admin token generálása
+                // Admin token generálása (EZ MARAD A RÉGI)
                 const adminToken = jwt.sign(
-                    { email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
-                    process.env.JWT_SECRET, 
-                    { expiresIn: '1d' }
+                    { 
+                        email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
+                        process.env.JWT_SECRET, 
+                        { expiresIn: '1d' }
                 );
-                // ------------------------------------------------
 
-                // Adatok lekérése
+                // Adatok lekérése (EZ IS MARAD A RÉGI)
                 const sörökResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: ADMIN_BEERS_SHEET });
                 const allRows = sörökResponse.data.values || [];
                 const allBeers = [];
-                
                 allRows.forEach(row => {
                     const beer1 = transformRowToBeer(row, COL_INDEXES.admin1, 'admin1');
                     if (beer1) allBeers.push(beer1);
@@ -98,7 +108,6 @@ export default async function handler(req, res) {
                     if (beer2) allBeers.push(beer2);
                 });
                 
-                // Visszaküldjük az adminToken-t is!
                 return res.status(200).json({ beers: allBeers, users: [], adminToken: adminToken });
             }
 
@@ -1266,6 +1275,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
