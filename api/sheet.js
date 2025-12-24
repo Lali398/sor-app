@@ -70,26 +70,21 @@ export default async function handler(req, res) {
         switch (action) {
             
             case 'GET_DATA': {
-                // A request body-ból kivesszük a pin-t
                 const { pin } = req.body;
-                
-                // Környezeti változó lekérése
                 const correctPin = process.env.ADMIN_PIN;
 
-                // Biztonsági ellenőrzés: ha nincs beállítva env var, ne engedjen be senkit
                 if (!correctPin) {
-                    return res.status(500).json({ error: 'Szerver hiba: ADMIN_PIN nincs beállítva a Vercelen!' });
+                    return res.status(500).json({ error: 'Szerver hiba: Nincs beállítva PIN.' });
                 }
 
-                // PIN ellenőrzése
-                // Stringgé alakítjuk mindkettőt a biztonság kedvéért, és trim-eljük
+                // === BIZTONSÁGI BŐVÍTÉS ===
+                // Ha a PIN hibás, várakoztatjuk a választ 2-3 másodpercig.
+                // Így egy robotnak évekbe telne végigpróbálni az összes kombinációt.
                 if (String(pin).trim() !== String(correctPin).trim()) {
-                    // Késleltetés brute-force ellen (opcionális, de ajánlott)
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 másodperc szünet
                     return res.status(401).json({ error: 'Hibás PIN kód!' });
                 }
                 
-                // Admin token generálása (EZ MARAD A RÉGI)
                 const adminToken = jwt.sign(
                     { 
                         email: 'admin@sortablazat.hu', name: 'Admin', isAdmin: true }, 
@@ -1275,6 +1270,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
