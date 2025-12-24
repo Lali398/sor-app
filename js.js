@@ -4747,7 +4747,31 @@ function initAllUserSearches() {
         typeField: 'category' // Itt a kategória a fő típus
     });
 }
+    // === SIDEBAR MAGASSÁG JAVÍTÁS (Windows tálca problémára) ===
+function fixSidebarHeight() {
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    if (!sidebar) return;
+    
+    // Tényleges látható magasság lekérése
+    const realHeight = window.innerHeight;
+    sidebar.style.height = `${realHeight}px`;
+    sidebar.style.maxHeight = `${realHeight}px`;
+}
+
+// Futtatás betöltéskor és átméretezéskor
+window.addEventListener('load', fixSidebarHeight);
+window.addEventListener('resize', fixSidebarHeight);
+
+// Futtatás akkor is, ha a user view-ra váltunk
+const originalSwitchToUserViewFix = switchToUserView;
+if (typeof switchToUserView === 'function') {
+    switchToUserView = function() {
+        originalSwitchToUserViewFix();
+        setTimeout(fixSidebarHeight, 100);
+    };
+}
 });
+
 
 
 
