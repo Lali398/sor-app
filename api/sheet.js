@@ -830,6 +830,7 @@ case 'EDIT_USER_DRINK': {
                 }).filter(item => item !== null);
 
                 return res.status(200).json(ideas);
+            }
             
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
@@ -1254,6 +1255,7 @@ case 'EDIT_USER_DRINK': {
                     return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
                 }
             }
+
 
 
 
