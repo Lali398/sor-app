@@ -321,7 +321,7 @@ body {
 .live-search-container { flex-grow: 1; max-width: 500px; position: relative; }
 .search-input-wrapper { position: relative; display: flex; align-items: center; }
 
-#liveSearchInput {
+.live-search-input {
     width: 100%;
     padding: 12px 50px 12px 45px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -329,12 +329,12 @@ body {
     font-size: 16px;
     font-family: 'Inter', sans-serif;
     transition: all 0.3s ease;
-    background: rgba(0, 0, 0, 0.2); /* Sötét keresőmező */
+    background: rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    color: #ffffff; /* Bemeneti szöveg */
+    color: #ffffff;
 }
 
-#liveSearchInput:focus {
+.live-search-input:focus {
     outline: none;
     border-color: #8a73ff;
     box-shadow: 0 0 0 3px rgba(138, 115, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -3567,6 +3567,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
