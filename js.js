@@ -209,45 +209,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleAdminLogin(e) {
         e.preventDefault();
-        const usernameInput = document.getElementById('adminUsername').value;
-        const passwordInput = document.getElementById('adminPassword').value;
+        
+        // A jelszó mező értékét használjuk PIN kódként
+        const pinInput = document.getElementById('adminPassword').value;
         const submitBtn = adminForm.querySelector('.auth-btn');
+
+        // Opcionális: kliens oldali ellenőrzés, hogy 6 számjegy-e
+        if (pinInput.length < 4) {
+            showError('A PIN kód túl rövid!');
+            return;
+        }
 
         setLoading(submitBtn, true);
         try {
             const response = await fetch('/api/sheet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'GET_DATA', username: usernameInput, password: passwordInput })
+                // Itt küldjük el a PIN-t a backendnek
+                body: JSON.stringify({ action: 'GET_DATA', pin: pinInput })
             });
             
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `Hiba: ${response.status}`);
-
-            // Adatok mentése a változókba
+            
+            // Adatok mentése
             beersData = result.beers || [];
             usersData = result.users || [];
             filteredBeers = [...beersData]; 
             
-            // === JAVÍTÁS: ADMIN TOKEN MENTÉSE ===
-            // Ha ezt nem mentjük el, minden további kérés (pl. ötletek betöltése) 401-et ad!
             if (result.adminToken) {
-                console.log("Admin token sikeresen mentve!"); // Debug üzenet
+                console.log("Admin token sikeresen mentve!");
                 localStorage.setItem('userToken', result.adminToken);
-                
-                // Admin profil mentése a működéshez
                 localStorage.setItem('userData', JSON.stringify({ 
                     name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
                     isAdmin: true 
                 }));
-            } else {
-                console.warn("FIGYELEM: Nem érkezett admin token a szervertől!");
-            }
-            // =====================================
+            } 
             
-            showSuccess('Sikeres Gabz és Lajos bejelentkezés!');
+            showSuccess('Sikeres Admin belépés! 🔓');
             
+            // Töröljük a mezőt biztonsági okból
+            document.getElementById('adminPassword').value = '';
+
             setTimeout(() => {
                 closeAdminModal();
                 switchToAdminView();
@@ -255,7 +259,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error("Bejelentkezési hiba:", error);
-            showError(error.message || 'Hibás felhasználónév vagy jelszó!');
+            showError(error.message || 'Hibás PIN kód!');
+            // Hibánál rezegjen a mező (opcionális vizuális effekt)
+            const input = document.getElementById('adminPassword');
+            input.style.borderColor = '#ff4444';
+            setTimeout(() => input.style.borderColor = '', 500);
         } finally {
             setLoading(submitBtn, false);
         }
@@ -4544,6 +4552,7 @@ switchToUserView = function() {
     }
 }
 });
+
 
 
 
