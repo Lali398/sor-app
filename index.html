@@ -231,15 +231,15 @@
                 <div class="main-tab-pane active" id="user-beers-content">
                     <section class="card">
                         <header class="card-header">
-                            <h3>Sörök listája</h3>
+                            <h3>Saját sörjeid listája</h3>
                             <div class="live-search-container">
                                 <div class="search-input-wrapper">
-                                    <input type="text" id="userBeerSearchInput" placeholder="Keresés sörök között..." autocomplete="off">
+                                    <input type="text" id="userBeerSearchInput" placeholder="Keresés a söreim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
-                                    <div class="clear-search" id="clearSearch" style="display: none;">✕</div>
+                                    <div class="clear-search" id="userBeerClearSearch" style="display: none;"></div>
                                 </div>
-                                <div class="search-suggestions" id="searchSuggestions"></div>
-                                <div class="search-results-info" id="searchResultsInfo"></div>
+                                <div class="search-suggestions" id="userBeerSuggestions"></div>
+                                <div class="search-results-info" id="userBeerResultsInfo"></div>
                             </div>
                         </header>
 
@@ -279,7 +279,7 @@
                                 <div class="search-input-wrapper">
                                     <input type="text" id="userDrinkSearchInput" placeholder="Keresés az italaim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
-                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;">✕</div>
+                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;"></div>
                                 </div>
                                 <div class="search-suggestions" id="userDrinkSuggestions"></div>
                                 <div class="search-results-info" id="userDrinkResultsInfo"></div>
@@ -1811,6 +1811,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
