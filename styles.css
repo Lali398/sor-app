@@ -3520,6 +3520,14 @@ select.cool-select {
     background: rgba(0, 0, 0, 0.95) !important; /* Szinte teljesen fekete háttér */
     transition: opacity 0.5s ease;
 }
+.pending-controls {
+    display: flex;
+    flex-direction: column; /* Egymás alatt legyenek a gombok */
+    gap: 10px; /* Ez a távolság a gombok (pl. ceruza és kuka) között, hogy ne lógjanak egybe */
+    margin-top: 8px; /* Ezzel toljuk lejjebb az egészet, hogy ne a keret legtetején üljön */
+    margin-left: 10px; /* Biztonsági távolság a szövegtől balra */
+}
+
 
 
 
