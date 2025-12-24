@@ -1481,7 +1481,40 @@ function setupAdminRecap() {
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
 
-    adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
+
+    // === TITKOS ADMIN BELÉPÉS (5 KATTINTÁS A SÖRRE) ===
+    let secretClickCount = 0;
+    let secretClickTimer;
+
+    const secretTrigger = document.getElementById('secretAdminTrigger');
+    
+    if (secretTrigger) {
+        secretTrigger.addEventListener('click', (e) => {
+            // Buborék effekt, hogy látszódjon a kattintás (opcionális, de jól néz ki)
+            createBeerBubbles(e.clientX, e.clientY);
+
+            secretClickCount++;
+            
+            // Töröljük az előző időzítőt, hogy ne nullázódjon le, ha gyorsan kattintasz
+            clearTimeout(secretClickTimer);
+
+            if (secretClickCount >= 5) {
+                // Ha megvan az 5 kattintás:
+                adminModal.classList.add('active'); 
+                document.body.style.overflow = 'hidden';
+                
+                // Reseteljük a számlálót
+                secretClickCount = 0;
+            } else {
+                // Ha 1 másodpercig nem kattint újra, nullázódik a számláló
+                secretClickTimer = setTimeout(() => {
+                    secretClickCount = 0;
+                }, 1000);
+            }
+        });
+    }
+
+    //adminBtn.addEventListener('click', () => { adminModal.classList.add('active'); document.body.style.overflow = 'hidden'; });
     modalClose.addEventListener('click', closeAdminModal);
     adminModal.addEventListener('click', e => { if (e.target === adminModal) closeAdminModal(); });
     function closeAdminModal() { adminModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
@@ -4511,6 +4544,7 @@ switchToUserView = function() {
     }
 }
 });
+
 
 
 
