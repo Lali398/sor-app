@@ -1486,19 +1486,19 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    overflow: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     
-    
-    /* --- EZT A RÉSZT ADD HOZZÁ/MÓDOSÍTSD: --- */
-    height: calc(100vh - 80px);       /* Teljes képernyő magasság */
-    overflow-y: auto;    /* Ha nem fér ki, lehessen görgetni */
-    position: fixed;    /* Vagy 'fixed', attól függ hogy van felépítve a layout */
+    /* 🔧 JAVÍTOTT GÖRGETÉS BEÁLLÍTÁSOK */
+    position: fixed;
     left: 0;
     top: 0;
-    bottom: 0;
+    height: 100vh; /* Teljes képernyő magasság */
+    overflow-y: auto; /* Függőleges görgetés engedélyezése */
+    
+    /* 🎨 LÁTHATÓ SCROLLBAR (opcióként) */
+    scrollbar-width: thin; /* Firefox: vékony scrollbar */
+    scrollbar-color: #764ba2 rgba(0,0,0,0.2); /* Lila csúszka, átlátszó háttér */
 }
+
 
 .sidebar-header {
     padding: 30px 20px;
@@ -3567,6 +3567,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
