@@ -1735,9 +1735,43 @@
 </div>
 
     
+    <!-- ÉLETKOR -->
+
+    
+<div class="modal-overlay" id="ageVerificationModal" style="z-index: 99999; background: #000;">
+    <div class="modal-content delete-zone-card" style="border-color: #e74c3c !important; max-width: 450px;">
+        <div class="modal-hero-header" style="border-bottom: none;">
+            <div class="hero-icon" style="font-size: 4rem;">🔞</div>
+            <h3 style="color: #e74c3c; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px;">Korhatáros Tartalom</h3>
+        </div>
+        
+        <div style="text-align: center; padding: 0 10px 20px 10px;">
+            <p style="color: #e0e0e0; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px;">
+                Az oldal alkoholtartalmú italok értékelésével foglalkozik. 
+                A megtekintéséhez el kell múlnod 18 évesnek.
+            </p>
+            
+            <h4 style="color: white; margin-bottom: 20px;">Elmúltál már 18 éves?</h4>
+
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="auth-btn" onclick="verifyAge(false)" style="background: #333; color: #aaa; width: 120px;">
+                    Nem
+                </button>
+                <button class="auth-btn" onclick="verifyAge(true)" style="background: linear-gradient(135deg, #e74c3c, #c0392b); width: 120px; font-weight: 800; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);">
+                    IGEN
+                </button>
+            </div>
+            <p style="color: #666; font-size: 0.75rem; margin-top: 20px;">
+                A "Nem" gombra kattintva elhagyod az oldalt.
+            </p>
+        </div>
+    </div>
+</div>
+    
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
