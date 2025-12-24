@@ -1474,19 +1474,10 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 100px; /* ✅ FEJLÉC MAGASSÁG */
-    left: 0;
-    height: calc(100vh - 100px); /* ✅ FEJLÉC LEVONVA */
+    height: 100vh;
     z-index: 100;
-    transition: all 0.3s ease;
-    overflow: hidden;
+    transition: transform 0.3s ease;
 }
-
-body.header-is-collapsed .dashboard-sidebar {
-    top: 60px; /* ✅ Összecsukott fejléc magassága */
-    height: calc(100vh - 60px);
-}
-
 .sidebar {
     width: 280px;
     background: rgba(255, 255, 255, 0.05);
@@ -1528,12 +1519,6 @@ body.header-is-collapsed .dashboard-sidebar {
     flex: 1;
     padding: 20px 0;
     overflow-y: auto;
-    overflow-x: hidden;
-    padding-bottom: 40px; /* Extra hely alul */
-    
-    /* Scrollbar stílus */
-    scrollbar-width: thin;
-    scrollbar-color: #764ba2 rgba(0,0,0,0.2);
 }
 
 .nav-item {
@@ -3585,9 +3570,6 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
-
-
-
 
 
 
