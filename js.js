@@ -4770,43 +4770,8 @@ if (typeof switchToUserView === 'function') {
         setTimeout(fixSidebarHeight, 100);
     };
 }
-    // === SIDEBAR DINAMIKUS POZÍCIÓ (FEJLÉC FIGYELÉSE) ===
-function adjustSidebarPosition() {
-    const sidebar = document.querySelector('.dashboard-sidebar');
-    const header = document.querySelector('.admin-header, .user-header-with-stats');
-    
-    if (!sidebar || !header) return;
-    
-    // Fejléc tényleges magassága
-    const headerHeight = header.offsetHeight;
-    const windowHeight = window.innerHeight;
-    
-    // Sidebar pozíció és magasság beállítása
-    sidebar.style.top = `${headerHeight}px`;
-    sidebar.style.height = `${windowHeight - headerHeight}px`;
-}
-
-// Futtatás:
-window.addEventListener('load', adjustSidebarPosition);
-window.addEventListener('resize', adjustSidebarPosition);
-
-// Ha a fejléc összecsukódik, frissítjük
-const headerToggleBtn = document.getElementById('headerToggleBtn');
-if (headerToggleBtn) {
-    headerToggleBtn.addEventListener('click', () => {
-        setTimeout(adjustSidebarPosition, 350); // Animáció után
-    });
-}
-
-// User view betöltésekor
-const originalSwitchToUserViewSidebar = switchToUserView;
-if (typeof switchToUserView === 'function') {
-    switchToUserView = function() {
-        originalSwitchToUserViewSidebar();
-        setTimeout(adjustSidebarPosition, 100);
-    };
-}
 });
+
 
 
 
