@@ -1107,27 +1107,30 @@
     </div>
 
     <!-- ADMIN MODAL -->
-    <div class="modal-overlay" id="adminModal">
+   <div class="modal-overlay" id="adminModal">
         <div class="modal-content">
             <header class="modal-header">
-                <h3>Gabz és Lajos bejelentkezés</h3>
+                <h3>Admin Belépés 🔐</h3>
                 <button id="modalClose" class="modal-close">&times;</button>
             </header>
+   
             <form id="adminForm">
+                <div class="input-group" style="display: none;">
+                    <input type="text" id="adminUsername" value="admin_pin_mode">
+                </div>
+
                 <div class="input-group">
-                    <input type="text" id="adminUsername" placeholder=" " required>
-                    <label for="adminUsername">Felhasználónév</label>
+                    <input type="password" id="adminPassword" placeholder=" " maxlength="6" inputmode="numeric" required style="text-align: center; letter-spacing: 5px; font-size: 1.5rem;">
+                    <label for="adminPassword" style="text-align: center; width: 100%; left: 0;">6 jegyű PIN kód</label>
                     <span class="input-highlight"></span>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="adminPassword" placeholder=" " required>
-                    <label for="adminPassword">Jelszó</label>
-                    <span class="input-highlight"></span>
-                </div>
-                <button type="submit" class="auth-btn">Bejelentkezés</button>
+                
+                <button type="submit" class="auth-btn">Belépés</button>
             </form>
         </div>
     </div>
+
+    
 <div class="modal-overlay" id="setup2FAModal">
     <div class="modal-content">
         <header class="modal-header">
@@ -1786,6 +1789,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
