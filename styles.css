@@ -3530,6 +3530,38 @@ select.cool-select {
     margin-top: 8px; /* Ezzel toljuk lejjebb az egészet, hogy ne a keret legtetején üljön */
     margin-left: 10px; /* Biztonsági távolság a szövegtől balra */
 }
+/* GitHub gomb stílus */
+.github-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #24292e; /* GitHub fekete */
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.github-btn:hover {
+    background-color: #2f363d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.github-btn svg {
+    transition: transform 0.4s ease;
+}
+
+.github-btn:hover svg {
+    transform: rotate(360deg);
+}
+
 
 
 
