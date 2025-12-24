@@ -1901,20 +1901,15 @@ window.downloadRecap = function() {
     
     console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 // === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
-let lastScrollTop = 0;
 
 window.addEventListener('scroll', function() {
-    // Itt a querySelector helyett querySelectorAll-t használunk, hogy MINDEN fejlécet megtaláljon
     const headers = document.querySelectorAll('.admin-header'); 
-    
     if (headers.length === 0) return;
     
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollPercent = Math.min(scrollTop / 300, 1); // 300px-ig töltődik
+    const scrollPercent = Math.min(scrollTop / 300, 1);
     
-    // Végigmegyünk az összes megtalált fejlécen (User és Admin is)
     headers.forEach(header => {
-        // Sör feltöltés animáció - inline style-lal állítjuk be
         header.style.setProperty('--fill-percent', scrollPercent);
         
         if (scrollPercent >= 1) {
@@ -1922,16 +1917,8 @@ window.addEventListener('scroll', function() {
         } else {
             header.classList.remove('filled');
         }
-        
-        // Fejléc elrejtése lefelé görgetéskor (csak ha már van görgetés)
-        if (scrollTop > lastScrollTop && scrollTop > 350) {
-            header.classList.add('hidden');
-        } else if (scrollTop < lastScrollTop || scrollTop < 100) {
-            header.classList.remove('hidden');
-        }
     });
     
-    lastScrollTop = scrollTop;
     // ======================================================
     // === SZEMÉLYRE SZABÁS (BEÁLLÍTÁSOK MENTÉSE) - JAVÍTOTT ===
     // ======================================================
@@ -4771,6 +4758,7 @@ if (typeof switchToUserView === 'function') {
     };
 }
 });
+
 
 
 
