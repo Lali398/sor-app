@@ -689,10 +689,8 @@ case 'EDIT_USER_DRINK': {
                     return res.status(400).json({ error: "Az ötlet nem lehet üres!" });
                 }
                 
-                // JAVÍTÁS: A név lehet Anonymous, de az emailt elmentjük a törléshez!
                 const submitterName = isAnonymous ? 'Anonymous' : userData.name;
-                const userEmail = userData.email; // MINDIG a valódi emailt mentjük!
-                
+                const userEmail = isAnonymous ? 'Anonymous' : userData.email;
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
                 const date = new Date().toLocaleDateString('hu-HU');
                 
@@ -703,15 +701,17 @@ case 'EDIT_USER_DRINK': {
                     timestamp,               
                     'Megcsinálásra vár',     
                     date,                    
-                    userEmail // Itt most már a valódi email lesz
+                    userEmail
                 ];
-
+                
+                // Fontos: Itt a 'IDEAS_SHEET' változót használjuk, aminek a neve: 'Vendég ötletek'
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${IDEAS_SHEET}!A:F`,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
+                
                 return res.status(201).json({ message: "Köszönjük az ötleted! 💡" });
             }
 
@@ -795,26 +795,14 @@ case 'EDIT_USER_DRINK': {
                     if (!row || row.length === 0) return null;
                     if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null;
 
-                    const storedEmail = row[5] || ''; // Ez a valódi email a sheetben
+                    const submitterEmail = row[5] || '';
                     const submitterName = row[0] || 'Névtelen';
                     
-                    // JAVÍTÁS: Ha Anonymous a név, akkor a kliens felé NE küldjük el a valódi emailt, 
-                    // kivéve ha a sajátja (hogy a törlés gomb megjelenjen).
-                    // De mivel a frontend a localstorage emaillel hasonlít össze,
-                    // trükköznünk kell: A törléshez a backend ellenőrzi a tokent.
-                    // A frontend csak a megjelenítéshez kéri.
-                    
-                    let emailForFrontend = storedEmail;
-                    if (submitterName === 'Anonymous') {
-                        // Ha a lekérő user nem azonos a beküldővel, rejtsük el az emailt
-                        if (storedEmail !== userData.email) {
-                            emailForFrontend = 'rejtett@anonymous.hu';
-                        }
-                    }
-
+                    // Megnézzük, van-e badge ehhez az emailhez
+                    // Ha a név "Anonymous", akkor semmiképp ne legyen badge
                     let badge = '';
-                    if (submitterName !== 'Anonymous' && userBadges[storedEmail]) {
-                        badge = userBadges[storedEmail];
+                    if (submitterName !== 'Anonymous' && userBadges[submitterEmail]) {
+                        badge = userBadges[submitterEmail];
                     }
 
                     return {
@@ -824,8 +812,8 @@ case 'EDIT_USER_DRINK': {
                         timestamp: row[2] || '',
                         status: row[3] || 'Megcsinálásra vár',
                         date: row[4] || '',
-                        email: emailForFrontend, // A maszkolt vagy valódi email
-                        badge: badge
+                        email: submitterEmail,
+                        badge: badge // <--- ITT ADJUK HOZZÁ
                     };
                 }).filter(item => item !== null);
 
@@ -1256,7 +1244,15 @@ case 'EDIT_USER_DRINK': {
                 }
             }
 
+            default:
+                return res.status(400).json({ error: "Ismeretlen művelet." });
+        } // Switch vége
 
+    } catch (error) {
+        console.error("API Hiba:", error);
+        return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
+    }
+} // Handler vége
 
 
 
