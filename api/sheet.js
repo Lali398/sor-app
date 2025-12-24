@@ -689,8 +689,10 @@ case 'EDIT_USER_DRINK': {
                     return res.status(400).json({ error: "Az ötlet nem lehet üres!" });
                 }
                 
+                // JAVÍTÁS: A név lehet Anonymous, de az emailt elmentjük a törléshez!
                 const submitterName = isAnonymous ? 'Anonymous' : userData.name;
-                const userEmail = isAnonymous ? 'Anonymous' : userData.email;
+                const userEmail = userData.email; // MINDIG a valódi emailt mentjük!
+                
                 const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
                 const date = new Date().toLocaleDateString('hu-HU');
                 
@@ -701,17 +703,15 @@ case 'EDIT_USER_DRINK': {
                     timestamp,               
                     'Megcsinálásra vár',     
                     date,                    
-                    userEmail
+                    userEmail // Itt most már a valódi email lesz
                 ];
-                
-                // Fontos: Itt a 'IDEAS_SHEET' változót használjuk, aminek a neve: 'Vendég ötletek'
+
                 await sheets.spreadsheets.values.append({
                     spreadsheetId: SPREADSHEET_ID,
                     range: `${IDEAS_SHEET}!A:F`,
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] }
                 });
-                
                 return res.status(201).json({ message: "Köszönjük az ötleted! 💡" });
             }
 
@@ -795,14 +795,26 @@ case 'EDIT_USER_DRINK': {
                     if (!row || row.length === 0) return null;
                     if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null;
 
-                    const submitterEmail = row[5] || '';
+                    const storedEmail = row[5] || ''; // Ez a valódi email a sheetben
                     const submitterName = row[0] || 'Névtelen';
                     
-                    // Megnézzük, van-e badge ehhez az emailhez
-                    // Ha a név "Anonymous", akkor semmiképp ne legyen badge
+                    // JAVÍTÁS: Ha Anonymous a név, akkor a kliens felé NE küldjük el a valódi emailt, 
+                    // kivéve ha a sajátja (hogy a törlés gomb megjelenjen).
+                    // De mivel a frontend a localstorage emaillel hasonlít össze,
+                    // trükköznünk kell: A törléshez a backend ellenőrzi a tokent.
+                    // A frontend csak a megjelenítéshez kéri.
+                    
+                    let emailForFrontend = storedEmail;
+                    if (submitterName === 'Anonymous') {
+                        // Ha a lekérő user nem azonos a beküldővel, rejtsük el az emailt
+                        if (storedEmail !== userData.email) {
+                            emailForFrontend = 'rejtett@anonymous.hu';
+                        }
+                    }
+
                     let badge = '';
-                    if (submitterName !== 'Anonymous' && userBadges[submitterEmail]) {
-                        badge = userBadges[submitterEmail];
+                    if (submitterName !== 'Anonymous' && userBadges[storedEmail]) {
+                        badge = userBadges[storedEmail];
                     }
 
                     return {
@@ -812,13 +824,12 @@ case 'EDIT_USER_DRINK': {
                         timestamp: row[2] || '',
                         status: row[3] || 'Megcsinálásra vár',
                         date: row[4] || '',
-                        email: submitterEmail,
-                        badge: badge // <--- ITT ADJUK HOZZÁ
+                        email: emailForFrontend, // A maszkolt vagy valódi email
+                        badge: badge
                     };
                 }).filter(item => item !== null);
 
                 return res.status(200).json(ideas);
-            }
             
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
@@ -1148,18 +1159,13 @@ case 'EDIT_USER_DRINK': {
                 const userEmail = userData.email;
 
                 try {
-                    // --- 1. FELHASZNÁLÓ TÖRLÉSE (USERS_SHEET) ---
-                    // Ez a lépés hiányzott vagy volt hibás!
+                    // --- 1. FELHASZNÁLÓ TÖRLÉSE ---
                     const usersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
                     const allUsers = usersRes.data.values || [];
-                    
-                    // A fejléc (index 0) marad, és azok a sorok, ahol a 2. oszlop (index 1) NEM az email
                     const cleanUsers = allUsers.filter((row, index) => {
                         if (index === 0) return true; 
                         return row[1] !== userEmail; 
                     });
-
-                    // Ha találtunk és töröltünk felhasználót, frissítjük a táblát
                     if (cleanUsers.length !== allUsers.length) {
                         await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: USERS_SHEET });
                         await sheets.spreadsheets.values.update({
@@ -1170,16 +1176,13 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
 
-                    // --- 2. SÖRÖK TÖRLÉSE (GUEST_BEERS_SHEET) ---
+                    // --- 2. SÖRÖK TÖRLÉSE ---
                     const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
                     const allBeers = beersRes.data.values || [];
-                    
-                    // Itt a 14. oszlop (index 13) az email cím
                     const cleanBeers = allBeers.filter((row, index) => {
                         if (index === 0) return true;
                         return row[13] !== userEmail; 
                     });
-
                     if (cleanBeers.length !== allBeers.length) {
                         await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
                         await sheets.spreadsheets.values.update({
@@ -1190,16 +1193,13 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
 
-                    // --- 3. ITALOK TÖRLÉSE (GUEST_DRINKS_SHEET) ---
+                    // --- 3. ITALOK TÖRLÉSE ---
                     const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
                     const allDrinks = drinksRes.data.values || [];
-                    
-                    // Itt is a 14. oszlop (index 13) az email cím
                     const cleanDrinks = allDrinks.filter((row, index) => {
                         if (index === 0) return true;
                         return row[13] !== userEmail;
                     });
-
                     if (cleanDrinks.length !== allDrinks.length) {
                         await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
                         await sheets.spreadsheets.values.update({
@@ -1210,15 +1210,15 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
                     
-                   // --- 4. ÖTLETEK TÖRLÉSE (IDEAS_SHEET) ---
+                    // --- 4. ÖTLETEK TÖRLÉSE (Anonimokat is, ha az új rendszerrel lettek mentve) ---
                     const ideasRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
                     const allIdeas = ideasRes.data.values || [];
-
                     const cleanIdeas = allIdeas.filter((row, index) => {
                         if (index === 0) return true; 
-                        return row[5] !== userEmail; // 5-ös index az email
+                        // Itt az 5. index (F oszlop) az email. 
+                        // Az 1. lépésben javítottuk, hogy anonimnál is itt legyen az email.
+                        return row[5] !== userEmail; 
                     });
-
                     if (cleanIdeas.length !== allIdeas.length) {
                         await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
                         await sheets.spreadsheets.values.update({
@@ -1229,23 +1229,32 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
 
-                    return res.status(200).json({ message: "Fiók, adatok és ötletek sikeresen törölve." });
+                    // --- 5. ÚJ: AJÁNLÁSOK TÖRLÉSE (Anonimokat is) ---
+                    const recRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
+                    const allRecs = recRes.data.values || [];
+                    const cleanRecs = allRecs.filter((row, index) => {
+                        if (index === 0) return true;
+                        // Az ajánlásoknál a 2. index (C oszlop) az email, akkor is ha anonim
+                        return row[2] !== userEmail;
+                    });
+                    
+                    if (cleanRecs.length !== allRecs.length) {
+                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: RECOMMENDATIONS_SHEET,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: cleanRecs }
+                        });
+                    }
 
+                    return res.status(200).json({ message: "Fiók, adatok, ajánlások és ötletek sikeresen törölve." });
                 } catch (error) {
                     console.error("Törlési hiba:", error);
                     return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
                 }
-            } // DELETE_USER vége
+            }
 
-            default:
-                return res.status(400).json({ error: "Ismeretlen művelet." });
-        } // Switch vége
-
-    } catch (error) {
-        console.error("API Hiba:", error);
-        return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
-    }
-} // Handler vége
 
 
 
