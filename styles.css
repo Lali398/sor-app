@@ -1,8 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+
 
 /* === ALAP SÖTÉT TÉMA === */
 body {
@@ -3565,6 +3561,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
