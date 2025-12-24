@@ -90,12 +90,14 @@ body {
     transform: translateX(100%);
     opacity: 0;
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
 }
 
 .auth-card.active {
     position: relative;
     transform: translateX(0);
     opacity: 1;
+    pointer-events: auto;
 }
 
 .card-header h2 {
@@ -3570,6 +3572,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
