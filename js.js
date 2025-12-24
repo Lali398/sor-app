@@ -45,16 +45,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!localStorage.getItem('cookieConsentSeen')) {
         const toast = document.getElementById('cookieToast');
         if (toast) {
-            // Kis késleltetés, hogy ne rögtön az arcába ugorjon
             setTimeout(() => {
                 toast.style.display = 'block';
-                // Animáció (opcionális, ha van CSS transitionöd, de így is működik)
             }, 1000);
         }
     }
 
+});
 
-// A gomb funkciója
+
 window.acceptCookies = function() {
     localStorage.setItem('cookieConsentSeen', 'true');
     const toast = document.getElementById('cookieToast');
@@ -62,9 +61,8 @@ window.acceptCookies = function() {
         toast.style.opacity = '0';
         setTimeout(() => {
             toast.style.display = 'none';
-        }, 500); // Ha van transition, várjuk meg
+        }, 500);
     }
-}
 }
 
     if (typeof Chart !== 'undefined') {
@@ -4519,6 +4517,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
