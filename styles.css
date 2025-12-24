@@ -1486,14 +1486,18 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    overflow: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
     
+    
     /* --- EZT A RÉSZT ADD HOZZÁ/MÓDOSÍTSD: --- */
-    height: 100vh;       /* Teljes képernyő magasság */
+    height: calc(100vh - 80px);       /* Teljes képernyő magasság */
     overflow-y: auto;    /* Ha nem fér ki, lehessen görgetni */
-    position: sticky;    /* Vagy 'fixed', attól függ hogy van felépítve a layout */
+    position: fixed;    /* Vagy 'fixed', attól függ hogy van felépítve a layout */
+    left: 0;
     top: 0;
+    bottom: 0;
 }
 
 .sidebar-header {
@@ -3561,6 +3565,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
