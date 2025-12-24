@@ -41,10 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Azonnali ellenőrzés indítása
     checkAgeVerification();
 
-    if (typeof Chart !== 'undefined') {
-        Chart.defaults.color = '#e0e0e0';
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
-    }
 
     if (!localStorage.getItem('cookieConsentSeen')) {
         const toast = document.getElementById('cookieToast');
@@ -56,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         }
     }
-});
+
 
 // A gomb funkciója
 window.acceptCookies = function() {
@@ -69,6 +65,13 @@ window.acceptCookies = function() {
         }, 500); // Ha van transition, várjuk meg
     }
 }
+}
+
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
+    }
+
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -4516,6 +4519,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
