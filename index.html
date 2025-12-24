@@ -232,13 +232,17 @@
                     <section class="card">
                         <header class="card-header">
                             <h3>Saját sörjeid listája</h3>
-                            <div class="live-search-container" style="max-width: 300px; margin: 0;">
+                            <div class="live-search-container">
                                 <div class="search-input-wrapper">
-                                    <input type="text" id="liveSearchInput" placeholder="Keresés sörök között..." autocomplete="off">
+                                    <input type="text" id="userBeerSearchInput" placeholder="Keresés a söreim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
+                                    <div class="clear-search" id="userBeerClearSearch" style="display: none;">✕</div>
                                 </div>
+                                <div class="search-suggestions" id="userBeerSuggestions"></div>
+                                <div class="search-results-info" id="userBeerResultsInfo"></div>
                             </div>
                         </header>
+
                         
                         <div class="table-container">
                             <table>
@@ -271,13 +275,17 @@
                     <section class="card">
                         <header class="card-header">
                             <h3>Saját italaid listája</h3>
-                            <div class="live-search-container" style="max-width: 300px; margin: 0;">
+                            <div class="live-search-container">
                                 <div class="search-input-wrapper">
-                                    <input type="text" id="userDrinkSearchInput" placeholder="Keresés az italok között..." autocomplete="off">
+                                    <input type="text" id="userDrinkSearchInput" placeholder="Keresés az italaim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
+                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;">✕</div>
                                 </div>
+                                <div class="search-suggestions" id="userDrinkSuggestions"></div>
+                                <div class="search-results-info" id="userDrinkResultsInfo"></div>
                             </div>
                         </header>
+
                         
                         <div class="table-container">
                             <table>
@@ -1803,9 +1811,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
-
 
 
 
