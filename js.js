@@ -45,6 +45,30 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
+
+    if (!localStorage.getItem('cookieConsentSeen')) {
+        const toast = document.getElementById('cookieToast');
+        if (toast) {
+            // Kis késleltetés, hogy ne rögtön az arcába ugorjon
+            setTimeout(() => {
+                toast.style.display = 'block';
+                // Animáció (opcionális, ha van CSS transitionöd, de így is működik)
+            }, 1000);
+        }
+    }
+});
+
+// A gomb funkciója
+window.acceptCookies = function() {
+    localStorage.setItem('cookieConsentSeen', 'true');
+    const toast = document.getElementById('cookieToast');
+    if (toast) {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 500); // Ha van transition, várjuk meg
+    }
+}
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -4492,6 +4516,7 @@ switchToUserView = function() {
     }, 500);
 };
 });
+
 
 
 
