@@ -2041,20 +2041,22 @@ select.form-control:focus {
 }
 /* --- OLDALSÁV (SIDEBAR) GÖRGETŐSÁV --- */
 .sidebar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    width: 8px; /* Scrollbar szélessége */
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: transparent; /* Ne látszódjon a háttér */
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(243, 156, 18, 0.3); /* Halvány sörszín */
+    background: rgba(0, 0, 0, 0.2); /* Háttér színe */
     border-radius: 10px;
 }
 
+.sidebar::-webkit-scrollbar-thumb {
+    background: #764ba2; /* Lila csúszka (illeszkedik a dizájnhoz) */
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.2); /* Kis szegély a "lebegő" effekthez */
+}
+
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(243, 156, 18, 0.8); /* Erősebb szín ha ráviszed az egeret */
+    background: #9d4edd; /* Világosabb lila hover esetén */
 }
 /* === RECOVERY KÓD "MENŐ" STÍLUSOK === */
 
@@ -3567,6 +3569,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
