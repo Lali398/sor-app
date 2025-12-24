@@ -1828,6 +1828,9 @@ input:checked + .slider:before {
 /* === SEGÍTSÉG GOMB (VENDÉG NÉZET) === */
 .support-section {
     animation: slideUp 1s ease-out 0.7s both;
+    position: absolue;
+    bottom: -10px;
+    
 }
 
 .support-btn {
@@ -3565,6 +3568,7 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+
 
 
 
