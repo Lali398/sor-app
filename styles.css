@@ -2955,6 +2955,9 @@ select.cool-select {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    top: 45px;
+    left: 1px;
 }
 
 /* 5. VÁRAKOZÓ ÖTLET AKCIÓK KONTÉNERE */
@@ -3527,6 +3530,7 @@ select.cool-select {
     margin-top: 8px; /* Ezzel toljuk lejjebb az egészet, hogy ne a keret legtetején üljön */
     margin-left: 10px; /* Biztonsági távolság a szövegtől balra */
 }
+
 
 
 
