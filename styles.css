@@ -5,34 +5,24 @@
 }
 
 /* === ALAP SÖTÉT TÉMA === */
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-}
-
 body {
     font-family: 'Poppins', sans-serif;
+    /* Új sötét, "liquid" háttér */
     background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
-    background-attachment: fixed;
-    color: #e0e0e0;
+    background-attachment: fixed; /* Fixáljuk a hátteret görgetéskor */
+    min-height: 100vh;
     overflow-x: hidden;
+    color: #e0e0e0; /* Alapértelmezett világos szövegszín */
 }
 
 /* VENDÉG FELÜLET STÍLUSOK */
 .container {
     position: relative;
-    width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    
-    /* Ez akadályozza meg a telefonos szétcsúszást: */ 
-    max-width: 100vw;
 }
 
 /* Animált háttér (Buborékok) - Ezek tökéletesek a glassmorphism-hez */
@@ -84,7 +74,12 @@ body {
 .app-subtitle { font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 300; }
 
 /* === "LIQUID GLASS" KÁRTYA STÍLUS (VENDÉG) === */
-.auth-container { position: relative; margin-bottom: 30px; }
+.auth-container {
+    position: relative;
+    margin-bottom: 30px;
+    overflow: hidden; /* Levágja a kilógó (jobbra tolt) regisztrációs kártyát */
+}
+
 
 .auth-card {
     /* Glassmorphism Effekt */
@@ -3794,13 +3789,6 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
-
-
-
-
-
-
-
 
 
 
