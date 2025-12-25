@@ -1803,10 +1803,61 @@
         </div>
     </div>
 </div>
+
+    <div id="prizeFloatingBtn" class="prize-floating-btn" onclick="openPrizeModal()">
+        <div class="prize-icon">🎁</div>
+        <div class="prize-badge">1. Hely</div>
+    </div>
+
+    <div class="modal-overlay" id="prizeModal">
+        <div class="modal-content beer-upload-card" style="border-color: #ffd700 !important; background: linear-gradient(135deg, #1a0505 0%, #2c0b0b 100%) !important;">
+            <div class="modal-hero-header">
+                <div class="hero-icon" style="animation: bounce 1s infinite;">🎉</div>
+                <h3 style="color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">NYEREMÉNYJÁTÉK!</h3>
+                <p style="color: white;">Az első 5 tesztelő ajándékot kap!</p>
+                <button class="modal-close-abs" onclick="closePrizeModal()">✕</button>
+            </div>
+
+            <div style="padding: 25px; text-align: center;">
+                <p style="color: #e0e0e0; margin-bottom: 20px; font-size: 0.9rem;">
+                    Ha már töltöttél fel legalább egy tesztet, válassz egyet az alábbiak közül:
+                </p>
+
+                <div class="prize-selection-grid">
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Sör">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">🍺</span>
+                            <span>Sör</span>
+                        </div>
+                    </label>
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Cola">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">🥤</span>
+                            <span>Cola</span>
+                        </div>
+                    </label>
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Energia Ital">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">⚡</span>
+                            <span>Energia Ital</span>
+                        </div>
+                    </label>
+                </div>
+
+                <button class="auth-btn" onclick="submitPrizeClaim()" style="background: linear-gradient(135deg, #ffd700, #f39c12); color: black; font-weight: 800; margin-top: 20px;">
+                    KÉREM A NYEREMÉNYT! 🖐️
+                </button>
+            </div>
+        </div>
+    </div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
