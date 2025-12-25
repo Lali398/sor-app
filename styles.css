@@ -3576,7 +3576,7 @@ select.cool-select {
 
 /* Lebegő Ajándék Gomb */
 .prize-floating-btn {
-    position: absolute;
+    position: fixed;
     bottom: 75px; /* FAB felett */
     left: 2px;    /* Bal oldalon */
     width: 60px;
@@ -3664,6 +3664,7 @@ select.cool-select {
 /* Mobil nézetben csak user nézetnél látszódjon */
 #prizeFloatingBtn { display: none; }
 body.user-view-active #prizeFloatingBtn { display: flex; }
+
 
 
 
