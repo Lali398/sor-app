@@ -4739,7 +4739,15 @@ function fixSidebarHeight() {
     const sidebar = document.querySelector('.dashboard-sidebar');
     if (!sidebar) return;
     
-    // Tényleges látható magasság lekérése
+    // --- JAVÍTÁS: Mobilon (768px alatt) NE állítson fix magasságot ---
+    if (window.innerWidth <= 768) {
+        sidebar.style.height = '';      // Töröljük a fix magasságot
+        sidebar.style.maxHeight = '';   // Töröljük a maximumot
+        return;                         // Kilépünk, hogy a CSS érvényesüljön
+    }
+    // ---------------------------------------------------------------
+
+    // Asztali nézetben marad a teljes magasság (Windows tálca fix)
     const realHeight = window.innerHeight;
     sidebar.style.height = `${realHeight}px`;
     sidebar.style.maxHeight = `${realHeight}px`;
@@ -4855,6 +4863,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
