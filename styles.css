@@ -5,32 +5,34 @@
 }
 
 /* === ALAP SÖTÉT TÉMA === */
-html {
+html, body {
+    margin: 0;
+    padding: 0;
     width: 100%;
-    overflow-x: hidden;
+    min-height: 100%;
 }
 
 body {
     font-family: 'Poppins', sans-serif;
-    /* Új sötét, "liquid" háttér */
     background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
-    background-attachment: fixed; /* Fixáljuk a hátteret görgetéskor */
-    min-height: 100vh;
-    overflow-x: hidden;
-    color: #e0e0e0; /* Alapértelmezett világos szövegszín */
-    position: relative;
+    background-attachment: fixed;
+    color: #e0e0e0;
 }
 
 /* VENDÉG FELÜLET STÍLUSOK */
 .container {
     position: relative;
-    width: 100%;        /* Biztosítjuk a szélességet */
-    min-height: 100vh;  /* Alap magasság */
-    min-height: 100dvh; /* Mobilbarát dinamikus magasság */
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    
+    /* Ez akadályozza meg a telefonos szétcsúszást: */
+    overflow-x: hidden; 
+    max-width: 100vw;
 }
 
 /* Animált háttér (Buborékok) - Ezek tökéletesek a glassmorphism-hez */
@@ -3792,6 +3794,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
+
 
 
 
