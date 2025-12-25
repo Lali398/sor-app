@@ -3934,6 +3934,83 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         margin-bottom: 10px;
     }
 }
+@media (max-width: 768px) {
+    /* GPU gyorsítás bekapcsolása */
+    .table-container,
+    .table-container table,
+    .table-container tr {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    
+    /* Táblázat sorok egyszerűsített animáció */
+    .table-container tr {
+        transition: background 0.2s ease; /* Gyorsabb transition */
+    }
+    
+    /* Műveletek oszlop optimalizálás */
+    .table-container td[data-label="Művelet"] {
+        /* Flex helyett grid használata (gyorsabb mobilon) */
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 5px;
+        padding-left: 0 !important;
+    }
+    
+    .table-container td[data-label="Művelet"]::before {
+        display: none !important; /* Címke eltüntetése */
+    }
+    
+    /* Gombok teljes szélességben */
+    .table-container td[data-label="Művelet"] button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Kártya animáció kikapcsolása renderelés közben */
+    .table-container.rendering tr {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    /* Lazy loading support - először csak a látható sorok */
+    .table-container tr {
+        content-visibility: auto; /* Modern böngészők optimalizálása */
+    }
+    
+    /* Text rendering optimalizálás */
+    .table-container td {
+        text-rendering: optimizeSpeed;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Scroll performance */
+    .table-container {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+    }
+}
+
+/* Még kisebb képernyőkre (pl. iPhone SE) */
+@media (max-width: 480px) {
+    /* Mobil kártya egyszerűsítés */
+    .table-container td {
+        padding: 8px 10px !important;
+        font-size: 0.9rem;
+    }
+    
+    .table-container td::before {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Gombok kisebbek */
+    .table-container button {
+        font-size: 0.85rem !important;
+        padding: 8px 10px !important;
+    }
+}
+
 
 
 
