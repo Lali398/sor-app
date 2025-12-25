@@ -6,7 +6,7 @@
 
 /* === ALAP SÖTÉT TÉMA === */
 html {
-    overflow-x: hidden; /* Ez a kulcs: a HTML elem se engedje a csúszkálást */
+    width: 100%;
 }
 
 body {
@@ -30,7 +30,6 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow-x: hidden; /* Ez is megfogja a kilógó tartalmat */
 }
 
 /* Animált háttér (Buborékok) - Ezek tökéletesek a glassmorphism-hez */
@@ -3792,6 +3791,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
+
 
 
 
