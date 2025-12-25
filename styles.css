@@ -6,7 +6,6 @@
 
 /* === ALAP SÖTÉT TÉMA === */
 html {
-    width: 100%;
     overflow-x: hidden; /* Ez a kulcs: a HTML elem se engedje a csúszkálást */
 }
 
@@ -3793,6 +3792,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
+
 
 
 
