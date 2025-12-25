@@ -4757,7 +4757,88 @@ if (typeof switchToUserView === 'function') {
         setTimeout(fixSidebarHeight, 100);
     };
 }
+    // === NYEREMÉNYJÁTÉK LOGIKA ===
+
+function openPrizeModal() {
+    document.getElementById('prizeModal').classList.add('active');
+}
+
+function closePrizeModal() {
+    document.getElementById('prizeModal').classList.remove('active');
+}
+
+async function submitPrizeClaim() {
+    const selectedOption = document.querySelector('input[name="prizeSelect"]:checked');
+    if (!selectedOption) {
+        showError("Kérlek válassz egy nyereményt! 🍺🥤⚡");
+        return;
+    }
+
+    const prize = selectedOption.value;
+    const btn = document.querySelector('#prizeModal .auth-btn'); // A gomb a modalban
+
+    // Loading állapot
+    const originalText = btn.innerText;
+    btn.innerText = "Ellenőrzés...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'CLAIM_REWARD', 
+                selectedPrize: prize 
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Hiba történt.");
+        }
+
+        // Siker
+        showSuccess(result.message);
+        
+        // Tűzijáték effekt (ha van, de a success üzenet is elég)
+        closePrizeModal();
+        
+        // Eltüntetjük a gombot, mert már nyert
+        document.getElementById('prizeFloatingBtn').style.display = 'none';
+
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Gomb láthatóságának kezelése
+// Ezt be kell szúrni a `switchToUserView` függvénybe, vagy figyelni a nézetváltást
+const originalSwitchToUserViewPrize = switchToUserView;
+switchToUserView = function() {
+    originalSwitchToUserViewPrize();
+    
+    // Jelezzük a CSS-nek, hogy user nézetben vagyunk, így megjelenik a gomb
+    document.body.classList.add('user-view-active');
+    
+    // Opcionális: Ellenőrizhetnénk itt is, hogy nyert-e már, és ha igen, elrejthetjük,
+    // de az API úgyis visszadobja, ha újra próbálkozik.
+};
+
+// Kilépéskor eltüntetjük
+const originalSwitchToGuestViewPrize = switchToGuestView;
+switchToGuestView = function() {
+    originalSwitchToGuestViewPrize();
+    document.body.classList.remove('user-view-active');
+};
 });
+
 
 
 
