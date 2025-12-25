@@ -19,7 +19,6 @@ body {
 .container {
     position: relative;
     min-height: 100vh;
-    min-height: 100dvh; /* Modernebb mobil magasság kezelés */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -67,7 +66,7 @@ body {
     max-width: 450px;
     text-align: center;
     overflow-x: hidden; /* Levágja a jobbra kicsúszó kártyát */
-    padding: 10px;      /* Hagyunk pici helyet, hogy a kártya árnyéka ne legyen levágva */
+    padding: 10px;
 }
 
 /* Logo szekció (változatlan, sötét háttéren jól mutat) */
@@ -3787,9 +3786,6 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
-
-
-
 
 
 
