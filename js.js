@@ -436,14 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 async function loadUserDrinks() {
-    console.log('🍹 loadUserDrinks STARTED');
-    console.time('Italok teljes betöltése');
-    
     const user = JSON.parse(localStorage.getItem('userData'));
-    if (!user) {
-        console.log('❌ Nincs user, kilépés');
-        return;
-    }
+    if (!user) return;
 
     try {
         const response = await fetch('/api/sheet', {
@@ -453,8 +447,6 @@ async function loadUserDrinks() {
         });
         const drinks = await response.json();
         
-        console.log(`📊 API válasz: ${drinks.length} ital érkezett`);
-        
         if (!response.ok) {
             if (response.status !== 401) {
                 throw new Error(drinks.error || 'Szerverhiba');
@@ -462,28 +454,25 @@ async function loadUserDrinks() {
             return;
         }
         
+        // 1. Globális változó frissítése (Eredeti indexxel!)
         currentUserDrinks = drinks.map((drink, index) => ({
             ...drink,
             originalIndex: index
         }));
 
-        console.log(`✅ currentUserDrinks: ${currentUserDrinks.length} elem`);
-        console.log('🔄 Rendezés ellenőrzése:', currentSort.drink);
-
+        // --- ÚJ RÉSZ: ITALOK RENDEZÉSE ---
         if (currentSort.drink.column && currentSort.drink.direction) {
-            console.log('⚠️ Rendezés aktív, sortAndRenderDrinks hívása...');
             sortAndRenderDrinks(currentSort.drink.column, currentSort.drink.dataType, currentSort.drink.direction);
             
+            // Nyilak visszaállítása
             setTimeout(() => {
                 const header = document.querySelector(`#user-drinks-content .sortable[data-sort="${currentSort.drink.column}"]`);
                 if (header) updateSortArrows('drink', header, currentSort.drink.direction);
             }, 100);
         } else {
-            console.log('📝 Normál renderelés...');
-            console.time('renderUserDrinks');
             renderUserDrinks(currentUserDrinks);
-            console.timeEnd('renderUserDrinks');
         }
+        // ---------------------------------
 
         updateUserDrinkStats(drinks);
         
@@ -492,11 +481,8 @@ async function loadUserDrinks() {
             renderAchievements();
         }
 
-        console.timeEnd('Italok teljes betöltése');
-        console.log('✅ loadUserDrinks FINISHED');
-
     } catch (error) {
-        console.error("❌ Hiba az italok betöltésekor:", error);
+        console.error("Hiba az italok betöltésekor:", error);
     }
 }
 
@@ -4415,7 +4401,7 @@ function renderUserBeers(beers) {
                 <td data-label="Íz">${beer.taste || 0}</td>
                 <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet" class="action-buttons-cell">
+                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
                     <button class="view-btn" onclick="openViewBeerModal(${safeIndex})" title="Teljes adat">👁️</button>
                     <button class="edit-btn" onclick="openEditBeerModal(${safeIndex})">✏️ Szerkesztés</button>
                     <button class="delete-btn-mini" onclick="deleteUserBeer(${safeIndex})">🗑️ Törlés</button>
@@ -4435,7 +4421,9 @@ function renderUserDrinks(drinks) {
     }
     
     drinks.forEach((drink) => {
+        // ITT IS: safeIndex használata az eredeti pozícióhoz
         const safeIndex = (drink.originalIndex !== undefined) ? drink.originalIndex : currentUserDrinks.indexOf(drink);
+
         const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
         const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
         const calculatedAvg = scoreSum / 3;
@@ -4454,7 +4442,7 @@ function renderUserDrinks(drinks) {
                 <td data-label="Íz">${drink.taste || 0}</td>
                 <td data-label="Összpontszám">${drink.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet" class="action-buttons-cell">
+                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
                     <button class="view-btn" onclick="openViewDrinkModal(${safeIndex})" title="Teljes adat">👁️</button>
                     <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️ Szerkesztés</button>
                     <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️ Törlés</button>
@@ -4945,9 +4933,6 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
-
-
-
 
 
 
