@@ -4757,7 +4757,132 @@ if (typeof switchToUserView === 'function') {
         setTimeout(fixSidebarHeight, 100);
     };
 }
+    // === NYEREMÉNYJÁTÉK LOGIKA ===
+
+// 1. Promóció állapotának lekérdezése (Betöltéskor hívjuk meg)
+async function checkPromoStatus() {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'GET_PROMO_STATUS' }) // Nem kell token a megtekintéshez
+        });
+        const result = await response.json();
+        
+        // UI frissítése Vendég nézetben
+        const promoDisplay = document.getElementById('promoDisplay');
+        const counter = document.getElementById('promoSlotsLeft');
+        
+        if (result.active && promoDisplay) {
+            promoDisplay.style.display = 'block';
+            counter.textContent = result.slotsLeft;
+            // Animáció, ha kevés hely van
+            if (result.slotsLeft <= 2) {
+                counter.style.color = '#ff4444';
+                counter.parentElement.style.animation = 'pulse 1s infinite';
+            }
+        } else if (promoDisplay) {
+            promoDisplay.style.display = 'none'; // Ha betelt, eltüntetjük
+        }
+
+    } catch (error) {
+        console.warn("Promo status check failed", error);
+    }
+}
+
+// 2. Nyeremény választása (A modal gombja hívja)
+window.selectPrize = async function(prizeName) {
+    const btns = document.querySelectorAll('.prize-option');
+    btns.forEach(b => b.disabled = true); // Dupla kattintás ellen
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}` 
+            },
+            body: JSON.stringify({ action: 'CLAIM_PRIZE', prize: prizeName })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('prizeModal').classList.remove('active');
+            showSuccess(`Kiváló választás: ${prizeName}! 🎁 Az adminisztrátorok látják a kérést.`);
+            // Frissítjük a számlálót
+            checkPromoStatus();
+        } else {
+            showError(result.error || "Hiba történt a választáskor.");
+            document.getElementById('prizeModal').classList.remove('active');
+        }
+    } catch (error) {
+        showError("Hálózati hiba.");
+    }
+}
+
+// 3. Ellenőrzés feltöltés után (Ezt kell beilleszteni a handleAddBeer és handleAddDrink végére!)
+async function checkForPrizeWin() {
+    // Csak gyorsan megnézzük, van-e még hely
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'GET_PROMO_STATUS' })
+        });
+        const result = await response.json();
+        
+        if (result.active && result.slotsLeft > 0) {
+            // Ellenőrizzük, hogy ez a user nyert-e már (kliens oldalon egyszerűbb csak feldobni, a szerver úgyis véd)
+            // Itt feldobjuk a modalt!
+            document.getElementById('prizeModal').classList.add('active');
+            
+            // Tűzijáték effekt (opcionális, ha van canvas)
+            createBeerBubbles(window.innerWidth / 2, window.innerHeight / 2);
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+// 4. Admin lista betöltése
+async function loadAdminWinners() {
+    const card = document.getElementById('adminWinnersCard');
+    const tbody = document.getElementById('adminWinnersTableBody');
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'GET_PROMO_STATUS', isAdmin: true })
+        });
+        const result = await response.json();
+        
+        if (result.winners && result.winners.length > 1) { // 1 mert a fejléc ott van
+            card.style.display = 'block';
+            tbody.innerHTML = '';
+            
+            // Az első sort (fejléc) kihagyjuk
+            result.winners.slice(1).forEach(row => {
+                const html = `
+                    <tr>
+                        <td>${row[0]}</td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td style="color: #ffd700; font-weight: bold;">${row[3]}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', html);
+            });
+        } else {
+            card.style.display = 'none';
+        }
+    } catch (e) {
+        console.log("Admin winners error", e);
+    }
+}
 });
+
 
 
 
