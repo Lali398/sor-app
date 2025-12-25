@@ -1,5 +1,75 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+
+
+    // === 2026 VISSZASZÁMLÁLÓ & TITKOS BELÉPÉS ===
+    function initLaunchCountdown() {
+        const overlay = document.getElementById('launchOverlay');
+        const title = document.getElementById('launchTitle');
+        const targetDate = new Date('January 1, 2026 00:00:00').getTime();
+        
+        // Ellenőrizzük, hogy a user már feloldotta-e korábban
+        if (localStorage.getItem('dev_bypass') === 'true') {
+            if(overlay) overlay.style.display = 'none';
+            return;
+        }
+
+        // Időzítő logika
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                // ELJÖTT AZ IDŐ!
+                clearInterval(timer);
+                if(overlay) {
+                    overlay.classList.add('hidden');
+                    setTimeout(() => overlay.style.display = 'none', 1000);
+                }
+                return;
+            }
+
+            // Számolás
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // UI frissítés
+            if(document.getElementById('cd-days')) {
+                document.getElementById('cd-days').innerText = days < 10 ? "0" + days : days;
+                document.getElementById('cd-hours').innerText = hours < 10 ? "0" + hours : hours;
+                document.getElementById('cd-minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
+                document.getElementById('cd-seconds').innerText = seconds < 10 ? "0" + seconds : seconds;
+            }
+        }, 1000);
+
+        // --- TITKOS AJTÓ (5 KATTINTÁS A CÍMRE) ---
+        let clickCount = 0;
+        if(title) {
+            title.addEventListener('click', () => {
+                clickCount++;
+                if (clickCount === 5) {
+                    const code = prompt("🔒 Fejlesztői feloldókód:");
+                    if (code === "admin2026") { // ITT ÁLLÍTHATOD A JELSZÓT
+                        localStorage.setItem('dev_bypass', 'true');
+                        overlay.classList.add('hidden');
+                        setTimeout(() => overlay.style.display = 'none', 1000);
+                        alert("Üdv a jövőben! 👋");
+                    } else {
+                        alert("Helytelen kód!");
+                        clickCount = 0;
+                    }
+                }
+                // Reset ha abbahagyja a kattintgatást
+                setTimeout(() => { clickCount = 0; }, 2000);
+            });
+        }
+    }
+
+    // Indítás
+    initLaunchCountdown();
+
     // === 18+ KORHATÁR ELLENŐRZÉS ===
     function checkAgeVerification() {
         // Megnézzük, hogy a felhasználó igazolta-e már korábban
@@ -4863,6 +4933,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
