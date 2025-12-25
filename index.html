@@ -31,6 +31,15 @@
                     <p class="app-subtitle">Gabz és Lajos sör értékelő rendszere</p>
                 </div>
 
+                <div class="promo-container" id="promoDisplay" style="display: none;">
+                    <div class="promo-badge">🔥 NYEREMÉNYJÁTÉK 🔥</div>
+                    <div class="promo-text">
+                        Az első <strong>5</strong> beküldő ajándék italt kap!
+                        <div class="promo-counter">Még <span id="promoSlotsLeft">5</span> hely kiadó!</div>
+                    </div>
+                    <div class="promo-icons">🍺 🥤 ⚡</div>
+                </div>
+                
                 <div class="auth-container">
                     <div class="auth-card login-card active" id="loginCard">
                         <div class="card-header">
@@ -1803,10 +1812,46 @@
         </div>
     </div>
 </div>
+
+    <div class="modal-overlay" id="prizeModal" style="z-index: 100000;">
+    <div class="modal-content beer-upload-card" style="border-color: #ffd700 !important; background: linear-gradient(135deg, #000, #1a1a00);">
+        <div class="modal-hero-header" style="border-bottom: none;">
+            <div class="hero-icon" style="font-size: 4rem; animation: bounce 1s infinite;">🎉</div>
+            <h3 style="color: #ffd700; text-transform: uppercase; text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);">GRATULÁLUNK!</h3>
+            <p style="color: white; margin-top: 10px;">Te vagy az egyik leggyorsabb feltöltő!</p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px;">
+            <p style="font-size: 1.2rem; color: #e0e0e0; margin-bottom: 25px;">
+                Válassz egy ajándék italt:
+            </p>
+            
+            <div class="prize-grid">
+                <button class="prize-option" onclick="selectPrize('Sör')">
+                    <span class="prize-icon">🍺</span>
+                    <span class="prize-name">Sör</span>
+                </button>
+                <button class="prize-option" onclick="selectPrize('Cola')">
+                    <span class="prize-icon">🥤</span>
+                    <span class="prize-name">Cola</span>
+                </button>
+                <button class="prize-option" onclick="selectPrize('Energia Ital')">
+                    <span class="prize-icon">⚡</span>
+                    <span class="prize-name">Energia Ital</span>
+                </button>
+            </div>
+            
+            <p style="font-size: 0.8rem; color: #aaa; margin-top: 20px;">
+                Az adminisztrátorok hamarosan felveszik veled a kapcsolatot.
+            </p>
+        </div>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
