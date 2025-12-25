@@ -15,6 +15,15 @@ body {
     color: #e0e0e0; /* Alapértelmezett világos szövegszín */
 }
 
+@media (max-width: 768px) {
+    .body {
+        
+    }
+
+@media (max-width: 768px) {
+    .contanier {
+}
+
 /* VENDÉG FELÜLET STÍLUSOK */
 .container {
     position: relative;
@@ -65,8 +74,6 @@ body {
     width: 100%;
     max-width: 450px;
     text-align: center;
-    overflow-x: hidden; /* Levágja a jobbra kicsúszó kártyát */
-    padding: 10px;
 }
 
 /* Logo szekció (változatlan, sötét háttéren jól mutat) */
