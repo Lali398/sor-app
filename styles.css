@@ -5,12 +5,6 @@
 }
 
 /* === ALAP SÖTÉT TÉMA === */
-html, body {
-    width: 100%;
-    overflow-x: hidden; /* Tiltja a vízszintes görgetést */
-    position: relative;
-}
-
 body {
     font-family: 'Poppins', sans-serif;
     /* Új sötét, "liquid" háttér */
@@ -3793,6 +3787,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
+
 
 
 
