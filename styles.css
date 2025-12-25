@@ -1690,7 +1690,7 @@ input:checked + .slider:before {
 @media (max-width: 768px) {
     .dashboard-sidebar {
         width: 100%;
-        height: auto;
+        height: auto !important;
         bottom: 0;
         top: auto;
         flex-direction: row;
@@ -3664,6 +3664,7 @@ select.cool-select {
 /* Mobil nézetben csak user nézetnél látszódjon */
 #prizeFloatingBtn { display: none; }
 body.user-view-active #prizeFloatingBtn { display: flex; }
+
 
 
 
