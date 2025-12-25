@@ -13,6 +13,7 @@ const GUEST_DRINKS_SHEET = 'Vendég ital teszt';
 const IDEAS_SHEET = 'Vendég ötletek';
 const RECOMMENDATIONS_SHEET = 'Vendég sör ajánló';
 const SUPPORT_SHEET = 'Hibajelentések';
+const WINNERS_SHEET = 'Nyertesek';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -1159,6 +1160,58 @@ case 'EDIT_USER_DRINK': {
                     
                     return res.status(200).json({ message: "Ajánlás sikeresen törölve!" });
                 }
+
+            case 'CLAIM_REWARD': {
+                const userData = verifyUser(req);
+                const { selectedPrize } = req.body;
+
+                if (!['Sör', 'Cola', 'Energia Ital'].includes(selectedPrize)) {
+                    return res.status(400).json({ error: "Érvénytelen nyeremény választás!" });
+                }
+
+                // 1. Ellenőrizzük, hány nyertes van eddig
+                const winnersRes = await sheets.spreadsheets.values.get({ 
+                    spreadsheetId: SPREADSHEET_ID, 
+                    range: `${WINNERS_SHEET}!A:A` 
+                });
+                const winnerCount = (winnersRes.data.values || []).length - 1; // Fejléc levonása
+
+                if (winnerCount >= 5) {
+                    return res.status(400).json({ error: "Sajnos lemaradtál! Már megvan az első 5 nyertes. 😔" });
+                }
+
+                // 2. Ellenőrizzük, hogy ez a user nyert-e már (duplikáció szűrés)
+                const winnersFullRes = await sheets.spreadsheets.values.get({ 
+                    spreadsheetId: SPREADSHEET_ID, 
+                    range: `${WINNERS_SHEET}!C:C` // Email oszlop
+                });
+                const winnersEmails = (winnersFullRes.data.values || []).flat();
+                if (winnersEmails.includes(userData.email)) {
+                    return res.status(400).json({ error: "Te már beváltottad a nyereményedet! 🎉" });
+                }
+
+                // 3. Ellenőrizzük, hogy töltött-e fel legalább 1 sört VAGY italt
+                const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+                const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
+
+                const hasBeer = (beersRes.data.values || []).some(row => row[13] === userData.email); // 13-as index az email
+                const hasDrink = (drinksRes.data.values || []).some(row => row[13] === userData.email);
+
+                if (!hasBeer && !hasDrink) {
+                    return res.status(400).json({ error: "Előbb tölts fel legalább egy Sör vagy Ital tesztet! 📝" });
+                }
+
+                // 4. Ha minden oké, mentsük el
+                const timestamp = new Date().toLocaleString('hu-HU');
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: WINNERS_SHEET,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[timestamp, userData.name, userData.email, selectedPrize]] }
+                });
+
+                return res.status(200).json({ message: "GRATULÁLUNK! Nyereményed rögzítve! Keresni fogunk. 🎁" });
+            }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1270,6 +1323,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
