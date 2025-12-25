@@ -3934,6 +3934,39 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         margin-bottom: 10px;
     }
 }
+/* Művelet gombok cella normál nézetben */
+.action-buttons-cell {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Mobil nézet javítás */
+@media (max-width: 768px) {
+    /* Az utolsó cella (gombok) kezelése mobilon */
+    .table-container td.action-buttons-cell {
+        display: flex !important; /* Fontos hogy flex maradjon */
+        flex-direction: column; /* Egymás alá rakjuk a gombokat */
+        padding-left: 0 !important;
+        gap: 8px;
+        padding-top: 15px;
+    }
+    
+    /* Címke elrejtése a gombok cellájánál */
+    .table-container td.action-buttons-cell::before {
+        content: '' !important;
+        display: none !important;
+    }
+    
+    /* Gombok teljes szélessé tétele mobilon */
+    .action-buttons-cell .view-btn,
+    .action-buttons-cell .edit-btn,
+    .action-buttons-cell .delete-btn-mini {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 
 
 
