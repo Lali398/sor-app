@@ -3664,6 +3664,34 @@ select.cool-select {
 /* Mobil nézetben csak user nézetnél látszódjon */
 #prizeFloatingBtn { display: none; }
 body.user-view-active #prizeFloatingBtn { display: flex; }
+/* "Még annál is többet?" stílus */
+.mystery-text {
+    font-size: 0.75rem;       /* Kisebb méret */
+    font-weight: 300;         /* Vékony betű */
+    font-style: italic;       /* Dőlt stílus */
+    text-transform: uppercase; /* Nagybetűs, de kicsi */
+    letter-spacing: 3px;      /* Szellős betűköz (ez adja a "menő" hatást) */
+    margin-top: 8px;          /* Kis távolság a felette lévő szövegtől */
+    
+    /* Arany-Fehér Gradiens Szöveg */
+    background: linear-gradient(90deg, #888, #ffd700, #fff, #ffd700, #888);
+    background-size: 200% auto;
+    color: transparent;       /* A szöveg színe átlátszó, hogy a háttér látszódjon */
+    -webkit-background-clip: text;
+    background-clip: text;
+    
+    /* Finom csillogó animáció */
+    animation: shine 5s linear infinite;
+    opacity: 0.8;
+}
+
+/* Animáció a szöveg csillogásához */
+@keyframes shine {
+    to {
+        background-position: 200% center;
+    }
+}
+
 
 
 
