@@ -436,8 +436,14 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 async function loadUserDrinks() {
+    console.log('🍹 loadUserDrinks STARTED');
+    console.time('Italok teljes betöltése');
+    
     const user = JSON.parse(localStorage.getItem('userData'));
-    if (!user) return;
+    if (!user) {
+        console.log('❌ Nincs user, kilépés');
+        return;
+    }
 
     try {
         const response = await fetch('/api/sheet', {
@@ -447,6 +453,8 @@ async function loadUserDrinks() {
         });
         const drinks = await response.json();
         
+        console.log(`📊 API válasz: ${drinks.length} ital érkezett`);
+        
         if (!response.ok) {
             if (response.status !== 401) {
                 throw new Error(drinks.error || 'Szerverhiba');
@@ -454,25 +462,28 @@ async function loadUserDrinks() {
             return;
         }
         
-        // 1. Globális változó frissítése (Eredeti indexxel!)
         currentUserDrinks = drinks.map((drink, index) => ({
             ...drink,
             originalIndex: index
         }));
 
-        // --- ÚJ RÉSZ: ITALOK RENDEZÉSE ---
+        console.log(`✅ currentUserDrinks: ${currentUserDrinks.length} elem`);
+        console.log('🔄 Rendezés ellenőrzése:', currentSort.drink);
+
         if (currentSort.drink.column && currentSort.drink.direction) {
+            console.log('⚠️ Rendezés aktív, sortAndRenderDrinks hívása...');
             sortAndRenderDrinks(currentSort.drink.column, currentSort.drink.dataType, currentSort.drink.direction);
             
-            // Nyilak visszaállítása
             setTimeout(() => {
                 const header = document.querySelector(`#user-drinks-content .sortable[data-sort="${currentSort.drink.column}"]`);
                 if (header) updateSortArrows('drink', header, currentSort.drink.direction);
             }, 100);
         } else {
+            console.log('📝 Normál renderelés...');
+            console.time('renderUserDrinks');
             renderUserDrinks(currentUserDrinks);
+            console.timeEnd('renderUserDrinks');
         }
-        // ---------------------------------
 
         updateUserDrinkStats(drinks);
         
@@ -481,8 +492,11 @@ async function loadUserDrinks() {
             renderAchievements();
         }
 
+        console.timeEnd('Italok teljes betöltése');
+        console.log('✅ loadUserDrinks FINISHED');
+
     } catch (error) {
-        console.error("Hiba az italok betöltésekor:", error);
+        console.error("❌ Hiba az italok betöltésekor:", error);
     }
 }
 
@@ -4933,6 +4947,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
