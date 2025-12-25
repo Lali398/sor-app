@@ -3572,6 +3572,99 @@ select.cool-select {
 .github-btn:hover svg {
     transform: rotate(360deg);
 }
+/* === NYEREMÉNYJÁTÉK STÍLUSOK === */
+
+/* Lebegő Ajándék Gomb */
+.prize-floating-btn {
+    position: fixed;
+    bottom: 100px; /* FAB felett */
+    left: 20px;    /* Bal oldalon */
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff0000, #c0392b);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+    display: flex; /* Kezdetben rejtett, JS hozza be ha User nézet van */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    animation: shakeGift 3s infinite ease-in-out;
+    border: 2px solid #ffd700;
+    transition: transform 0.3s;
+}
+
+.prize-floating-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.prize-icon {
+    font-size: 2rem;
+}
+
+.prize-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #ffd700;
+    color: black;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+@keyframes shakeGift {
+    0%, 90% { transform: rotate(0deg); }
+    92% { transform: rotate(-10deg); }
+    94% { transform: rotate(10deg); }
+    96% { transform: rotate(-10deg); }
+    98% { transform: rotate(10deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Modal Választó Grid */
+.prize-selection-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.prize-option input {
+    display: none;
+}
+
+.prize-card-inner {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.prize-emoji {
+    font-size: 2rem;
+}
+
+/* Kijelölt állapot */
+.prize-option input:checked + .prize-card-inner {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    transform: translateY(-5px);
+}
+
+/* Mobil nézetben csak user nézetnél látszódjon */
+#prizeFloatingBtn { display: none; }
+body.user-view-active #prizeFloatingBtn { display: flex; }
+
 
 
 
