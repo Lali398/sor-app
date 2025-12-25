@@ -5,6 +5,11 @@
 }
 
 /* === ALAP SÖTÉT TÉMA === */
+html {
+    width: 100%;
+    overflow-x: hidden; /* Ez a kulcs: a HTML elem se engedje a csúszkálást */
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     /* Új sötét, "liquid" háttér */
@@ -13,25 +18,20 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     color: #e0e0e0; /* Alapértelmezett világos szövegszín */
-}
-
-@media (max-width: 768px) {
-    .body {
-        
-    }
-
-@media (max-width: 768px) {
-    .contanier {
+    position: relative;
 }
 
 /* VENDÉG FELÜLET STÍLUSOK */
 .container {
     position: relative;
-    min-height: 100vh;
+    width: 100%;        /* Biztosítjuk a szélességet */
+    min-height: 100vh;  /* Alap magasság */
+    min-height: 100dvh; /* Mobilbarát dinamikus magasság */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow-x: hidden; /* Ez is megfogja a kilógó tartalmat */
 }
 
 /* Animált háttér (Buborékok) - Ezek tökéletesek a glassmorphism-hez */
@@ -3793,6 +3793,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .time-box { min-width: 70px; padding: 10px; }
     .time-box span { font-size: 1.8rem; }
 }
+
 
 
 
