@@ -4428,43 +4428,134 @@ function renderUserBeers(beers) {
 
 // CSERÉLD LE A RÉGI renderUserDrinks FÜGGVÉNYT EZZEL:
 function renderUserDrinks(drinks) {
-    userDrinkTableBody.innerHTML = '';
-    if (!drinks || drinks.length === 0) {
-        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
+    console.log('🔧 renderUserDrinks INDULT');
+    
+    // 1. Előzetes ellenőrzés
+    if (!userDrinkTableBody) {
+        console.error("❌ userDrinkTableBody elem nem található!");
         return;
     }
-    
-    drinks.forEach((drink) => {
-        // ITT IS: safeIndex használata az eredeti pozícióhoz
-        const safeIndex = (drink.originalIndex !== undefined) ? drink.originalIndex : currentUserDrinks.indexOf(drink);
+    console.log('✅ userDrinkTableBody elem OK');
 
-        const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
-        const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
-        const calculatedAvg = scoreSum / 3;
-        const formattedAvg = calculatedAvg.toFixed(2);
+    // 2. Üres állapot kezelése
+    if (!drinks || drinks.length === 0) {
+        console.log('⚠️ Nincs ital, üres tábla');
+        userDrinkTableBody.innerHTML = `<tr><td colspan="12" class="no-results">Még nem értékeltél egy italt sem.</td></tr>`;
+        console.log('✅ renderUserDrinks BEFEJEZVE (üres)');
+        return;
+    }
+    console.log(`📊 Renderelendő italok: ${drinks.length} db`);
+
+    console.log(`📊 Renderelendő italok: ${drinks.length} db`);
+
+    try {
+        console.log('🔄 Map elindítása...');
         
-        const row = `
+        // 3. BATCH RENDERELÉS
+        const rowsHTML = drinks.map((drink, idx) => {
+            console.log(`  → Ital ${idx + 1}/${drinks.length}: ${drink.drinkName}`);
+            
+            const safeIndex = drink.originalIndex !== undefined ? drink.originalIndex : idx;
+            const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
+            const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
+            const calculatedAvg = scoreSum / 3;
+            const formattedAvg = calculatedAvg.toFixed(2);
+            
+            return `
+                <tr>
+                    <td data-label="Dátum">${formattedDate}</td>
+                    <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
+                    <td data-label="Kategória">${drink.category}</td>
+                    <td data-label="Típus">${drink.type}</td>
+                    <td data-label="Hely">${drink.location}</td>
+                    <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
+                    <td data-label="Külalak">${drink.look || 0}</td>
+                    <td data-label="Illat">${drink.smell || 0}</td>
+                    <td data-label="Íz">${drink.taste || 0}</td>
+                    <td data-label="Összpontszám">${drink.totalScore || 0}</td>
+                    <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
+                    <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="view-btn" onclick="openViewDrinkModal(${safeIndex})" title="Teljes adat">👁️</button>
+                        <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️ Szerkesztés</button>
+                        <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️ Törlés</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        console.log('✅ Map befejezve, HTML hossz:', rowsHTML.length);
+        console.log('🔄 innerHTML beállítása...');
+        
+        // 4. DOM frissítés
+        userDrinkTableBody.innerHTML = rowsHTML;
+        
+        console.log('✅ innerHTML beállítva');
+        console.log('✅ renderUserDrinks SIKERESEN BEFEJEZVE');
+        
+    } catch (error) {
+        console.error('❌ HIBA a renderUserDrinks-ben:', error);
+        console.error('Stack trace:', error.stack);
+    }
+}
+
+// 📌 UGYANEZ A SÖRÖKRE IS (ha probléma lenne velük):
+function renderUserBeers(beers) {
+    if (!userBeerTableBody) {
+        console.error("userBeerTableBody elem nem található!");
+        return;
+    }
+
+    if (!beers || beers.length === 0) {
+        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        return;
+    }
+
+    const isMobile = window.innerWidth <= 768;
+    const maxItems = isMobile ? 50 : beers.length;
+    const itemsToRender = beers.slice(0, maxItems);
+
+    const rowsHTML = itemsToRender.map((beer, idx) => {
+        const safeIndex = beer.originalIndex !== undefined ? beer.originalIndex : idx;
+        const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
+        const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
+        
+        return `
             <tr>
                 <td data-label="Dátum">${formattedDate}</td>
-                <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
-                <td data-label="Kategória">${drink.category}</td>
-                <td data-label="Típus">${drink.type}</td>
-                <td data-label="Hely">${drink.location}</td>
-                <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
-                <td data-label="Külalak">${drink.look || 0}</td>
-                <td data-label="Illat">${drink.smell || 0}</td>
-                <td data-label="Íz">${drink.taste || 0}</td>
-                <td data-label="Összpontszám">${drink.totalScore || 0}</td>
+                <td data-label="Sör neve" class="mobile-card-title">${beer.beerName}</td>
+                <td data-label="Főzési hely">${beer.location}</td>
+                <td data-label="Alkohol %">${beer.beerPercentage || 0}%</td>
+                <td data-label="Külalak">${beer.look || 0}</td>
+                <td data-label="Illat">${beer.smell || 0}</td>
+                <td data-label="Íz">${beer.taste || 0}</td>
+                <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
                 <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
-                    <button class="view-btn" onclick="openViewDrinkModal(${safeIndex})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️ Törlés</button>
+                    <button class="view-btn" onclick="openViewBeerModal(${safeIndex})" title="Teljes adat">👁️</button>
+                    <button class="edit-btn" onclick="openEditBeerModal(${safeIndex})">✏️ Szerkesztés</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${safeIndex})">🗑️ Törlés</button>
                 </td>
             </tr>
         `;
-        userDrinkTableBody.insertAdjacentHTML('beforeend', row);
-    });
+    }).join('');
+
+    userBeerTableBody.innerHTML = rowsHTML;
+
+    if (beers.length > maxItems) {
+        const moreRow = `
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.05);">
+                    <p style="color: #ffd700; font-weight: 600; margin-bottom: 10px;">
+                        📱 Mobilon csak az első ${maxItems} sör látható a teljesítmény érdekében.
+                    </p>
+                    <p style="color: #aaa; font-size: 0.9rem;">
+                        Használd a keresőt vagy váltsd asztali nézetre a teljes lista megtekintéséhez.
+                    </p>
+                </td>
+            </tr>
+        `;
+        userBeerTableBody.insertAdjacentHTML('beforeend', moreRow);
+    }
 }
     // === TÁBLÁZAT RENDEZÉS (SORTING) FUNKCIÓ ===
 
@@ -4947,6 +5038,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
