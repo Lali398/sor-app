@@ -74,11 +74,7 @@ body {
 .app-subtitle { font-size: 1.1rem; color: rgba(255, 255, 255, 0.8); font-weight: 300; }
 
 /* === "LIQUID GLASS" KÁRTYA STÍLUS (VENDÉG) === */
-.auth-container {
-    position: relative;
-    margin-bottom: 30px;
-    overflow: hidden; /* Levágja a kilógó (jobbra tolt) regisztrációs kártyát */
-}
+.auth-container { position: relative; margin-bottom: 30px; }
 
 
 .auth-card {
@@ -3938,6 +3934,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         margin-bottom: 10px;
     }
 }
+
 
 
 
