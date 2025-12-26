@@ -3966,6 +3966,27 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         justify-content: center;
     }
 }
+/* === ITALOK MOBIL JAVÍTÁS === */
+@media (max-width: 768px) {
+    /* Típus oszlop elrejtése mobilon (kevésbé fontos info) */
+    #user-drinks-content .table-container td[data-label="Típus"],
+    #user-drinks-content .table-container thead th:nth-child(4) {
+        display: none !important;
+    }
+    
+    /* Overflow fix - ne vágja le a tartalmat */
+    #user-drinks-content .table-container {
+        overflow-y: visible !important;
+        max-height: none !important;
+    }
+    
+    /* Sorok automatikus magassága */
+    #user-drinks-content .table-container tr {
+        min-height: auto !important;
+        max-height: none !important;
+    }
+}
+
 
 
 
