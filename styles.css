@@ -3983,6 +3983,45 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         transform: none; /* Kikapcsoljuk az esetleges eltolásokat */
     }
 }
+/* === ÉLETKOR MODAL GOMBOK JAVÍTÁS (MOBIL) === */
+@media (max-width: 768px) {
+    /* Az életkor modal gombok konténere */
+    #ageVerificationModal .modal-content > div > div[style*="display: flex"] {
+        display: flex !important;
+        flex-direction: row !important; /* Egymás mellett maradjanak */
+        justify-content: center !important; /* Középre igazítás */
+        align-items: center !important;
+        gap: 15px !important;
+        flex-wrap: nowrap !important; /* Ne törjön új sorba */
+        width: 100% !important;
+        padding: 0 10px; /* Kis margó oldalt */
+        box-sizing: border-box;
+    }
+    
+    /* Gombok mérete mobilon */
+    #ageVerificationModal .auth-btn {
+        min-width: 100px !important; /* Minimum szélesség */
+        width: auto !important; /* Automatikus szélesség a szöveg alapján */
+        flex: 1 1 auto; /* Egyenlő elosztás */
+        max-width: 140px !important; /* Maximum szélesség */
+        padding: 12px 20px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* === EXTRA KISEBB KÉPERNYŐKRE (360px alatt) === */
+@media (max-width: 400px) {
+    #ageVerificationModal .modal-content > div > div[style*="display: flex"] {
+        gap: 10px !important; /* Kisebb távolság */
+    }
+    
+    #ageVerificationModal .auth-btn {
+        min-width: 90px !important;
+        padding: 10px 15px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
 
 
 
