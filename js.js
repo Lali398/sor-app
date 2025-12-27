@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    // === 2026 VISSZASZÁMLÁLÓ & TITKOS BELÉPÉS ===
+    // === 2026 VISSZASZÁMLÁLÓ
     function initLaunchCountdown() {
         const overlay = document.getElementById('launchOverlay');
         const title = document.getElementById('launchTitle');
@@ -44,14 +44,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 1000);
 
-        // --- TITKOS AJTÓ (5 KATTINTÁS A CÍMRE) ---
         let clickCount = 0;
         if(title) {
             title.addEventListener('click', () => {
                 clickCount++;
                 if (clickCount === 5) {
                     const code = prompt("🔒 Fejlesztői feloldókód:");
-                    if (code === "admin2026") { // ITT ÁLLÍTHATOD A JELSZÓT
+                    if (code === "admin2026") {
                         localStorage.setItem('dev_bypass', 'true');
                         overlay.classList.add('hidden');
                         setTimeout(() => overlay.style.display = 'none', 1000);
@@ -4933,6 +4932,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
