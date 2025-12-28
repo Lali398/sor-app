@@ -1499,31 +1499,43 @@ function setupAdminRecap() {
     }
 
     function highlightSearchTerm(text, searchTerm) {
+    // 1. Ha nincs szöveg, üreset adunk vissza
     if (!text) return "";
-    
-    // 1. Először mindenképpen escape-eljük a teljes szöveget, 
-    // hogy a benne lévő esetleges kódok ne tudjanak lefutni.
+
+    // 2. FONTOS: Először escape-eljük a TELJES szöveget.
+    // Így ha a text tartalma "<script>alert(1)</script>", 
+    // abból "&lt;script&gt;..." lesz, ami ártalmatlan szövegként jelenik meg.
     let safeText = escapeHtml(text);
 
+    // Ha nincs keresési kifejezés, visszaadjuk a biztonságos szöveget
     if (!searchTerm) return safeText;
 
-    // 2. A keresett kifejezést is escape-eljük, hogy a speciális karakterek 
-    // (pl. <, >) ne zavarják meg a regex-et vagy a megjelenítést.
+    // 3. A keresett kifejezést is escape-eljük, hiszen a safeText-ben
+    // már az escape-elt formák vannak (pl. "&" helyett "&amp;")
     const safeSearchTerm = escapeHtml(searchTerm);
 
     try {
-        // 3. Csak a már biztonságos szövegben keressük meg a kifejezést.
-        // A 'gi' flag jelentése: g = global (összes találat), i = case-insensitive (kis/nagybetű mindegy)
-        const regex = new RegExp(`(${safeSearchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
-        
-        // 4. A biztonságos szövegbe szúrjuk be a <mark> tageket.
+        // 4. Regex Escape: Mielőtt RegExp-et csinálunk, hatástalanítani kell
+        // a regex speciális karaktereit (pl. pont, csillag, zárójel), 
+        // különben a keresés hibát dobhat vagy rosszul működhet.
+        // Ez a regex lecseréli pl. a "."-ot "\."-ra.
+        const regexSafeTerm = safeSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // 5. Létrehozzuk a regexet (gi = globális, kis/nagybetű nem számít)
+        const regex = new RegExp(`(${regexSafeTerm})`, 'gi');
+
+        // 6. Beillesztjük a <mark> taget.
+        // Mivel a safeText már biztonságos, a <mark> az EGYETLEN HTML kód,
+        // ami bekerül és végrehajtódik.
         return safeText.replace(regex, '<mark>$1</mark>');
+
     } catch (e) {
-        // Ha bármi hiba történne a Regex-nél (pl. rossz karakterek), 
-        // adjuk vissza a sima biztonságos szöveget.
+        // Ha bármi hiba van a regexben, visszaadjuk a biztonságos szöveget jelölés nélkül
+        console.error("Hiba a kiemelésnél:", e);
         return safeText;
     }
 }
+    
     function getSuggestionTypeLabel(type) { const labels = { 'beer': 'Sör név', 'type': 'Típus', 'location': 'Hely', 'rater': 'Értékelő' }; return labels[type] || ''; }
     function getTestedBy(ratedBy) { const testers = { 'admin1': 'Gabz', 'admin2': 'Lajos' }; return testers[ratedBy] || ratedBy; }
 
@@ -4968,6 +4980,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
