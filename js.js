@@ -1499,37 +1499,26 @@ function setupAdminRecap() {
     }
 
     function highlightSearchTerm(text, searchTerm) {
-    // 1. Ha nincs szöveg, üreset adunk vissza
     if (!text) return "";
-    
-    // Ha nincs keresett szó, csak simán biztonságossá tesszük az egészet
     if (!searchTerm) return escapeHtml(text);
 
     try {
-        // 2. Regex escape: A keresett szó speciális karaktereit hatástalanítjuk
+        // Regex speciális karakterek hatástalanítása
         const safeSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        
-        // Létrehozzuk a regexet. A zárójelek () miatt a split megtartja a keresett szót is a tömbben!
         const regex = new RegExp(`(${safeSearchTerm})`, 'gi');
-
-        // 3. Feldaraboljuk az EREDETI szöveget. 
-        // Pl. "Alma és Körte", keresés: "és" -> ["Alma ", "és", " Körte"]
+        
+        // Darabolás az eredeti szövegen
         const parts = text.split(regex);
 
-        // 4. Összefűzzük az eredményt
         return parts.map(part => {
-            // Megnézzük, hogy ez a darab a keresett szó-e (kis/nagybetű függetlenül)
             if (part.toLowerCase() === searchTerm.toLowerCase()) {
-                // Ha ez a találat: biztonságossá tesszük + kiemeljük
+                // A találatot kiemeljük, de a tartalmát escape-eljük!
                 return `<mark>${escapeHtml(part)}</mark>`;
-            } else {
-                // Ha ez nem találat: csak biztonságossá tesszük
-                return escapeHtml(part);
             }
+            // A többi részt csak escape-eljük
+            return escapeHtml(part);
         }).join('');
-
     } catch (e) {
-        console.error("Hiba a kiemelésnél:", e);
         return escapeHtml(text);
     }
 }
@@ -4978,6 +4967,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
