@@ -1501,38 +1501,36 @@ function setupAdminRecap() {
     function highlightSearchTerm(text, searchTerm) {
     // 1. Ha nincs szöveg, üreset adunk vissza
     if (!text) return "";
-
-    // 2. FONTOS: Először escape-eljük a TELJES szöveget.
-    // Így ha a text tartalma "<script>alert(1)</script>", 
-    // abból "&lt;script&gt;..." lesz, ami ártalmatlan szövegként jelenik meg.
-    let safeText = escapeHtml(text);
-
-    // Ha nincs keresési kifejezés, visszaadjuk a biztonságos szöveget
-    if (!searchTerm) return safeText;
-
-    // 3. A keresett kifejezést is escape-eljük, hiszen a safeText-ben
-    // már az escape-elt formák vannak (pl. "&" helyett "&amp;")
-    const safeSearchTerm = escapeHtml(searchTerm);
+    
+    // Ha nincs keresett szó, csak simán biztonságossá tesszük az egészet
+    if (!searchTerm) return escapeHtml(text);
 
     try {
-        // 4. Regex Escape: Mielőtt RegExp-et csinálunk, hatástalanítani kell
-        // a regex speciális karaktereit (pl. pont, csillag, zárójel), 
-        // különben a keresés hibát dobhat vagy rosszul működhet.
-        // Ez a regex lecseréli pl. a "."-ot "\."-ra.
-        const regexSafeTerm = safeSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // 2. Regex escape: A keresett szó speciális karaktereit hatástalanítjuk
+        const safeSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
+        // Létrehozzuk a regexet. A zárójelek () miatt a split megtartja a keresett szót is a tömbben!
+        const regex = new RegExp(`(${safeSearchTerm})`, 'gi');
 
-        // 5. Létrehozzuk a regexet (gi = globális, kis/nagybetű nem számít)
-        const regex = new RegExp(`(${regexSafeTerm})`, 'gi');
+        // 3. Feldaraboljuk az EREDETI szöveget. 
+        // Pl. "Alma és Körte", keresés: "és" -> ["Alma ", "és", " Körte"]
+        const parts = text.split(regex);
 
-        // 6. Beillesztjük a <mark> taget.
-        // Mivel a safeText már biztonságos, a <mark> az EGYETLEN HTML kód,
-        // ami bekerül és végrehajtódik.
-        return safeText.replace(regex, '<mark>$1</mark>');
+        // 4. Összefűzzük az eredményt
+        return parts.map(part => {
+            // Megnézzük, hogy ez a darab a keresett szó-e (kis/nagybetű függetlenül)
+            if (part.toLowerCase() === searchTerm.toLowerCase()) {
+                // Ha ez a találat: biztonságossá tesszük + kiemeljük
+                return `<mark>${escapeHtml(part)}</mark>`;
+            } else {
+                // Ha ez nem találat: csak biztonságossá tesszük
+                return escapeHtml(part);
+            }
+        }).join('');
 
     } catch (e) {
-        // Ha bármi hiba van a regexben, visszaadjuk a biztonságos szöveget jelölés nélkül
         console.error("Hiba a kiemelésnél:", e);
-        return safeText;
+        return escapeHtml(text);
     }
 }
     
@@ -4980,6 +4978,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
