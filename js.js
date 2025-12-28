@@ -3258,60 +3258,61 @@ function renderAchievements() {
     
     if (typeof ACHIEVEMENTS !== 'undefined') {
         ACHIEVEMENTS.forEach(achi => {
-            const isUnlocked = unlockedIds.includes(achi.id);
-            const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
-            const statusIcon = isUnlocked ? '✅' : '🔒';
-            const iconStyle = !isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : '';
+        const isUnlocked = unlockedIds.includes(achi.id);
+        const cardClass = isUnlocked ? 'achi-card unlocked' : 'achi-card';
+        const statusIcon = isUnlocked ? '✅' : '🔒';
+        const iconStyle = !isUnlocked ? 'filter: grayscale(1); opacity: 0.5;' : '';
 
-            let dateStr = '';
-            let progressHtml = ''; // Ebbe tesszük a progress bar-t
+        let dateStr = '';
+        let progressHtml = '';
 
-            if (isUnlocked) {
-                const data = userData.achievements.unlocked.find(u => u.id === achi.id);
-                if (data && data.date) dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${data.date}</div>`;
-            } else {
-                // Ha ZÁROLVA van, számoljuk ki a folyamatot
-                if (achi.getProgress) {
-                    const allBeers = currentUserBeers || []; // Biztos ami biztos
-                    const allDrinks = currentUserDrinks || [];
-                    
-                    const p = achi.getProgress(allBeers, allDrinks);
-                    
-                    // Százalék számítás
-                    let percent = 0;
-                    if (p.inverse) {
-                         // Pl. átlag: minél kisebb, annál jobb, ezt most egyszerűsítve csak kiírjuk
-                         percent = 0; 
-                    } else {
-                        percent = (p.current / p.target) * 100;
-                    }
-                    // Limitálás 100%-ra
-                    percent = Math.min(100, Math.max(0, percent));
-                    
-                    const unit = p.suffix || ''; // pl "pont"
-
-                    progressHtml = `
-                        <div class="achi-progress-container">
-                            <div class="achi-progress-text">${p.current} / ${p.target} ${unit}</div>
-                            <div class="achi-progress-bar-bg">
-                                <div class="achi-progress-bar-fill" style="width: ${percent}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }
+        if (isUnlocked) {
+            const data = userData.achievements.unlocked.find(u => u.id === achi.id);
+            if (data && data.date) {
+                // ✅ JAVÍTVA
+                dateStr = `<div style="font-size:0.6rem; margin-top:5px; color:#ffd700;">Megszerezve: ${escapeHtml(data.date)}</div>`;
             }
+        } else {
+            if (achi.getProgress) {
+                const allBeers = currentUserBeers || [];
+                const allDrinks = currentUserDrinks || [];
+                const p = achi.getProgress(allBeers, allDrinks);
+                
+                let percent = 0;
+                if (p.inverse) {
+                    percent = 0;
+                } else {
+                    percent = (p.current / p.target) * 100;
+                }
+                percent = Math.min(100, Math.max(0, percent));
+                
+                // ✅ JAVÍTVA - escapeHtml a unit-ra is
+                const unit = escapeHtml(p.suffix || '');
 
-            const html = `
-            <div class="${cardClass}" title="${achi.title}">
-                <span class="achi-icon" style="${iconStyle}">${achi.icon}</span>
-                <div class="achi-title">${achi.title}</div>
-                <div class="achi-desc">${achi.desc}</div>
-                ${dateStr}
-                ${progressHtml} <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
-            </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', html);
-        });
+                progressHtml = `
+                    <div class="achi-progress-container">
+                        <div class="achi-progress-text">${p.current} / ${p.target} ${unit}</div>
+                        <div class="achi-progress-bar-bg">
+                            <div class="achi-progress-bar-fill" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ JAVÍTVA - minden mező escape-elve
+        const html = `
+        <div class="${cardClass}" title="${escapeHtml(achi.title)}">
+            <span class="achi-icon" style="${iconStyle}">${achi.icon}</span>
+            <div class="achi-title">${escapeHtml(achi.title)}</div>
+            <div class="achi-desc">${escapeHtml(achi.desc)}</div>
+            ${dateStr}
+            ${progressHtml}
+            <div style="position: absolute; top: 5px; right: 5px; font-size: 0.8rem;">${statusIcon}</div>
+        </div>
+        `;
+        grid.insertAdjacentHTML('beforeend', html);
+    });
     } else {
         console.error(">>> HIBA: Az ACHIEVEMENTS tömb nem elérhető.");
     }
@@ -4320,45 +4321,40 @@ window.openViewBeerModal = function(index) {
     const beer = currentUserBeers[index];
     if (!beer) return;
 
-    // Modal megnyitása
     const modal = document.getElementById('viewBeerModal');
     
-    // Adatok beállítása
-    document.getElementById('viewBeerName').textContent = beer.beerName;
-    document.getElementById('viewBeerType').textContent = beer.type || 'N/A';
-    document.getElementById('viewBeerLocation').textContent = beer.location || '-';
-    document.getElementById('viewBeerPercentage').textContent = beer.beerPercentage ? `${beer.beerPercentage}%` : '-';
+    // Biztonságos szöveg beállítás
+    setSafeText('viewBeerName', beer.beerName);
+    setSafeText('viewBeerType', beer.type || 'N/A');
+    setSafeText('viewBeerLocation', beer.location || '-');
+    setSafeText('viewBeerPercentage', beer.beerPercentage ? `${beer.beerPercentage}%` : '-');
     
-    // Dátum formázása
     const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : '-';
-    document.getElementById('viewBeerDate').textContent = formattedDate;
+    setSafeText('viewBeerDate', formattedDate);
     
-    // Pontszámok
-    document.getElementById('viewBeerLook').textContent = beer.look || 0;
-    document.getElementById('viewBeerSmell').textContent = beer.smell || 0;
-    document.getElementById('viewBeerTaste').textContent = beer.taste || 0;
-    document.getElementById('viewBeerTotal').textContent = beer.totalScore || 0;
+    setSafeText('viewBeerLook', beer.look || 0);
+    setSafeText('viewBeerSmell', beer.smell || 0);
+    setSafeText('viewBeerTaste', beer.taste || 0);
+    setSafeText('viewBeerTotal', beer.totalScore || 0);
     
-    // Átlag formázása
     const avgValue = parseFloat(beer.avg.toString().replace(',', '.')) || 0;
-    document.getElementById('viewBeerAvg').textContent = avgValue.toFixed(2);
+    setSafeText('viewBeerAvg', avgValue.toFixed(2));
     
-    // Jegyzetek kezelése
+    // Jegyzetek - sortörések megengedése
     const notesSection = document.getElementById('viewBeerNotesSection');
     const notesBox = document.getElementById('viewBeerNotes');
     
     if (beer.notes && beer.notes.trim() !== '') {
-        notesBox.textContent = beer.notes;
+        setSafeText('viewBeerNotes', beer.notes, true); // ✅ allowLineBreaks = true
         notesSection.style.display = 'block';
     } else {
         notesSection.style.display = 'none';
     }
     
-    // Modal megjelenítése
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
-
+    
 window.closeViewBeerModal = function() {
     const modal = document.getElementById('viewBeerModal');
     modal.classList.remove('active');
@@ -4370,42 +4366,35 @@ window.openViewDrinkModal = function(index) {
     const drink = currentUserDrinks[index];
     if (!drink) return;
 
-    // Modal megnyitása
     const modal = document.getElementById('viewDrinkModal');
     
-    // Adatok beállítása
-    document.getElementById('viewDrinkName').textContent = drink.drinkName;
-    document.getElementById('viewDrinkCategory').textContent = drink.category || 'N/A';
-    document.getElementById('viewDrinkType').textContent = drink.type || 'N/A';
-    document.getElementById('viewDrinkLocation').textContent = drink.location || '-';
-    document.getElementById('viewDrinkPercentage').textContent = drink.drinkPercentage ? `${drink.drinkPercentage}%` : '-';
+    setSafeText('viewDrinkName', drink.drinkName);
+    setSafeText('viewDrinkCategory', drink.category || 'N/A');
+    setSafeText('viewDrinkType', drink.type || 'N/A');
+    setSafeText('viewDrinkLocation', drink.location || '-');
+    setSafeText('viewDrinkPercentage', drink.drinkPercentage ? `${drink.drinkPercentage}%` : '-');
     
-    // Dátum formázása
     const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : '-';
-    document.getElementById('viewDrinkDate').textContent = formattedDate;
+    setSafeText('viewDrinkDate', formattedDate);
     
-    // Pontszámok
-    document.getElementById('viewDrinkLook').textContent = drink.look || 0;
-    document.getElementById('viewDrinkSmell').textContent = drink.smell || 0;
-    document.getElementById('viewDrinkTaste').textContent = drink.taste || 0;
-    document.getElementById('viewDrinkTotal').textContent = drink.totalScore || 0;
+    setSafeText('viewDrinkLook', drink.look || 0);
+    setSafeText('viewDrinkSmell', drink.smell || 0);
+    setSafeText('viewDrinkTaste', drink.taste || 0);
+    setSafeText('viewDrinkTotal', drink.totalScore || 0);
     
-    // Átlag formázása
     const avgValue = parseFloat(drink.avg.toString().replace(',', '.')) || 0;
-    document.getElementById('viewDrinkAvg').textContent = avgValue.toFixed(2);
+    setSafeText('viewDrinkAvg', avgValue.toFixed(2));
     
-    // Jegyzetek kezelése
     const notesSection = document.getElementById('viewDrinkNotesSection');
     const notesBox = document.getElementById('viewDrinkNotes');
     
     if (drink.notes && drink.notes.trim() !== '') {
-        notesBox.textContent = drink.notes;
+        setSafeText('viewDrinkNotes', drink.notes, true);
         notesSection.style.display = 'block';
     } else {
         notesSection.style.display = 'none';
     }
     
-    // Modal megjelenítése
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -4979,6 +4968,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
