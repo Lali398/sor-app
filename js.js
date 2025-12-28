@@ -11,6 +11,37 @@ document.addEventListener('DOMContentLoaded', function() {
         .replace(/'/g, "&#039;");
 }
 
+    // Illeszd be a js.js fájl elejére, az escapeHtml függvény után:
+
+/**
+ * Biztonságosan beállít szöveget egy elembe XSS védelem mellett
+ * @param {string} elementId - A cél elem ID-ja
+ * @param {string} text - A beállítandó szöveg
+ * @param {boolean} allowLineBreaks - Engedélyezi-e a sortöréseket (<br> tag-ekkel)
+ */
+function setSafeText(elementId, text, allowLineBreaks = false) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.warn(`Element not found: ${elementId}`);
+        return;
+    }
+    
+    if (!text) {
+        element.textContent = '';
+        return;
+    }
+    
+    if (allowLineBreaks) {
+        // Sortörések megengedése, de minden más escape-elve
+        const escapedText = escapeHtml(text);
+        const withBreaks = escapedText.replace(/\n/g, '<br>');
+        element.innerHTML = withBreaks;
+    } else {
+        // Tiszta szöveg, teljes védelem
+        element.textContent = text;
+    }
+}
+
 
 
     // === 2026 VISSZASZÁMLÁLÓ
@@ -570,8 +601,8 @@ async function loadUserIdeas() {
             const isOwner = (item.email === currentUserEmail);
             
             const badgeHtml = item.badge 
-                ? `<span class="fame-badge">${item.badge}</span>` 
-                : '';
+                    ? `<span class="fame-badge">${escapeHtml(item.badge)}</span>` 
+                    : '';
 
             if (isDone) {
                 // DICSŐSÉGFAL
@@ -3364,20 +3395,18 @@ function updateHeaderBadge() {
     const welcomeMsg = document.getElementById('userWelcomeMessage');
     
     if (welcomeMsg && userData) {
-        // Töröljük a régit ha van
         const oldBadge = welcomeMsg.querySelector('.user-badge-display');
         if (oldBadge) oldBadge.remove();
 
-        // Ha van beállítva, odarakjuk
         if (userData.badge) {
             const badgeSpan = document.createElement('span');
             badgeSpan.className = 'user-badge-display';
-            badgeSpan.textContent = userData.badge;
+            // ✅ ÚJ: textContent használata innerHTML helyett
+            badgeSpan.textContent = userData.badge; // Biztonságos!
             welcomeMsg.appendChild(badgeSpan);
         }
     }
 }
-
 // --- TOAST ÉRTESÍTÉS ---
 function showAchievementToast(achi) {
     const toast = document.createElement('div');
@@ -3763,8 +3792,9 @@ function applyRecFilters() {
         const userClass = item.isAnon ? 'rec-user anon' : 'rec-user';
         
         const badgeHtml = (item.badge && !item.isAnon) 
-            ? `<span class="user-badge-display tiny">${item.badge}</span>` : '';
+            ? `<span class="user-badge-display tiny">${escapeHtml(item.badge)}</span>` : '';
 
+        
         // SZERKESZTÉS ÉS TÖRLÉS GOMBOK - csak ha a sajátja
         const actionBtns = item.isMine 
             ? `
@@ -4968,6 +4998,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
