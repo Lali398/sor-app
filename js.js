@@ -4770,7 +4770,7 @@ function renderUserSuggestions(list, container, searchTerm, inputElem, onSelect)
     container.innerHTML = list.map((item, index) => `
         <div class="suggestion-item" data-val="${item.text}">
             <span class="suggestion-icon">🔍</span>
-            <span class="suggestion-text">${escapeHtml(highlightSearchTerm(item.text, searchTerm)}</span>
+            <span class="suggestion-text">${escapeHtml(highlightSearchTerm(item.text, searchTerm))}</span>
             <span class="suggestion-type">${item.type}</span>
         </div>
     `).join('');
@@ -4943,6 +4943,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
