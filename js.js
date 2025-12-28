@@ -1513,7 +1513,7 @@ function setupAdminRecap() {
         return parts.map(part => {
             if (part.toLowerCase() === searchTerm.toLowerCase()) {
                 // A találatot kiemeljük, de a tartalmát escape-eljük!
-                return `<mark>${escapeHtml(part)}</mark>`;
+                return <mark>`${escapeHtml(part)}`</mark>;
             }
             // A többi részt csak escape-eljük
             return escapeHtml(part);
@@ -4967,6 +4967,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
