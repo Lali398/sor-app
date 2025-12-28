@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
 
 
+    function escapeHtml(text) {
+    if (!text) return text;
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
 
     // === 2026 VISSZASZÁMLÁLÓ
     function initLaunchCountdown() {
@@ -570,7 +581,7 @@ async function loadUserIdeas() {
                     <div class="fame-user">
                         <span class="fame-avatar">👑</span>
                         <span class="fame-name">
-                            ${item.submitter}
+                            ${escapeHtml(item.submitter)}
                             ${badgeHtml}
                         </span>
                     </div>
@@ -590,9 +601,9 @@ async function loadUserIdeas() {
                 const card = `
                 <div class="pending-idea-card">
                     <div class="pending-content">
-                        <h4>${item.idea}</h4>
+                        <h4>${escapeHtml(item.idea)}</h4>
                         <p>
-                            Beküldte: ${item.submitter} ${badgeHtml} • ${item.date}
+                            Beküldte: ${escapeHtml(item.submitter)} ${badgeHtml} • ${item.date}
                         </p>
                     </div>
                     <div class="pending-actions">
@@ -649,8 +660,8 @@ async function loadAllIdeasForAdmin() {
             const row = `
             <tr>
                 <td>${item.date}</td>
-                <td>${item.submitter} <br><small style="color:#aaa;">${item.email}</small></td>
-                <td>${item.idea}</td>
+                <td>${escapeHtml(item.submitter)} <br><small style="color:#aaa;">${item.email}</small></td>
+                <td>${escapeHtml(item.idea)}</td>
                 <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                 <td>${actionBtn}</td>
             </tr>`;
@@ -1452,7 +1463,7 @@ function setupAdminRecap() {
         searchSuggestions.innerHTML = suggestions.map((suggestion, index) => `
             <div class="suggestion-item ${index === selectedSuggestionIndex ? 'selected' : ''}" data-text="${suggestion.text}">
                 <span class="suggestion-icon">${suggestion.icon}</span>
-                <span class="suggestion-text">${highlightSearchTerm(suggestion.text, searchTerm)}</span>
+                <span class="suggestion-text">${escapeHtml(highlightSearchTerm(suggestion.text, searchTerm))}</span>
                 <span class="suggestion-type">${getSuggestionTypeLabel(suggestion.type)}</span>
             </div>`).join('');
         searchSuggestions.style.display = 'block';
@@ -1487,7 +1498,7 @@ function setupAdminRecap() {
         else { searchResultsInfo.textContent = `${filtered} találat ${total} sörből`; searchResultsInfo.style.color = '#3498db'; }
     }
 
-    function highlightSearchTerm(text, searchTerm) { if (!searchTerm) return text; const regex = new RegExp(`(${searchTerm})`, 'gi'); return text.replace(regex, '<mark>$1</mark>'); }
+    function highlightSearchTerm(text, searchTerm) { if (!searchTerm) return escapeHtml(text); const cleanText = escapeHtml(text); }
     function getSuggestionTypeLabel(type) { const labels = { 'beer': 'Sör név', 'type': 'Típus', 'location': 'Hely', 'rater': 'Értékelő' }; return labels[type] || ''; }
     function getTestedBy(ratedBy) { const testers = { 'admin1': 'Gabz', 'admin2': 'Lajos' }; return testers[ratedBy] || ratedBy; }
 
@@ -1500,8 +1511,8 @@ function setupAdminRecap() {
             const row = `
                 <tr>
                     <td>${formattedDate}</td>
-                    <td>${beer.beerName || ''}</td>
-                    <td>${beer.location || ''}</td>
+                    <td>${escapeHtml(beer.beerName)}</td>
+                    <td>${escapeHtml(beer.location)}</td>
                     <td>${beer.beerPercentage || 0}%</td>
                     <td>${beer.look || 0}</td>
                     <td>${beer.smell || 0}</td>
@@ -1802,7 +1813,7 @@ function renderStoryMode(data, container) {
     <div class="story-nav-right" onclick="nextSlide()"></div>
 
     <div class="story-slide active" id="slide-0">
-        <h3 class="story-title">${data.periodName}</h3>
+        <h3 class="story-title">${escapeHtml(data.periodName)}</h3>
         <p class="story-text">Nem voltál szomjas!</p>
         <div class="story-big-number">${data.count}</div>
         <p class="story-text">sört kóstoltál meg.</p>
@@ -1812,17 +1823,17 @@ function renderStoryMode(data, container) {
     <div class="story-slide" id="slide-1">
         <h3 class="story-title">Az abszolút kedvenc</h3>
         <p class="story-text">Ez vitte a prímet:</p>
-        <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${data.topBeer}</span>
+        <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${escapeHtml(data.topBeer)}</span>
         <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
     </div>
 
     <div class="story-slide" id="slide-2">
         <h3 class="story-title">Így szereted</h3>
         <p class="story-text">Kedvenc típus:</p>
-        <span class="story-highlight">${data.favType}</span>
+        <span class="story-highlight">${escapeHtml(data.favType)}</span>
         <br>
         <p class="story-text">Legtöbbször itt:</p>
-        <span class="story-highlight">${data.favPlace}</span>
+        <span class="story-highlight">${escapeHtml(data.favPlace)}</span>
         <br>
         <p class="story-text">Átlagos időpont:</p>
         <span class="story-highlight">${data.drinkingTime}</span>
@@ -3736,20 +3747,20 @@ function applyRecFilters() {
             </div>
             <div class="rec-header">
                 <div>
-                    <div class="rec-item-name">${item.itemName}</div>
-                    <div class="rec-sub-info">${item.category}</div>
+                    <div class="rec-item-name">${escapeHtml(item.itemName)}</div>
+                    <div class="rec-sub-info">${escapeHtml(item.category)}</div>
                 </div>
                 <div class="rec-type-badge">${typeIcon} ${item.type}</div>
             </div>
             
             <div class="rec-desc">
-                "${item.description}"
+                "${escapeHtml(item.description)}"
             </div>
             
             <div class="rec-footer">
                 <div class="${userClass}">
                     <span>${item.isAnon ? '🕵️' : '👤'}</span>
-                    <span>${item.submitter}</span>
+                    <span>${escapeHtml(item.submitter)}</span>
                     ${badgeHtml}
                 </div>
                 <div class="rec-meta">
@@ -4392,8 +4403,8 @@ function renderUserBeers(beers) {
         const row = `
             <tr>
                 <td data-label="Dátum">${formattedDate}</td>
-                <td data-label="Sör neve" class="mobile-card-title">${beer.beerName}</td>
-                <td data-label="Főzési hely">${beer.location}</td>
+                <td data-label="Sör neve" class="mobile-card-title">${escapeHtml(beer.beerName)}</td>
+                <td data-label="Főzési hely">${escapeHtml(beer.location)}</td>
                 <td data-label="Alkohol %">${beer.beerPercentage || 0}%</td>
                 <td data-label="Külalak">${beer.look || 0}</td>
                 <td data-label="Illat">${beer.smell || 0}</td>
@@ -4431,10 +4442,10 @@ function renderUserDrinks(drinks) {
         const row = `
             <tr>
                 <td data-label="Dátum">${formattedDate}</td>
-                <td data-label="Ital neve" class="mobile-card-title">${drink.drinkName}</td>
-                <td data-label="Kategória">${drink.category}</td>
-                <td data-label="Típus">${drink.type}</td>
-                <td data-label="Hely">${drink.location}</td>
+                <td data-label="Ital neve" class="mobile-card-title">${escapeHtml(drink.drinkName)}</td>
+                <td data-label="Kategória">${escapeHtml(drink.category)}</td>
+                <td data-label="Típus">${escapeHtml(drink.type)}</td>
+                <td data-label="Hely">${escapeHtml(drink.location)}</td>
                 <td data-label="Alkohol %">${drink.drinkPercentage || '-'}${drink.drinkPercentage ? '%' : ''}</td>
                 <td data-label="Külalak">${drink.look || 0}</td>
                 <td data-label="Illat">${drink.smell || 0}</td>
@@ -4759,7 +4770,7 @@ function renderUserSuggestions(list, container, searchTerm, inputElem, onSelect)
     container.innerHTML = list.map((item, index) => `
         <div class="suggestion-item" data-val="${item.text}">
             <span class="suggestion-icon">🔍</span>
-            <span class="suggestion-text">${highlightSearchTerm(item.text, searchTerm)}</span>
+            <span class="suggestion-text">${escapeHtml(highlightSearchTerm(item.text, searchTerm)}</span>
             <span class="suggestion-type">${item.type}</span>
         </div>
     `).join('');
@@ -4932,6 +4943,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
