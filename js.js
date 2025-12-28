@@ -1456,18 +1456,19 @@ function setupAdminRecap() {
     }
 
     function showSearchSuggestions() {
-        const searchTerm = liveSearchInput.value.trim();
-        if (!searchTerm) { hideSearchSuggestions(); return; }
-        const suggestions = generateSearchSuggestions(searchTerm);
-        if (suggestions.length === 0) { hideSearchSuggestions(); return; }
-        searchSuggestions.innerHTML = suggestions.map((suggestion, index) => `
-            <div class="suggestion-item ${index === selectedSuggestionIndex ? 'selected' : ''}" data-text="${suggestion.text}">
-                <span class="suggestion-icon">${suggestion.icon}</span>
-                <span class="suggestion-text">${escapeHtml(highlightSearchTerm(suggestion.text, searchTerm))}</span>
-                <span class="suggestion-type">${getSuggestionTypeLabel(suggestion.type)}</span>
-            </div>`).join('');
-        searchSuggestions.style.display = 'block';
-    }
+    const searchTerm = liveSearchInput.value.trim();
+    if (!searchTerm) { hideSearchSuggestions(); return; }
+    const suggestions = generateSearchSuggestions(searchTerm);
+    if (suggestions.length === 0) { hideSearchSuggestions(); return; }
+    
+    searchSuggestions.innerHTML = suggestions.map((suggestion, index) => `
+        <div class="suggestion-item ${index === selectedSuggestionIndex ? 'selected' : ''}" data-text="${escapeHtml(suggestion.text)}">
+            <span class="suggestion-icon">${suggestion.icon}</span>
+            <span class="suggestion-text">${highlightSearchTerm(suggestion.text, searchTerm)}</span>
+            <span class="suggestion-type">${escapeHtml(getSuggestionTypeLabel(suggestion.type))}</span>
+        </div>`).join('');
+    searchSuggestions.style.display = 'block';
+}
 
     function hideSearchSuggestions() { searchSuggestions.style.display = 'none'; selectedSuggestionIndex = -1; }
     function hideSearchSuggestionsDelayed() { setTimeout(() => hideSearchSuggestions(), 150); }
@@ -1499,26 +1500,37 @@ function setupAdminRecap() {
     }
 
     function highlightSearchTerm(text, searchTerm) {
+    // 1. Ha nincs szöveg, üreset adunk vissza
     if (!text) return "";
+    
+    // Ha nincs keresett szó, csak simán biztonságossá tesszük az egészet
     if (!searchTerm) return escapeHtml(text);
 
     try {
-        // Regex speciális karakterek hatástalanítása
+        // 2. Regex escape: A keresett szó speciális karaktereit hatástalanítjuk
         const safeSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${safeSearchTerm})`, 'gi');
         
-        // Darabolás az eredeti szövegen
+        // Létrehozzuk a regexet. A zárójelek () miatt a split megtartja a keresett szót is a tömbben!
+        const regex = new RegExp(`(${safeSearchTerm})`, 'gi');
+
+        // 3. Feldaraboljuk az EREDETI szöveget. 
+        // Pl. "Alma és Körte", keresés: "és" -> ["Alma ", "és", " Körte"]
         const parts = text.split(regex);
 
+        // 4. Összefűzzük az eredményt
         return parts.map(part => {
+            // Megnézzük, hogy ez a darab a keresett szó-e (kis/nagybetű függetlenül)
             if (part.toLowerCase() === searchTerm.toLowerCase()) {
-                // A találatot kiemeljük, de a tartalmát escape-eljük!
-                return <mark>`${escapeHtml(part)}`</mark>;
+                // Ha ez a találat: biztonságossá tesszük + kiemeljük
+                return `<mark>${escapeHtml(part)}</mark>`;
+            } else {
+                // Ha ez nem találat: csak biztonságossá tesszük
+                return escapeHtml(part);
             }
-            // A többi részt csak escape-eljük
-            return escapeHtml(part);
         }).join('');
+
     } catch (e) {
+        console.error("Hiba a kiemelésnél:", e);
         return escapeHtml(text);
     }
 }
@@ -4792,10 +4804,10 @@ function renderUserSuggestions(list, container, searchTerm, inputElem, onSelect)
     }
 
     container.innerHTML = list.map((item, index) => `
-        <div class="suggestion-item" data-val="${item.text}">
+        <div class="suggestion-item" data-val="${escapeHtml(item.text)}">
             <span class="suggestion-icon">🔍</span>
-            <span class="suggestion-text">${escapeHtml(highlightSearchTerm(item.text, searchTerm))}</span>
-            <span class="suggestion-type">${item.type}</span>
+            <span class="suggestion-text">${highlightSearchTerm(item.text, searchTerm)}</span>
+            <span class="suggestion-type">${escapeHtml(item.type)}</span>
         </div>
     `).join('');
 
@@ -4967,6 +4979,7 @@ window.openPrizeModal = function() {
         document.body.classList.remove('user-view-active');
     };
 });
+
 
 
 
