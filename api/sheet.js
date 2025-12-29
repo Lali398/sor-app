@@ -20,7 +20,7 @@ const COL_INDEXES = {
   admin2: { beerName: 12, location: 13, type: 14, look: 15, smell: 16, taste: 17, score: 18, avg: 19, beerPercentage: 20, date: 21 }
 };
 
-
+// === SEGÉDFÜGGVÉNYEK ===
 
 const transformRowToBeer = (row, userIndexes, ratedBy) => {
     const beerName = row[userIndexes.beerName];
@@ -1323,6 +1323,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
