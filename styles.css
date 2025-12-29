@@ -4021,6 +4021,64 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         font-size: 0.9rem !important;
     }
 }
+/* === ÚJ STATISZTIKA TAB STÍLUSOK === */
+
+/* Belső navigációs gombok konténere */
+.stats-sub-tabs {
+    display: flex;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    border-radius: 50px;
+    width: 100%;
+    overflow-x: auto; /* Mobilon görgethető legyen ha nem fér ki */
+}
+
+/* Maguk a gombok */
+.stats-sub-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    background: transparent;
+    color: #aaa;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.stats-sub-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-sub-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Tartalom panelek kezelése */
+.stats-sub-pane {
+    display: none;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.stats-sub-pane.active {
+    display: block;
+}
+
+/* Extra stílus a chart-okhoz, hogy ne legyenek túl nagyok mobilon */
+@media (max-width: 768px) {
+    .stats-sub-tabs {
+        justify-content: flex-start;
+    }
+    .stats-sub-btn {
+        flex: none; /* Ne nyomódjon össze */
+    }
+}
+
 
 
 
