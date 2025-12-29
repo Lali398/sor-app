@@ -525,7 +525,7 @@ async function loadUserDrinks() {
         if (typeof updateMyStatistics === 'function') {
         updateMyStatistics();
     }
-}
+
 
     } catch (error) {
         console.error("Hiba az italok betöltésekor:", error);
@@ -5311,6 +5311,7 @@ window.openPrizeModal = function() {
         });
     });
 });
+
 
 
 
