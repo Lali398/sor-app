@@ -5231,7 +5231,6 @@ data.forEach(item => {
 const count = data.length || 1;
 
 // ✅ JAVÍTVA: avgAbv már számmá lett konvertálva fentebb
-const avgAbvNum = parseFloat(avgAbv) || 0;
 const totalAvgNum = parseFloat(document.getElementById('statTotalAvg').textContent) || 0;
 
 const ctxRadar = document.getElementById('statRadarChart').getContext('2d');
@@ -5295,6 +5294,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     });
 });
 });
+
 
 
 
