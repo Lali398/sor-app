@@ -5297,7 +5297,7 @@ window.openPrizeModal = function() {
         btn.addEventListener('click', (e) => {
             if (btn.dataset.tabContent === 'user-stats-content') {
                 setTimeout(() => {
-                    window.updateMyStatistics();
+                    updateMyStatistics();
                 }, 100);
             }
         });
@@ -5313,6 +5313,7 @@ window.openPrizeModal = function() {
         updateMyStatistics();
     });
 });
+
 
 
 
