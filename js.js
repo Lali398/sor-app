@@ -1352,7 +1352,7 @@ function setupAdminRecap() {
         if (typeof updateMyStatistics === 'function') {
         updateMyStatistics();
     }
-}
+
 
     } catch (error) {
         console.error("Hiba a felhasználói adatok betöltésekor:", error);
@@ -5311,6 +5311,7 @@ window.openPrizeModal = function() {
         });
     });
 });
+
 
 
 
