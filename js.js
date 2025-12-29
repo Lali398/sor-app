@@ -5042,8 +5042,6 @@ window.openPrizeModal = function() {
         } else if (scope === 'drink') {
             dataset = [...(currentUserDrinks || [])];
         }
-
-        window.updateMyStatistics = updateMyStatistics;
     
         if (dataset.length === 0) {
             // Ha nincs adat, nullázzuk a kijelzőket
@@ -5308,17 +5306,14 @@ window.openPrizeModal = function() {
     // 5. Automatikus frissítés új teszt hozzáadásakor
     // Custom event listener ami figyeli az új bejegyzéseket
     window.addEventListener('beerAdded', () => {
-        if (typeof window.updateMyStatistics === 'function') {
-            window.updateMyStatistics();
-        }
+        updateMyStatistics();
     });
     
     window.addEventListener('drinkAdded', () => {
-        if (typeof window.updateMyStatistics === 'function') {
-            window.updateMyStatistics();
-        }
+        updateMyStatistics();
     });
 });
+
 
 
 
