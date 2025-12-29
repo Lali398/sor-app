@@ -416,6 +416,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         addBeerForm.reset();
         closeAddModal('beer');
         loadUserData();
+        window.dispatchEvent(new CustomEvent('beerAdded'));
     } catch (error) {
         console.error("Hiba sör hozzáadásakor:", error);
         showError(error.message || "Nem sikerült a sört hozzáadni.");
@@ -468,6 +469,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         addDrinkForm.reset();
         closeAddModal('drink');
         loadUserDrinks(); // Újratöltjük az italokat
+        window.dispatchEvent(new CustomEvent('drinkAdded'));
     } catch (error) {
         console.error("Hiba ital hozzáadásakor:", error);
         showError(error.message || "Nem sikerült az italt hozzáadni.");
@@ -5290,17 +5292,32 @@ window.openPrizeModal = function() {
     // 3. Figyeljük a változásokat (Szűrő váltás)
     document.getElementById('statsScopeFilter')?.addEventListener('change', updateMyStatistics);
     
-    // 4. Tab váltás figyelése
+        // 4. Tab váltás figyelése
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.addEventListener('click', (e) => {
             if (btn.dataset.tabContent === 'user-stats-content') {
                 setTimeout(() => {
-                    updateMyStatistics();
+                    window.updateMyStatistics();
                 }, 100);
             }
         });
     });
+    
+    // 5. Automatikus frissítés új teszt hozzáadásakor
+    // Custom event listener ami figyeli az új bejegyzéseket
+    window.addEventListener('beerAdded', () => {
+        if (typeof window.updateMyStatistics === 'function') {
+            window.updateMyStatistics();
+        }
+    });
+    
+    window.addEventListener('drinkAdded', () => {
+        if (typeof window.updateMyStatistics === 'function') {
+            window.updateMyStatistics();
+        }
+    });
 });
+
 
 
 
