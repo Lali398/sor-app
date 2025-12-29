@@ -4997,7 +4997,284 @@ window.openPrizeModal = function() {
         originalSwitchToGuestViewPrize(); // Lefuttatjuk az eredeti kilépőt
         document.body.classList.remove('user-view-active');
     };
+    // ======================================================
+// === ÚJ: SZEMÉLYES STATISZTIKA MODUL ===
+// ======================================================
+
+// Globális változó a chartok tárolására (hogy frissítéskor törölhessük őket)
+let myStatsCharts = {};
+
+// 1. Al-fül váltó logika
+window.switchStatsSubTab = function(tabName) {
+    // Gombok aktív állapota
+    document.querySelectorAll('.stats-sub-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.textContent.toLowerCase().includes(tabName === 'overview' ? 'áttekintés' : 
+           tabName === 'trends' ? 'idővonal' : 
+           tabName === 'radar' ? 'ízvilág' : 'fun')) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Panelek váltása
+    document.querySelectorAll('.stats-sub-pane').forEach(pane => pane.classList.remove('active'));
+    document.getElementById(`stats-sub-${tabName}`).classList.add('active');
+}
+
+// 2. Fő logika: Adatok feldolgozása és kirajzolása
+function updateMyStatistics() {
+    const scope = document.getElementById('statsScopeFilter')?.value || 'all';
+    
+    // Adatok összefűzése a szűrő alapján
+    let dataset = [];
+    if (scope === 'all') {
+        dataset = [...(currentUserBeers || []), ...(currentUserDrinks || [])];
+    } else if (scope === 'beer') {
+        dataset = [...(currentUserBeers || [])];
+    } else if (scope === 'drink') {
+        dataset = [...(currentUserDrinks || [])];
+    }
+
+    if (dataset.length === 0) {
+        // Ha nincs adat, nullázzuk a kijelzőket
+        document.getElementById('statTotalCount').textContent = "0";
+        return;
+    }
+
+    // --- KPI Számítások ---
+    
+    // 1. Összes db
+    document.getElementById('statTotalCount').textContent = dataset.length;
+
+    // 2. Átlag pontszám
+    const totalScoreSum = dataset.reduce((sum, item) => sum + (parseFloat(item.avg.toString().replace(',','.')) || 0), 0);
+    document.getElementById('statTotalAvg').textContent = (totalScoreSum / dataset.length).toFixed(2);
+
+    // 3. Átlag Alkohol
+    const abvList = dataset.map(d => parseFloat(d.beerPercentage || d.drinkPercentage) || 0).filter(p => p > 0);
+    const avgAbv = abvList.length ? (abvList.reduce((a,b)=>a+b,0) / abvList.length).toFixed(1) : "0.0";
+    document.getElementById('statAvgAbv').textContent = avgAbv + "%";
+
+    // 4. Legerősebb / Leggyengébb
+    const sortedByAbv = [...dataset].sort((a,b) => (parseFloat(b.beerPercentage||b.drinkPercentage)||0) - (parseFloat(a.beerPercentage||a.drinkPercentage)||0));
+    const strongest = sortedByAbv[0];
+    const weakest = sortedByAbv[sortedByAbv.length - 1]; // Csak a 0-nál nagyobbakat kellene, de egyszerűsítve:
+    
+    if(strongest) {
+        document.getElementById('statStrongest').textContent = strongest.beerName || strongest.drinkName;
+        document.getElementById('statStrongestVal').textContent = (strongest.beerPercentage || strongest.drinkPercentage) + "%";
+    }
+    // (A leggyengébbet érdemes lenne szűrni, hogy a 0-ásokat kivegyük, ha csak az alkoholos érdekel)
+
+    // 5. Kedvenc Hely
+    const locations = {};
+    dataset.forEach(d => { if(d.location) locations[d.location] = (locations[d.location]||0)+1; });
+    const topLoc = Object.keys(locations).sort((a,b) => locations[b] - locations[a])[0];
+    document.getElementById('statTopLocation').textContent = topLoc || "-";
+    document.getElementById('statTopLocationCount').textContent = topLoc ? `${locations[topLoc]} db` : "";
+
+    // 6. Legjobb pontszám
+    const sortedByScore = [...dataset].sort((a,b) => (parseFloat(b.avg.toString().replace(',','.'))||0) - (parseFloat(a.avg.toString().replace(',','.'))||0));
+    if(sortedByScore[0]) {
+        document.getElementById('statHighScoreName').textContent = sortedByScore[0].beerName || sortedByScore[0].drinkName;
+        document.getElementById('statHighScoreVal').textContent = sortedByScore[0].avg;
+    }
+
+    // 7. Legjobb Külalak/Íz (Radar fülhöz)
+    const bestLook = [...dataset].sort((a,b) => (b.look||0) - (a.look||0))[0];
+    const bestTaste = [...dataset].sort((a,b) => (b.taste||0) - (a.taste||0))[0];
+    if(bestLook) document.getElementById('statBestLook').textContent = `${bestLook.beerName || bestLook.drinkName} (${bestLook.look})`;
+    if(bestTaste) document.getElementById('statBestTaste').textContent = `${bestTaste.beerName || bestTaste.drinkName} (${bestTaste.taste})`;
+
+
+    // --- GRAFIKONOK RAJZOLÁSA ---
+    renderMyStatsCharts(dataset);
+}
+
+function renderMyStatsCharts(data) {
+    // Előző chartok törlése
+    ['statCategoryChart', 'statActivityChart', 'statDayChart', 'statRadarChart'].forEach(id => {
+        if (myStatsCharts[id]) {
+            myStatsCharts[id].destroy();
+        }
+    });
+
+    // 1. KATEGÓRIA MEGOSZLÁS (Doughnut)
+    // Ha sör nézet: Típusok, Ha ital: Kategóriák
+    const catCounts = {};
+    data.forEach(item => {
+        // Ha van kategória (ital), használd azt, ha nincs (sör), akkor a típust
+        const label = item.category || item.type || "Egyéb";
+        catCounts[label] = (catCounts[label] || 0) + 1;
+    });
+
+    // Rendezzük és csak a top 6 + Egyéb
+    const sortedCats = Object.entries(catCounts).sort((a,b) => b[1] - a[1]);
+    const topCats = sortedCats.slice(0, 6);
+    const otherCount = sortedCats.slice(6).reduce((sum, item) => sum + item[1], 0);
+    
+    const catLabels = topCats.map(x => x[0]);
+    const catValues = topCats.map(x => x[1]);
+    if (otherCount > 0) { catLabels.push('Egyéb'); catValues.push(otherCount); }
+
+    const ctxCat = document.getElementById('statCategoryChart').getContext('2d');
+    myStatsCharts['statCategoryChart'] = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catValues,
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { color: '#ccc' } }
+            }
+        }
+    });
+
+    // 2. HAVI AKTIVITÁS (Line Chart)
+    const months = {};
+    data.forEach(item => {
+        if(!item.date) return;
+        const d = new Date(item.date.replace(' ', 'T')); // Hack a dátum formátumhoz
+        if(isNaN(d.getTime())) return;
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+        months[key] = (months[key] || 0) + 1;
+    });
+    
+    // Rendezés időrendben
+    const sortedMonths = Object.keys(months).sort();
+    const ctxAct = document.getElementById('statActivityChart').getContext('2d');
+    
+    // Gradiens
+    const gradient = ctxAct.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.5)');
+    gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+
+    myStatsCharts['statActivityChart'] = new Chart(ctxAct, {
+        type: 'line',
+        data: {
+            labels: sortedMonths,
+            datasets: [{
+                label: 'Kóstolások száma',
+                data: sortedMonths.map(m => months[m]),
+                borderColor: '#667eea',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 3. MILYEN NAPOKON? (Bar Chart)
+    const days = ['Vas', 'Hét', 'Kedd', 'Szer', 'Csüt', 'Pén', 'Szom'];
+    const dayCounts = [0,0,0,0,0,0,0];
+    data.forEach(item => {
+        if(!item.date) return;
+        const d = new Date(item.date.replace(' ', 'T'));
+        if(!isNaN(d.getTime())) dayCounts[d.getDay()]++;
+    });
+
+    // Hétfőtől kezdjük a megjelenítést (1-6, 0 a végére)
+    const displayDays = [...days.slice(1), days[0]];
+    const displayCounts = [...dayCounts.slice(1), dayCounts[0]];
+
+    const ctxDay = document.getElementById('statDayChart').getContext('2d');
+    myStatsCharts['statDayChart'] = new Chart(ctxDay, {
+        type: 'bar',
+        data: {
+            labels: displayDays,
+            datasets: [{
+                label: 'Napok eloszlása',
+                data: displayCounts,
+                backgroundColor: 'rgba(255, 215, 0, 0.6)',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { display: false },
+                x: { grid: { display: false }, ticks: { color: '#ccc' } }
+            }
+        }
+    });
+
+    // 4. RADAR (Ízvilág átlagok)
+    let sumLook=0, sumSmell=0, sumTaste=0;
+    data.forEach(item => {
+        sumLook += (parseFloat(item.look)||0);
+        sumSmell += (parseFloat(item.smell)||0);
+        sumTaste += (parseFloat(item.taste)||0);
+    });
+    const count = data.length || 1;
+    
+    const ctxRadar = document.getElementById('statRadarChart').getContext('2d');
+    myStatsCharts['statRadarChart'] = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅', 'Alkohol 😵', 'Összhatás ⭐'],
+            datasets: [{
+                label: 'Átlagos Értékeléseid',
+                data: [
+                    (sumLook/count).toFixed(2), 
+                    (sumSmell/count).toFixed(2), 
+                    (sumTaste/count).toFixed(2), 
+                    (avgAbv > 10 ? 10 : avgAbv), // Alkohol skálázva max 10-ig a grafikonhoz
+                    document.getElementById('statTotalAvg').textContent
+                ],
+                backgroundColor: 'rgba(217, 70, 239, 0.2)',
+                borderColor: '#d946ef',
+                pointBackgroundColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255,255,255,0.1)' },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    pointLabels: { color: '#fff', font: { size: 12 } },
+                    suggestedMin: 0,
+                    suggestedMax: 10
+                }
+            }
+        }
+    });
+}
+
+// 3. Figyeljük a változásokat (Szűrő váltás)
+document.getElementById('statsScopeFilter')?.addEventListener('change', updateMyStatistics);
+
+// 4. Tab váltás figyelése (hogy akkor töltsön be, amikor oda kattintunk)
+// Ezt illeszd be a `initializeMainTabs` függvénybe vagy a globális eseményfigyelőbe:
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        if (btn.dataset.tabContent === 'user-stats-content') {
+            // Kis késleltetés, hogy a DOM rendereljen
+            setTimeout(() => {
+                updateMyStatistics();
+            }, 100);
+        }
+    });
 });
+});
+
 
 
 
