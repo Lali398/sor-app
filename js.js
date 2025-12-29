@@ -1715,6 +1715,111 @@ function getStartDateForPeriod(period) {
     return startDate;
 }
 
+
+
+// === 1. USER OLDALI KEZELŐ ===
+async function handleRecapPeriodClick(e) {
+    const button = e.target.closest('.recap-btn');
+    if (!button) return;
+    if (button.closest('#adminRecapControls')) return; // Admin gomboknál ne fusson
+
+    const period = button.dataset.period;
+    const container = document.getElementById('recapResultsContainer');
+    container.innerHTML = '<div class="recap-spinner"></div>';
+
+    setTimeout(() => {
+        try {
+            const startDate = getStartDateForPeriod(period);
+            const now = new Date();
+
+            if (!currentUserBeers || currentUserBeers.length === 0) {
+                container.innerHTML = `<p class="recap-no-results">Még nem értékeltél söröket. 🍺</p>`;
+                return;
+            }
+
+            const filtered = currentUserBeers.filter(beer => {
+                const d = parseBeerDate(beer.date);
+                return d && d >= startDate && d <= now;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="recap-no-results">Ebben az időszakban nem volt aktivitás.</p>`;
+                return;
+            }
+
+            const data = calculateRecapStats(filtered);
+            data.periodName = getPeriodName(period);
+            
+            renderStoryMode(data, container);
+
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `<p class="recap-no-results">Hiba történt. :(</p>`;
+        }
+    }, 500);
+}
+
+// === 2. ADMIN OLDALI KEZELŐ ===
+async function handleAdminRecapGenerate(period, button) {
+    const resultsContainer = document.getElementById('adminRecapResultsContainer');
+    
+    // UI Loading
+    const allButtons = button.closest('.recap-controls').querySelectorAll('.recap-btn');
+    allButtons.forEach(btn => btn.classList.remove('loading'));
+    button.classList.add('loading');
+    resultsContainer.innerHTML = '<div class="recap-spinner"></div>';
+
+    setTimeout(() => {
+        try {
+            // Szűrés a kiválasztott fül alapján (Közös/Gabz/Lajos)
+            let targetBeers = [];
+            if (currentAdminRecapView === 'common') {
+                targetBeers = [...beersData];
+            } else {
+                const filterKey = (currentAdminRecapView === 'gabz') ? 'admin1' : 'admin2';
+                targetBeers = beersData.filter(b => b.ratedBy === filterKey);
+            }
+
+            // Dátum szűrés
+            const startDate = getStartDateForPeriod(period);
+            const now = new Date();
+            
+            const filtered = targetBeers.filter(beer => {
+                const d = parseBeerDate(beer.date);
+                return d && d >= startDate && d <= now;
+            });
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = `<p class="recap-no-results">Nincs adat erre az időszakra.</p>`;
+                button.classList.remove('loading');
+                return;
+            }
+
+            const data = calculateRecapStats(filtered);
+            // Cím módosítása, hogy látszódjon kiről van szó
+            const userLabels = { 'common': 'Közös', 'gabz': 'Gabz', 'lajos': 'Lajos' };
+            data.periodName = `${userLabels[currentAdminRecapView]} - ${getPeriodName(period)}`;
+
+            // UGYANAZT a Story módot hívjuk meg!
+            renderStoryMode(data, resultsContainer);
+
+        } catch (error) {
+            console.error("Admin recap hiba:", error);
+            resultsContainer.innerHTML = `<p class="recap-no-results">Hiba történt.</p>`;
+        } finally {
+            button.classList.remove('loading');
+        }
+    }, 500);
+}
+
+function getPeriodName(period) {
+    const names = { 'weekly': 'Heti', 'monthly': 'Havi', 'quarterly': 'Negyedéves', 'yearly': 'Éves' };
+    return names[period] || 'Összesítő';
+}
+
+// === STORY MODE RENDERER (ANIMÁCIÓ & HTML) ===
+let storyInterval;
+
 // ======================================================
 // === ÚJ: BŐVÍTETT RECAP STATISZTIKA (10 SLIDE LOGIKA) ===
 // ======================================================
@@ -2007,107 +2112,26 @@ function renderStoryMode(data, container) {
     startStory(0);
 }
 
-// === 1. USER OLDALI KEZELŐ ===
-async function handleRecapPeriodClick(e) {
-    const button = e.target.closest('.recap-btn');
-    if (!button) return;
-    if (button.closest('#adminRecapControls')) return; // Admin gomboknál ne fusson
-
-    const period = button.dataset.period;
-    const container = document.getElementById('recapResultsContainer');
-    container.innerHTML = '<div class="recap-spinner"></div>';
-
-    setTimeout(() => {
-        try {
-            const startDate = getStartDateForPeriod(period);
-            const now = new Date();
-
-            if (!currentUserBeers || currentUserBeers.length === 0) {
-                container.innerHTML = `<p class="recap-no-results">Még nem értékeltél söröket. 🍺</p>`;
-                return;
-            }
-
-            const filtered = currentUserBeers.filter(beer => {
-                const d = parseBeerDate(beer.date);
-                return d && d >= startDate && d <= now;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<p class="recap-no-results">Ebben az időszakban nem volt aktivitás.</p>`;
-                return;
-            }
-
-            const data = calculateRecapStats(filtered);
-            data.periodName = getPeriodName(period);
-            
-            renderStoryMode(data, container);
-
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<p class="recap-no-results">Hiba történt. :(</p>`;
-        }
-    }, 500);
+// Globális függvények (hogy a HTML gombok elérjék őket)
+window.startStory = function(slideIndex) {
+    if(storyInterval) clearInterval(storyInterval);
+    window.currentSlide = slideIndex;
+    showSlide(window.currentSlide);
 }
 
-// === 2. ADMIN OLDALI KEZELŐ ===
-async function handleAdminRecapGenerate(period, button) {
-    const resultsContainer = document.getElementById('adminRecapResultsContainer');
-    
-    // UI Loading
-    const allButtons = button.closest('.recap-controls').querySelectorAll('.recap-btn');
-    allButtons.forEach(btn => btn.classList.remove('loading'));
-    button.classList.add('loading');
-    resultsContainer.innerHTML = '<div class="recap-spinner"></div>';
-
-    setTimeout(() => {
-        try {
-            // Szűrés a kiválasztott fül alapján (Közös/Gabz/Lajos)
-            let targetBeers = [];
-            if (currentAdminRecapView === 'common') {
-                targetBeers = [...beersData];
-            } else {
-                const filterKey = (currentAdminRecapView === 'gabz') ? 'admin1' : 'admin2';
-                targetBeers = beersData.filter(b => b.ratedBy === filterKey);
-            }
-
-            // Dátum szűrés
-            const startDate = getStartDateForPeriod(period);
-            const now = new Date();
-            
-            const filtered = targetBeers.filter(beer => {
-                const d = parseBeerDate(beer.date);
-                return d && d >= startDate && d <= now;
-            });
-
-            if (filtered.length === 0) {
-                resultsContainer.innerHTML = `<p class="recap-no-results">Nincs adat erre az időszakra.</p>`;
-                button.classList.remove('loading');
-                return;
-            }
-
-            const data = calculateRecapStats(filtered);
-            // Cím módosítása, hogy látszódjon kiről van szó
-            const userLabels = { 'common': 'Közös', 'gabz': 'Gabz', 'lajos': 'Lajos' };
-            data.periodName = `${userLabels[currentAdminRecapView]} - ${getPeriodName(period)}`;
-
-            // UGYANAZT a Story módot hívjuk meg!
-            renderStoryMode(data, resultsContainer);
-
-        } catch (error) {
-            console.error("Admin recap hiba:", error);
-            resultsContainer.innerHTML = `<p class="recap-no-results">Hiba történt.</p>`;
-        } finally {
-            button.classList.remove('loading');
-        }
-    }, 500);
+window.nextSlide = function() {
+    if (window.currentSlide < window.totalSlides - 1) {
+        window.currentSlide++;
+        showSlide(window.currentSlide);
+    }
 }
 
-function getPeriodName(period) {
-    const names = { 'weekly': 'Heti', 'monthly': 'Havi', 'quarterly': 'Negyedéves', 'yearly': 'Éves' };
-    return names[period] || 'Összesítő';
+window.prevSlide = function() {
+    if (window.currentSlide > 0) {
+        window.currentSlide--;
+        showSlide(window.currentSlide);
+    }
 }
-
-
 
 function showSlide(index) {
     document.querySelectorAll('.story-slide').forEach((el, i) => {
@@ -5450,8 +5474,6 @@ window.openPrizeModal = function() {
         });
     });
 });
-
-
 
 
 
