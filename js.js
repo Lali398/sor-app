@@ -5143,6 +5143,7 @@ function renderMyStatsCharts(data, avgAbvNum) {
         }
     });
 
+
     // 2. HAVI AKTIVITÁS (Line Chart)
     const months = {};
     data.forEach(item => {
@@ -5277,7 +5278,7 @@ myStatsCharts['statRadarChart'] = new Chart(ctxRadar, {
         }
     }
 });
-}
+
 
 // 3. Figyeljük a változásokat (Szűrő váltás)
 document.getElementById('statsScopeFilter')?.addEventListener('change', updateMyStatistics);
@@ -5294,6 +5295,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     });
 });
 });
+
 
 
 
