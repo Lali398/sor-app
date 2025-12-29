@@ -5221,18 +5221,19 @@ if(scopeFilter) {
 // 4. Navigációs gomb figyelése (hogy akkor töltsön be, amikor a fülre kattintasz)
 document.querySelectorAll('.nav-item').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // Ha a gombra kattintottunk (vagy a belsejére)
-        const button = e.target.closest('.nav-item');
-        if (button && button.dataset.tabContent === 'user-stats-content') {
-            // Kis késleltetés a rendereléshez
+        if (btn.dataset.tabContent === 'user-stats-content') {
             setTimeout(() => {
-                updateMyStatistics();
-            }, 200);
+                try {
+                    if (typeof updateMyStatistics === 'function') {
+                        updateMyStatistics();
+                    }
+                } catch (err) {
+                    console.error("Statisztika hiba:", err);
+                }
+            }, 100);
         }
     });
 });
-
-}); // ITT ZÁRUL A DOMContentLoaded
 
 
 
