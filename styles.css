@@ -4078,6 +4078,107 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         flex: none; /* Ne nyomódjon össze */
     }
 }
+/* === RECAP STORY BŐVÍTÉSEK (10 SLIDE MODE) === */
+
+/* Slide tartalom igazítások */
+.story-slide {
+    padding: 20px;
+    justify-content: center; /* Függőleges közép */
+}
+
+/* 1. Kétoldalas elrendezés (pl. Hétköznap vs Hétvége) */
+.story-vs-container {
+    display: flex;
+    width: 100%;
+    height: 200px;
+    margin: 20px 0;
+}
+.story-vs-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.5s ease;
+}
+.vs-bar {
+    width: 40px;
+    background: white;
+    border-radius: 10px 10px 0 0;
+    margin-top: auto; /* Alulra igazít */
+    min-height: 10px;
+    position: relative;
+}
+.vs-label {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #ccc;
+    font-weight: 600;
+}
+.vs-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+/* 2. "Legrosszabb" Slide stílus */
+.shame-card {
+    background: rgba(255, 68, 68, 0.1);
+    border: 2px dashed #ff4444;
+    padding: 20px;
+    border-radius: 15px;
+    transform: rotate(-2deg);
+    margin: 20px 0;
+}
+.shame-title { color: #ff6b6b; font-weight: 800; font-size: 1.5rem; }
+.shame-score { font-size: 3rem; color: #ff4444; font-weight: 900; }
+
+/* 3. Érzékszervek (Radar helyett Bar) */
+.sense-bar-container {
+    width: 100%;
+    margin: 15px 0;
+}
+.sense-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.sense-icon { width: 40px; font-size: 1.5rem; }
+.sense-track {
+    flex: 1;
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.sense-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%; /* JS tölti ki */
+    transition: width 1s ease-out;
+}
+.sense-val { width: 40px; text-align: right; font-weight: bold; font-size: 0.9rem; }
+
+/* 4. Idővonal ikonok */
+.time-display {
+    font-size: 4rem;
+    margin: 20px 0;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* Animációk a belső elemeknek */
+.slide-anim-pop { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
+.slide-anim-up { animation: slideUpFade 0.8s ease forwards; opacity: 0; transform: translateY(50px); }
+
+@keyframes popIn { to { opacity: 1; transform: scale(1); } }
+@keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
+
+/* Slide hátterek variálása */
+.bg-gradient-1 { background: linear-gradient(180deg, #240046 0%, #10002b 100%); }
+.bg-gradient-2 { background: linear-gradient(180deg, #3a0ca3 0%, #000 100%); } /* Mély kék */
+.bg-gradient-3 { background: linear-gradient(180deg, #560bad 0%, #1a0505 100%); } /* Lila-Piros */
+.bg-gradient-4 { background: linear-gradient(180deg, #b5179e 0%, #240046 100%); } /* Pink-Lila */
+
 
 
 
