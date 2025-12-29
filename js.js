@@ -5032,7 +5032,6 @@ window.openPrizeModal = function() {
     // 2. Fő logika: Adatok feldolgozása és kirajzolása
     function updateMyStatistics() {
         const scope = document.getElementById('statsScopeFilter')?.value || 'all';
-        window.updateMyStatistics = updateMyStatistics;
         
         // Adatok összefűzése a szűrő alapján
         let dataset = [];
@@ -5043,7 +5042,8 @@ window.openPrizeModal = function() {
         } else if (scope === 'drink') {
             dataset = [...(currentUserDrinks || [])];
         }
-        
+
+        window.updateMyStatistics = updateMyStatistics;
     
         if (dataset.length === 0) {
             // Ha nincs adat, nullázzuk a kijelzőket
@@ -5319,6 +5319,7 @@ window.openPrizeModal = function() {
         }
     });
 });
+
 
 
 
