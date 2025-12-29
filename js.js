@@ -1715,57 +1715,296 @@ function getStartDateForPeriod(period) {
     return startDate;
 }
 
-// Segédfüggvény: Statisztikák számolása (Közös logika)
+// ======================================================
+// === ÚJ: BŐVÍTETT RECAP STATISZTIKA (10 SLIDE LOGIKA) ===
+// ======================================================
+
 function calculateRecapStats(beers) {
     if (!beers || beers.length === 0) return null;
+    
+    // 1. Adattisztítás
+    const validItems = beers.map(b => ({
+        ...b,
+        totalScore: parseFloat(b.totalScore) || 0,
+        avg: parseFloat(b.avg.toString().replace(',', '.')) || 0,
+        abv: parseFloat(b.beerPercentage || b.drinkPercentage) || 0,
+        look: parseFloat(b.look) || 0,
+        smell: parseFloat(b.smell) || 0,
+        taste: parseFloat(b.taste) || 0,
+        dateObj: parseBeerDate(b.date)
+    }));
 
-    const totalBeers = beers.length;
-    // Pontszámok biztosítása
-    const validBeers = beers.map(b => ({ ...b, totalScore: parseFloat(b.totalScore) || 0 }));
-    
-    // Átlag
-    const sumScore = validBeers.reduce((sum, b) => sum + b.totalScore, 0);
-    const averageScore = (sumScore / totalBeers).toFixed(2);
-    
-    // Legjobb sör
-    const bestBeer = validBeers.reduce((max, beer) => (beer.totalScore > max.totalScore ? beer : max), validBeers[0]);
-    
-    // Kedvenc típus
-    const typeCounts = validBeers.reduce((acc, beer) => {
-        const val = beer.type || 'Egyéb';
-        acc[val] = (acc[val] || 0) + 1;
+    const count = validItems.length;
+    const totalScoreSum = validItems.reduce((acc, b) => acc + b.totalScore, 0);
+    const avgScore = (totalScoreSum / count).toFixed(2);
+
+    // 2. Legjobb és Legrosszabb
+    const sortedByScore = [...validItems].sort((a, b) => b.totalScore - a.totalScore);
+    const bestItem = sortedByScore[0];
+    const worstItem = sortedByScore[sortedByScore.length - 1]; // Utolsó elem
+
+    // 3. Kategória / Típus elemzés
+    const typeCounts = validItems.reduce((acc, item) => {
+        const t = item.type || item.category || 'Egyéb';
+        acc[t] = (acc[t] || 0) + 1;
         return acc;
     }, {});
-    const favoriteType = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a])[0] || '-';
+    const favType = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a])[0];
 
-    // Kedvenc hely
-    const locCounts = validBeers.reduce((acc, beer) => {
-        const val = beer.location || 'Ismeretlen';
-        acc[val] = (acc[val] || 0) + 1;
+    // 4. Helyszín
+    const locCounts = validItems.reduce((acc, item) => {
+        const l = item.location || 'Ismeretlen';
+        acc[l] = (acc[l] || 0) + 1;
         return acc;
     }, {});
-    const favoriteLocation = Object.keys(locCounts).sort((a,b) => locCounts[b] - locCounts[a])[0] || '-';
+    const favPlace = Object.keys(locCounts).sort((a,b) => locCounts[b] - locCounts[a])[0];
 
-    // Átlagos ivási idő (óra)
-    let avgHour = 18; // Default
-    const hours = validBeers.map(b => {
-        const d = parseBeerDate(b.date);
-        return d ? d.getHours() : null;
-    }).filter(h => h !== null);
+    // 5. Időbeli elemzések (Hétvége vs Hétköznap + Napszak)
+    let weekendCount = 0;
+    let weekdayCount = 0;
+    let hourSum = 0;
+    let hourCount = 0;
+
+    validItems.forEach(item => {
+        if (item.dateObj) {
+            const day = item.dateObj.getDay(); // 0 = Vasárnap, 6 = Szombat
+            const hour = item.dateObj.getHours();
+            
+            if (day === 0 || day === 6 || day === 5) { // Péntek, Szombat, Vasárnap = Hétvége mód
+                weekendCount++;
+            } else {
+                weekdayCount++;
+            }
+            
+            hourSum += hour;
+            hourCount++;
+        }
+    });
     
-    if (hours.length > 0) {
-        avgHour = Math.floor(hours.reduce((a,b)=>a+b,0) / hours.length);
-    }
+    const avgHour = hourCount > 0 ? Math.floor(hourSum / hourCount) : 18;
+    
+    // Napszak szövegesen
+    let timeOfDay = "Délutáni lazító 🌇";
+    if (avgHour < 12) timeOfDay = "Reggeli korhely 🍳";
+    else if (avgHour >= 22 || avgHour < 4) timeOfDay = "Éjszakai bagoly 🦉";
+    else if (avgHour >= 18) timeOfDay = "Esti ínyenc 🌙";
+
+    // 6. Legerősebb tétel
+    const strongest = [...validItems].sort((a, b) => b.abv - a.abv)[0];
+
+    // 7. Érzékszervek átlaga
+    const sumLook = validItems.reduce((a,b) => a + b.look, 0);
+    const sumSmell = validItems.reduce((a,b) => a + b.smell, 0);
+    const sumTaste = validItems.reduce((a,b) => a + b.taste, 0);
 
     return {
-        count: totalBeers,
-        avg: averageScore,
-        topBeer: bestBeer.beerName,
-        topScore: bestBeer.totalScore,
-        favType: favoriteType,
-        favPlace: favoriteLocation,
-        drinkingTime: `${avgHour}:00`
+        count,
+        avg: avgScore,
+        estLiters: (count * 0.5).toFixed(1), // Becslés: 0.5L / sör
+        best: { name: bestItem.beerName || bestItem.drinkName, score: bestItem.totalScore },
+        worst: { name: worstItem.beerName || worstItem.drinkName, score: worstItem.totalScore },
+        favType,
+        favPlace,
+        timing: {
+            weekend: weekendCount,
+            weekday: weekdayCount,
+            avgHour,
+            label: timeOfDay
+        },
+        strongest: { name: strongest.beerName || strongest.drinkName, abv: strongest.abv },
+        senses: {
+            look: (sumLook / count).toFixed(1),
+            smell: (sumSmell / count).toFixed(1),
+            taste: (sumTaste / count).toFixed(1)
+        }
     };
+}
+
+// === ÚJ RENDERER: 10 SLIDE ===
+function renderStoryMode(data, container) {
+    // slide-anim-pop osztályokat használunk az animációkhoz
+    
+    // Számítjuk a százalékokat a VS slide-hoz
+    const totalDays = data.timing.weekend + data.timing.weekday;
+    const weekendPct = totalDays > 0 ? (data.timing.weekend / totalDays) * 100 : 50;
+    const weekdayPct = totalDays > 0 ? (data.timing.weekday / totalDays) * 100 : 50;
+
+    // Számítjuk a szélességeket a Senses slide-hoz (0-10 skála -> %)
+    const lookPct = data.senses.look * 10;
+    const smellPct = data.senses.smell * 10;
+    const tastePct = data.senses.taste * 10;
+
+    const html = `
+<div class="recap-story-container" id="storyContainer">
+    <button class="story-fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+
+    <div class="story-progress-container">
+        ${Array(10).fill(0).map((_, i) => `<div class="story-progress-bar" id="bar-${i}"><div class="story-progress-fill"></div></div>`).join('')}
+    </div>
+
+    <div class="story-nav-left" onclick="prevSlide()"></div>
+    <div class="story-nav-right" onclick="nextSlide()"></div>
+
+    <div class="story-slide active bg-gradient-1" id="slide-0">
+        <div class="slide-anim-pop">
+            <h3 class="story-title">Itt a ${escapeHtml(data.periodName)}!</h3>
+            <p class="story-text">Nézzük meg, mit műveltél...</p>
+            <div style="font-size: 5rem; margin: 30px;">🎬</div>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-2" id="slide-1">
+        <div class="slide-anim-up">
+            <h3 class="story-title">Nem voltál szomjas!</h3>
+            <div class="story-big-number">${data.count}</div>
+            <p class="story-text">tételt kóstoltál meg.</p>
+            <br>
+            <p class="story-highlight" style="font-size: 1rem; color: #aaa;">Ez kb. <b>${data.estLiters} liter</b> folyadék! 🌊</p>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-3" id="slide-2">
+        <div class="slide-anim-pop">
+            <h3 class="story-title">A "Fejbevágó" 🥊</h3>
+            <p class="story-text">A legerősebb tétel amit ittál:</p>
+            <div style="font-size: 4rem; font-weight: 800; color: #e74c3c; margin: 20px 0;">
+                ${data.strongest.abv}%
+            </div>
+            <p class="story-highlight">${escapeHtml(data.strongest.name)}</p>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-4" id="slide-3">
+        <div class="slide-anim-up">
+            <h3 class="story-title">A Törzshelyed 📍</h3>
+            <p class="story-text">Legtöbbször itt jártál:</p>
+            <div class="fame-card" style="margin-top: 30px; transform: scale(1.2);">
+                <div class="fame-user"><span class="fame-avatar">🏠</span></div>
+                <div class="fame-name" style="font-size: 1.5rem;">${escapeHtml(data.favPlace)}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-1" id="slide-4">
+        <h3 class="story-title">Mikor ittál?</h3>
+        <div class="story-vs-container">
+            <div class="story-vs-side">
+                <div class="vs-value">${data.timing.weekday}</div>
+                <div class="vs-bar" style="height: ${weekdayPct}%; background: #3498db;"></div>
+                <div class="vs-label">Hétköznap</div>
+            </div>
+            <div class="story-vs-side">
+                <div class="vs-value">${data.timing.weekend}</div>
+                <div class="vs-bar" style="height: ${weekendPct}%; background: #e74c3c;"></div>
+                <div class="vs-label">Hétvége</div>
+            </div>
+        </div>
+        <p class="story-text slide-anim-up" style="margin-top: 20px;">
+            ${data.timing.weekend > data.timing.weekday ? "Igazi hétvégi harcos vagy! 🎉" : "A munkanapok sem akadályoztak! 👔"}
+        </p>
+    </div>
+
+    <div class="story-slide bg-gradient-2" id="slide-5">
+        <div class="slide-anim-pop">
+            <h3 class="story-title">Az órád szerint...</h3>
+            <div class="time-display">
+                ${data.timing.avgHour}:00
+            </div>
+            <p class="story-text">Ez az átlagos kóstolási időd.</p>
+            <div class="story-highlight" style="font-size: 1.5rem; margin-top: 20px;">
+                ${data.timing.label}
+            </div>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-4" id="slide-6">
+        <h3 class="story-title">Ízvilág Elemzés 🧬</h3>
+        <div class="sense-bar-container slide-anim-up">
+            <div class="sense-row">
+                <span class="sense-icon">👀</span>
+                <div class="sense-track"><div class="sense-fill" style="width: ${lookPct}%"></div></div>
+                <span class="sense-val">${data.senses.look}</span>
+            </div>
+            <div class="sense-row">
+                <span class="sense-icon">👃</span>
+                <div class="sense-track"><div class="sense-fill" style="width: ${smellPct}%"></div></div>
+                <span class="sense-val">${data.senses.smell}</span>
+            </div>
+            <div class="sense-row">
+                <span class="sense-icon">👅</span>
+                <div class="sense-track"><div class="sense-fill" style="width: ${tastePct}%"></div></div>
+                <span class="sense-val">${data.senses.taste}</span>
+            </div>
+        </div>
+        <p class="story-text" style="font-size: 0.9rem; color: #aaa;">(Átlagos pontszámok 0-10)</p>
+    </div>
+
+    <div class="story-slide bg-gradient-3" id="slide-7">
+        <div class="slide-anim-pop">
+            <h3 class="story-title">Ezt nem szeretted... 🤢</h3>
+            <div class="shame-card">
+                <div class="shame-title">${escapeHtml(data.worst.name)}</div>
+                <div class="shame-score">${data.worst.score}</div>
+                <div style="color: #555; font-style: italic;">Pontszám</div>
+            </div>
+            <p class="story-text">Reméljük, azóta ittál jobbat!</p>
+        </div>
+    </div>
+
+    <div class="story-slide bg-gradient-1" id="slide-8">
+        <div class="slide-anim-pop">
+            <h3 class="story-title" style="color: #ffd700;">👑 A Király 👑</h3>
+            <p class="story-text">Ez vitte a prímet:</p>
+            <div style="font-size: 5rem; margin: 10px 0;">🍺</div>
+            <span class="story-highlight" style="font-size: 2rem; line-height: 1.2;">
+                ${escapeHtml(data.best.name)}
+            </span>
+            <div class="recap-stat-value" style="color: #ffd700; margin-top: 15px;">
+                ${data.best.score} ⭐
+            </div>
+        </div>
+    </div>
+
+    <div class="story-slide active bg-gradient-2" id="slide-9" style="z-index: 30;"> 
+        <h3 class="story-title">Összegzés</h3>
+        
+        <div class="story-summary-grid" id="captureTarget" style="padding: 15px; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px;">
+            <div class="summary-item">
+                <span class="summary-label">Mennyiség</span>
+                <span class="summary-value">${data.count} db</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Átlag</span>
+                <span class="summary-value" style="color: #ffd700;">${data.avg}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Top Hely</span>
+                <span class="summary-value" style="font-size: 0.9rem;">${escapeHtml(data.favPlace)}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Top Típus</span>
+                <span class="summary-value" style="font-size: 0.9rem;">${escapeHtml(data.favType)}</span>
+            </div>
+            <div class="summary-item" style="grid-column: 1/-1; background: rgba(255,215,0,0.1); border: 1px solid #ffd700;">
+                <span class="summary-label" style="color: #ffd700;">🏆 A Kedvenc</span>
+                <span class="summary-value">${escapeHtml(data.best.name)}</span>
+            </div>
+        </div>
+        
+        <div class="story-actions">
+            <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
+            <button class="story-btn btn-download" onclick="downloadRecap()">Kép Mentése 📥</button>
+        </div>
+    </div>
+</div>
+`;
+    
+    container.innerHTML = html;
+    
+    // Globális változók a léptetéshez
+    window.currentSlide = 0;
+    window.totalSlides = 10; // Most már 10 slide van!
+    startStory(0);
 }
 
 // === 1. USER OLDALI KEZELŐ ===
@@ -1868,107 +2107,7 @@ function getPeriodName(period) {
     return names[period] || 'Összesítő';
 }
 
-// === STORY MODE RENDERER (ANIMÁCIÓ & HTML) ===
-let storyInterval;
 
-function renderStoryMode(data, container) {
-    // HTML Struktúra
-    const html = `
-<div class="recap-story-container" id="storyContainer">
-    <button class="story-fullscreen-btn" onclick="toggleFullscreen()">
-        ⛶
-    </button>
-
-    <div class="story-progress-container">
-        <div class="story-progress-bar" id="bar-0"><div class="story-progress-fill"></div></div>
-        <div class="story-progress-bar" id="bar-1"><div class="story-progress-fill"></div></div>
-        <div class="story-progress-bar" id="bar-2"><div class="story-progress-fill"></div></div>
-        <div class="story-progress-bar" id="bar-3"><div class="story-progress-fill"></div></div>
-    </div>
-
-    <div class="story-nav-left" onclick="prevSlide()"></div>
-    <div class="story-nav-right" onclick="nextSlide()"></div>
-
-    <div class="story-slide active" id="slide-0">
-        <h3 class="story-title">${escapeHtml(data.periodName)}</h3>
-        <p class="story-text">Nem voltál szomjas!</p>
-        <div class="story-big-number">${data.count}</div>
-        <p class="story-text">sört kóstoltál meg.</p>
-        <span style="font-size: 3rem; margin-top: 20px;">🍻</span>
-    </div>
-
-    <div class="story-slide" id="slide-1">
-        <h3 class="story-title">Az abszolút kedvenc</h3>
-        <p class="story-text">Ez vitte a prímet:</p>
-        <span class="story-highlight" style="font-size: 1.8rem; margin: 20px 0; word-wrap: break-word;">${escapeHtml(data.topBeer)}</span>
-        <div class="recap-stat-value" style="font-size: 2.5rem;">${data.topScore} ⭐</div>
-    </div>
-
-    <div class="story-slide" id="slide-2">
-        <h3 class="story-title">Így szereted</h3>
-        <p class="story-text">Kedvenc típus:</p>
-        <span class="story-highlight">${escapeHtml(data.favType)}</span>
-        <br>
-        <p class="story-text">Legtöbbször itt:</p>
-        <span class="story-highlight">${escapeHtml(data.favPlace)}</span>
-        <br>
-        <p class="story-text">Átlagos időpont:</p>
-        <span class="story-highlight">${data.drinkingTime}</span>
-    </div>
-
-    <div class="story-slide" id="slide-3" style="z-index: 30;"> 
-        <h3 class="story-title">Összegzés</h3>
-        <div class="story-summary-grid" id="captureTarget">
-            <div class="summary-item">
-                <span class="summary-label">Összes sör</span>
-                <span class="summary-value">${data.count} db</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Átlag</span>
-                <span class="summary-value">${data.avg}</span>
-            </div>
-            <div class="summary-item" style="grid-column: 1/-1">
-                <span class="summary-label">Top Sör</span>
-                <span class="summary-value">${data.topBeer}</span>
-            </div>
-        </div>
-        
-        <div class="story-actions">
-            <button class="story-btn btn-restart" onclick="startStory(0)">Újra ⟳</button>
-            <button class="story-btn btn-download" onclick="downloadRecap()">Mentés 📥</button>
-        </div>
-    </div>
-</div>
-`;
-
-    container.innerHTML = html;
-    
-    // Indítás
-    window.currentSlide = 0;
-    window.totalSlides = 4;
-    startStory(0);
-}
-
-// Globális függvények (hogy a HTML gombok elérjék őket)
-window.startStory = function(slideIndex) {
-    if(storyInterval) clearInterval(storyInterval);
-    window.currentSlide = slideIndex;
-    showSlide(window.currentSlide);
-}
-
-window.nextSlide = function() {
-    if (window.currentSlide < window.totalSlides - 1) {
-        window.currentSlide++;
-        showSlide(window.currentSlide);
-    }
-}
-
-window.prevSlide = function() {
-    if (window.currentSlide > 0) {
-        window.currentSlide--;
-        showSlide(window.currentSlide);
-    }
-}
 
 function showSlide(index) {
     document.querySelectorAll('.story-slide').forEach((el, i) => {
@@ -5311,6 +5450,7 @@ window.openPrizeModal = function() {
         });
     });
 });
+
 
 
 
