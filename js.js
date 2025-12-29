@@ -2563,6 +2563,12 @@ switchToUserView = function() {
     if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
     if (typeof loadUserData === 'function') loadUserData();
 
+    setTimeout(() => {
+        if (document.getElementById('user-stats-content')) {
+            updateMyStatistics();
+        }
+    }, 1500);
+
      // ⬇️ EZT A SORT ADD HOZZÁ! ⬇️
     if (typeof loadUserDrinks === 'function') loadUserDrinks(); // Ez betölti az italokat
     if (typeof loadRecommendations === 'function') {
@@ -5088,10 +5094,10 @@ function updateMyStatistics() {
 
 
     // --- GRAFIKONOK RAJZOLÁSA ---
-    renderMyStatsCharts(dataset);
+    renderMyStatsCharts(dataset, avgAbvNum);
 }
 
-function renderMyStatsCharts(data) {
+function renderMyStatsCharts(data, avgAbvNum) {
     // Előző chartok törlése
     ['statCategoryChart', 'statActivityChart', 'statDayChart', 'statRadarChart'].forEach(id => {
         if (myStatsCharts[id]) {
@@ -5215,58 +5221,72 @@ function renderMyStatsCharts(data) {
     });
 
     // 4. RADAR (Ízvilág átlagok)
-    let sumLook=0, sumSmell=0, sumTaste=0;
-    data.forEach(item => {
-        sumLook += (parseFloat(item.look)||0);
-        sumSmell += (parseFloat(item.smell)||0);
-        sumTaste += (parseFloat(item.taste)||0);
-    });
-    const count = data.length || 1;
-    
-    const ctxRadar = document.getElementById('statRadarChart').getContext('2d');
-    myStatsCharts['statRadarChart'] = new Chart(ctxRadar, {
-        type: 'radar',
-        data: {
-            labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅', 'Alkohol 😵', 'Összhatás ⭐'],
-            datasets: [{
-                label: 'Átlagos Értékeléseid',
-                data: [
-                    (sumLook/count).toFixed(2), 
-                    (sumSmell/count).toFixed(2), 
-                    (sumTaste/count).toFixed(2), 
-                    (avgAbv > 10 ? 10 : avgAbv), // Alkohol skálázva max 10-ig a grafikonhoz
-                    document.getElementById('statTotalAvg').textContent
-                ],
-                backgroundColor: 'rgba(217, 70, 239, 0.2)',
-                borderColor: '#d946ef',
-                pointBackgroundColor: '#fff'
-            }]
+let sumLook=0, sumSmell=0, sumTaste=0;
+data.forEach(item => {
+    sumLook += (parseFloat(item.look)||0);
+    sumSmell += (parseFloat(item.smell)||0);
+    sumTaste += (parseFloat(item.taste)||0);
+});
+const count = data.length || 1;
+
+// ✅ JAVÍTVA: avgAbv már számmá lett konvertálva fentebb
+const avgAbvNum = parseFloat(avgAbv) || 0;
+const totalAvgNum = parseFloat(document.getElementById('statTotalAvg').textContent) || 0;
+
+const ctxRadar = document.getElementById('statRadarChart').getContext('2d');
+myStatsCharts['statRadarChart'] = new Chart(ctxRadar, {
+    type: 'radar',
+    data: {
+        labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅', 'Alkohol 😵', 'Összhatás ⭐'],
+        datasets: [{
+            label: 'Átlagos Értékeléseid',
+            data: [
+                parseFloat((sumLook/count).toFixed(2)), 
+                parseFloat((sumSmell/count).toFixed(2)), 
+                parseFloat((sumTaste/count).toFixed(2)), 
+                (avgAbvNum > 10 ? 10 : avgAbvNum), // ✅ Most már szám
+                totalAvgNum // ✅ Most már szám
+            ],
+            backgroundColor: 'rgba(217, 70, 239, 0.2)',
+            borderColor: '#d946ef',
+            pointBackgroundColor: '#fff',
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                angleLines: { color: 'rgba(255,255,255,0.1)' },
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                pointLabels: { color: '#fff', font: { size: 14 } },
+                ticks: { 
+                    color: '#ccc',
+                    backdropColor: 'transparent'
+                },
+                min: 0,
+                max: 10
+            }
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                r: {
-                    angleLines: { color: 'rgba(255,255,255,0.1)' },
-                    grid: { color: 'rgba(255,255,255,0.1)' },
-                    pointLabels: { color: '#fff', font: { size: 12 } },
-                    suggestedMin: 0,
-                    suggestedMax: 10
-                }
+        plugins: {
+            legend: {
+                labels: { color: '#fff' }
             }
         }
-    });
+    }
+});
 }
 
 // 3. Figyeljük a változásokat (Szűrő váltás)
 document.getElementById('statsScopeFilter')?.addEventListener('change', updateMyStatistics);
 
 // 4. Tab váltás figyelése (hogy akkor töltsön be, amikor oda kattintunk)
-// Ezt illeszd be a `initializeMainTabs` függvénybe vagy a globális eseményfigyelőbe:
 document.querySelectorAll('.nav-item').forEach(btn => {
     btn.addEventListener('click', (e) => {
         if (btn.dataset.tabContent === 'user-stats-content') {
-            // Kis késleltetés, hogy a DOM rendereljen
+            // ✅ JAVÍTVA: Azonnal meghívjuk
             setTimeout(() => {
                 updateMyStatistics();
             }, 100);
@@ -5274,6 +5294,7 @@ document.querySelectorAll('.nav-item').forEach(btn => {
     });
 });
 });
+
 
 
 
