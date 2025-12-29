@@ -225,7 +225,10 @@
                     <span class="icon">💡</span>
                     <span class="label">Ötletláda</span>
                 </button>
-                
+                <button class="nav-item" data-tab-content="user-stats-content">
+                    <span class="icon">📊</span>
+                    <span class="label">Statisztikáim</span>
+                </button>
                 <button class="nav-item" data-tab-content="user-recap-content">
                     <span class="icon">📈</span>
                     <span class="label">Visszatekintő</span>
@@ -424,6 +427,108 @@
                         <div id="pendingIdeasList" class="idea-list-vertical"></div>
                     </section>
                 </div>
+
+                <!-- STATISZTIKA TAB-->
+
+                <div class="main-tab-pane" id="user-stats-content">
+    <section class="card">
+        <header class="card-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h3>Személyes Adatelemző 🧬</h3>
+                <select id="statsScopeFilter" class="cool-select" style="width: auto; background: rgba(0,0,0,0.3);">
+                    <option value="all">Minden (Sör + Ital)</option>
+                    <option value="beer">🍺 Csak Sörök</option>
+                    <option value="drink">🍹 Csak Italok</option>
+                </select>
+            </div>
+
+            <div class="stats-sub-tabs">
+                <button class="stats-sub-btn active" onclick="switchStatsSubTab('overview')">Áttekintés</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('trends')">Idővonal</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('radar')">Ízvilág</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('fun')">Fun Facts</button>
+            </div>
+        </header>
+
+        <div id="stats-sub-overview" class="stats-sub-pane active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h4>Összes kóstolás</h4>
+                    <p id="statTotalCount">0</p>
+                </div>
+                <div class="kpi-card">
+                    <h4>Átlag pontszám</h4>
+                    <p id="statTotalAvg" style="color: #ffd700;">0.0</p>
+                </div>
+                <div class="kpi-card">
+                    <h4>Átlag Alkohol %</h4>
+                    <p id="statAvgAbv">0%</p>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="height: 300px; margin-top: 20px;">
+                <canvas id="statCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <div id="stats-sub-trends" class="stats-sub-pane">
+            <h4 style="color: #aaa; margin-bottom: 15px;">Havi aktivitásod</h4>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="statActivityChart"></canvas>
+            </div>
+            
+            <h4 style="color: #aaa; margin: 25px 0 15px 0;">Melyik napokon iszol?</h4>
+            <div class="chart-container" style="height: 250px;">
+                <canvas id="statDayChart"></canvas>
+            </div>
+        </div>
+
+        <div id="stats-sub-radar" class="stats-sub-pane">
+            <div style="text-align: center; margin-bottom: 20px; color: #ccc;">
+                <p>Az érzékszerveid átlaga (Külalak - Illat - Íz)</p>
+            </div>
+            <div class="chart-container" style="height: 350px;">
+                <canvas id="statRadarChart"></canvas>
+            </div>
+            <div class="kpi-grid" style="margin-top: 20px;">
+                <div class="kpi-card" style="border-color: #36a2eb;">
+                    <h4 style="font-size: 0.8rem;">Legszebb (Külalak)</h4>
+                    <p id="statBestLook" style="font-size: 1.1rem;">-</p>
+                </div>
+                <div class="kpi-card" style="border-color: #ff6384;">
+                    <h4 style="font-size: 0.8rem;">Legfinomabb (Íz)</h4>
+                    <p id="statBestTaste" style="font-size: 1.1rem;">-</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats-sub-fun" class="stats-sub-pane">
+            <div class="recap-card-grid">
+                <div class="recap-stat-sub">
+                    <h4>💪 Legerősebb tétel</h4>
+                    <p id="statStrongest">-</p>
+                    <span id="statStrongestVal">0%</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>💧 Leggyengébb</h4>
+                    <p id="statWeakest">-</p>
+                    <span id="statWeakestVal">0%</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>📍 Kedvenc hely</h4>
+                    <p id="statTopLocation">-</p>
+                    <span id="statTopLocationCount">0 db</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>🏆 Legmagasabb pont</h4>
+                    <p id="statHighScoreName">-</p>
+                    <span id="statHighScoreVal">0</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
 
                 <!-- VISSZATEKINTŐ TAB -->
                 <div class="main-tab-pane" id="user-recap-content">
@@ -1890,6 +1995,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
