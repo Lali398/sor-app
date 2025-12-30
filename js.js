@@ -5519,78 +5519,92 @@ function applyViewMode(mode) {
 // === IMPORT / EXPORT FUNKCIÓK ===
 // ======================================================
 
-// 1. ADATOK EXPORTÁLÁSA (LETÖLTÉS)
-function exportUserData() {
+// 1. ADATOK EXPORTÁLÁSA (LETÖLTÉS) - JSON vagy EXCEL
+window.exportUserData = function(format) {
     // Ellenőrizzük, hogy vannak-e betöltve adatok
     if ((!currentUserBeers || currentUserBeers.length === 0) && (!currentUserDrinks || currentUserDrinks.length === 0)) {
         showError("Nincs mit exportálni! Előbb tölts fel adatokat.");
         return;
     }
 
-    const exportData = {
-        version: "1.0",
-        timestamp: new Date().toISOString(),
-        user: JSON.parse(localStorage.getItem('userData'))?.name || "Ismeretlen",
-        beers: currentUserBeers,
-        drinks: currentUserDrinks
-    };
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const userName = JSON.parse(localStorage.getItem('userData'))?.name || "Ismeretlen";
 
-    // JSON fájl készítése
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    
-    // Dátumos fájlnév
-    const dateStr = new Date().toISOString().slice(0,10);
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `sor_tabla_backup_${dateStr}.json`);
-    
-    document.body.appendChild(downloadAnchorNode); // Firefox miatt kell
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    
-    showSuccess("Biztonsági mentés letöltve! 📥");
-}
+    // === A) JSON EXPORT (Ha a gomb JSON-t kért) ===
+    if (format === 'json') {
+        const exportData = {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            user: userName,
+            beers: currentUserBeers,
+            drinks: currentUserDrinks
+        };
 
-// 2. FÁJL KIVÁLASZTÁSA ÉS BEOLVASÁSA
-function mapRowKeys(row, type) {
-    const newItem = {};
-    // Magyar fejléc -> Angol kulcs mapping
-    const map = {
-        // Közös
-        'Dátum': 'date',
-        'Hely': 'location',
-        'Főzési hely': 'location',
-        'Alkohol': 'beerPercentage', // vagy drinkPercentage
-        'Alkohol %': 'beerPercentage',
-        'Külalak': 'look',
-        'Illat': 'smell',
-        'Íz': 'taste',
-        'Jegyzet': 'notes',
-        'Megjegyzés': 'notes',
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `sor_tabla_backup_${dateStr}.json`);
         
-        // Sör specifikus
-        'Sör neve': 'beerName',
-        'Sörnév': 'beerName',
-        'Típus': 'type',
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
         
-        // Ital specifikus
-        'Ital neve': 'drinkName',
-        'Kategória': 'category'
-    };
+        showSuccess("Biztonsági mentés (JSON) letöltve! 📥");
+    } 
+    
+    // === B) EXCEL EXPORT (Ha a gomb Excel-t kért) ===
+    else if (format === 'xlsx') {
+        if (typeof XLSX === 'undefined') {
+            showError("Hiba: Az Excel generáló modul nem töltött be.");
+            return;
+        }
 
-    // Ha ez egy ital sor, az 'Alkohol' legyen drinkPercentage
-    if (type === 'drink') {
-        map['Alkohol'] = 'drinkPercentage';
-        map['Alkohol %'] = 'drinkPercentage';
+        // Munkafüzet létrehozása
+        const wb = XLSX.utils.book_new();
+
+        // 1. Sörök átalakítása magyar fejlécekre
+        if (currentUserBeers && currentUserBeers.length > 0) {
+            const beerRows = currentUserBeers.map(b => ({
+                "Dátum": b.date ? b.date.substring(0, 10) : "",
+                "Sör neve": b.beerName,
+                "Típus": b.type,
+                "Hely": b.location,
+                "Alkohol %": b.beerPercentage,
+                "Külalak": b.look,
+                "Illat": b.smell,
+                "Íz": b.taste,
+                "Összpontszám": b.totalScore,
+                "Átlag": parseFloat(b.avg.toString().replace(',', '.')) || 0,
+                "Jegyzet": b.notes
+            }));
+            const wsBeers = XLSX.utils.json_to_sheet(beerRows);
+            XLSX.utils.book_append_sheet(wb, wsBeers, "Sörök");
+        }
+
+        // 2. Italok átalakítása magyar fejlécekre
+        if (currentUserDrinks && currentUserDrinks.length > 0) {
+            const drinkRows = currentUserDrinks.map(d => ({
+                "Dátum": d.date ? d.date.substring(0, 10) : "",
+                "Ital neve": d.drinkName,
+                "Kategória": d.category,
+                "Típus": d.type,
+                "Hely": d.location,
+                "Alkohol %": d.drinkPercentage,
+                "Külalak": d.look,
+                "Illat": d.smell,
+                "Íz": d.taste,
+                "Összpontszám": d.totalScore,
+                "Átlag": parseFloat(d.avg.toString().replace(',', '.')) || 0,
+                "Jegyzet": d.notes
+            }));
+            const wsDrinks = XLSX.utils.json_to_sheet(drinkRows);
+            XLSX.utils.book_append_sheet(wb, wsDrinks, "Italok");
+        }
+
+        // Fájl mentése
+        XLSX.writeFile(wb, `sor_tabla_export_${dateStr}.xlsx`);
+        showSuccess("Excel táblázat letöltve! 📊");
     }
-
-    Object.keys(row).forEach(key => {
-        const cleanKey = key.trim();
-        const targetKey = map[cleanKey] || cleanKey.toLowerCase(); // Ha nincs a mapben, kisbetűsítjük
-        newItem[targetKey] = row[key];
-    });
-
-    return newItem;
 }
 
 function handleImportFile(input) {
@@ -5844,6 +5858,7 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
     }
 });
 });
+
 
 
 
