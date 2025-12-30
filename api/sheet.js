@@ -1213,100 +1213,159 @@ case 'EDIT_USER_DRINK': {
                 return res.status(200).json({ message: "GRATULÁLUNK! Nyereményed rögzítve! Keresni fogunk. 🎁" });
             }
 
-            // Illeszd be a 'DELETE_USER' case elé vagy után a switch blokkban:
-
-case 'IMPORT_USER_DATA': {
-    const userData = verifyUser(req);
-    const { beers, drinks } = req.body;
-
-    // Ha nincs adat, kilépünk
-    if ((!beers || beers.length === 0) && (!drinks || drinks.length === 0)) {
-        return res.status(400).json({ error: "Nincs importálható adat!" });
-    }
-
-    try {
-        // --- 1. SÖRÖK IMPORTÁLÁSA ---
-        if (beers && beers.length > 0) {
-            // Átalakítjuk a JSON objektumokat a Sheet sorrendjének megfelelő tömbbé
-            const beerRows = beers.map(beer => {
-                // Biztosítjuk, hogy a számok számok legyenek
-                const look = parseFloat(beer.look) || 0;
-                const smell = parseFloat(beer.smell) || 0;
-                const taste = parseFloat(beer.taste) || 0;
-                const totalScore = look + smell + taste;
-                const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
-                
-                return [
-                    beer.date || new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
-                    userData.name,       // B: Név (A mostani user neve!)
-                    beer.beerName,       // C: Sör neve
-                    beer.location || '', // D: Hely
-                    beer.type || '',     // E: Típus
-                    look,                // F: Külalak
-                    smell,               // G: Illat
-                    taste,               // H: Íz
-                    beer.beerPercentage || 0, // I: Alkohol
-                    totalScore,          // J: Össz
-                    avgScore,            // K: Átlag
-                    beer.notes || '',    // L: Jegyzet
-                    'Nem',               // M: Jóváhagyva
-                    userData.email       // N: Email (A mostani user emailje!)
-                ];
-            });
-
-            // Tömeges hozzáadás (egyetlen kéréssel)
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: SPREADSHEET_ID,
-                range: GUEST_BEERS_SHEET,
-                valueInputOption: 'USER_ENTERED',
-                resource: { values: beerRows },
-            });
-        }
-
-        // --- 2. ITALOK IMPORTÁLÁSA ---
-        if (drinks && drinks.length > 0) {
-            const drinkRows = drinks.map(drink => {
-                const look = parseFloat(drink.look) || 0;
-                const smell = parseFloat(drink.smell) || 0;
-                const taste = parseFloat(drink.taste) || 0;
-                const totalScore = look + smell + taste;
-                const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
-
-                return [
-                    drink.date || new Date().toISOString().replace('T', ' ').substring(0, 19),
-                    userData.name,
-                    drink.drinkName,
-                    drink.category || 'Egyéb',
-                    drink.type || 'Alkoholos',
-                    drink.location || '',
-                    drink.drinkPercentage || 0,
-                    look,
-                    smell,
-                    taste,
-                    totalScore,
-                    avgScore,
-                    drink.notes || '',
-                    userData.email
-                ];
-            });
-
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: SPREADSHEET_ID,
-                range: GUEST_DRINKS_SHEET,
-                valueInputOption: 'USER_ENTERED',
-                resource: { values: drinkRows },
-            });
-        }
-
-        return res.status(200).json({ 
-            message: `Sikeres importálás! (${beers?.length || 0} sör, ${drinks?.length || 0} ital)` 
-        });
-
-    } catch (error) {
-        console.error("Import error:", error);
-        return res.status(500).json({ error: "Hiba az importálás során." });
-    }
-}
+                      case 'IMPORT_USER_DATA': {
+                const userData = verifyUser(req);
+                const { beers, drinks } = req.body;
+            
+                if ((!beers || beers.length === 0) && (!drinks || drinks.length === 0)) {
+                    return res.status(400).json({ error: "Nincs importálható adat!" });
+                }
+            
+                try {
+                    let addedBeersCount = 0;
+                    let addedDrinksCount = 0;
+                    let skippedCount = 0;
+            
+                    // --- 1. SÖRÖK IMPORTÁLÁSA DUPLIKÁCIÓ SZŰRÉSSEL ---
+                    if (beers && beers.length > 0) {
+                        // Lekérjük a meglévő söröket az összehasonlításhoz
+                        const existingBeersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
+                        const existingRows = existingBeersRes.data.values || [];
+                        
+                        // Szűrjük a saját sörökre (email alapján - index 13)
+                        const myExistingBeers = existingRows.filter(row => row[13] === userData.email);
+            
+                        // Segédfüggvény: Egyedi kulcs generálása a sorból (Dátum + Név + Típus + Pontszám)
+                        // Ez alapján döntjük el, hogy egyezik-e
+                        const createFingerprint = (date, name, type, score) => {
+                            const d = date ? date.substring(0, 10) : ''; // Csak a nap számít, az idő nem
+                            return `${d}|${name.trim().toLowerCase()}|${type.trim().toLowerCase()}|${score}`;
+                        };
+            
+                        // Meglévő ujjlenyomatok halmaza
+                        const existingFingerprints = new Set(myExistingBeers.map(row => 
+                            createFingerprint(row[0], row[2], row[4], row[9])
+                        ));
+            
+                        const newBeerRows = [];
+            
+                        beers.forEach(beer => {
+                            const look = parseFloat(beer.look) || 0;
+                            const smell = parseFloat(beer.smell) || 0;
+                            const taste = parseFloat(beer.taste) || 0;
+                            const totalScore = look + smell + taste;
+                            const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+                            const dateStr = beer.date || new Date().toISOString().replace('T', ' ').substring(0, 19);
+            
+                            // Ellenőrizzük, hogy létezik-e már
+                            const fingerprint = createFingerprint(dateStr, beer.beerName, beer.type || '', totalScore);
+            
+                            if (!existingFingerprints.has(fingerprint)) {
+                                // Ha nincs, hozzáadjuk
+                                newBeerRows.push([
+                                    dateStr,                             // A: Dátum
+                                    userData.name,                       // B: Név
+                                    beer.beerName,                       // C: Sör neve
+                                    beer.location || '',                 // D: Hely
+                                    beer.type || '',                     // E: Típus
+                                    look,                                // F: Külalak
+                                    smell,                               // G: Illat
+                                    taste,                               // H: Íz
+                                    beer.beerPercentage || 0,            // I: Alkohol
+                                    totalScore,                          // J: Össz
+                                    avgScore,                            // K: Átlag
+                                    beer.notes || '',                    // L: Jegyzet
+                                    'Nem',                               // M: Jóváhagyva
+                                    userData.email                       // N: Email
+                                ]);
+                                // Hozzáadjuk a Set-hez is, hogy az importon belüli duplikációt is szűrjük
+                                existingFingerprints.add(fingerprint);
+                                addedBeersCount++;
+                            } else {
+                                skippedCount++;
+                            }
+                        });
+            
+                        if (newBeerRows.length > 0) {
+                            await sheets.spreadsheets.values.append({
+                                spreadsheetId: SPREADSHEET_ID,
+                                range: GUEST_BEERS_SHEET,
+                                valueInputOption: 'USER_ENTERED',
+                                resource: { values: newBeerRows },
+                            });
+                        }
+                    }
+            
+                    // --- 2. ITALOK IMPORTÁLÁSA DUPLIKÁCIÓ SZŰRÉSSEL ---
+                    if (drinks && drinks.length > 0) {
+                        const existingDrinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
+                        const existingRows = existingDrinksRes.data.values || [];
+                        const myExistingDrinks = existingRows.filter(row => row[13] === userData.email);
+            
+                        const createFingerprint = (date, name, cat, score) => {
+                             const d = date ? date.substring(0, 10) : '';
+                             return `${d}|${name.trim().toLowerCase()}|${cat.trim().toLowerCase()}|${score}`;
+                        };
+            
+                        const existingFingerprints = new Set(myExistingDrinks.map(row => 
+                            createFingerprint(row[0], row[2], row[3], row[10])
+                        ));
+            
+                        const newDrinkRows = [];
+            
+                        drinks.forEach(drink => {
+                            const look = parseFloat(drink.look) || 0;
+                            const smell = parseFloat(drink.smell) || 0;
+                            const taste = parseFloat(drink.taste) || 0;
+                            const totalScore = look + smell + taste;
+                            const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+                            const dateStr = drink.date || new Date().toISOString().replace('T', ' ').substring(0, 19);
+            
+                            const fingerprint = createFingerprint(dateStr, drink.drinkName, drink.category || 'Egyéb', totalScore);
+            
+                            if (!existingFingerprints.has(fingerprint)) {
+                                newDrinkRows.push([
+                                    dateStr,
+                                    userData.name,
+                                    drink.drinkName,
+                                    drink.category || 'Egyéb',
+                                    drink.type || 'Alkoholos',
+                                    drink.location || '',
+                                    drink.drinkPercentage || 0,
+                                    look,
+                                    smell,
+                                    taste,
+                                    totalScore,
+                                    avgScore,
+                                    drink.notes || '',
+                                    userData.email
+                                ]);
+                                existingFingerprints.add(fingerprint);
+                                addedDrinksCount++;
+                            } else {
+                                skippedCount++;
+                            }
+                        });
+            
+                        if (newDrinkRows.length > 0) {
+                            await sheets.spreadsheets.values.append({
+                                spreadsheetId: SPREADSHEET_ID,
+                                range: GUEST_DRINKS_SHEET,
+                                valueInputOption: 'USER_ENTERED',
+                                resource: { values: newDrinkRows },
+                            });
+                        }
+                    }
+            
+                    return res.status(200).json({ 
+                        message: `Sikeres importálás! (+${addedBeersCount} sör, +${addedDrinksCount} ital). ${skippedCount} duplikáció átugorva.` 
+                    });
+            
+                } catch (error) {
+                    console.error("Import error:", error);
+                    return res.status(500).json({ error: "Hiba az importálás során: " + error.message });
+                }
+            }
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1418,6 +1477,7 @@ case 'IMPORT_USER_DATA': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
