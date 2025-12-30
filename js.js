@@ -907,9 +907,18 @@ async function markIdeaAsDone(index) {
             localStorage.setItem('userData', JSON.stringify(result.user));
 
             showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
-            triggerNewYearCelebration();
-            setTimeout(switchToUserView, 1000);
-        } catch (error) {
+            setTimeout(() => {
+            // 1. Átváltunk a felhasználói nézetre
+            switchToUserView();
+
+            // 2. Várunk picit (300ms), hogy a böngésző kirajzolja a dashboardot
+            setTimeout(() => {
+                triggerNewYearCelebration(); // ITT INDUL A BULI! 🎉
+            }, 300);
+
+        }, 1000); // Ez az 1 másodperc várakozás a "Sikeres bejelentkezés" üzenet miatt van
+
+    } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás e-mail cím vagy jelszó!');
         } finally {
@@ -2691,8 +2700,15 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         
         login2FAModal.classList.remove('active');
         showSuccess(`Sikeres belépés!`);
-        triggerNewYearCelebration();
-        switchToUserView();
+        setTimeout(() => {
+        switchToUserView(); // Nézet váltás
+
+        // Pici késleltetés, hogy a dashboard már látszódjon
+        setTimeout(() => {
+            triggerNewYearCelebration(); // ITT INDUL A BULI! 🎉
+        }, 500); // 2FA-nál picit többet várunk (fél mp), hogy a modal eltűnjön
+
+    }, 300);
 
     } catch (error) {
         showError(error.message);
@@ -5920,6 +5936,7 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
     }
 });
 });
+
 
 
 
