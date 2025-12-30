@@ -144,6 +144,7 @@
      <div class="support-section" style="margin-top: 0px;">
             <button class="support-btn" id="guestSupportBtn">
                 <span class="support-icon">❓</span>
+                <span class="support-text">Segítség kérése</span>
             </button>
         </div>
     </div>
@@ -703,7 +704,7 @@
                                 
                                 <input type="file" id="importFileInput" accept=".json, .xlsx, .xls" style="display: none;" onchange="handleImportFile(this)">
                                 <button class="action-btn help-btn" onclick="openTutorialModal()" title="Hogy nézzen ki az Excel?">
-                                        <span>❓</span> Segítség
+                                        <span>❓ Segítség</span>
                                     </button>
                                 </div>
                             </div>
@@ -2122,10 +2123,39 @@
         </div>
     </div>
 </div>
+
+    <div class="modal-overlay" id="exportModal">
+    <div class="modal-content" style="text-align: center; max-width: 400px;">
+        <div class="modal-header" style="justify-content: center; flex-direction: column; border: none; padding-bottom: 0;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">💾</div>
+            <h3 style="margin: 0;">Válassz formátumot</h3>
+            <p style="color: #aaa; font-size: 0.9rem; margin-top: 5px;">Milyen fájlban szeretnéd megkapni az adataidat?</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
+            <button onclick="confirmExport('xlsx')" class="prize-card-inner" style="width: 100%; border: 1px solid #27ae60; background: rgba(39, 174, 96, 0.1);">
+                <span style="font-size: 2rem;">📊</span>
+                <span style="font-weight: bold; color: #2ecc71; margin-top: 5px;">Excel (.xlsx)</span>
+                <span style="font-size: 0.7rem; color: #ccc;">Táblázatkezelőkhöz</span>
+            </button>
+
+            <button onclick="confirmExport('json')" class="prize-card-inner" style="width: 100%; border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.1);">
+                <span style="font-size: 2rem;">⚙️</span>
+                <span style="font-weight: bold; color: #f39c12; margin-top: 5px;">JSON (.json)</span>
+                <span style="font-size: 0.7rem; color: #ccc;">Biztonsági mentéshez</span>
+            </button>
+        </div>
+
+        <button class="auth-btn" onclick="closeExportModal()" style="background: #333; margin-top: 25px;">
+            Mégsem
+        </button>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
