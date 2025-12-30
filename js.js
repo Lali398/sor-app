@@ -111,6 +111,62 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     // Indítás
     initLaunchCountdown();
 
+
+
+    // js.js
+
+// === ÚJÉVI KONFETTI ÉS ANIMÁCIÓ ===
+function triggerNewYearCelebration() {
+    const overlay = document.getElementById('newYearCelebration');
+    
+    // 1. Felirat megjelenítése
+    if (overlay) {
+        overlay.classList.add('active');
+        
+        // 4 másodperc múlva eltüntetjük a feliratot
+        setTimeout(() => {
+            overlay.classList.remove('active');
+        }, 4500);
+    }
+
+    // 2. Konfetti "ágyú" (Canvas Confetti)
+    // 3 másodpercig tartó véletlenszerű tűzijáték
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+        // Két oldalról lőjük a konfettit
+        confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#ffd700', '#ffffff', '#f39c12'] // Arany színek
+        });
+        confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#8e44ad', '#ffffff', '#9b59b6'] // Lila színek
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    }());
+
+    // Egy nagy robbanás középen a végén
+    setTimeout(() => {
+        confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.6 },
+            scalar: 1.2
+        });
+    }, 1500);
+}
+
     // === 18+ KORHATÁR ELLENŐRZÉS ===
     function checkAgeVerification() {
         // Megnézzük, hogy a felhasználó igazolta-e már korábban
@@ -851,6 +907,7 @@ async function markIdeaAsDone(index) {
             localStorage.setItem('userData', JSON.stringify(result.user));
 
             showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
+            triggerNewYearCelebration();
             setTimeout(switchToUserView, 1000);
         } catch (error) {
             console.error("Bejelentkezési hiba:", error);
@@ -2634,6 +2691,7 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         
         login2FAModal.classList.remove('active');
         showSuccess(`Sikeres belépés!`);
+        triggerNewYearCelebration();
         switchToUserView();
 
     } catch (error) {
@@ -5862,6 +5920,7 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
     }
 });
 });
+
 
 
 
