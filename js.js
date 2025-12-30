@@ -5797,7 +5797,11 @@ function downloadExcelTemplate() {
     showSuccess("Sablon letöltve! Töltsd ki és importáld vissza.");
     closeTutorialModal();
 }
+    window.openTutorialModal = openTutorialModal;
+    window.closeTutorialModal = closeTutorialModal;
+    window.downloadExcelTemplate = downloadExcelTemplate;
 });
+
 
 
 
