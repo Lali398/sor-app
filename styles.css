@@ -4468,6 +4468,23 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     .celebration-title { font-size: 3rem; }
     .celebration-subtitle { font-size: 1rem; }
 }
+/* === 2FA KIKAPCSOLÁS MODAL ANIMÁCIÓ === */
+.warning-icon-anim {
+    font-size: 4rem;
+    animation: warningPulse 2s infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { 
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.5));
+    }
+    50% { 
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.8));
+    }
+}
+
 
 
 
