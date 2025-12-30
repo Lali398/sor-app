@@ -2159,10 +2159,49 @@
         </button>
     </div>
 </div>
+
+    <!-- 2FA KIKAPCSOLÁS MODAL -->
+<div class="modal-overlay" id="disable2FAModal">
+    <div class="modal-content delete-zone-card" style="border-color: #f39c12 !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="warning-icon-anim">🔓</div>
+            <h3 style="text-align: center; color: #f39c12; text-shadow: 0 0 10px rgba(243, 156, 18, 0.6); font-size: 1.5rem; margin: 0;">BIZTONSÁG CSÖKKENTÉSE</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px; line-height: 1.6;">
+                Biztosan ki akarod kapcsolni a kétlépcsős azonosítást?<br>
+                <span style="font-size: 0.85rem; color: #f39c12;">⚠️ A fiókod kevésbé lesz biztonságos!</span>
+            </p>
+            
+            <div style="background: rgba(243, 156, 18, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(243, 156, 18, 0.3);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🛡️ ➡️ ❌</div>
+                <p style="color: #ccc; font-size: 0.9rem; margin: 0;">
+                    Többé nem kell majd a Google Authenticator<br>kódot megadnod belépéskor.
+                </p>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>KIKAPCSOL</b></label>
+                <input type="text" id="disable2FAConfirmInput" placeholder="KIKAPCSOL" maxlength="10">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDisable2FAModal()" style="background: #27ae60; color: white; flex: 1;">
+                    Mégsem, marad! 🛡️
+                </button>
+                <button class="auth-btn" id="finalDisable2FABtn" onclick="confirmDisable2FA()" disabled style="background: linear-gradient(135deg, #f39c12, #e67e22); opacity: 0.5; cursor: not-allowed; flex: 1;">
+                    Kikapcsolom ⚠️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
