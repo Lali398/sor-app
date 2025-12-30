@@ -2969,6 +2969,7 @@ if(sidebarLogout) {
 const originalSwitchToUserViewUpdate = switchToUserView;
 switchToUserView = function() {
     originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
+    initViewModeSelector();
     
     // Név frissítése a sidebarban is
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -5473,7 +5474,49 @@ window.openPrizeModal = function() {
             }
         });
     });
+    // === NÉZET VÁLASZTÓ LOGIKA (TABLE VS CARDS) ===
+
+function initViewModeSelector() {
+    const selector = document.getElementById('viewModeSelector');
+    if (!selector) return;
+
+    // 1. Mentett beállítás betöltése
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    let savedMode = 'auto';
+    
+    // Először megnézzük a localStorage-ban (ha csak eszközszintű beállítás)
+    if (localStorage.getItem('preferredViewMode')) {
+        savedMode = localStorage.getItem('preferredViewMode');
+    }
+    // Opcionális: Ha mentenéd a felhőbe is a userData-ba, akkor onnan is kiolvashatod
+    
+    // UI beállítása
+    selector.value = savedMode;
+    applyViewMode(savedMode);
+
+    // 2. Változás figyelése
+    selector.addEventListener('change', (e) => {
+        const newMode = e.target.value;
+        localStorage.setItem('preferredViewMode', newMode);
+        applyViewMode(newMode);
+        showSuccess(`Nézet átállítva: ${e.target.options[e.target.selectedIndex].text}`);
+    });
+}
+
+function applyViewMode(mode) {
+    // Töröljük az összes force osztályt
+    document.body.classList.remove('force-card-view', 'force-table-view');
+
+    if (mode === 'cards') {
+        // Mindig kártya
+        document.body.classList.add('force-card-view');
+    } else if (mode === 'table') {
+        // Mindig táblázat (mobilon is)
+        document.body.classList.add('force-table-view');
+    }
+}
 });
+
 
 
 
