@@ -1212,6 +1212,101 @@ case 'EDIT_USER_DRINK': {
 
                 return res.status(200).json({ message: "GRATULÁLUNK! Nyereményed rögzítve! Keresni fogunk. 🎁" });
             }
+
+            // Illeszd be a 'DELETE_USER' case elé vagy után a switch blokkban:
+
+case 'IMPORT_USER_DATA': {
+    const userData = verifyUser(req);
+    const { beers, drinks } = req.body;
+
+    // Ha nincs adat, kilépünk
+    if ((!beers || beers.length === 0) && (!drinks || drinks.length === 0)) {
+        return res.status(400).json({ error: "Nincs importálható adat!" });
+    }
+
+    try {
+        // --- 1. SÖRÖK IMPORTÁLÁSA ---
+        if (beers && beers.length > 0) {
+            // Átalakítjuk a JSON objektumokat a Sheet sorrendjének megfelelő tömbbé
+            const beerRows = beers.map(beer => {
+                // Biztosítjuk, hogy a számok számok legyenek
+                const look = parseFloat(beer.look) || 0;
+                const smell = parseFloat(beer.smell) || 0;
+                const taste = parseFloat(beer.taste) || 0;
+                const totalScore = look + smell + taste;
+                const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+                
+                return [
+                    beer.date || new Date().toISOString().replace('T', ' ').substring(0, 19), // A: Dátum
+                    userData.name,       // B: Név (A mostani user neve!)
+                    beer.beerName,       // C: Sör neve
+                    beer.location || '', // D: Hely
+                    beer.type || '',     // E: Típus
+                    look,                // F: Külalak
+                    smell,               // G: Illat
+                    taste,               // H: Íz
+                    beer.beerPercentage || 0, // I: Alkohol
+                    totalScore,          // J: Össz
+                    avgScore,            // K: Átlag
+                    beer.notes || '',    // L: Jegyzet
+                    'Nem',               // M: Jóváhagyva
+                    userData.email       // N: Email (A mostani user emailje!)
+                ];
+            });
+
+            // Tömeges hozzáadás (egyetlen kéréssel)
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: SPREADSHEET_ID,
+                range: GUEST_BEERS_SHEET,
+                valueInputOption: 'USER_ENTERED',
+                resource: { values: beerRows },
+            });
+        }
+
+        // --- 2. ITALOK IMPORTÁLÁSA ---
+        if (drinks && drinks.length > 0) {
+            const drinkRows = drinks.map(drink => {
+                const look = parseFloat(drink.look) || 0;
+                const smell = parseFloat(drink.smell) || 0;
+                const taste = parseFloat(drink.taste) || 0;
+                const totalScore = look + smell + taste;
+                const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+
+                return [
+                    drink.date || new Date().toISOString().replace('T', ' ').substring(0, 19),
+                    userData.name,
+                    drink.drinkName,
+                    drink.category || 'Egyéb',
+                    drink.type || 'Alkoholos',
+                    drink.location || '',
+                    drink.drinkPercentage || 0,
+                    look,
+                    smell,
+                    taste,
+                    totalScore,
+                    avgScore,
+                    drink.notes || '',
+                    userData.email
+                ];
+            });
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: SPREADSHEET_ID,
+                range: GUEST_DRINKS_SHEET,
+                valueInputOption: 'USER_ENTERED',
+                resource: { values: drinkRows },
+            });
+        }
+
+        return res.status(200).json({ 
+            message: `Sikeres importálás! (${beers?.length || 0} sör, ${drinks?.length || 0} ital)` 
+        });
+
+    } catch (error) {
+        console.error("Import error:", error);
+        return res.status(500).json({ error: "Hiba az importálás során." });
+    }
+}
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1323,6 +1418,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
