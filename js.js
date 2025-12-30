@@ -2590,7 +2590,6 @@ if (user2FAToggle) {
             // Kikapcsolás - ÚJ MODAL MEGNYITÁSA
             e.target.checked = true; // Egyelőre ne kapcsoljuk ki vizuálisan
             openDisable2FAModal();
-            }
         }
     });
 }
@@ -6025,6 +6024,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
