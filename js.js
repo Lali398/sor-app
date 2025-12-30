@@ -5734,7 +5734,71 @@ async function sendImportDataToBackend(beers, drinks) {
 }
     window.exportUserData = exportUserData;
     window.handleImportFile = handleImportFile;
+
+    // --- TUTORIAL MODAL KEZELÉS ---
+
+function openTutorialModal() {
+    const modal = document.getElementById('tutorialModal');
+    if (modal) {
+        modal.classList.add('active');
+        // Letiltjuk a háttér görgetését
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeTutorialModal() {
+    const modal = document.getElementById('tutorialModal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Visszakapcsoljuk a görgetést
+        document.body.style.overflow = '';
+    }
+}
+
+// Bezárás ESC gombra
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        closeTutorialModal();
+    }
 });
+
+// Bezárás, ha a sötét háttérre kattintanak
+document.getElementById('tutorialModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeTutorialModal();
+    }
+});
+
+// --- SABLON LETÖLTÉSE (SheetJS) ---
+function downloadExcelTemplate() {
+    // 1. Sörök sablon adatok
+    const beerHeader = ["Sör neve", "Típus", "Hely", "Külalak", "Illat", "Íz", "Alkohol %", "Dátum", "Jegyzet"];
+    const beerSample = ["Minta Sör", "IPA", "Kocsma", 8, 7, 9, 6.5, "2024.01.01", "Ez csak egy példa sor, törölheted."];
+    
+    // 2. Italok sablon adatok
+    const drinkHeader = ["Ital neve", "Kategória", "Típus", "Hely", "Külalak", "Illat", "Íz", "Alkohol %", "Dátum", "Jegyzet"];
+    const drinkSample = ["Minta Whisky", "Whisky", "Rövid", "Otthon", 9, 8, 10, 40, "2024.01.01", "Példa adat."];
+
+    // Munkafüzet létrehozása
+    const wb = XLSX.utils.book_new();
+
+    // Sör sheet létrehozása
+    const wsBeers = XLSX.utils.aoa_to_sheet([beerHeader, beerSample]);
+    XLSX.utils.book_append_sheet(wb, wsBeers, "Sörök");
+
+    // Ital sheet létrehozása
+    const wsDrinks = XLSX.utils.aoa_to_sheet([drinkHeader, drinkSample]);
+    XLSX.utils.book_append_sheet(wb, wsDrinks, "Italok");
+
+    // Letöltés indítása
+    XLSX.writeFile(wb, "Sor_Tabla_Sablon.xlsx");
+    
+    // Opcionális: sikeres visszajelzés
+    showSuccess("Sablon letöltve! Töltsd ki és importáld vissza.");
+    closeTutorialModal();
+}
+});
+
 
 
 
