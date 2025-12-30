@@ -5519,80 +5519,97 @@ function applyViewMode(mode) {
 // === IMPORT / EXPORT FUNKCIÓK ===
 // ======================================================
 
-// 1. ADATOK EXPORTÁLÁSA (LETÖLTÉS)
-function exportUserData() {
+// 1. ADATOK EXPORTÁLÁSA (LETÖLTÉS) - JAVÍTOTT VERZIÓ
+function exportUserData(format = 'json') {
     // Ellenőrizzük, hogy vannak-e betöltve adatok
     if ((!currentUserBeers || currentUserBeers.length === 0) && (!currentUserDrinks || currentUserDrinks.length === 0)) {
-        showError("Nincs mit exportálni! Előbb tölts fel adatokat.");
+        showError("Nincs mit exportálni! Először tölts fel adatokat.");
         return;
     }
 
-    const exportData = {
-        version: "1.0",
-        timestamp: new Date().toISOString(),
-        user: JSON.parse(localStorage.getItem('userData'))?.name || "Ismeretlen",
-        beers: currentUserBeers,
-        drinks: currentUserDrinks
-    };
-
-    // JSON fájl készítése
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    
-    // Dátumos fájlnév
     const dateStr = new Date().toISOString().slice(0,10);
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `sor_tabla_backup_${dateStr}.json`);
-    
-    document.body.appendChild(downloadAnchorNode); // Firefox miatt kell
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    
-    showSuccess("Biztonsági mentés letöltve! 📥");
-}
+    const userName = JSON.parse(localStorage.getItem('userData'))?.name || "Ismeretlen";
 
-// 2. FÁJL KIVÁLASZTÁSA ÉS BEOLVASÁSA
-function mapRowKeys(row, type) {
-    const newItem = {};
-    // Magyar fejléc -> Angol kulcs mapping
-    const map = {
-        // Közös
-        'Dátum': 'date',
-        'Hely': 'location',
-        'Főzési hely': 'location',
-        'Alkohol': 'beerPercentage', // vagy drinkPercentage
-        'Alkohol %': 'beerPercentage',
-        'Külalak': 'look',
-        'Illat': 'smell',
-        'Íz': 'taste',
-        'Jegyzet': 'notes',
-        'Megjegyzés': 'notes',
-        
-        // Sör specifikus
-        'Sör neve': 'beerName',
-        'Sörnév': 'beerName',
-        'Típus': 'type',
-        
-        // Ital specifikus
-        'Ital neve': 'drinkName',
-        'Kategória': 'category'
-    };
+    if (format === 'json') {
+        // === JSON EXPORT (EREDETI LOGIKA) ===
+        const exportData = {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            user: userName,
+            beers: currentUserBeers,
+            drinks: currentUserDrinks
+        };
 
-    // Ha ez egy ital sor, az 'Alkohol' legyen drinkPercentage
-    if (type === 'drink') {
-        map['Alkohol'] = 'drinkPercentage';
-        map['Alkohol %'] = 'drinkPercentage';
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `sor_tabla_backup_${dateStr}.json`);
+        
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        
+        showSuccess("JSON biztonsági mentés letöltve! 📥");
+        
+    } else if (format === 'xlsx') {
+        // === EXCEL EXPORT (ÚJ FUNKCIÓ) ===
+        
+        // Munkafüzet létrehozása
+        const wb = XLSX.utils.book_new();
+        
+        // 1. SÖRÖK SHEET
+        if (currentUserBeers && currentUserBeers.length > 0) {
+            const beerHeaders = ["Dátum", "Sör neve", "Főzési hely", "Típus", "Külalak", "Illat", "Íz", "Alkohol %", "Összpontszám", "Átlag", "Jegyzet"];
+            
+            const beerRows = currentUserBeers.map(beer => [
+                beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : '',
+                beer.beerName || '',
+                beer.location || '',
+                beer.type || '',
+                beer.look || 0,
+                beer.smell || 0,
+                beer.taste || 0,
+                beer.beerPercentage || 0,
+                beer.totalScore || 0,
+                beer.avg || 0,
+                beer.notes || ''
+            ]);
+            
+            const beerData = [beerHeaders, ...beerRows];
+            const wsBeer = XLSX.utils.aoa_to_sheet(beerData);
+            XLSX.utils.book_append_sheet(wb, wsBeer, "Sörök");
+        }
+        
+        // 2. ITALOK SHEET
+        if (currentUserDrinks && currentUserDrinks.length > 0) {
+            const drinkHeaders = ["Dátum", "Ital neve", "Kategória", "Típus", "Hely", "Külalak", "Illat", "Íz", "Alkohol %", "Összpontszám", "Átlag", "Jegyzet"];
+            
+            const drinkRows = currentUserDrinks.map(drink => [
+                drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : '',
+                drink.drinkName || '',
+                drink.category || '',
+                drink.type || '',
+                drink.location || '',
+                drink.look || 0,
+                drink.smell || 0,
+                drink.taste || 0,
+                drink.drinkPercentage || 0,
+                drink.totalScore || 0,
+                drink.avg || 0,
+                drink.notes || ''
+            ]);
+            
+            const drinkData = [drinkHeaders, ...drinkRows];
+            const wsDrink = XLSX.utils.aoa_to_sheet(drinkData);
+            XLSX.utils.book_append_sheet(wb, wsDrink, "Italok");
+        }
+        
+        // Letöltés indítása
+        XLSX.writeFile(wb, `sor_tabla_backup_${dateStr}.xlsx`);
+        showSuccess("Excel biztonsági mentés letöltve! 📊");
     }
-
-    Object.keys(row).forEach(key => {
-        const cleanKey = key.trim();
-        const targetKey = map[cleanKey] || cleanKey.toLowerCase(); // Ha nincs a mapben, kisbetűsítjük
-        newItem[targetKey] = row[key];
-    });
-
-    return newItem;
 }
-
 
 function handleImportFile(input) {
     const file = input.files[0];
@@ -5845,6 +5862,7 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
     }
 });
 });
+
 
 
 
