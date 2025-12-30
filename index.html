@@ -9,6 +9,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -701,7 +702,7 @@
                                     <span>📤</span> Visszatöltés (Import)
                                 </button>
                                 
-                                <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(this)">
+                                <input type="file" id="importFileInput" accept=".json, .xlsx, .xls" style="display: none;" onchange="handleImportFile(this)">
                             </div>
                         </div>
                         
@@ -2035,6 +2036,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
