@@ -2583,17 +2583,18 @@ if (user2FAToggle) {
         const isChecked = e.target.checked;
         
             if (isChecked) {
-        // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
-        e.target.checked = false;
-        await start2FASetup();
-    } else {
-        // Kikapcsolás - ÚJ MODAL MEGNYITÁSA
-        e.target.checked = true; // Egyelőre ne kapcsoljuk ki vizuálisan
-        openDisable2FAModal();
-    }
+    // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
+    e.target.checked = false;
+    await start2FASetup();
+} else {
+    // Kikapcsolás - ÚJ MODAL MEGNYITÁSA
+    e.target.checked = true; // Egyelőre ne kapcsoljuk ki vizuálisan
+    openDisable2FAModal();
+                }
             }
-        });
-    }
+        }
+    });
+}
 
 async function start2FASetup() {
     try {
@@ -6024,6 +6025,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
