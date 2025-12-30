@@ -5515,7 +5515,123 @@ function applyViewMode(mode) {
         document.body.classList.add('force-table-view');
     }
 }
+    // ======================================================
+// === IMPORT / EXPORT FUNKCIÓK ===
+// ======================================================
+
+// 1. ADATOK EXPORTÁLÁSA (LETÖLTÉS)
+function exportUserData() {
+    // Ellenőrizzük, hogy vannak-e betöltve adatok
+    if ((!currentUserBeers || currentUserBeers.length === 0) && (!currentUserDrinks || currentUserDrinks.length === 0)) {
+        showError("Nincs mit exportálni! Előbb tölts fel adatokat.");
+        return;
+    }
+
+    const exportData = {
+        version: "1.0",
+        timestamp: new Date().toISOString(),
+        user: JSON.parse(localStorage.getItem('userData'))?.name || "Ismeretlen",
+        beers: currentUserBeers,
+        drinks: currentUserDrinks
+    };
+
+    // JSON fájl készítése
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    
+    // Dátumos fájlnév
+    const dateStr = new Date().toISOString().slice(0,10);
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `sor_tabla_backup_${dateStr}.json`);
+    
+    document.body.appendChild(downloadAnchorNode); // Firefox miatt kell
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    
+    showSuccess("Biztonsági mentés letöltve! 📥");
+}
+
+// 2. FÁJL KIVÁLASZTÁSA ÉS BEOLVASÁSA
+function handleImportFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = async function(e) {
+        try {
+            const json = JSON.parse(e.target.result);
+            
+            // Alapvető validálás
+            if (!json.beers && !json.drinks) {
+                throw new Error("Hibás fájlformátum! Nem találhatók sörök vagy italok.");
+            }
+
+            const beerCount = json.beers ? json.beers.length : 0;
+            const drinkCount = json.drinks ? json.drinks.length : 0;
+
+            if (confirm(`Találtam ${beerCount} sört és ${drinkCount} italt a fájlban.\nSzeretnéd importálni őket a fiókodba?`)) {
+                await sendImportDataToBackend(json.beers || [], json.drinks || []);
+            }
+
+        } catch (error) {
+            console.error(error);
+            showError("Hiba a fájl beolvasásakor: " + error.message);
+        } finally {
+            // Input törlése, hogy ugyanazt a fájlt újra ki lehessen választani
+            input.value = '';
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// 3. ADATOK KÜLDÉSE A SZERVERNEK
+async function sendImportDataToBackend(beers, drinks) {
+    // Gomb megkeresése a loading állapothoz (opcionális, de szép)
+    const btn = document.querySelector('button[onclick*="importFileInput"]');
+    if(btn) {
+        btn.innerText = "Feltöltés...";
+        btn.disabled = true;
+    }
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'IMPORT_USER_DATA', 
+                beers: beers,
+                drinks: drinks
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Szerver hiba");
+        }
+
+        showSuccess(result.message);
+        
+        // Adatok újratöltése, hogy látszódjon az eredmény
+        loadUserData(); // Sörök
+        loadUserDrinks(); // Italok
+
+    } catch (error) {
+        showError(error.message || "Nem sikerült az importálás.");
+    } finally {
+        if(btn) {
+            btn.innerHTML = '<span>📤</span> Visszatöltés (Import)';
+            btn.disabled = false;
+        }
+    }
+}
 });
+
 
 
 
