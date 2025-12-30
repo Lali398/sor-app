@@ -683,6 +683,30 @@
                             </div>
                         </div>
                         
+                        <!-- IMPORT, EXPORT -->
+
+                        <div class="settings-group">
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="color: #fff; margin-bottom: 15px;">Adatok Mentése és Visszatöltése 💾</h4>
+                            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">
+                                Készíts biztonsági mentést az értékeléseidről, vagy töltsd vissza őket egy korábbi fájlból.
+                            </p>
+                    
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <button class="action-btn" onclick="exportUserData()" style="background: linear-gradient(135deg, #2980b9, #2c3e50);">
+                                    <span>📥</span> Mentés letöltése (Export)
+                                </button>
+                    
+                                <button class="action-btn" onclick="document.getElementById('importFileInput').click()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                                    <span>📤</span> Visszatöltés (Import)
+                                </button>
+                                
+                                <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(this)">
+                            </div>
+                        </div>
+                        
+                    </div>
+                        
                         <!-- FORRÁSKÓD -->
     
                         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -2011,6 +2035,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
