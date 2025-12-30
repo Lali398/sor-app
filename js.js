@@ -5630,7 +5630,10 @@ async function sendImportDataToBackend(beers, drinks) {
         }
     }
 }
+    window.exportUserData = exportUserData;
+    window.handleImportFile = handleImportFile;
 });
+
 
 
 
