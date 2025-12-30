@@ -5552,38 +5552,140 @@ function exportUserData() {
 }
 
 // 2. FÁJL KIVÁLASZTÁSA ÉS BEOLVASÁSA
+function mapRowKeys(row, type) {
+    const newItem = {};
+    // Magyar fejléc -> Angol kulcs mapping
+    const map = {
+        // Közös
+        'Dátum': 'date',
+        'Hely': 'location',
+        'Főzési hely': 'location',
+        'Alkohol': 'beerPercentage', // vagy drinkPercentage
+        'Alkohol %': 'beerPercentage',
+        'Külalak': 'look',
+        'Illat': 'smell',
+        'Íz': 'taste',
+        'Jegyzet': 'notes',
+        'Megjegyzés': 'notes',
+        
+        // Sör specifikus
+        'Sör neve': 'beerName',
+        'Sörnév': 'beerName',
+        'Típus': 'type',
+        
+        // Ital specifikus
+        'Ital neve': 'drinkName',
+        'Kategória': 'category'
+    };
+
+    // Ha ez egy ital sor, az 'Alkohol' legyen drinkPercentage
+    if (type === 'drink') {
+        map['Alkohol'] = 'drinkPercentage';
+        map['Alkohol %'] = 'drinkPercentage';
+    }
+
+    Object.keys(row).forEach(key => {
+        const cleanKey = key.trim();
+        const targetKey = map[cleanKey] || cleanKey.toLowerCase(); // Ha nincs a mapben, kisbetűsítjük
+        newItem[targetKey] = row[key];
+    });
+
+    return newItem;
+}
+
 function handleImportFile(input) {
     const file = input.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    
-    reader.onload = async function(e) {
-        try {
-            const json = JSON.parse(e.target.result);
-            
-            // Alapvető validálás
-            if (!json.beers && !json.drinks) {
-                throw new Error("Hibás fájlformátum! Nem találhatók sörök vagy italok.");
+    const fileName = file.name.toLowerCase();
+    const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+
+    // 1. HA EXCEL FÁJL
+    if (isExcel) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                let importedBeers = [];
+                let importedDrinks = [];
+
+                // Megnézzük a munkalapokat (Sheetek)
+                // Ha van "Sörök" vagy "Beers" nevű sheet
+                const beerSheetName = workbook.SheetNames.find(n => n.match(/sör|beer/i));
+                if (beerSheetName) {
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[beerSheetName]);
+                    importedBeers = rows.map(r => mapRowKeys(r, 'beer'));
+                }
+
+                // Ha van "Italok" vagy "Drinks" nevű sheet
+                const drinkSheetName = workbook.SheetNames.find(n => n.match(/ital|drink/i));
+                if (drinkSheetName) {
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[drinkSheetName]);
+                    importedDrinks = rows.map(r => mapRowKeys(r, 'drink'));
+                }
+
+                // Ha nem találtunk specifikus sheeteket, vegyük az elsőt és próbáljuk kitalálni
+                if (!beerSheetName && !drinkSheetName) {
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    // Egyszerű logika: Ha van "Sör neve" oszlop -> Sör, ha "Ital neve" -> Ital
+                    rows.forEach(row => {
+                        const keys = Object.keys(row).map(k => k.toLowerCase());
+                        if (keys.some(k => k.includes('sör'))) {
+                            importedBeers.push(mapRowKeys(row, 'beer'));
+                        } else if (keys.some(k => k.includes('ital'))) {
+                            importedDrinks.push(mapRowKeys(row, 'drink'));
+                        }
+                    });
+                }
+
+                if (importedBeers.length === 0 && importedDrinks.length === 0) {
+                    throw new Error("Nem találtam felismerhető adatot az Excelben. Használj 'Sör neve' vagy 'Ital neve' oszlopokat.");
+                }
+
+                if (confirm(`Találtam ${importedBeers.length} sört és ${importedDrinks.length} italt az Excelben.\nSzeretnéd importálni őket?`)) {
+                    await sendImportDataToBackend(importedBeers, importedDrinks);
+                }
+
+            } catch (error) {
+                console.error(error);
+                showError("Hiba az Excel feldolgozásakor: " + error.message);
+            } finally {
+                input.value = '';
             }
+        };
+        reader.readAsArrayBuffer(file);
+    } 
+    // 2. HA JSON FÁJL (Marad a régi logika)
+    else if (fileName.endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (!json.beers && !json.drinks) {
+                    throw new Error("Hibás JSON formátum!");
+                }
+                const beerCount = json.beers ? json.beers.length : 0;
+                const drinkCount = json.drinks ? json.drinks.length : 0;
 
-            const beerCount = json.beers ? json.beers.length : 0;
-            const drinkCount = json.drinks ? json.drinks.length : 0;
-
-            if (confirm(`Találtam ${beerCount} sört és ${drinkCount} italt a fájlban.\nSzeretnéd importálni őket a fiókodba?`)) {
-                await sendImportDataToBackend(json.beers || [], json.drinks || []);
+                if (confirm(`Találtam ${beerCount} sört és ${drinkCount} italt a JSON-ben.\nSzeretnéd importálni őket?`)) {
+                    await sendImportDataToBackend(json.beers || [], json.drinks || []);
+                }
+            } catch (error) {
+                console.error(error);
+                showError("Hiba a JSON beolvasásakor: " + error.message);
+            } finally {
+                input.value = '';
             }
-
-        } catch (error) {
-            console.error(error);
-            showError("Hiba a fájl beolvasásakor: " + error.message);
-        } finally {
-            // Input törlése, hogy ugyanazt a fájlt újra ki lehessen választani
-            input.value = '';
-        }
-    };
-
-    reader.readAsText(file);
+        };
+        reader.readAsText(file);
+    } else {
+        showError("Nem támogatott fájlformátum! Csak .json vagy .xlsx.");
+        input.value = '';
+    }
 }
 
 // 3. ADATOK KÜLDÉSE A SZERVERNEK
@@ -5633,6 +5735,7 @@ async function sendImportDataToBackend(beers, drinks) {
     window.exportUserData = exportUserData;
     window.handleImportFile = handleImportFile;
 });
+
 
 
 
