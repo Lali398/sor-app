@@ -5800,7 +5800,51 @@ function downloadExcelTemplate() {
     window.openTutorialModal = openTutorialModal;
     window.closeTutorialModal = closeTutorialModal;
     window.downloadExcelTemplate = downloadExcelTemplate;
+    
+    // === EXPORT MODAL KEZELÉS ===
+
+// 1. Modal megnyitása
+window.openExportModal = function() {
+    // Ellenőrizzük, van-e egyáltalán adat, mielőtt megnyitjuk
+    if ((!currentUserBeers || currentUserBeers.length === 0) && (!currentUserDrinks || currentUserDrinks.length === 0)) {
+        showError("Nincs mit exportálni! Előbb tölts fel adatokat.");
+        return;
+    }
+    
+    document.getElementById('exportModal').classList.add('active');
+    document.body.style.overflow = 'hidden'; // Görgetés tiltása
+}
+
+// 2. Modal bezárása
+window.closeExportModal = function() {
+    document.getElementById('exportModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// 3. Választás megerősítése
+window.confirmExport = function(format) {
+    // Bezárjuk a modalt
+    closeExportModal();
+    
+    // Kis késleltetéssel indítjuk a letöltést, hogy látszódjon a bezáródás
+    setTimeout(() => {
+        // Meghívjuk a korábban megírt export függvényt a választott formátummal
+        if (typeof exportUserData === 'function') {
+            exportUserData(format);
+        } else {
+            console.error("Hiba: Az exportUserData függvény nem létezik!");
+        }
+    }, 300);
+}
+
+// Bezárás kattintásra a háttérben (opcionális kényelmi funkció)
+document.getElementById('exportModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeExportModal();
+    }
 });
+});
+
 
 
 
