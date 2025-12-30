@@ -911,12 +911,20 @@ async function markIdeaAsDone(index) {
             // 1. Átváltunk a felhasználói nézetre
             switchToUserView();
 
-            // 2. Várunk picit (300ms), hogy a böngésző kirajzolja a dashboardot
-            setTimeout(() => {
-                triggerNewYearCelebration(); // ITT INDUL A BULI! 🎉
-            }, 300);
+            // 2. ELLENŐRZÉS: Látta már ezt a felhasználó?
+            const userEmail = result.user.email;
+            const storageKey = `seen_newyear_2026_${userEmail}`; // Egyedi kulcs a felhasználónak
 
-        }, 1000); // Ez az 1 másodperc várakozás a "Sikeres bejelentkezés" üzenet miatt van
+            if (!localStorage.getItem(storageKey)) {
+                // HA MÉG NEM LÁTTA:
+                setTimeout(() => {
+                    triggerNewYearCelebration(); // Buli indítása! 🎉
+                    localStorage.setItem(storageKey, 'true'); // Megjelöljük, hogy látta
+                }, 300);
+            }
+            // Ha már látta, nem történik semmi (nincs else ág)
+
+        }, 1000);
 
     } catch (error) {
             console.error("Bejelentkezési hiba:", error);
@@ -2700,16 +2708,8 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         
         login2FAModal.classList.remove('active');
         showSuccess(`Sikeres belépés!`);
-        setTimeout(() => {
-        switchToUserView(); // Nézet váltás
-
-        // Pici késleltetés, hogy a dashboard már látszódjon
-        setTimeout(() => {
-            triggerNewYearCelebration(); // ITT INDUL A BULI! 🎉
-        }, 500); // 2FA-nál picit többet várunk (fél mp), hogy a modal eltűnjön
-
-    }, 300);
-
+        switchToUserView();
+        
     } catch (error) {
         showError(error.message);
         btn.innerText = originalText;
@@ -5936,6 +5936,7 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
     }
 });
 });
+
 
 
 
