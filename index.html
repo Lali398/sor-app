@@ -643,7 +643,8 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-
+                            
+                                    <!-- MEGJELENÍTÉSI TAB -->
                             <div class="setting-item">
                                 <div class="setting-info">
                                     <h4>Megjelenített Rang 🎖️</h4>
@@ -655,7 +656,21 @@
                                         </select>
                                 </div>
                             </div>
-                            
+
+                            <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Megjelenítési Mód 📱/💻</h4>
+                                <p>Válaszd ki, hogyan jelenjenek meg a listák (Sörök, Italok).</p>
+                            </div>
+                            <div class="badge-selector-wrapper">
+                                <select id="viewModeSelector" class="badge-dropdown">
+                                    <option value="auto">Automatikus (Eszköz szerint)</option>
+                                    <option value="cards">Mindig Kártyák</option>
+                                    <option value="table">Mindig Táblázat</option>
+                                </select>
+                            </div>
+                        </div>
+                            <!-- 2FAKTOROS HÍTELESÍTÉS -->
                             <div class="setting-item">
                                 <div class="setting-info">
                                     <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
@@ -1996,6 +2011,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
