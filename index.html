@@ -703,10 +703,12 @@
                                 </button>
                                 
                                 <input type="file" id="importFileInput" accept=".json, .xlsx, .xls" style="display: none;" onchange="handleImportFile(this)">
+                                <button class="action-btn help-btn" onclick="openTutorialModal()" title="Hogy nézzen ki az Excel?">
+                                        <span>❓</span> Segítség
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
-                    </div>
                         
                         <!-- FORRÁSKÓD -->
     
@@ -2032,10 +2034,67 @@
             </div>
         </div>
     </div>
+
+    <div id="tutorialModal" class="tutorial-overlay">
+    <div class="tutorial-card">
+        <button class="close-tutorial" onclick="closeTutorialModal()">×</button>
+        <div class="tutorial-header">
+            <h2>📊 Excel Import Segédlet</h2>
+            <p>Ahhoz, hogy a rendszer felismerje az adataidat, használd az alábbi fejléceket az Excel fájlodban.</p>
+        </div>
+        
+        <div class="tutorial-body">
+            <h3>Minta Sörök (Munkalap neve: Sörök)</h3>
+            <div class="table-preview-wrapper">
+                <table class="sample-table">
+                    <thead>
+                        <tr>
+                            <th>Sör neve</th>
+                            <th>Típus</th>
+                            <th>Hely</th>
+                            <th>Külalak</th>
+                            <th>Illat</th>
+                            <th>Íz</th>
+                            <th>Alkohol %</th>
+                            <th>Dátum</th>
+                            <th>Jegyzet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dreher Gold</td>
+                            <td>Lager</td>
+                            <td>Otthon</td>
+                            <td>7</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>5.0</td>
+                            <td>2024.05.20</td>
+                            <td>Kellemes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tutorial-alert">
+                <span>💡</span> 
+                <strong>Tipp:</strong> A munkalapok neve nem kötelező, de segít a rendszernek (pl. "Sörök", "Italok"). 
+                Az értékek lehetnek üresek is, de a név kötelező.
+            </div>
+        </div>
+
+        <div class="tutorial-footer">
+            <button class="download-template-btn" onclick="downloadExcelTemplate()">
+                <span>💾</span> Üres Sablon Letöltése (.xlsx)
+            </button>
+        </div>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
