@@ -2582,20 +2582,18 @@ if (user2FAToggle) {
     user2FAToggle.addEventListener('change', async (e) => {
         const isChecked = e.target.checked;
         
-        if (isChecked) {
-            // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
-            e.target.checked = false; // Még ne kapcsoljuk be vizuálisan, amíg nincs kész
-            await start2FASetup();
-        } else {
-            // Kikapcsolás
-            if (confirm("Biztosan ki akarod kapcsolni a kétlépcsős azonosítást?")) {
-                await disable2FA();
-            } else {
-                e.target.checked = true; // Visszakapcsoljuk, ha mégsem
+            if (isChecked) {
+        // Bekapcsolás: Kérjünk titkos kulcsot és QR kódot
+        e.target.checked = false;
+        await start2FASetup();
+    } else {
+        // Kikapcsolás - ÚJ MODAL MEGNYITÁSA
+        e.target.checked = true; // Egyelőre ne kapcsoljuk ki vizuálisan
+        openDisable2FAModal();
+    }
             }
-        }
-    });
-}
+        });
+    }
 
 async function start2FASetup() {
     try {
@@ -5935,7 +5933,98 @@ document.getElementById('exportModal')?.addEventListener('click', function(e) {
         closeExportModal();
     }
 });
+    // === 2FA KIKAPCSOLÁS MODAL KEZELÉSE ===
+
+window.openDisable2FAModal = function() {
+    const modal = document.getElementById('disable2FAModal');
+    const input = document.getElementById('disable2FAConfirmInput');
+    const btn = document.getElementById('finalDisable2FABtn');
+    
+    // Reset
+    if(input) input.value = '';
+    if(btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    }
+    
+    if(modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Figyeljük az inputot
+    if(input) {
+        input.oninput = function() {
+            if (this.value.toUpperCase() === 'KIKAPCSOL') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+    }
+}
+
+window.closeDisable2FAModal = function() {
+    const modal = document.getElementById('disable2FAModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+window.confirmDisable2FA = async function() {
+    const btn = document.getElementById('finalDisable2FABtn');
+    const input = document.getElementById('disable2FAConfirmInput');
+    const toggle = document.getElementById('user2FAToggle');
+    
+    // Biztonsági ellenőrzés
+    if(input.value.toUpperCase() !== 'KIKAPCSOL') return;
+    
+    // Loading állapot
+    const originalText = btn.innerText;
+    btn.innerText = "Kikapcsolás...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'MANAGE_2FA', 
+                subAction: 'DISABLE' 
+            })
+        });
+        
+        if (response.ok) {
+            showSuccess("2FA sikeresen kikapcsolva! 🔓");
+            closeDisable2FAModal();
+            
+            // Most már tényleg kikapcsoljuk
+            if(toggle) toggle.checked = false;
+            
+            // Lokális adat frissítése
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if(userData) {
+                userData.has2FA = false;
+                localStorage.setItem('userData', JSON.stringify(userData));
+            }
+        } else {
+            const result = await response.json();
+            throw new Error(result.error || "Hiba történt.");
+        }
+    } catch (error) {
+        console.error("2FA kikapcsolási hiba:", error);
+        showError(error.message || "Nem sikerült kikapcsolni a 2FA-t.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
 });
+
 
 
 
