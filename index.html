@@ -277,7 +277,7 @@
                                 <div class="search-input-wrapper">
                                     <input type="text" id="userBeerSearchInput" class="live-search-input" placeholder="Keresés a söröeim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
-                                    <div class="clear-search" id="userBeerClearSearch" style="display: none;"></div>
+                                    <div class="clear-search" id="userBeerClearSearch" style="display: none;">✕</div>
                                 </div>
                                 <div class="search-suggestions" id="userBeerSuggestions"></div>
                                 <div class="search-results-info" id="userBeerResultsInfo"></div>
@@ -320,7 +320,7 @@
                                 <div class="search-input-wrapper">
                                     <input type="text" id="userDrinkSearchInput" class="live-search-input" placeholder="Keresés a(z) italaim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
-                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;"></div>
+                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;">✕</div>
                                 </div>
                                 <div class="search-suggestions" id="userDrinkSuggestions"></div>
                                 <div class="search-results-info" id="userDrinkResultsInfo"></div>
@@ -776,7 +776,7 @@
             <div class="hero-icon beer-bounce">🍺</div>
             <h3>Sör Csapolása</h3>
             <p>Új folyékony arany rögzítése</p>
-            <button class="modal-close-abs" onclick="closeAddModal('beer')">X</button>
+            <button class="modal-close-abs" onclick="closeAddModal('beer')">✕</button>
         </div>
 
         <form id="addBeerForm" class="cool-form">
@@ -837,7 +837,7 @@
             <div class="hero-icon drink-shake">🍹</div>
             <h3>Ital Keverése</h3>
             <p>Új koktél vagy rövid rögzítése</p>
-            <button class="modal-close-abs" onclick="closeAddModal('drink')">X</button>
+            <button class="modal-close-abs" onclick="closeAddModal('drink')">✕</button>
         </div>
 
         <form id="addDrinkForm" class="cool-form">
@@ -2201,6 +2201,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
