@@ -6,53 +6,75 @@
     <title>ÁSZF - Sör Táblázat</title>
     <style>
         body { font-family: 'Poppins', sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
-        h1, h2 { color: #1f005c; }
+        h1, h2, h3 { color: #1f005c; }
         h1 { border-bottom: 2px solid #764ba2; padding-bottom: 10px; }
         .container { background-color: #f9f9f9; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         strong { color: #000; }
         ul { margin-bottom: 20px; }
         li { margin-bottom: 8px; }
         p { margin-bottom: 15px; }
-        .warning { color: #d9534f; font-weight: bold; }
+        .warning { color: #d9534f; font-weight: bold; background: rgba(217, 83, 79, 0.1); padding: 10px; border-left: 4px solid #d9534f; }
+        .info-box { background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Általános Szerződési Feltételek (ÁSZF)</h1>
-        <p><em>Utolsó frissítés: 2025. 12. 26.</em></p>
+        <p><em>Utolsó frissítés: 2026. 01. 01.</em></p>
 
         <h2>1. Bevezetés</h2>
-        <p>Üdvözöljük a Sör Táblázat alkalmazásban! Jelen dokumentum szabályozza az alkalmazás használatának feltételeit. Az oldal használatával Ön elfogadja ezeket a feltételeket.</p>
+        <p>Üdvözöljük a Sör Táblázat alkalmazásban! Jelen dokumentum szabályozza az alkalmazás használatának feltételeit. Az oldal használatával és a regisztrációval Ön elfogadja ezeket a feltételeket.</p>
 
         <h2>2. Korhatár Korlátozás (18+)</h2>
-        <p class="warning">Az alkalmazás használata kizárólag 18. életévüket betöltött személyek számára engedélyezett.</p>
-        <p>Mivel az oldal alkoholfogyasztással kapcsolatos tartalmakat (értékeléseket, nyilvántartást) kezel, a regisztrációval és a használattal Ön büntetőjogi felelőssége tudatában kijelenti, hogy elmúlt 18 éves.</p>
+        <p class="warning">Az alkalmazás használata és a regisztráció kizárólag 18. életévüket betöltött személyek számára engedélyezett.</p>
+        <p>Mivel az oldal alkoholfogyasztással kapcsolatos tartalmakat (értékeléseket, nyilvántartást) kezel, a regisztrációval Ön büntetőjogi felelőssége tudatában kijelenti, hogy elmúlt 18 éves. Az Adatkezelő nem vállal felelősséget a valótlan adatok megadásából eredő jogi következményekért.</p>
 
-        <h2>3. Felhasználói Tartalmak és Viselkedés</h2>
-        <p>A felhasználók jogosultak saját vélemények, értékelések és ötletek feltöltésére. Azonban szigorúan <strong>TILOS</strong>:</p>
+        <h2>3. Felhasználói Fiók és Biztonság</h2>
+        <h3>3.1. Helyreállító Kód (Recovery Code)</h3>
+        <p>A regisztráció során a rendszer generál egy egyedi helyreállító kódot. <strong>A Felhasználó kizárólagos felelőssége ennek a kódnak a biztonságos megőrzése.</strong> Jelszó elvesztése esetén kizárólag ezzel a kóddal állítható vissza a fiók. Ha a Felhasználó elveszíti a jelszavát és a helyreállító kódot is, a fiók és a hozzá tartozó adatok elvesznek.</p>
+
+        <h3>3.2. Kétlépcsős Azonosítás (2FA)</h3>
+        <p>A Felhasználónak lehetősége van a fiók biztonságának növelésére a kétlépcsős azonosítás (Google Authenticator) bekapcsolásával. A 2FA bekapcsolása után a belépéshez a jelszó mellett a generált kódra is szükség van.</p>
+
+        <h2>4. Nyereményjáték Szabályzat</h2>
+        <p class="info-box">Az alkalmazás elindításával egyidőben meghirdetett "Első 5 Tesztelő" nyereményjátékra az alábbi szabályok vonatkoznak:</p>
         <ul>
-            <li>Jogszabályba ütköző, illegális tartalmakat feltölteni.</li>
-            <li>Gyűlöletbeszédet, rasszista, szexista vagy másokat sértő megnyilvánulásokat közzétenni.</li>
-            <li>Szexuális tartalmú vagy erőszakos anyagokat feltölteni.</li>
+            <li>A nyereményjátékban csak regisztrált, 18. életévüket betöltött felhasználók vehetnek részt.</li>
+            <li>A részvétel feltétele legalább 1 (egy) valós sör- vagy italértékelés feltöltése.</li>
+            <li>A nyereményre az első 5 (öt) felhasználó jogosult, aki a feltételek teljesítése után a felületen igényli azt.</li>
+            <li>Egy felhasználó csak egy nyereményt igényelhet.</li>
+            <li>A nyeremények (Sör, Cola, Energiaital) fizikai átadásáról az Adatkezelő egyeztet a nyertesekkel. Pénzbeli megváltás nem lehetséges.</li>
+        </ul>
+
+        <h2>5. Gamification (Eredmények és Rangok)</h2>
+        <p>Az alkalmazás játékos elemeket (Achievementeket, Szinteket, Rangokat) tartalmaz.</p>
+        <ul>
+            <li>A megszerzett eredmények virtuálisak, pénzbeli értékkel nem bírnak.</li>
+            <li>Az Adatkezelő fenntartja a jogot az eredmények feltételeinek módosítására.</li>
+            <li>Csalás, valótlan adatok tömeges feltöltése vagy a rendszer kijátszása esetén az Adatkezelő jogosult az elért eredmények törlésére vagy a fiók felfüggesztésére.</li>
+        </ul>
+
+        <h2>6. Import és Export Funkciók</h2>
+        <p>Az alkalmazás lehetőséget biztosít az adatok Excel (.xlsx) és JSON formátumban történő lementésére (Export) és visszatöltésére (Import).</p>
+        <ul>
+            <li>Az Export funkció biztonsági mentés céljára szolgál.</li>
+            <li>Az Import funkció használata saját felelősségre történik. Az Adatkezelő nem vállal felelősséget a hibás formátumú Excel fájlok feltöltéséből eredő adatvesztésért vagy hibás megjelenésért. Javasoljuk a biztosított sablon használatát.</li>
+        </ul>
+
+        <h2>7. Felhasználói Tartalmak és Viselkedés</h2>
+        <p>Szigorúan <strong>TILOS</strong>:</p>
+        <ul>
+            <li>Jogszabályba ütköző, gyűlöletkeltő, rasszista vagy másokat sértő tartalmakat feltölteni (beleértve a sörök nevét, leírását, megjegyzéseket).</li>
             <li>Mások személyes adatait engedély nélkül megosztani.</li>
-            <li>A rendszer biztonságát veszélyeztető tevékenységet folytatni (pl. spam, vírusok).</li>
+            <li>A rendszer biztonságát veszélyeztető tevékenységet folytatni.</li>
         </ul>
-        <p>A Szolgáltató fenntartja a jogot, hogy bármilyen tartalmat indoklás nélkül töröljön, és a szabályszegő felhasználókat kitiltsa.</p>
+        <p>Az Adatkezelő fenntartja a jogot a szabályszegő tartalmak törlésére és a felhasználó kitiltására.</p>
 
-        <h2>4. Felelősség Kizárása</h2>
-        <p>Az alkalmazást "ahogy van" (as-is) alapon biztosítjuk:</p>
-        <ul>
-            <li>Nem vállalunk felelősséget az adatvesztésért, szerverleállásért vagy technikai hibákért.</li>
-            <li>Nem vállalunk felelősséget a felhasználók által feltöltött tartalmak valóságtartalmáért vagy jogszerűségéért.</li>
-            <li>Az alkalmazásban szereplő alkoholos italok fogyasztása csak saját felelősségre történhet. Kérjük, fogyasszon felelősséggel!</li>
-        </ul>
+        <h2>8. Felelősség Kizárása</h2>
+        <p>Az alkalmazást "ahogy van" (as-is) alapon biztosítjuk. Nem vállalunk felelősséget az esetleges szerverleállásokért, adatvesztésért vagy technikai hibákért. <strong>Az alkoholfogyasztás csak saját felelősségre történhet. Fogyasszon felelősséggel!</strong></p>
 
-        <h2>5. Szolgáltatás Módosítása</h2>
-        <p>Fenntartjuk a jogot, hogy az alkalmazás funkcióit, működését vagy jelen szabályzatot bármikor, előzetes értesítés nélkül módosítsuk.</p>
-
-        <h2>6. Kapcsolat</h2>
-        <p>Ha kérdése van a szabályzattal kapcsolatban, kérjük, jelezze a "Hibajelentés / Ötlet" menüponton keresztül.</p>
+        <h2>9. Kapcsolat</h2>
+        <p>Kérdés esetén használja a "Hibajelentés / Ötlet" menüpontot vagy a bejelentkezési oldalon található "Segítség kérése" gombot.</p>
     </div>
 </body>
-
 </html>
