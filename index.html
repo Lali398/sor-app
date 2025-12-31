@@ -275,7 +275,7 @@
                             <h3>Saját sörjeid listája</h3>
                             <div class="live-search-container">
                                 <div class="search-input-wrapper">
-                                    <input type="text" id="userBeerSearchInput" class="live-search-input" placeholder="Keresés a söröim között..." autocomplete="off">
+                                    <input type="text" id="userBeerSearchInput" class="live-search-input" placeholder="Keresés a söröeim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
                                     <div class="clear-search" id="userBeerClearSearch" style="display: none;"></div>
                                 </div>
@@ -318,7 +318,7 @@
                             <h3>Saját italaid listája</h3>
                             <div class="live-search-container">
                                 <div class="search-input-wrapper">
-                                    <input type="text" id="userDrinkSearchInput" class="live-search-input" placeholder="Keresés a söröim között..." autocomplete="off">
+                                    <input type="text" id="userDrinkSearchInput" class="live-search-input" placeholder="Keresés a(z) italaim között..." autocomplete="off">
                                     <div class="search-icon">🔍</div>
                                     <div class="clear-search" id="userDrinkClearSearch" style="display: none;"></div>
                                 </div>
@@ -776,7 +776,7 @@
             <div class="hero-icon beer-bounce">🍺</div>
             <h3>Sör Csapolása</h3>
             <p>Új folyékony arany rögzítése</p>
-            <button class="modal-close-abs" onclick="closeAddModal('beer')"></button>
+            <button class="modal-close-abs" onclick="closeAddModal('beer')">X</button>
         </div>
 
         <form id="addBeerForm" class="cool-form">
@@ -837,7 +837,7 @@
             <div class="hero-icon drink-shake">🍹</div>
             <h3>Ital Keverése</h3>
             <p>Új koktél vagy rövid rögzítése</p>
-            <button class="modal-close-abs" onclick="closeAddModal('drink')"></button>
+            <button class="modal-close-abs" onclick="closeAddModal('drink')">X</button>
         </div>
 
         <form id="addDrinkForm" class="cool-form">
@@ -877,7 +877,7 @@
 
                 <div class="cool-input-group full-width">
                     <label>Hely / Származás</label>
-                    <input type="text" id="drinkLocation" placeholder="Pl. Budapest Park" required>
+                    <input type="text" id="drinkLocation" placeholder="Pl. Magyarország" required>
                 </div>
 
                 <div class="cool-input-group">
@@ -1786,7 +1786,7 @@
         </div>
     </div>
 </div>
-<!-- ILLESZD BE AZ INDEX.HTML-BE A TÖBBI MODAL UTÁN (deleteRecModal után) -->
+
 
 <!-- SÖR TELJES ADAT MEGTEKINTÉSE MODAL -->
 <div class="modal-overlay" id="viewBeerModal">
@@ -2201,6 +2201,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
