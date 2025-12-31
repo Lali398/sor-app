@@ -6,7 +6,7 @@
     <title>Adatvédelmi Tájékoztató - Sör Táblázat</title>
     <style>
         body { font-family: 'Poppins', sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
-        h1, h2 { color: #1f005c; }
+        h1, h2, h3 { color: #1f005c; }
         h1 { border-bottom: 2px solid #764ba2; padding-bottom: 10px; }
         .container { background-color: #f9f9f9; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         strong { color: #000; }
@@ -17,15 +17,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve</span></h1>
-        <p><strong>Hatálybalépés dátuma:</strong> 2025. december 24.</p>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026.01.01</span></h1>
+        <p><strong>Hatálybalépés dátuma:</strong> 2026. január 1.</p>
 
         <h2>1. Az Adatkezelők</h2>
         <p>
             <strong>Név:</strong> Korsós Lajos<br>
             <strong>Név:</strong> Benkő Gábor István<br>
-            <strong>Elérhetőség (email):</strong> korsoslala@gmail.com
-            <strong>Elérhetőség (email):</strong> gabeszkasza666@gmail.com
+            <strong>Elérhetőség:</strong> A "Segítség kérése" menüponton keresztül.
         </p>
         <p>A továbbiakban: "Adatkezelő".</p>
 
@@ -38,72 +37,75 @@
             <li><strong>Biztonsági adatok:</strong> 
                 <ul>
                     <li>Jelszó (kizárólag titkosított "hash" formában).</li>
-                    <li><strong>Helyreállító kód (Recovery Code):</strong> Jelszó-visszaállításhoz szükséges kód (titkosított formában).</li>
+                    <li><strong>Helyreállító kód (Recovery Code):</strong> Jelszó-visszaállításhoz szükséges kód (kizárólag titkosított formában tárolva).</li>
                     <li><strong>2FA Titkos Kulcs:</strong> Kétlépcsős azonosítás (Google Authenticator) bekapcsolása esetén a generált titkos kulcs.</li>
                 </ul>
             </li>
-            <li><strong>Gamifikáció:</strong> Megszerzett eredmények (Achievements), kiválasztott rang (Badge), aktivitási szint.</li>
+            <li><strong>Gamifikáció (Játékosítás):</strong> Megszerzett eredmények (Achievements), szintek, kiválasztott rang (Badge), aktivitási statisztikák.</li>
+            <li><strong>Nyereményjáték:</strong> Nyertes státusz, választott nyeremény típusa (amennyiben részt vett a játékban).</li>
         </ul>
 
         <h3>2.2. Felhasználó által generált tartalom</h3>
         <ul>
-            <li><strong>Értékelések:</strong> Sörök és egyéb Italok adatai (név, típus, lelőhely, alkohol %, pontszámok, szöveges jegyzetek).</li>
-            <li><strong>Közösségi ajánlások:</strong> Az Ön által ajánlott termékek adatai. 
-                <em>Megjegyzés: Amennyiben "Anonim" módban küld be ajánlást, az e-mail címét a rendszer a háttérben akkor is tárolja a jogosultság ellenőrzése (pl. későbbi törlés) végett, de a nyilvános listában nem jeleníti meg.</em>
+            <li><strong>Értékelések:</strong> Sörök és egyéb Italok adatai (név, típus, lelőhely, alkohol %, pontszámok, szöveges jegyzetek, dátum).</li>
+            <li><strong>Közösségi ajánlások:</strong> Az Ön által ajánlott termékek adatai.
+                <br><em>Megjegyzés: Amennyiben "Anonim" módban küld be ajánlást vagy ötletet, az e-mail címét a rendszer a háttérben akkor is tárolja a jogosultság ellenőrzése (pl. csak Ön törölhesse a saját bejegyzését) végett, de a nyilvános listában nem jeleníti meg.</em>
             </li>
-            <li><strong>Ötletláda:</strong> A fejlesztésre vonatkozó javaslatok. ("Anonim" beküldés esetén is tároljuk az e-mail címet azonosítási céllal).</li>
+            <li><strong>Ötletláda:</strong> A fejlesztésre vonatkozó javaslatok.</li>
             <li><strong>Hibajelentések:</strong> A segítségkérés során megadott név, e-mail cím és üzenet tartalma.</li>
         </ul>
 
         <h2>3. Az Adatkezelés Célja</h2>
         <ul>
-            <li><strong>Azonosítás:</strong> Belépés biztosítása, fiók védelme (jelszó, 2FA, helyreállító kód).</li>
-            <li><strong>Szolgáltatás nyújtása:</strong> Értékelések, ajánlások és ötletek tárolása, rendszerezése és megjelenítése.</li>
-            <li><strong>Gamifikáció:</strong> A felhasználói élmény növelése eredmények és rangok kiosztásával az aktivitás alapján.</li>
+            <li><strong>Azonosítás és Biztonság:</strong> Belépés biztosítása, fiók védelme (jelszó, 2FA, helyreállító kód), jogosulatlan hozzáférés megakadályozása.</li>
+            <li><strong>Szolgáltatás nyújtása:</strong> Értékelések, ajánlások és ötletek tárolása, rendszerezése, megjelenítése és visszakereshetősége.</li>
+            <li><strong>Gamifikáció:</strong> A felhasználói élmény növelése eredmények (achievementek) és rangok kiosztásával az aktivitás alapján.</li>
+            <li><strong>Nyereményjáték:</strong> A "Leggyorsabb tesztelők" nyereményjáték lebonyolítása és a nyertesek nyilvántartása.</li>
             <li><strong>Kapcsolattartás:</strong> Válaszadás a beküldött hibajelentésekre.</li>
         </ul>
 
         <h2>4. Helyi Tárolás (Local Storage)</h2>
-        <p>Az alkalmazás a jobb felhasználói élmény érdekében adatokat tárol az Ön böngészőjében (LocalStorage):</p>
+        <p>Az alkalmazás a jobb felhasználói élmény érdekében adatokat tárol az Ön böngészőjében (LocalStorage). Ezek az adatok nem kerülnek továbbításra harmadik félnek:</p>
         <ul>
             <li><code>userToken</code>: A bejelentkezés fenntartásához szükséges hitelesítési kulcs.</li>
-            <li><code>userData</code>: A profil alapvető adatai és eredményei (gyorsabb betöltés érdekében).</li>
+            <li><code>userData</code>: A profil alapvető adatai, eredményei és 2FA státusza (a gyorsabb betöltés érdekében).</li>
             <li><code>ageVerified</code>: A 18. életév betöltésének egyszeri ellenőrzése.</li>
-            <li><code>cursor_pref</code>: A "Sörös kurzor" beállítási preferenciája.</li>
+            <li><code>cursor_pref_EMAIL</code>: A "Sörös kurzor" beállítási preferenciája.</li>
             <li><code>headerCollapsedPreference</code>: A fejléc megjelenítési állapota (nyitva/csukva).</li>
+            <li><code>preferredViewMode</code>: Megjelenítési mód (Kártyák vagy Táblázat).</li>
+            <li><code>cookieConsentSeen</code>: Süti tájékoztató elfogadásának ténye.</li>
         </ul>
 
         <h2>5. Adatbiztonság</h2>
         <p>Kiemelt figyelmet fordítunk a biztonságra:</p>
         <ul>
-            <li>A jelszavakat és a helyreállító kódokat erős, egyirányú titkosítással (bcrypt) tároljuk.</li>
+            <li>A jelszavakat és a helyreállító kódokat erős, egyirányú titkosítással (bcrypt) tároljuk, így azokat még az Adatkezelők sem ismerik.</li>
             <li>Az adatkommunikáció titkosított csatornán (HTTPS) zajlik.</li>
             <li>A kétlépcsős azonosítás (2FA) lehetőséget biztosít a fiók extra védelmére.</li>
         </ul>
 
-        <h2>6. Adatfeldolgozók (Harmadik felek)</h2>
+        <h2>6. Adatfeldolgozók és Harmadik felek</h2>
         <ul>
-            <li><strong>Google LLC. (Google Sheets).:1600 Amphitheatre Parkway, Mountain View, CA 94043, USA (Adatkezelés célja: Adattárolás felhőalapú adatbázisban).:</strong> Az adatok fizikai tárolása felhőalapú táblázatkezelőben történik.</li>
-            <li><strong>Vercel Inc.: 340 S Lemon Ave #4133, Walnut, CA 91789, USA (Adatkezelés célja: Tárhelyszolgáltatás).:</strong> Az alkalmazás szerveroldali kódjának futtatása és hosztolása.</li>
-            <li><strong>Egyéb könyvtárak:</strong> Az oldal kliens oldali megjelenítéshez (pl. grafikonok, képgenerálás) külső könyvtárakat használ (Chart.js, html2canvas), de ezek nem továbbítják az Ön adatait harmadik fél szervereire, minden a böngészőjében fut.</li>
+            <li><strong>Google LLC. (Google Sheets):</strong> Az adatok fizikai tárolása felhőalapú táblázatkezelőben, biztonságos Google szervereken történik.</li>
+            <li><strong>Vercel Inc.:</strong> Az alkalmazás szerveroldali kódjának futtatása és hosztolása.</li>
+            <li><strong>Kliens oldali könyvtárak:</strong> Az alkalmazás a böngészőben való megjelenítéshez külső könyvtárakat használ (Chart.js - grafikonok, html2canvas - képgenerálás, SheetJS - Excel kezelés). Ezek a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, nem továbbítják külső szerverre.</li>
         </ul>
 
         <h2>7. Az Ön Jogai és Fiók Törlése</h2>
-        <p>Ön bármikor kérheti adatai törlését, módosítását vagy hordozását.</p>
-        <p><strong>Automatikus Fióktörlés:</strong> Az alkalmazás "Fiókom" menüpontjában található <em>"Fiókom végleges törlése"</em> gomb segítségével Ön önállóan, azonnali hatállyal törölheti teljes profilját. Ez a művelet véglegesen eltávolítja a rendszerből:</p>
+        <p>Ön bármikor kérheti adatai törlését, módosítását, vagy letöltheti azokat Excel/JSON formátumban az "Export" funkcióval.</p>
+        
+        <h3>Automatikus Fióktörlés ("Végzetes Zóna")</h3>
+        <p>Az alkalmazás "Fiókom" menüpontjában található törlés gomb segítségével Ön önállóan, azonnali hatállyal törölheti teljes profilját. <strong>Figyelem: Ez a művelet végleges és nem visszavonható!</strong></p>
+        <p>A törlés eltávolítja a rendszerből:</p>
         <ul>
-            <li>A regisztrációs adatait.</li>
+            <li>A regisztrációs adatait (beleértve a 2FA kulcsokat).</li>
             <li>Az összes rögzített sör- és italértékelését.</li>
             <li>A beküldött ötleteit és ajánlásait.</li>
-            <li>A megszerzett eredményeit.</li>
+            <li>A megszerzett eredményeit és rangjait.</li>
         </ul>
 
         <h2>8. Jogorvoslat</h2>
-        <p>Panaszával a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH) fordulhat (www.naih.hu).</p>
+        <p>Panaszával a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH) fordulhat.</p>
     </div>
 </body>
 </html>
-
-
-
-
