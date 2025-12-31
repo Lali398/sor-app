@@ -48,7 +48,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     function initLaunchCountdown() {
         const overlay = document.getElementById('launchOverlay');
         const title = document.getElementById('launchTitle');
-        const targetDate = new Date().getTime() + 10000;
+        const targetDate = new Date('January 1, 2026 00:00:00').getTime();
         
         // Ellenőrizzük, hogy a user már feloldotta-e korábban
         if (localStorage.getItem('dev_bypass') === 'true') {
@@ -6024,6 +6024,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
