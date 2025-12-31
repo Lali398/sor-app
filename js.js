@@ -1,4 +1,4 @@
-
+document.addEventListener('DOMContentLoaded', function() {
 
 
     function escapeHtml(text) {
@@ -6024,6 +6024,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
