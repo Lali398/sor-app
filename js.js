@@ -5683,6 +5683,47 @@ function exportUserData(format = 'json') {
     }
 }
 
+    // === SEGÉDFÜGGVÉNY AZ IMPORTÁLÁSHOZ ===
+// Ez fordítja le az Excel oszlopneveket a program változóira
+function mapRowKeys(row, type) {
+    // Segédfüggvény, ami megkeresi az értéket akkor is, ha kis/nagybetű eltérés van
+    const getValue = (possibleKeys) => {
+        // Végignézzük a lehetséges kulcsokat (pl. "Sör neve", "sör neve", "Beer Name")
+        for (const key of possibleKeys) {
+            // 1. Pontos egyezés keresése
+            if (row[key] !== undefined) return row[key];
+            
+            // 2. Kisbetűs/Nagybetűs egyezés keresése
+            const foundKey = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase());
+            if (foundKey && row[foundKey] !== undefined) return row[foundKey];
+        }
+        return ''; // Ha nincs találat, üres string
+    };
+
+    // Közös adatok (mindkét típusnál ugyanaz)
+    const newItem = {
+        location: getValue(['Hely', 'Főzési hely', 'Location', 'Hol']),
+        type: getValue(['Típus', 'Type', 'Jelleg']),
+        look: getValue(['Külalak', 'Look', 'Megjelenés']) || 0,
+        smell: getValue(['Illat', 'Smell']) || 0,
+        taste: getValue(['Íz', 'Taste']) || 0,
+        notes: getValue(['Jegyzet', 'Notes', 'Megjegyzés']),
+        date: getValue(['Dátum', 'Date', 'Időpont'])
+    };
+
+    // Típus-specifikus adatok
+    if (type === 'beer') {
+        newItem.beerName = getValue(['Sör neve', 'Beer Name', 'Név', 'Sör']);
+        newItem.beerPercentage = getValue(['Alkohol %', 'Alkohol', 'ABV', 'Százalék']) || 0;
+    } else if (type === 'drink') {
+        newItem.drinkName = getValue(['Ital neve', 'Drink Name', 'Név', 'Ital']);
+        newItem.category = getValue(['Kategória', 'Category', 'Fajta']);
+        newItem.drinkPercentage = getValue(['Alkohol %', 'Alkohol', 'ABV', 'Százalék']) || 0;
+    }
+
+    return newItem;
+}
+
 function handleImportFile(input) {
     const file = input.files[0];
     if (!file) return;
@@ -6024,6 +6065,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
