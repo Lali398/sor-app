@@ -42,131 +42,6 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     }
 }
 
-
-
-    // === 2026 VISSZASZÁMLÁLÓ
-    function initLaunchCountdown() {
-        const overlay = document.getElementById('launchOverlay');
-        const title = document.getElementById('launchTitle');
-        const targetDate = new Date('January 1, 2026 00:00:00').getTime();
-        
-        // Ellenőrizzük, hogy a user már feloldotta-e korábban
-        if (localStorage.getItem('dev_bypass') === 'true') {
-            if(overlay) overlay.style.display = 'none';
-            return;
-        }
-
-        // Időzítő logika
-        const timer = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
-
-            if (distance < 0) {
-                // ELJÖTT AZ IDŐ!
-                clearInterval(timer);
-                if(overlay) {
-                    overlay.classList.add('hidden');
-                    setTimeout(() => overlay.style.display = 'none', 1000);
-                }
-                return;
-            }
-
-            // Számolás
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            // UI frissítés
-            if(document.getElementById('cd-days')) {
-                document.getElementById('cd-days').innerText = days < 10 ? "0" + days : days;
-                document.getElementById('cd-hours').innerText = hours < 10 ? "0" + hours : hours;
-                document.getElementById('cd-minutes').innerText = minutes < 10 ? "0" + minutes : minutes;
-                document.getElementById('cd-seconds').innerText = seconds < 10 ? "0" + seconds : seconds;
-            }
-        }, 1000);
-
-        let clickCount = 0;
-        if(title) {
-            title.addEventListener('click', () => {
-                clickCount++;
-                if (clickCount === 5) {
-                    const code = prompt("🔒 Fejlesztői feloldókód:");
-                    if (code === "admin2026") {
-                        localStorage.setItem('dev_bypass', 'true');
-                        overlay.classList.add('hidden');
-                        setTimeout(() => overlay.style.display = 'none', 1000);
-                        alert("Üdv a jövőben! 👋");
-                    } else {
-                        alert("Helytelen kód!");
-                        clickCount = 0;
-                    }
-                }
-                // Reset ha abbahagyja a kattintgatást
-                setTimeout(() => { clickCount = 0; }, 2000);
-            });
-        }
-    }
-
-    // Indítás
-    initLaunchCountdown();
-
-
-
-    // js.js
-
-// === ÚJÉVI KONFETTI ÉS ANIMÁCIÓ ===
-function triggerNewYearCelebration() {
-    const overlay = document.getElementById('newYearCelebration');
-    
-    // 1. Felirat megjelenítése
-    if (overlay) {
-        overlay.classList.add('active');
-        
-        // 4 másodperc múlva eltüntetjük a feliratot
-        setTimeout(() => {
-            overlay.classList.remove('active');
-        }, 4500);
-    }
-
-    // 2. Konfetti "ágyú" (Canvas Confetti)
-    // 3 másodpercig tartó véletlenszerű tűzijáték
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-        // Két oldalról lőjük a konfettit
-        confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#ffd700', '#ffffff', '#f39c12'] // Arany színek
-        });
-        confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#8e44ad', '#ffffff', '#9b59b6'] // Lila színek
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
-    }());
-
-    // Egy nagy robbanás középen a végén
-    setTimeout(() => {
-        confetti({
-            particleCount: 150,
-            spread: 100,
-            origin: { y: 0.6 },
-            scalar: 1.2
-        });
-    }, 1500);
-}
-
     // === 18+ KORHATÁR ELLENŐRZÉS ===
     function checkAgeVerification() {
         // Megnézzük, hogy a felhasználó igazolta-e már korábban
@@ -6065,6 +5940,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
