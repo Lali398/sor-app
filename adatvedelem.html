@@ -17,7 +17,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026.01.01</span></h1>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026.01.28</span></h1>
         <p><strong>Hatálybalépés dátuma:</strong> 2026. január 1.</p>
 
         <h2>1. Az Adatkezelők</h2>
@@ -29,12 +29,12 @@
         <p>A továbbiakban: "Adatkezelő".</p>
 
         <h2>2. A Kezelt Adatok Köre</h2>
-        <h3>a) Regisztráció során megadott adatok:</h3>
+        <h3>a) Regisztráció és Fiókhasználat során megadott adatok:</h3>
         <ul>
             <li><strong>Felhasználónév:</strong> Azonosításra szolgál az alkalmazáson belül.</li>
             <li><strong>E-mail cím:</strong> Kapcsolattartás, jelszó-helyreállítás és egyedi azonosítás.</li>
             <li><strong>Jelszó (Hash):</strong> Kizárólag titkosított formában (bcrypt) tároljuk. Visszafejteni nem tudjuk.</li>
-            <li><strong>Google Fiók Adatok (Opcionális):</strong> Amennyiben a "Bejelentkezés Google-lel" opciót választja, rendszerünk eltárolja a Google által biztosított egyedi azonosítót (Google User ID), az Ön nevét és e-mail címét. <strong>Fontos:</strong> A Google jelszavához alkalmazásunk SOHA nem fér hozzá.</li>
+            <li><strong>Google Fiók Adatok:</strong> Amennyiben a "Bejelentkezés Google-lel" opciót választja, vagy fiókját összeköti Google fiókjával, rendszerünk eltárolja a Google által biztosított egyedi azonosítót (Google User ID), az Ön nevét és e-mail címét. <strong>Fontos:</strong> A Google jelszavához alkalmazásunk SOHA nem fér hozzá.</li>
         </ul>
 
         <h3>b) Technikai adatok:</h3>
@@ -61,8 +61,7 @@
         <h3>2.2. Felhasználó által generált tartalom</h3>
         <ul>
             <li><strong>Értékelések:</strong> Sörök és egyéb Italok adatai (név, típus, lelőhely, alkohol %, pontszámok, szöveges jegyzetek, dátum).</li>
-            <li><strong>Közösségi ajánlások:</strong> Az Ön által ajánlott termékek adatai.
-                <br><em>Megjegyzés: Amennyiben "Anonim" módban küld be ajánlást vagy ötletet, az e-mail címét a rendszer a háttérben akkor is tárolja a jogosultság ellenőrzése (pl. csak Ön törölhesse a saját bejegyzését) végett, de a nyilvános listában nem jeleníti meg.</em>
+            <li><strong>Közösségi ajánlások:</strong> Az Ön által ajánlott termékek adatai.<br><em>Megjegyzés: Amennyiben "Anonim" módban küld be ajánlást vagy ötletet, az e-mail címét a rendszer a háttérben akkor is tárolja a jogosultság ellenőrzése (pl. csak Ön törölhesse a saját bejegyzését) végett, de a nyilvános listában nem jeleníti meg.</em>
             </li>
             <li><strong>Ötletláda:</strong> A fejlesztésre vonatkozó javaslatok.</li>
             <li><strong>Hibajelentések:</strong> A segítségkérés során megadott név, e-mail cím és üzenet tartalma.</li>
@@ -81,7 +80,7 @@
         <p>Az alkalmazás a jobb felhasználói élmény érdekében adatokat tárol az Ön böngészőjében (LocalStorage). Ezek az adatok nem kerülnek továbbításra harmadik félnek:</p>
         <ul>
             <li><code>userToken</code>: A bejelentkezés fenntartásához szükséges hitelesítési kulcs.</li>
-            <li><code>userData</code>: A profil alapvető adatai, eredményei és 2FA státusza (a gyorsabb betöltés érdekében).</li>
+            <li><code>userData</code>: A profil alapvető adatai, eredményei, 2FA státusza és Google kapcsolat státusza.</li>
             <li><code>ageVerified</code>: A 18. életév betöltésének egyszeri ellenőrzése.</li>
             <li><code>cursor_pref_EMAIL</code>: A "Sörös kurzor" beállítási preferenciája.</li>
             <li><code>headerCollapsedPreference</code>: A fejléc megjelenítési állapota (nyitva/csukva).</li>
@@ -112,7 +111,7 @@
         <p>Az alkalmazás "Fiókom" menüpontjában található törlés gomb segítségével Ön önállóan, azonnali hatállyal törölheti teljes profilját. <strong>Figyelem: Ez a művelet végleges és nem visszavonható!</strong></p>
         <p>A törlés eltávolítja a rendszerből:</p>
         <ul>
-            <li>A regisztrációs adatait (beleértve a 2FA kulcsokat).</li>
+            <li>A regisztrációs adatait (beleértve a 2FA kulcsokat és Google kapcsolatot).</li>
             <li>Az összes rögzített sör- és italértékelését.</li>
             <li>A beküldött ötleteit és ajánlásait.</li>
             <li>A megszerzett eredményeit és rangjait.</li>
@@ -123,7 +122,3 @@
     </div>
 </body>
 </html>
-
-
-
-
