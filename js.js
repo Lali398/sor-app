@@ -347,6 +347,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         addBeerForm.reset();
         closeAddModal('beer');
         loadUserData();
+        refreshUserData();
     } catch (error) {
         console.error("Hiba sör hozzáadásakor:", error);
         showError(error.message || "Nem sikerült a sört hozzáadni.");
@@ -399,6 +400,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         addDrinkForm.reset();
         closeAddModal('drink');
         loadUserDrinks(); // Újratöltjük az italokat
+        refreshUserData();
     } catch (error) {
         console.error("Hiba ital hozzáadásakor:", error);
         showError(error.message || "Nem sikerült az italt hozzáadni.");
@@ -5963,7 +5965,28 @@ window.confirmDisable2FA = async function() {
         btn.disabled = false;
     }
 }
+    async function refreshUserData() {
+    const response = await fetch('/api/sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+        body: JSON.stringify({ action: 'REFRESH_USER_DATA' })
+    });
+    if(response.ok) {
+        const data = await response.json();
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        // Frissítjük a lokális adatokat
+        userData.streak = data.streak;
+        userData.achievements = data.achievements;
+        userData.badge = data.badge;
+        localStorage.setItem('userData', JSON.stringify(userData));
+        
+        // UI frissítés
+        updateStreakDisplay();
+        renderAchievements();
+    }
+}
 });
+
 
 
 
