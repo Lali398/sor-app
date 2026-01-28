@@ -4325,6 +4325,32 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
         filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.8));
     }
 }
+/* Streak stílusok */
+.streak-container {
+    border-color: #e67e22 !important; /* Narancssárga keret */
+    background: rgba(230, 126, 34, 0.1) !important;
+}
+
+.fire-anim {
+    display: inline-block;
+    filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.8));
+    animation: burn 1.5s infinite alternate;
+    transform-origin: center bottom;
+}
+
+@keyframes burn {
+    0% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.6)); }
+    50% { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.8)); }
+    100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.6)); }
+}
+
+/* Ha a streak 0, legyen szürke */
+.streak-inactive .fire-anim {
+    animation: none;
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
 
 
 
