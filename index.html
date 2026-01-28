@@ -2184,10 +2184,37 @@
         </div>
     </div>
 </div>
+
+    <div class="modal-overlay" id="policyUpdateModal" style="z-index: 999999;">
+    <div class="modal-content" style="border: 2px solid #ffd700; background: linear-gradient(135deg, #1f005c, #000);">
+        <div class="modal-hero-header" style="border-bottom: none;">
+            <div class="hero-icon" style="font-size: 3rem;">📜</div>
+            <h3 style="color: #ffd700;">Fontos Változások</h3>
+        </div>
+        
+        <div style="padding: 0 20px 20px 20px; color: #e0e0e0; text-align: center;">
+            <p style="margin-bottom: 20px; line-height: 1.6;">
+                Szia! 👋<br>
+                Fejlesztettünk az alkalmazáson! Mostantól elérhető a kényelmes 
+                <b>Google Fiókkal való belépés</b>.
+            </p>
+            <p style="margin-bottom: 20px; font-size: 0.9rem; color: #ccc;">
+                Emiatt frissítettük az <a href="adatvedelem.html" target="_blank" style="color: #ffd700; text-decoration: underline;">Adatvédelmi Tájékoztatót</a> 
+                és az <a href="aszf.html" target="_blank" style="color: #ffd700; text-decoration: underline;">ÁSZF</a>-et. 
+                Az alkalmazás további használatához kérjük, fogadd el az új feltételeket.
+            </p>
+
+            <button class="auth-btn" onclick="acceptPolicyUpdate()" style="background: linear-gradient(135deg, #ffd700, #f39c12); color: #000; font-weight: 800;">
+                Elolvastam és Elfogadom ✅
+            </button>
+        </div>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
