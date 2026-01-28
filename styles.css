@@ -899,7 +899,7 @@ table tr:hover .average-cell {
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none;
-    z-index: 99999;
+    z-index: 10000000 !important;
     
     /* TÖRÖLD KI INNEN A TRANSFORM SOROKAT! 
        Mert a JS fogja kezelni a pozíciót és a forgatást is. 
@@ -4377,6 +4377,7 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
 .auth-btn.loading:has(.loading-dots) .btn-loading {
     display: none;
 }
+
 
 
 
