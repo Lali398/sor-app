@@ -2299,7 +2299,6 @@ window.downloadRecap = function() {
     function showSuccess(message) { showNotification(message, 'success'); }
     function showNotification(message, type) { const notification = document.createElement('div'); notification.className = `notification ${type}`; notification.textContent = message; Object.assign(notification.style, { position: 'fixed', top: '20px', right: '20px', padding: '15px 20px', borderRadius: '10px', color: 'white', fontWeight: '500', zIndex: '10000', transform: 'translateX(400px)', transition: 'transform 0.3s ease', backgroundColor: type === 'error' ? '#e74c3c' : (type === 'success' ? '#27ae60' : '#3498db') }); document.body.appendChild(notification); setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 100); setTimeout(() => { notification.style.transform = 'translateX(400px)'; setTimeout(() => { if (notification.parentNode) { notification.parentNode.removeChild(notification); } }, 300); }, 4000); }
     
-    console.log('🍺 Gabz és Lajos Sör Táblázat alkalmazás betöltve!');
 // === DINAMIKUS FEJLÉC SCROLL KEZELÉS (JAVÍTOTT) ===
 
 window.addEventListener('scroll', function() {
@@ -3013,7 +3012,7 @@ window.acceptPolicyUpdate = function() {
         document.body.style.overflow = 'auto';
     }
     
-    showSuccess("Köszönjük! Jó sörözést! 🍺");
+    showSuccess("Köszönjük! Tesztelést! 🍺");
 }
     
     // === BUBOREK EFFEKT FÜGGVÉNY (Ezt másold be a js.js fájlba) ===
@@ -6205,6 +6204,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
