@@ -49,6 +49,78 @@ const verifyUser = (req) => {
     const token = authHeader.split(' ')[1];
     return jwt.verify(token, process.env.JWT_SECRET);
 };
+// === STREAK SEGÉDFÜGGVÉNYEK ===
+
+// Dátum konvertálása Év-Hét formátumra (pl. "2024-W05")
+const getYearWeek = (date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+};
+
+// Streak frissítése a Sheet-ben
+async function updateUserStreak(sheets, spreadsheetId, userEmail) {
+    try {
+        // 1. Felhasználó megkeresése
+        const usersRes = await sheets.spreadsheets.values.get({ 
+            spreadsheetId, 
+            range: `Felhasználók!A:K` // Kibővítjük a lekérést a K oszlopig
+        });
+        
+        const rows = usersRes.data.values || [];
+        const rowIndex = rows.findIndex(row => row[1] === userEmail); // 1-es index az email
+        
+        if (rowIndex === -1) return null;
+
+        // Adatok kiolvasása (I, J, K oszlopok -> index 8, 9, 10)
+        const lastActivityWeek = rows[rowIndex][8] || "";
+        let currentStreak = parseInt(rows[rowIndex][9]) || 0;
+        let longestStreak = parseInt(rows[rowIndex][10]) || 0;
+
+        const currentYearWeek = getYearWeek(new Date());
+
+        // LOGIKA:
+        if (lastActivityWeek === currentYearWeek) {
+            // Már posztolt ezen a héten -> Nincs teendő, csak visszaadjuk a jelenlegit
+            return { currentStreak, longestStreak, isNew: false };
+        }
+
+        // Előző hét kiszámítása ellenőrzéshez
+        const d = new Date();
+        d.setDate(d.getDate() - 7); // Visszamegyünk 7 napot
+        const previousWeek = getYearWeek(d);
+
+        if (lastActivityWeek === previousWeek) {
+            // Múlt héten posztolt -> Növeljük a streak-et
+            currentStreak++;
+        } else {
+            // Kihagyott egy hetet (vagy ez az első) -> Reset 1-re
+            currentStreak = 1;
+        }
+
+        // Rekord ellenőrzése
+        if (currentStreak > longestStreak) {
+            longestStreak = currentStreak;
+        }
+
+        // Mentés a Sheet-be (I, J, K oszlopok frissítése az adott sorban)
+        const updateRange = `Felhasználók!I${rowIndex + 1}:K${rowIndex + 1}`;
+        await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: updateRange,
+            valueInputOption: 'USER_ENTERED',
+            resource: { values: [[currentYearWeek, currentStreak, longestStreak]] }
+        });
+
+        return { currentStreak, longestStreak, isNew: true };
+
+    } catch (e) {
+        console.error("Streak update error:", e);
+        return null;
+    }
 
 // === FŐ HANDLER FÜGGVÉNY ===
 export default async function handler(req, res) {
@@ -1413,6 +1485,7 @@ case 'EDIT_USER_DRINK': {
     }
 }
             
+            
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
                 const userEmail = userData.email;
@@ -1523,6 +1596,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
