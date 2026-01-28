@@ -292,6 +292,8 @@ export default async function handler(req, res) {
     
     // ÚJ: Badge betöltése (G oszlop - index 6)
     const badge = userRow[6] || '';
+    const currentStreak = parseInt(userRow[9]) || 0;
+    const longestStreak = parseInt(userRow[10]) || 0;
     
     // Hagyományos belépés
     const user = { 
@@ -299,7 +301,8 @@ export default async function handler(req, res) {
         email: userRow[1], 
         has2FA: false,
         achievements: achievements, // ÚJ
-        badge: badge // ÚJ
+        badge: badge, // ÚJ
+        streak: { current: currentStreak, longest: longestStreak }
     };
     
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -333,15 +336,17 @@ export default async function handler(req, res) {
     }
     
     const badge = userRow[6] || '';
+    const currentStreak = parseInt(userRow[9]) || 0;
+    const longestStreak = parseInt(userRow[10]) || 0;
 
-    // Sikeres belépés
-    const user = { 
-        name: userRow[0], 
-        email: userRow[1], 
-        has2FA: true,
-        achievements: achievements,
-        badge: badge
-    };
+const user = { 
+    name: userRow[0], 
+    email: userRow[1], 
+    has2FA: (action === 'VERIFY_2FA_LOGIN' ? true : false), // Vagy ahogy a te kódodban van
+    achievements: achievements,
+    badge: badge,
+    streak: { current: currentStreak, longest: longestStreak } // <--- EZT ADD HOZZÁ
+};
     
     const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
     return res.status(200).json({ token: jwtToken, user });
@@ -548,6 +553,8 @@ case 'GET_ACHIEVEMENTS': {
                     valueInputOption: 'USER_ENTERED',
                     resource: { values: [newRow] },
                 });
+                await updateUserStreak(sheets, SPREADSHEET_ID, userData.email);
+                return res.status(201).json({ message: "Sikeres hozzáadás! (Streak frissítve)" });
                 return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
                 return res.status(200).json([]);
             }
@@ -641,6 +648,8 @@ case 'GET_ACHIEVEMENTS': {
             valueInputOption: 'USER_ENTERED',
             resource: { values: [newRow] },
         });
+        await updateUserStreak(sheets, SPREADSHEET_ID, userData.email);
+        return res.status(201).json({ message: "Sikeres hozzáadás! (Streak frissítve)" });
         return res.status(201).json({ message: "Ital sikeresen hozzáadva!" });
     }
 
@@ -1596,6 +1605,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
