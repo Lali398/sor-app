@@ -795,7 +795,6 @@ async function markIdeaAsDone(index) {
             if (!localStorage.getItem(storageKey)) {
                 // HA MÉG NEM LÁTTA:
                 setTimeout(() => {
-                    triggerNewYearCelebration(); // Buli indítása! 🎉
                     localStorage.setItem(storageKey, 'true'); // Megjelöljük, hogy látta
                 }, 300);
             }
@@ -5986,6 +5985,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
