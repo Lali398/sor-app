@@ -936,11 +936,18 @@ async function markIdeaAsDone(index) {
                 body: JSON.stringify({ action: 'LINK_GOOGLE_ACCOUNT', token: token })
             });
             const result = await response.json();
-
             if (!response.ok) throw new Error(result.error || "Hiba az összekötéskor");
 
             showSuccess(result.message);
-            document.getElementById('googleLinkBtn').innerHTML = "✅ Összekötve";
+            
+            // --- EZT A RÉSZT FRISSÍTSD: ---
+            // Lokális adat frissítése
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            userData.isGoogleLinked = true;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // UI újrarajzolása
+            updateSettingsUI();
 
         } catch (error) {
             showError(error.message);
@@ -2722,18 +2729,45 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
 function updateSettingsUI() {
     const userData = JSON.parse(localStorage.getItem('userData'));
     
-    // --- 1. 2FA Kapcsoló beállítása ---
+    // --- 1. 2FA Kapcsoló ---
     const toggle2FA = document.getElementById('user2FAToggle');
     if (userData && toggle2FA) {
         toggle2FA.checked = (userData.has2FA === true);
     }
 
-    // --- 2. Kurzor beállítása (EZ HOZZA VISSZA A SÖRT) ---
+    // --- 2. Google Fiók Állapot (ÚJ RÉSZ) ---
+    const googleBtnContainer = document.getElementById('googleLinkBtn');
+    if (userData && googleBtnContainer) {
+        if (userData.isGoogleLinked) {
+            // Ha össze van kötve, akkor státusz + leválasztás gomb
+            googleBtnContainer.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(46, 204, 113, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(46, 204, 113, 0.3);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size: 1.5rem;">✅</span>
+                        <span style="color: #2ecc71; font-weight: 600; font-size: 0.9rem;">Összekötve</span>
+                    </div>
+                    <button onclick="unlinkGoogleAccount()" style="background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s;">
+                        Leválasztás ❌
+                    </button>
+                </div>
+            `;
+        } else {
+            // Ha nincs összekötve, töröljük a tartalmát, és újrarendereljük a Google gombot
+            googleBtnContainer.innerHTML = '';
+            if (typeof google !== 'undefined') {
+                google.accounts.id.renderButton(
+                    googleBtnContainer,
+                    { theme: "filled_black", size: "medium", text: "continue_with", width: "250" }
+                );
+            }
+        }
+    }
+
+    // --- 3. Kurzor beállítása ---
     let emailKey = null;
     const userViewElem = document.getElementById('userView');
     const adminViewElem = document.getElementById('adminView');
 
-    // Megnézzük, ki van épp bejelentkezve (User vagy Admin)
     if (userData && userViewElem && userViewElem.style.display !== 'none') {
         emailKey = userData.email;
     } else if (adminViewElem && adminViewElem.style.display !== 'none') {
@@ -2743,17 +2777,14 @@ function updateSettingsUI() {
     if (emailKey) {
         const storageKey = `cursor_pref_${emailKey}`;
         const savedPref = localStorage.getItem(storageKey);
-        // Alapértelmezés: BEKAPCSOLVA (true), ha nincs még mentve semmi
         const isCursorActive = savedPref === null ? true : (savedPref === 'true');
         
-        // Itt kapcsoljuk be/ki a tényleges sörkurzort
         if (isCursorActive) {
             document.body.classList.add('custom-cursor-active');
         } else {
             document.body.classList.remove('custom-cursor-active');
         }
 
-        // A kapcsolók vizuális állapotának frissítése
         const uToggle = document.getElementById('userCursorToggle');
         const aToggle = document.getElementById('adminCursorToggle');
         if (uToggle) uToggle.checked = isCursorActive;
@@ -6094,7 +6125,50 @@ window.confirmDisable2FA = async function() {
         renderAchievements();
     }
 }
+    window.unlinkGoogleAccount = async function() {
+    if (!confirm("Biztosan meg akarod szüntetni a kapcsolatot a Google fiókoddal?")) return;
+
+    // Megkeressük a gombot vizuális visszajelzéshez
+    const btn = document.querySelector('#googleLinkBtn button');
+    if(btn) {
+        btn.innerText = "Bontás...";
+        btn.disabled = true;
+    }
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'UNLINK_GOOGLE_ACCOUNT' })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) throw new Error(result.error || "Hiba a leválasztáskor.");
+
+        showSuccess(result.message);
+
+        // Lokális adat frissítése
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        userData.isGoogleLinked = false;
+        localStorage.setItem('userData', JSON.stringify(userData));
+
+        // UI Frissítése
+        updateSettingsUI();
+
+    } catch (error) {
+        showError(error.message);
+        if(btn) {
+            btn.innerText = "Leválasztás ❌";
+            btn.disabled = false;
+        }
+    }
+}
 });
+
 
 
 
