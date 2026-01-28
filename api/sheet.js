@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
+import { OAuth2Client } from 'google-auth-library';
 
 // === KONFIGURÁCIÓ ===
 const ADMIN_BEERS_SHEET = "'Sör táblázat'!A4:V";
@@ -1621,6 +1622,141 @@ case 'EDIT_USER_DRINK': {
                 }
             }
 
+            // === GOOGLE LOGIN ÉS REGISZTRÁCIÓ ===
+            case 'GOOGLE_LOGIN': {
+                const { token: googleToken } = req.body;
+                // Ha nincs beállítva a Vercelen a változó, itt hiba lesz, de a logban látni fogod
+                const clientId = process.env.GOOGLE_CLIENT_ID; 
+                const client = new OAuth2Client(clientId);
+
+                const ticket = await client.verifyIdToken({
+                    idToken: googleToken,
+                    audience: clientId,
+                });
+                const payload = ticket.getPayload();
+                const googleEmail = payload.email;
+                const googleName = payload.name;
+                const googleSub = payload.sub; // Google ID
+
+                // Felhasználó keresése
+                // FONTOS: Feltételezzük, hogy az 'L' oszlop (index 11) tárolja a Google ID-t.
+                // Ha a te táblázatodban máshol van hely, írd át az indexeket!
+                const usersResponse = await sheets.spreadsheets.values.get({ 
+                    spreadsheetId: SPREADSHEET_ID, 
+                    range: `${USERS_SHEET}!A:L` 
+                });
+                
+                const rows = usersResponse.data.values || [];
+                let rowIndex = rows.findIndex(row => row[1] === googleEmail); // 1-es index az email
+                let userRow;
+                let isNewUser = false;
+
+                // Ha NINCS ilyen email -> Regisztráció
+                if (rowIndex === -1) {
+                    isNewUser = true;
+                    // Generálunk random jelszót és recovery kódot, mert Google-lel lép be
+                    const hashedPassword = await bcrypt.hash(Math.random().toString(36), 10); 
+                    const recoveryCode = Math.random().toString(36).slice(-8).toUpperCase();
+                    const hashedRecovery = await bcrypt.hash(recoveryCode, 10);
+                    const defaultAchievements = { unlocked: [] };
+
+                    // Új sor: A-tól L-ig (12 oszlop)
+                    // Figyelj a sorrendre, ez a te sheeted struktúrája alapján van:
+                    // Név, Email, Jelszó, 2FA Secret, 2FA Enabled, Achievements, Badge, RecoveryHash, LastActive, StreakCurr, StreakLong, GOOGLE_ID
+                    const newRow = [
+                        googleName, 
+                        googleEmail, 
+                        hashedPassword, 
+                        '', 
+                        'FALSE', 
+                        JSON.stringify(defaultAchievements), 
+                        '', 
+                        hashedRecovery, 
+                        '', 
+                        '0', 
+                        '0', 
+                        googleSub // L oszlop
+                    ];
+
+                    await sheets.spreadsheets.values.append({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: USERS_SHEET,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: [newRow] },
+                    });
+                    
+                    userRow = newRow;
+                } else {
+                    // Ha VAN ilyen email -> Belépés és esetleges összekötés
+                    userRow = rows[rowIndex];
+                    
+                    // Ha még nincs beírva a Google ID az L oszlopba, pótoljuk
+                    if (!userRow[11]) {
+                        const updateRange = `${USERS_SHEET}!L${rowIndex + 1}`;
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId: SPREADSHEET_ID,
+                            range: updateRange,
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: [[googleSub]] }
+                        });
+                    }
+                }
+
+                // User objektum összeállítása a frontendnek
+                let achievements = { unlocked: [] };
+                try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
+
+                const user = { 
+                    name: userRow[0], 
+                    email: userRow[1], 
+                    has2FA: userRow[4] === 'TRUE',
+                    achievements: achievements,
+                    badge: userRow[6] || '',
+                    streak: { current: parseInt(userRow[9])||0, longest: parseInt(userRow[10])||0 }
+                };
+
+                const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+                return res.status(200).json({ token, user, isNewUser });
+            }
+
+            // === FIÓK ÖSSZEKÖTÉS (BEÁLLÍTÁSOK) ===
+            case 'LINK_GOOGLE_ACCOUNT': {
+                const userData = verifyUser(req); // Ellenőrizzük a sima tokent
+                const { token: googleToken } = req.body;
+                const clientId = process.env.GOOGLE_CLIENT_ID;
+                const client = new OAuth2Client(clientId);
+
+                const ticket = await client.verifyIdToken({
+                    idToken: googleToken,
+                    audience: clientId,
+                });
+                const { sub: googleSub } = ticket.getPayload();
+
+                const usersResponse = await sheets.spreadsheets.values.get({ 
+                    spreadsheetId: SPREADSHEET_ID, 
+                    range: `${USERS_SHEET}!A:L` 
+                });
+                const rows = usersResponse.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === userData.email);
+
+                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található" });
+
+                // Ellenőrizzük, hogy más nem használja-e már ezt a Google fiókot
+                const isTaken = rows.some(row => row[11] === googleSub && row[1] !== userData.email);
+                if (isTaken) return res.status(409).json({ error: "Ez a Google fiók már foglalt!" });
+
+                // Mentés az L oszlopba
+                const updateRange = `${USERS_SHEET}!L${rowIndex + 1}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: updateRange,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[googleSub]] }
+                });
+
+                return res.status(200).json({ message: "Sikeres összekötés! 🎉" });
+            }
+
             default:
                 return res.status(400).json({ error: "Ismeretlen művelet." });
         } // Switch vége
@@ -1630,6 +1766,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
