@@ -750,6 +750,14 @@ async function markIdeaAsDone(index) {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         const submitBtn = loginForm.querySelector('.auth-btn');
+        
+        // --- ÚJ RÉSZ: Szöveg mentése és módosítása ---
+        const btnTextSpan = submitBtn.querySelector('.btn-text');
+        const originalText = btnTextSpan.innerText; // "Bejelentkezés" elmentése
+        
+        btnTextSpan.innerText = "Bejelentkezés folyamatban"; // Szöveg átírása
+        btnTextSpan.classList.add('loading-dots'); // Animáció bekapcsolása
+        // ----------------------------------------------
 
         setLoading(submitBtn, true);
         try {
@@ -761,55 +769,58 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
             
-            // --- ITT VOLT A HIÁNYZÓ RÉSZ ---
             // Ha a szerver azt mondja, hogy 2FA kell:
             if (result.require2fa) {
-                tempLoginEmail = result.tempEmail; // Elmentjük az emailt későbbre
-                login2FAModal.classList.add('active'); // Feldobjuk a kódkérő ablakot
+                tempLoginEmail = result.tempEmail; 
+                login2FAModal.classList.add('active'); 
                 
-                // Kis kényelem: fókuszáljunk a mezőre
                 setTimeout(() => {
                     const input = document.getElementById('login2FACode');
                     if(input) input.focus();
                 }, 100);
                 
-                // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
+                // Itt NEM állítjuk vissza a gombot, mert a folyamat még tart (a 2FA ablakban)
                 setLoading(submitBtn, false);
-                return; // KILÉPÜNK A FÜGGVÉNYBŐL!
+                
+                // De a szöveget visszaírhatjuk, hogy a háttérben szép legyen
+                btnTextSpan.innerText = originalText;
+                btnTextSpan.classList.remove('loading-dots');
+                
+                return; 
             }
-            // ---------------------------------
 
-            // Ez a rész csak akkor fut le, ha NINCS bekapcsolva a 2FA a usernél
+            // Normál belépés
             localStorage.setItem('userToken', result.token);
             localStorage.setItem('userData', JSON.stringify(result.user));
 
             showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
             setTimeout(() => {
-            // 1. Átváltunk a felhasználói nézetre
-            switchToUserView();
+                switchToUserView();
 
-            // 2. ELLENŐRZÉS: Látta már ezt a felhasználó?
-            const userEmail = result.user.email;
-            const storageKey = `seen_newyear_2026_${userEmail}`; // Egyedi kulcs a felhasználónak
+                const userEmail = result.user.email;
+                const storageKey = `seen_newyear_2026_${userEmail}`;
 
-            if (!localStorage.getItem(storageKey)) {
-                // HA MÉG NEM LÁTTA:
-                setTimeout(() => {
-                    localStorage.setItem(storageKey, 'true'); // Megjelöljük, hogy látta
-                }, 300);
-            }
-            // Ha már látta, nem történik semmi (nincs else ág)
+                if (!localStorage.getItem(storageKey)) {
+                    setTimeout(() => {
+                        localStorage.setItem(storageKey, 'true');
+                    }, 300);
+                }
 
-        }, 1000);
+            }, 1000);
             
-    } catch (error) {
+        } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás e-mail cím vagy jelszó!');
         } finally {
-            // Csak akkor kapcsoljuk ki a töltést, ha nem nyílt meg a 2FA ablak
-            // (Ha megnyílt, ott már kikapcsoltuk a 'if' ágban)
+            // Csak akkor kapcsoljuk ki a töltést és állítjuk vissza a szöveget, 
+            // ha nem nyílt meg a 2FA ablak
             if (!login2FAModal.classList.contains('active')) {
                  setLoading(submitBtn, false);
+                 
+                 // --- ÚJ RÉSZ: Szöveg visszaállítása ---
+                 btnTextSpan.innerText = originalText;
+                 btnTextSpan.classList.remove('loading-dots');
+                 // --------------------------------------
             }
         }
     }
@@ -5985,6 +5996,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
