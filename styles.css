@@ -4350,6 +4350,34 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     filter: grayscale(100%);
     opacity: 0.5;
 }
+/* Animált pontok a szöveg után */
+.loading-dots::after {
+    content: '';
+    animation: dotsAnimation 1.5s infinite steps(4, end);
+    display: inline-block;
+    width: 15px; /* Hely fenntartása a pontoknak, hogy ne ugráljon a gomb */
+    text-align: left;
+}
+
+@keyframes dotsAnimation {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Biztosítjuk, hogy a szöveg látható maradjon töltés közben is ennél a gombnál */
+.auth-btn.loading .btn-text.loading-dots {
+    opacity: 1 !important; 
+    visibility: visible !important;
+    display: inline-block !important;
+}
+
+/* Opcionális: Ha a spinner is ott van, rejtsük el, mert most a szöveg a lényeg */
+.auth-btn.loading:has(.loading-dots) .btn-loading {
+    display: none;
+}
+
 
 
 
