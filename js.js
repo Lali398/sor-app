@@ -1308,6 +1308,28 @@ function setupAdminRecap() {
         showError(error.message || "Nem sikerült betölteni a söreidet.");
     }
 }
+
+    // Illeszd be ezt a js.js fájlba, mondjuk a updateUserStats függvény környékére
+
+function updateStreakDisplay() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const streakEl = document.getElementById('headerStreakCount');
+    const container = document.querySelector('.streak-container');
+    const icon = document.querySelector('.fire-anim');
+
+    if (userData && userData.streak && streakEl) {
+        const streak = userData.streak.current;
+        streakEl.textContent = streak;
+
+        // Ha van streak, animáljon, ha nincs (0), legyen szürke
+        if (streak > 0) {
+            if(container) container.classList.remove('streak-inactive');
+        } else {
+            if(container) container.classList.add('streak-inactive');
+        }
+    }
+}
+    
     
     
     function updateUserStats(beers) {
@@ -3595,6 +3617,8 @@ switchToUserView = function() {
         // Frissítjük a vizuális elemeket (Rács + Header Badge)
         renderAchievements();
         updateHeaderBadge();
+        updateSettingsUI();
+        updateStreakDisplay();
         
     }, 1500); // 1.5 mp késleltetés, hogy biztosan meglegyen minden adat a szerverről
 };
@@ -5940,6 +5964,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
