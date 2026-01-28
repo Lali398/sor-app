@@ -121,6 +121,8 @@ async function updateUserStreak(sheets, spreadsheetId, userEmail) {
         console.error("Streak update error:", e);
         return null;
     }
+}
+  
 
 // === FŐ HANDLER FÜGGVÉNY ===
 export default async function handler(req, res) {
@@ -555,8 +557,6 @@ case 'GET_ACHIEVEMENTS': {
                 });
                 await updateUserStreak(sheets, SPREADSHEET_ID, userData.email);
                 return res.status(201).json({ message: "Sikeres hozzáadás! (Streak frissítve)" });
-                return res.status(201).json({ message: "Sör sikeresen hozzáadva!" });
-                return res.status(200).json([]);
             }
 
             case 'CHANGE_PASSWORD': {
@@ -650,7 +650,6 @@ case 'GET_ACHIEVEMENTS': {
         });
         await updateUserStreak(sheets, SPREADSHEET_ID, userData.email);
         return res.status(201).json({ message: "Sikeres hozzáadás! (Streak frissítve)" });
-        return res.status(201).json({ message: "Ital sikeresen hozzáadva!" });
     }
 
             case 'EDIT_USER_BEER': {
@@ -1605,6 +1604,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
