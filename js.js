@@ -787,22 +787,7 @@ async function markIdeaAsDone(index) {
             setTimeout(() => {
             // 1. Átváltunk a felhasználói nézetre
             switchToUserView();
-
-            // 2. ELLENŐRZÉS: Látta már ezt a felhasználó?
-            const userEmail = result.user.email;
-            const storageKey = `seen_newyear_2026_${userEmail}`; // Egyedi kulcs a felhasználónak
-
-            if (!localStorage.getItem(storageKey)) {
-                // HA MÉG NEM LÁTTA:
-                setTimeout(() => {
-                    triggerNewYearCelebration(); // Buli indítása! 🎉
-                    localStorage.setItem(storageKey, 'true'); // Megjelöljük, hogy látta
-                }, 300);
-            }
-            // Ha már látta, nem történik semmi (nincs else ág)
-
-        }, 1000);
-
+                
     } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás e-mail cím vagy jelszó!');
@@ -5986,6 +5971,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
