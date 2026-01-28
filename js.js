@@ -862,6 +862,96 @@ async function markIdeaAsDone(index) {
         }
     }
 
+
+    // === GOOGLE AUTH KONFIGURÁCIÓ ===
+    // Ide írd be a Google Cloud Console-ból kapott ID-t (ugyanaz, ami a Vercelben van)
+    const GOOGLE_CLIENT_ID = "IDE_MASOLD_BE_A_GOOGLE_CLIENT_ID_KODOT.apps.googleusercontent.com";
+
+    function initGoogleAuth() {
+        if (typeof google === 'undefined') return;
+
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse
+        });
+
+        // Login gomb renderelése
+        const loginContainer = document.getElementById('googleLoginBtn');
+        if (loginContainer) {
+            google.accounts.id.renderButton(
+                loginContainer,
+                { theme: "filled_black", size: "large", width: "250", text: "signin_with" }
+            );
+        }
+    }
+
+    // A válasz kezelése (ez fut le, ha a felhasználó kiválasztotta a Google fiókját)
+    async function handleGoogleResponse(response) {
+        // Megnézzük, hogy a felhasználó be van-e jelentkezve az oldaladra
+        const isUserLoggedIn = document.getElementById('userView').style.display !== 'none';
+
+        if (isUserLoggedIn) {
+            // Ha bent van -> Összekötés
+            await linkGoogleAccount(response.credential);
+        } else {
+            // Ha kint van -> Belépés/Regisztráció
+            await loginWithGoogle(response.credential);
+        }
+    }
+
+    async function loginWithGoogle(token) {
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'GOOGLE_LOGIN', token: token })
+            });
+            const result = await response.json();
+            
+            if (!response.ok) throw new Error(result.error || "Sikertelen Google belépés");
+
+            // Sikeres belépés mentése
+            localStorage.setItem('userToken', result.token);
+            localStorage.setItem('userData', JSON.stringify(result.user));
+
+            showSuccess(`Sikeres belépés Google-lel! Szia ${result.user.name}!`);
+            
+            // Login ablak eltüntetése, User nézet megjelenítése
+            // (Itt a meglévő függvényedet hívjuk)
+            switchToUserView(); 
+
+        } catch (error) {
+            showError(error.message);
+        }
+    }
+
+    async function linkGoogleAccount(token) {
+        try {
+            const response = await fetch('/api/sheet', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                },
+                body: JSON.stringify({ action: 'LINK_GOOGLE_ACCOUNT', token: token })
+            });
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error || "Hiba az összekötéskor");
+
+            showSuccess(result.message);
+            document.getElementById('googleLinkBtn').innerHTML = "✅ Összekötve";
+
+        } catch (error) {
+            showError(error.message);
+        }
+    }
+
+    // Google gomb betöltése az oldal betöltésekor
+    window.onload = function() {
+        initGoogleAuth();
+    };
+
     // ======================================================
     // === ÚJ: FŐ NAVIGÁCIÓS FÜLEK KEZELÉSE ===
     // ======================================================
@@ -3634,6 +3724,15 @@ switchToUserView = function() {
         
     }, 1500); // 1.5 mp késleltetés, hogy biztosan meglegyen minden adat a szerverről
 };
+    setTimeout(() => {
+        const linkContainer = document.getElementById('googleLinkBtn');
+        if (linkContainer && typeof google !== 'undefined') {
+            google.accounts.id.renderButton(
+               linkContainer,
+                { theme: "filled_black", size: "medium", text: "continue_with" }
+            );
+       }
+     }, 1000);
 
 // Figyeljük a változásokat (Ha hozzáadunk sört/italt, fusson le az ellenőrzés)
 const originalAddBeer = handleAddBeer;
@@ -5996,6 +6095,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
