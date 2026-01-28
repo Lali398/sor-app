@@ -776,18 +776,7 @@ async function markIdeaAsDone(index) {
                 // Megállítjuk a töltést a gombnál, de NEM lépünk tovább
                 setLoading(submitBtn, false);
                 return; // KILÉPÜNK A FÜGGVÉNYBŐL!
-            }
-            // ---------------------------------
-
-            // Ez a rész csak akkor fut le, ha NINCS bekapcsolva a 2FA a usernél
-            localStorage.setItem('userToken', result.token);
-            localStorage.setItem('userData', JSON.stringify(result.user));
-
-            showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
-            setTimeout(() => {
-            // 1. Átváltunk a felhasználói nézetre
-            switchToUserView();
-                
+            }            
     } catch (error) {
             console.error("Bejelentkezési hiba:", error);
             showError(error.message || 'Hibás e-mail cím vagy jelszó!');
@@ -5971,6 +5960,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
