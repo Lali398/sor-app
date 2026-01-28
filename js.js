@@ -865,7 +865,7 @@ async function markIdeaAsDone(index) {
 
     // === GOOGLE AUTH KONFIGURÁCIÓ ===
     // Ide írd be a Google Cloud Console-ból kapott ID-t (ugyanaz, ami a Vercelben van)
-    const GOOGLE_CLIENT_ID = "IDE_MASOLD_BE_A_GOOGLE_CLIENT_ID_KODOT.apps.googleusercontent.com";
+    const GOOGLE_CLIENT_ID = "264393562577-n5788hjp5siglcs5ctl0onh35h5uv7jg.apps.googleusercontent.com";
 
     function initGoogleAuth() {
         if (typeof google === 'undefined') return;
@@ -6095,6 +6095,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
