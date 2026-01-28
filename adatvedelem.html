@@ -29,7 +29,20 @@
         <p>A továbbiakban: "Adatkezelő".</p>
 
         <h2>2. A Kezelt Adatok Köre</h2>
-        <p>A "Sör És Ital alkalmazás" alkalmazásban bővített funkcióinak használata során az alábbi adatokat kezeljük:</p>
+        <h3>a) Regisztráció során megadott adatok:</h3>
+        <ul>
+            <li><strong>Felhasználónév:</strong> Azonosításra szolgál az alkalmazáson belül.</li>
+            <li><strong>E-mail cím:</strong> Kapcsolattartás, jelszó-helyreállítás és egyedi azonosítás.</li>
+            <li><strong>Jelszó (Hash):</strong> Kizárólag titkosított formában (bcrypt) tároljuk. Visszafejteni nem tudjuk.</li>
+            <li><strong>Google Fiók Adatok (Opcionális):</strong> Amennyiben a "Bejelentkezés Google-lel" opciót választja, rendszerünk eltárolja a Google által biztosított egyedi azonosítót (Google User ID), az Ön nevét és e-mail címét. <strong>Fontos:</strong> A Google jelszavához alkalmazásunk SOHA nem fér hozzá.</li>
+        </ul>
+
+        <h3>b) Technikai adatok:</h3>
+        <ul>
+            <li><strong>Kétlépcsős azonosítás (2FA) titkos kulcs:</strong> Ha bekapcsolja a védelmet, a hitelesítő alkalmazás szinkronizálásához szükséges kulcsot titkosítva tároljuk.</li>
+            <li><strong>Naplózás:</strong> IP cím, böngésző típusa (User Agent), bejelentkezés ideje biztonsági okokból.</li>
+            <li><strong>Technikai jelszó:</strong> Google bejelentkezés esetén rendszerünk a kompatibilitás érdekében egy véletlenszerűen generált, titkosított jelszót hoz létre a háttérben, amelyet a felhasználónak nem kell ismernie vagy használnia.</li>
+        </ul>
         
         <h3>2.1. Regisztrációs és Profil adatok</h3>
         <ul>
@@ -87,6 +100,7 @@
         <h2>6. Adatfeldolgozók és Harmadik felek</h2>
         <ul>
             <li><strong>Google LLC. (Google Sheets):</strong> Az adatok fizikai tárolása felhőalapú táblázatkezelőben, biztonságos Google szervereken történik.</li>
+            <li><strong>Google LLC (Google Auth):</strong> Hitelesítési szolgáltató. A Google bejelentkezés használatakor az Ön azonosítása a Google szerverein történik, alkalmazásunk csak egy megerősítést (token) kap az eredményről. <a href="https://policies.google.com/privacy" target="_blank">Google Adatvédelmi Irányelvek</a>.</li>
             <li><strong>Vercel Inc.:</strong> Az alkalmazás szerveroldali kódjának futtatása és hosztolása.</li>
             <li><strong>Kliens oldali könyvtárak:</strong> Az alkalmazás a böngészőben való megjelenítéshez külső könyvtárakat használ (Chart.js - grafikonok, html2canvas - képgenerálás, SheetJS - Excel kezelés). Ezek a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, nem továbbítják külső szerverre.</li>
         </ul>
@@ -109,6 +123,7 @@
     </div>
 </body>
 </html>
+
 
 
 
