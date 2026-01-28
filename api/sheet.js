@@ -1492,6 +1492,32 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Hiba az importálás során: " + error.message });
     }
 }
+
+            case 'REFRESH_USER_DATA': {
+    const userData = verifyUser(req);
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `Felhasználók!A:K` 
+    });
+    const rows = usersResponse.data.values || [];
+    const userRow = rows.find(row => row[1] === userData.email);
+    
+    if (!userRow) return res.status(404).json({error: "User not found"});
+
+    // Streak adatok
+    const currentStreak = parseInt(userRow[9]) || 0;
+    const longestStreak = parseInt(userRow[10]) || 0;
+    
+    // Achievementek
+    let achievements = { unlocked: [] };
+    try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
+
+    return res.status(200).json({
+        streak: { current: currentStreak, longest: longestStreak },
+        achievements: achievements,
+        badge: userRow[6] || ''
+    });
+}
             
             
             case 'DELETE_USER': {
@@ -1604,6 +1630,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
