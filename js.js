@@ -2980,6 +2980,42 @@ editDrinkForm.addEventListener('submit', async (e) => {
         setLoading(submitBtn, false);
     }
 });
+
+    // === ADATVÉDELMI FRISSÍTÉS KEZELÉSE ===
+
+// 1. Ellenőrzés: Látta-e már a user?
+function checkPolicyUpdate() {
+    // Egyedi kulcs, pl. dátummal, hogy ha később megint frissítesz, csak átírod a dátumot
+    const POLICY_VERSION = 'policy_accepted_2025_google_login';
+    
+    // Ha még NINCS elmentve a böngészőben, hogy elfogadta
+    if (!localStorage.getItem(POLICY_VERSION)) {
+        const modal = document.getElementById('policyUpdateModal');
+        if (modal) {
+            modal.classList.add('active');
+            // Letiltjuk a görgetést, hogy ne tudja megkerülni
+            document.body.style.overflow = 'hidden'; 
+        }
+    }
+}
+
+// 2. Elfogadás gomb funkciója
+window.acceptPolicyUpdate = function() {
+    const POLICY_VERSION = 'policy_accepted_2025_google_login';
+    
+    // Elmentjük a böngészőbe, hogy elfogadta
+    localStorage.setItem(POLICY_VERSION, 'true');
+    
+    // Bezárjuk az ablakot
+    const modal = document.getElementById('policyUpdateModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    showSuccess("Köszönjük! Jó sörözést! 🍺");
+}
+    
     // === BUBOREK EFFEKT FÜGGVÉNY (Ezt másold be a js.js fájlba) ===
 function createBeerBubbles(x, y) {
     const bubbleCount = 8; // Buborékok száma kattintásonként
@@ -5281,6 +5317,7 @@ window.openPrizeModal = function() {
         
         // Jelezzük a CSS-nek, hogy user nézetben vagyunk, így megjelenik a gomb
         document.body.classList.add('user-view-active');
+        setTimeout(checkPolicyUpdate, 1000);
     };
 
     // Kilépéskor eltüntetjük a gombot
@@ -6168,6 +6205,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
