@@ -305,7 +305,8 @@ export default async function handler(req, res) {
         has2FA: false,
         achievements: achievements, // ÚJ
         badge: badge, // ÚJ
-        streak: { current: currentStreak, longest: longestStreak }
+        streak: { current: currentStreak, longest: longestStreak },
+        isGoogleLinked: !!userRow[11]
     };
     
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -348,7 +349,8 @@ const user = {
     has2FA: (action === 'VERIFY_2FA_LOGIN' ? true : false), // Vagy ahogy a te kódodban van
     achievements: achievements,
     badge: badge,
-    streak: { current: currentStreak, longest: longestStreak } // <--- EZT ADD HOZZÁ
+    streak: { current: currentStreak, longest: longestStreak },
+    isGoogleLinked: !!userRow[11]
 };
     
     const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -1712,7 +1714,8 @@ case 'EDIT_USER_DRINK': {
                     has2FA: userRow[4] === 'TRUE',
                     achievements: achievements,
                     badge: userRow[6] || '',
-                    streak: { current: parseInt(userRow[9])||0, longest: parseInt(userRow[10])||0 }
+                    streak: { current: parseInt(userRow[9])||0, longest: parseInt(userRow[10])||0 },
+                    isGoogleLinked: true
                 };
 
                 const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -1757,6 +1760,36 @@ case 'EDIT_USER_DRINK': {
                 return res.status(200).json({ message: "Sikeres összekötés! 🎉" });
             }
 
+            // === KAPCSOLAT BONTÁSA ===
+            case 'UNLINK_GOOGLE_ACCOUNT': {
+                const userData = verifyUser(req);
+                
+                const usersResponse = await sheets.spreadsheets.values.get({ 
+                    spreadsheetId: SPREADSHEET_ID, 
+                    range: `${USERS_SHEET}!A:L` 
+                });
+                const rows = usersResponse.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === userData.email);
+                
+                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található" });
+
+                // Ellenőrzés: Csak akkor engedjük leválasztani, ha az L oszlopban van adat
+                if (!rows[rowIndex][11]) {
+                     return res.status(400).json({ error: "Nincs Google fiók összekötve!" });
+                }
+
+                // Törlés az L oszlopból
+                const updateRange = `${USERS_SHEET}!L${rowIndex + 1}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: updateRange,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [['']] } // Üres stringgel felülírjuk
+                });
+
+                return res.status(200).json({ message: "Google fiók kapcsolat sikeresen bontva! 🔌" });
+            }
+
             default:
                 return res.status(400).json({ error: "Ismeretlen művelet." });
         } // Switch vége
@@ -1766,6 +1799,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
