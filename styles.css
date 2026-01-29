@@ -4377,6 +4377,14 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
 .auth-btn.loading:has(.loading-dots) .btn-loading {
     display: none;
 }
+/* === GOOGLE LOGIN GOMB KÖZÉPRE IGAZÍTÁSA === */
+#googleLoginBtn {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
 
 
 
