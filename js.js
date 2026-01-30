@@ -41,32 +41,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         element.textContent = text;
     }
 }
-    
-async function uploadImageToCloudinary(file) {
-    const cloudName = "djcm6pzq2"; // Pl.: "dxy45..."
-    const uploadPreset = "sorappkepek"; // Pl.: "sor_app_upload"
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    // Opcionális: mappába rendezés
-    formData.append("folder", "sor_app_kepek"); 
-
-    try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) throw new Error("Feltöltési hiba");
-
-        const data = await response.json();
-        return data.secure_url; // Visszakapjuk a kép URL-jét
-    } catch (error) {
-        console.error("Cloudinary hiba:", error);
-        throw error;
-    }
-}
     // === 18+ KORHATÁR ELLENŐRZÉS ===
     function checkAgeVerification() {
         // Megnézzük, hogy a felhasználó igazolta-e már korábban
@@ -351,26 +326,13 @@ async function uploadImageToCloudinary(file) {
     const taste = document.getElementById('beerTaste').value;
     const notes = document.getElementById('beerNotes').value;
     const submitBtn = addBeerForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('beerImage').files[0];
-    let imageUrl = '';
-    
-    if (imageFile) {
-    try {
-        // Gomb szöveg módosítása, hogy lássa a user, mi történik
-        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
-        imageUrl = await uploadImageToCloudinary(imageFile);
-    } catch (err) {
-        console.error("Kép hiba:", err);
-        showError("Nem sikerült a képfeltöltés, de az adatokat mentjük.");
-    }
-}
 
     setLoading(submitBtn, true);
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes, image: imageUrl })
+            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes })
         });
         const result = await response.json();
         if (!response.ok) {
@@ -406,17 +368,6 @@ async function uploadImageToCloudinary(file) {
     const taste = document.getElementById('drinkTaste').value;
     const notes = document.getElementById('drinkNotes').value;
     const submitBtn = addDrinkForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('drinkImage').files[0];
-    let imageUrl = '';
-
-    if (imageFile) {
-    try {
-        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
-        imageUrl = await uploadImageToCloudinary(imageFile);
-    } catch (err) {
-        console.error("Kép hiba:", err);
-    }
-}
 
     setLoading(submitBtn, true);
     try {
@@ -433,8 +384,7 @@ async function uploadImageToCloudinary(file) {
                 look, 
                 smell, 
                 taste, 
-                notes,
-                image: imageUrl
+                notes 
             })
         });
         const result = await response.json();
@@ -2930,16 +2880,6 @@ editBeerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const index = parseInt(document.getElementById('editBeerIndex').value);
     const submitBtn = editBeerForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('editBeerImage').files[0];
-    let imageUrl = '';
-    if (imageFile) {
-    try {
-        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
-        imageUrl = await uploadImageToCloudinary(imageFile);
-    } catch (err) {
-        console.error("Kép hiba:", err);
-    }
-}
     
     const updatedBeer = {
         beerName: document.getElementById('editBeerName').value,
@@ -2949,8 +2889,7 @@ editBeerForm.addEventListener('submit', async (e) => {
         look: document.getElementById('editBeerLook').value,
         smell: document.getElementById('editBeerSmell').value,
         taste: document.getElementById('editBeerTaste').value,
-        notes: document.getElementById('editBeerNotes').value,
-        image: imageUrl
+        notes: document.getElementById('editBeerNotes').value
     };
     
     setLoading(submitBtn, true);
@@ -3004,11 +2943,6 @@ editDrinkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const index = parseInt(document.getElementById('editDrinkIndex').value);
     const submitBtn = editDrinkForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('editDrinkImage').files[0];
-    let imageBase64 = '';
-    if (imageFile) {
-        imageBase64 = await compressImage(imageFile);
-    }
     
     const updatedDrink = {
         drinkName: document.getElementById('editDrinkName').value,
@@ -3019,8 +2953,7 @@ editDrinkForm.addEventListener('submit', async (e) => {
         look: document.getElementById('editDrinkLook').value,
         smell: document.getElementById('editDrinkSmell').value,
         taste: document.getElementById('editDrinkTaste').value,
-        notes: document.getElementById('editDrinkNotes').value,
-        image: imageBase64
+        notes: document.getElementById('editDrinkNotes').value
     };
     
     setLoading(submitBtn, true);
@@ -4745,16 +4678,6 @@ window.confirmDeleteRec = async function() {
 window.openViewBeerModal = function(index) {
     const beer = currentUserBeers[index];
     if (!beer) return;
-    const imgContainer = document.getElementById('viewBeerImageContainer');
-    const imgElem = document.getElementById('viewBeerImage');
-    
-    if (beer.image && beer.image.length > 10) { // Ha van érvényes kép adat
-        imgElem.src = beer.image;
-        imgContainer.style.display = 'block';
-    } else {
-        imgElem.src = '';
-        imgContainer.style.display = 'none'; // Ha nincs, elrejtjük
-    }
 
     const modal = document.getElementById('viewBeerModal');
     
@@ -4800,18 +4723,6 @@ window.closeViewBeerModal = function() {
 window.openViewDrinkModal = function(index) {
     const drink = currentUserDrinks[index];
     if (!drink) return;
-    
-    const imgContainer = document.getElementById('viewDrinkImageContainer');
-    const imgElem = document.getElementById('viewDrinkImage');
-    
-    // JAVÍTÁS 1: 'beer.image' helyett 'drink.image' kell, hiszen itt italról van szó
-    if (drink.image && drink.image.length > 10) { 
-        imgElem.src = drink.image;
-        imgContainer.style.display = 'block';
-    } else {
-        imgElem.src = '';
-        imgContainer.style.display = 'none';
-    }
 
     const modal = document.getElementById('viewDrinkModal');
     
@@ -6293,15 +6204,6 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
-
-
-
-
-
-
-
-
-
 
 
 
