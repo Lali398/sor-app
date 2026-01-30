@@ -41,9 +41,8 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         element.textContent = text;
     }
 }
-    // Kép tömörítése és Base64 konvertálása
-sync function uploadImageToCloudinary(file) {
-    // CSERÉLD KI EZEKET A SAJÁT ADATAIDRA!
+    
+async function uploadImageToCloudinary(file) {
     const cloudName = "djcm6pzq2"; // Pl.: "dxy45..."
     const uploadPreset = "sorappkepek"; // Pl.: "sor_app_upload"
 
@@ -6294,6 +6293,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
