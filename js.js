@@ -4793,15 +4793,18 @@ window.closeViewBeerModal = function() {
 window.openViewDrinkModal = function(index) {
     const drink = currentUserDrinks[index];
     if (!drink) return;
+    
     const imgContainer = document.getElementById('viewDrinkImageContainer');
     const imgElem = document.getElementById('viewDrinkImage');
     
-    if (beer.image && beer.image.length > 10) { // Ha van érvényes kép adat
-        imgElem.src = beer.image;
+    // JAVÍTÁS 1: 'beer.image' helyett 'drink.image' kell, hiszen itt italról van szó
+    if (drink.image && drink.image.length > 10) { 
+        imgElem.src = drink.image;
         imgContainer.style.display = 'block';
     } else {
         imgElem.src = '';
         imgContainer.style.display = 'none';
+    }
 
     const modal = document.getElementById('viewDrinkModal');
     
@@ -6283,6 +6286,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
