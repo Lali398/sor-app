@@ -813,6 +813,11 @@
                 <input type="text" id="beerNotes" placeholder="Egyedi gondolatok...">
             </div>
 
+            <div class="cool-input-group full-width">
+                <label>📸 Kép feltöltése (Opcionális)</label>
+                <input type="file" id="beerImage" accept="image/*" class="file-input">
+            </div>
+
             <button type="submit" class="auth-btn beer-submit-btn">
                 <span class="btn-text">MENTÉS AZ ADATBÁZISBA 💾</span>
                 <span class="btn-loading"><div class="spinner"></div></span>
@@ -895,6 +900,11 @@
             <div class="cool-input-group full-width">
                 <label>Jegyzetek</label>
                 <input type="text" id="drinkNotes" placeholder="Díszítés, pohár, stb...">
+            </div>
+
+            <div class="cool-input-group full-width">
+                <label>📸 Kép feltöltése (Opcionális)</label>
+                <input type="file" id="drinkImage" accept="image/*" class="file-input">
             </div>
 
             <button type="submit" class="auth-btn drink-submit-btn">
@@ -1789,6 +1799,9 @@
         </div>
 
         <div class="view-beer-content" style="padding: 25px;">
+            <div id="viewBeerImageContainer" style="display:none; margin-bottom: 20px; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            <img id="viewBeerImage" src="" alt="Sör kép" style="width: 100%; height: auto; display: block;">
+        </div>
             <!-- Sör neve és típus -->
             <div class="view-section">
                 <div class="view-main-title" id="viewBeerName">Dreher Gold</div>
@@ -1867,6 +1880,9 @@
         </div>
 
         <div class="view-drink-content" style="padding: 25px;">
+            <div id="viewDrinkImageContainer" style="display:none; margin-bottom: 20px; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            <img id="viewDrinkImage" src="" alt="Ital kép" style="width: 100%; height: auto; display: block;">
+        </div>
             <!-- Ital neve és kategória -->
             <div class="view-section">
                 <div class="view-main-title" id="viewDrinkName">Gin Tonic</div>
@@ -2217,6 +2233,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
