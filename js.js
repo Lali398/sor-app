@@ -426,7 +426,7 @@ function compressImage(file) {
     const taste = document.getElementById('drinkTaste').value;
     const notes = document.getElementById('drinkNotes').value;
     const submitBtn = addDrinkForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('DrinkImage').files[0];
+    const imageFile = document.getElementById('drinkImage').files[0];
     let imageBase64 = '';
 
     if (imageFile) {
@@ -6306,6 +6306,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
