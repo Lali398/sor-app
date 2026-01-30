@@ -51,17 +51,37 @@ function compressImage(file) {
             img.src = event.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                // Maximum 600px szélesre méretezzük (így belefér a cellába)
-                const maxWidth = 600; 
-                const scaleSize = maxWidth / img.width;
-                canvas.width = maxWidth;
-                canvas.height = img.height * scaleSize;
+                
+                // --- ITT A VÁLTOZÁS ---
+                // Eredeti: 600. Most növeljük 1000-re (ez még általában belefér)
+                const maxWidth = 1000; 
+                
+                let width = img.width;
+                let height = img.height;
+
+                // Méretarányos átméretezés
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
                 
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, width, height);
                 
-                // JPEG tömörítés 0.6 minőséggel
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                // --- ITT IS VÁLTOZÁS ---
+                // JPEG helyett WebP-t használunk, 0.7 (70%) minőséggel.
+                // A WebP sokkal kisebb méretű, így jobb minőség fér bele a limitbe.
+                let dataUrl = canvas.toDataURL('image/webp', 0.7);
+
+                // Biztonsági ellenőrzés: Ha még így is túl hosszú a Google Sheetnek (>50k karakter),
+                // akkor drasztikusan csökkentjük a minőséget, hogy ne szálljon el a mentés.
+                if (dataUrl.length > 49000) {
+                    dataUrl = canvas.toDataURL('image/webp', 0.4);
+                }
+
                 resolve(dataUrl);
             }
             img.onerror = (error) => reject(error);
@@ -6286,6 +6306,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
