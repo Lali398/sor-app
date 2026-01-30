@@ -42,54 +42,32 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     }
 }
     // Kép tömörítése és Base64 konvertálása
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                
-                // --- ITT A VÁLTOZÁS ---
-                // Eredeti: 600. Most növeljük 1000-re (ez még általában belefér)
-                const maxWidth = 1000; 
-                
-                let width = img.width;
-                let height = img.height;
+sync function uploadImageToCloudinary(file) {
+    // CSERÉLD KI EZEKET A SAJÁT ADATAIDRA!
+    const cloudName = "djcm6pzq2"; // Pl.: "dxy45..."
+    const uploadPreset = "sorappkepek"; // Pl.: "sor_app_upload"
 
-                // Méretarányos átméretezés
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    // Opcionális: mappába rendezés
+    formData.append("folder", "sor_app_kepek"); 
 
-                canvas.width = width;
-                canvas.height = height;
-                
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // --- ITT IS VÁLTOZÁS ---
-                // JPEG helyett WebP-t használunk, 0.7 (70%) minőséggel.
-                // A WebP sokkal kisebb méretű, így jobb minőség fér bele a limitbe.
-                let dataUrl = canvas.toDataURL('image/webp', 0.7);
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
 
-                // Biztonsági ellenőrzés: Ha még így is túl hosszú a Google Sheetnek (>50k karakter),
-                // akkor drasztikusan csökkentjük a minőséget, hogy ne szálljon el a mentés.
-                if (dataUrl.length > 49000) {
-                    dataUrl = canvas.toDataURL('image/webp', 0.4);
-                }
+        if (!response.ok) throw new Error("Feltöltési hiba");
 
-                resolve(dataUrl);
-            }
-            img.onerror = (error) => reject(error);
-        }
-        reader.onerror = (error) => reject(error);
-    });
+        const data = await response.json();
+        return data.secure_url; // Visszakapjuk a kép URL-jét
+    } catch (error) {
+        console.error("Cloudinary hiba:", error);
+        throw error;
+    }
 }
-
     // === 18+ KORHATÁR ELLENŐRZÉS ===
     function checkAgeVerification() {
         // Megnézzük, hogy a felhasználó igazolta-e már korábban
@@ -375,22 +353,25 @@ function compressImage(file) {
     const notes = document.getElementById('beerNotes').value;
     const submitBtn = addBeerForm.querySelector('.auth-btn');
     const imageFile = document.getElementById('beerImage').files[0];
-    let imageBase64 = '';
-
+    let imageUrl = '';
+    
     if (imageFile) {
-        try {
-            imageBase64 = await compressImage(imageFile);
-        } catch (err) {
-            console.error("Kép hiba:", err);
-        }
+    try {
+        // Gomb szöveg módosítása, hogy lássa a user, mi történik
+        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
+        imageUrl = await uploadImageToCloudinary(imageFile);
+    } catch (err) {
+        console.error("Kép hiba:", err);
+        showError("Nem sikerült a képfeltöltés, de az adatokat mentjük.");
     }
+}
 
     setLoading(submitBtn, true);
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes })
+            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes, image: imageUrl })
         });
         const result = await response.json();
         if (!response.ok) {
@@ -427,15 +408,16 @@ function compressImage(file) {
     const notes = document.getElementById('drinkNotes').value;
     const submitBtn = addDrinkForm.querySelector('.auth-btn');
     const imageFile = document.getElementById('drinkImage').files[0];
-    let imageBase64 = '';
+    let imageUrl = '';
 
     if (imageFile) {
-        try {
-            imageBase64 = await compressImage(imageFile);
-        } catch (err) {
-            console.error("Kép hiba:", err);
-        }
+    try {
+        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
+        imageUrl = await uploadImageToCloudinary(imageFile);
+    } catch (err) {
+        console.error("Kép hiba:", err);
     }
+}
 
     setLoading(submitBtn, true);
     try {
@@ -452,7 +434,8 @@ function compressImage(file) {
                 look, 
                 smell, 
                 taste, 
-                notes 
+                notes,
+                image: imageUrl
             })
         });
         const result = await response.json();
@@ -2949,10 +2932,15 @@ editBeerForm.addEventListener('submit', async (e) => {
     const index = parseInt(document.getElementById('editBeerIndex').value);
     const submitBtn = editBeerForm.querySelector('.auth-btn');
     const imageFile = document.getElementById('editBeerImage').files[0];
-    let imageBase64 = '';
+    let imageUrl = '';
     if (imageFile) {
-        imageBase64 = await compressImage(imageFile);
+    try {
+        submitBtn.querySelector('.btn-text').textContent = "Kép feltöltése...";
+        imageUrl = await uploadImageToCloudinary(imageFile);
+    } catch (err) {
+        console.error("Kép hiba:", err);
     }
+}
     
     const updatedBeer = {
         beerName: document.getElementById('editBeerName').value,
@@ -2963,7 +2951,7 @@ editBeerForm.addEventListener('submit', async (e) => {
         smell: document.getElementById('editBeerSmell').value,
         taste: document.getElementById('editBeerTaste').value,
         notes: document.getElementById('editBeerNotes').value,
-        image: imageBase64
+        image: imageUrl
     };
     
     setLoading(submitBtn, true);
@@ -6306,6 +6294,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
