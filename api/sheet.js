@@ -38,7 +38,8 @@ const transformRowToBeer = (row, userIndexes, ratedBy) => {
         totalScore: parseInt(row[userIndexes.score]) || 0,
         avg: parseFloat(row[userIndexes.avg]) || 0,
         date: row[userIndexes.date] || null,
-        ratedBy
+        ratedBy,
+        image: row[14] || ''
     };
 };
 
@@ -515,14 +516,15 @@ case 'GET_ACHIEVEMENTS': {
                       avg: row[10] || 0,             // K oszlop (volt 10)
                       
                       
-                      notes: row[11] || ''
+                      notes: row[11] || '',
+                      image: row[14] || ''
                   })) || [];
               return res.status(200).json(userBeers);
             }
 
             case 'ADD_USER_BEER': {
                 const userData = verifyUser(req);
-                const { beerName, type, location, beerPercentage, look, smell, taste, notes } = req.body;
+                const { beerName, type, location, beerPercentage, look, smell, taste, notes, image } = req.body;
                 
                 const numLook = parseFloat(look) || 0;
                 const numSmell = parseFloat(smell) || 0;
@@ -549,7 +551,8 @@ case 'GET_ACHIEVEMENTS': {
                 // ------------------------------------------
                 notes || '',     // L: Jegyzetek
                 'Nem',           // M: Jóváhagyva?
-                userData.email   // N: Email
+                userData.email,   // N: Email
+                image || ''
             ];
                 
                 await sheets.spreadsheets.values.append({
@@ -611,14 +614,15 @@ case 'GET_ACHIEVEMENTS': {
                 taste: row[9] || 0,     // J: Íz
                 totalScore: row[10] || 0, // K: Összpontszám
                 avg: row[11] || 0,      // L: Átlag
-                notes: row[12] || ''    // M: Megjegyzés
+                notes: row[12] || '',   // M: Megjegyzés
+                image: row[14] || ''
             })) || [];
         return res.status(200).json(userDrinks);
     }
     
     case 'ADD_USER_DRINK': {
         const userData = verifyUser(req);
-        const { drinkName, category, type, location, drinkPercentage, look, smell, taste, notes } = req.body;
+        const { drinkName, category, type, location, drinkPercentage, look, smell, taste, notes, image } = req.body;
         
         const numLook = parseFloat(look) || 0;
         const numSmell = parseFloat(smell) || 0;
@@ -642,7 +646,8 @@ case 'GET_ACHIEVEMENTS': {
             totalScore,         // K: Összpontszám
             avgScore,           // L: Átlag
             notes || '',        // M: Megjegyzés
-            userData.email      // N: Email
+            userData.email,      // N: Email
+            image || ''
         ];
         
         await sheets.spreadsheets.values.append({
@@ -657,7 +662,7 @@ case 'GET_ACHIEVEMENTS': {
 
             case 'EDIT_USER_BEER': {
     const userData = verifyUser(req);
-    const { index, beerName, type, location, beerPercentage, look, smell, taste, notes } = req.body;
+    const { index, beerName, type, location, beerPercentage, look, smell, taste, notes, image } = req.body;
     
     const beersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
@@ -698,10 +703,11 @@ case 'GET_ACHIEVEMENTS': {
     // -----------------------------
     notes || '',     // L: Jegyzetek
     targetRow[12],   // M: Jóváhagyva?
-    userData.email   // N: Email
+    userData.email,   // N: Email
+    image || targetRow[14] || ''
 ];
     
-    const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
+    const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:O${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
         range: range,
@@ -714,7 +720,7 @@ case 'GET_ACHIEVEMENTS': {
 
 case 'EDIT_USER_DRINK': {
     const userData = verifyUser(req);
-    const { index, drinkName, category, type, location, drinkPercentage, look, smell, taste, notes } = req.body;
+    const { index, drinkName, category, type, location, drinkPercentage, look, smell, taste, notes, image } = req.body;
     
     const drinksResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
@@ -753,10 +759,11 @@ case 'EDIT_USER_DRINK': {
         totalScore,         // K: Összpontszám
         avgScore,           // L: Átlag
         notes || '',        // M: Megjegyzés
-        userData.email      // N: Email
+        userData.email,      // N: Email
+        image || targetRow[14] || ''
     ];
     
-    const range = `${GUEST_DRINKS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
+    const range = `${GUEST_DRINKS_SHEET}!A${globalIndex + 1}:O${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
         range: range,
@@ -1799,6 +1806,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
