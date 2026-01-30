@@ -2997,7 +2997,7 @@ editDrinkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const index = parseInt(document.getElementById('editDrinkIndex').value);
     const submitBtn = editDrinkForm.querySelector('.auth-btn');
-    const imageFile = document.getElementById('editBeerImage').files[0];
+    const imageFile = document.getElementById('editDrinkImage').files[0];
     let imageBase64 = '';
     if (imageFile) {
         imageBase64 = await compressImage(imageFile);
@@ -6286,6 +6286,7 @@ window.confirmDisable2FA = async function() {
     }
 }
 });
+
 
 
 
