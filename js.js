@@ -6475,64 +6475,8 @@ function updateLivePreview() {
     
     updateThemePreview(theme);
 }
-
-// Értesítés megjelenítése (ha nincs még ilyen függvény)
-function showNotification(message, type = 'info') {
-    // Ha van meglévő értesítési rendszer, használjuk azt
-    // Különben egyszerű alert
-    if (typeof showToast !== 'undefined') {
-        showToast(message, type);
-    } else {
-        // Egyszerű toast létrehozása
-        const toast = document.createElement('div');
-        toast.className = 'theme-toast';
-        toast.textContent = message;
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#27ae60' : '#667eea'};
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            z-index: 99999;
-            animation: slideInRight 0.3s ease;
-        `;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-}
-
-// Oldal betöltésekor
-document.addEventListener('DOMContentLoaded', () => {
-    // Téma betöltése
-    loadThemeFromStorage();
-    
-    // Event listener-ek inicializálása
-    initThemeCustomization();
 });
 
-// Toast animációk CSS-ben (ha nincs már)
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(400px); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
-});
 
 
 
