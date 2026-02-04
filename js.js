@@ -6203,7 +6203,337 @@ window.confirmDisable2FA = async function() {
         }
     }
 }
+    // === TÉMA TESTRESZABÁS FUNKCIÓK ===
+
+// Előre beállított témák definíciója
+const presetThemes = {
+    'dark-purple': {
+        name: 'Sötét Lila',
+        bgColor1: '#1f005c',
+        bgColor2: '#10002b',
+        bgColor3: '#000000',
+        textColor: '#e0e0e0',
+        textSecondary: '#b0b0b0',
+        accentColor: '#8a73ff'
+    },
+    'ocean': {
+        name: 'Óceán',
+        bgColor1: '#0f2027',
+        bgColor2: '#203a43',
+        bgColor3: '#2c5364',
+        textColor: '#e8f4f8',
+        textSecondary: '#b0c4de',
+        accentColor: '#4fc3f7'
+    },
+    'sunset': {
+        name: 'Naplemente',
+        bgColor1: '#FF512F',
+        bgColor2: '#DD2476',
+        bgColor3: '#000000',
+        textColor: '#fff0f0',
+        textSecondary: '#ffb3b3',
+        accentColor: '#ff6b9d'
+    },
+    'forest': {
+        name: 'Erdő',
+        bgColor1: '#134E5E',
+        bgColor2: '#71B280',
+        bgColor3: '#000000',
+        textColor: '#e8f5e9',
+        textSecondary: '#a5d6a7',
+        accentColor: '#66bb6a'
+    },
+    'midnight': {
+        name: 'Éjfél',
+        bgColor1: '#232526',
+        bgColor2: '#414345',
+        bgColor3: '#000000',
+        textColor: '#e0e0e0',
+        textSecondary: '#9e9e9e',
+        accentColor: '#78909c'
+    },
+    'aurora': {
+        name: 'Aurora',
+        bgColor1: '#00467F',
+        bgColor2: '#A5CC82',
+        bgColor3: '#000000',
+        textColor: '#e8f5e9',
+        textSecondary: '#b2dfdb',
+        accentColor: '#4db6ac'
+    },
+    'fire': {
+        name: 'Tűz',
+        bgColor1: '#C33764',
+        bgColor2: '#1D2671',
+        bgColor3: '#000000',
+        textColor: '#ffe0e0',
+        textSecondary: '#ffb3b3',
+        accentColor: '#f48fb1'
+    },
+    'cyber': {
+        name: 'Cyber',
+        bgColor1: '#0F2027',
+        bgColor2: '#2C5364',
+        bgColor3: '#000000',
+        textColor: '#00ff9f',
+        textSecondary: '#00d4aa',
+        accentColor: '#00ffff'
+    }
+};
+
+// Téma betöltése localStorage-ból
+function loadThemeFromStorage() {
+    const savedTheme = localStorage.getItem('userTheme');
+    if (savedTheme) {
+        try {
+            const theme = JSON.parse(savedTheme);
+            applyTheme(theme);
+            
+            // Ha előre beállított téma, jelöljük aktívnak
+            if (theme.preset) {
+                document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === theme.preset) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Hiba a téma betöltésekor:', e);
+        }
+    }
+}
+
+// Téma alkalmazása
+function applyTheme(theme) {
+    document.documentElement.style.setProperty('--bg-color-1', theme.bgColor1);
+    document.documentElement.style.setProperty('--bg-color-2', theme.bgColor2);
+    document.documentElement.style.setProperty('--bg-color-3', theme.bgColor3);
+    document.documentElement.style.setProperty('--text-primary', theme.textColor);
+    document.documentElement.style.setProperty('--text-secondary', theme.textSecondary);
+    document.documentElement.style.setProperty('--accent-color', theme.accentColor);
+    
+    document.body.classList.add('custom-theme');
+    
+    // Háttér frissítése
+    document.body.style.background = `linear-gradient(135deg, ${theme.bgColor1} 0%, ${theme.bgColor2} 50%, ${theme.bgColor3} 100%)`;
+    document.body.style.backgroundAttachment = 'fixed';
+    
+    // Input mezők frissítése
+    updateColorInputs(theme);
+    
+    // Előnézet frissítése
+    updateThemePreview(theme);
+}
+
+// Szín input mezők frissítése
+function updateColorInputs(theme) {
+    if (document.getElementById('bgColor1')) {
+        document.getElementById('bgColor1').value = theme.bgColor1;
+        document.getElementById('bgColor1Text').value = theme.bgColor1;
+        document.getElementById('bgColor2').value = theme.bgColor2;
+        document.getElementById('bgColor2Text').value = theme.bgColor2;
+        document.getElementById('bgColor3').value = theme.bgColor3;
+        document.getElementById('bgColor3Text').value = theme.bgColor3;
+        document.getElementById('textColor').value = theme.textColor;
+        document.getElementById('textColorText').value = theme.textColor;
+        document.getElementById('textSecondary').value = theme.textSecondary;
+        document.getElementById('textSecondaryText').value = theme.textSecondary;
+        document.getElementById('accentColor').value = theme.accentColor;
+        document.getElementById('accentColorText').value = theme.accentColor;
+    }
+}
+
+// Előnézet frissítése
+function updateThemePreview(theme) {
+    const previewBg = document.getElementById('themePreviewBg');
+    const previewText = document.getElementById('previewText');
+    const previewSecondary = document.getElementById('previewSecondary');
+    const previewAccent = document.getElementById('previewAccent');
+    
+    if (previewBg) {
+        previewBg.style.background = `linear-gradient(135deg, ${theme.bgColor1} 0%, ${theme.bgColor2} 50%, ${theme.bgColor3} 100%)`;
+        previewText.style.color = theme.textColor;
+        previewSecondary.style.color = theme.textSecondary;
+        previewAccent.style.color = theme.accentColor;
+    }
+}
+
+// Event listener-ek inicializálása
+function initThemeCustomization() {
+    // Előre beállított témák
+    document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const themeName = btn.dataset.theme;
+            const theme = { ...presetThemes[themeName], preset: themeName };
+            
+            // Aktív állapot beállítása
+            document.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Téma alkalmazása
+            applyTheme(theme);
+            
+            // Mentés
+            localStorage.setItem('userTheme', JSON.stringify(theme));
+            
+            // Értesítés
+            showNotification('✨ Téma alkalmazva: ' + theme.name, 'success');
+        });
+    });
+    
+    // Színválasztók szinkronizálása
+    const colorInputPairs = [
+        ['bgColor1', 'bgColor1Text'],
+        ['bgColor2', 'bgColor2Text'],
+        ['bgColor3', 'bgColor3Text'],
+        ['textColor', 'textColorText'],
+        ['textSecondary', 'textSecondaryText'],
+        ['accentColor', 'accentColorText']
+    ];
+    
+    colorInputPairs.forEach(([colorId, textId]) => {
+        const colorInput = document.getElementById(colorId);
+        const textInput = document.getElementById(textId);
+        
+        if (colorInput && textInput) {
+            // Color picker változás
+            colorInput.addEventListener('input', (e) => {
+                textInput.value = e.target.value;
+                updateLivePreview();
+            });
+            
+            // Text input változás
+            textInput.addEventListener('input', (e) => {
+                let value = e.target.value;
+                // Hex szín validáció
+                if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    colorInput.value = value;
+                    updateLivePreview();
+                }
+            });
+        }
+    });
+    
+    // Egyéni téma alkalmazása
+    const applyBtn = document.getElementById('applyCustomTheme');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            const theme = {
+                bgColor1: document.getElementById('bgColor1').value,
+                bgColor2: document.getElementById('bgColor2').value,
+                bgColor3: document.getElementById('bgColor3').value,
+                textColor: document.getElementById('textColor').value,
+                textSecondary: document.getElementById('textSecondary').value,
+                accentColor: document.getElementById('accentColor').value,
+                preset: null // Egyéni téma
+            };
+            
+            // Előre beállított témák kijelölésének megszüntetése
+            document.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
+            
+            applyTheme(theme);
+            localStorage.setItem('userTheme', JSON.stringify(theme));
+            
+            showNotification('✨ Egyéni téma alkalmazva!', 'success');
+        });
+    }
+    
+    // Téma visszaállítása
+    const resetBtn = document.getElementById('resetTheme');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            const defaultTheme = presetThemes['dark-purple'];
+            defaultTheme.preset = 'dark-purple';
+            
+            applyTheme(defaultTheme);
+            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
+            
+            // Alapértelmezett téma kijelölése
+            document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.theme === 'dark-purple') {
+                    btn.classList.add('active');
+                }
+            });
+            
+            showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
+        });
+    }
+}
+
+// Élő előnézet frissítése
+function updateLivePreview() {
+    const theme = {
+        bgColor1: document.getElementById('bgColor1').value,
+        bgColor2: document.getElementById('bgColor2').value,
+        bgColor3: document.getElementById('bgColor3').value,
+        textColor: document.getElementById('textColor').value,
+        textSecondary: document.getElementById('textSecondary').value,
+        accentColor: document.getElementById('accentColor').value
+    };
+    
+    updateThemePreview(theme);
+}
+
+// Értesítés megjelenítése (ha nincs még ilyen függvény)
+function showNotification(message, type = 'info') {
+    // Ha van meglévő értesítési rendszer, használjuk azt
+    // Különben egyszerű alert
+    if (typeof showToast !== 'undefined') {
+        showToast(message, type);
+    } else {
+        // Egyszerű toast létrehozása
+        const toast = document.createElement('div');
+        toast.className = 'theme-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#27ae60' : '#667eea'};
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 99999;
+            animation: slideInRight 0.3s ease;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Oldal betöltésekor
+document.addEventListener('DOMContentLoaded', () => {
+    // Téma betöltése
+    loadThemeFromStorage();
+    
+    // Event listener-ek inicializálása
+    initThemeCustomization();
 });
+
+// Toast animációk CSS-ben (ha nincs már)
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+});
+
 
 
 
