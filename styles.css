@@ -4384,6 +4384,222 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
     width: 100%;
     margin: 0 auto;
 }
+/* === TÉMA TESTRESZABÁS STÍLUSOK === */
+
+/* Előre beállított témák grid */
+.preset-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.theme-preset-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-preset-btn:hover {
+    transform: translateY(-3px);
+    border-color: rgba(138, 115, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-preset-btn.active {
+    border-color: #8a73ff;
+    background: rgba(138, 115, 255, 0.15);
+    box-shadow: 0 0 20px rgba(138, 115, 255, 0.3);
+}
+
+.theme-preview {
+    width: 100%;
+    height: 60px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.theme-preset-btn span {
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Egyéni téma szerkesztő */
+.custom-theme-editor {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.color-section {
+    margin-bottom: 20px;
+}
+
+.color-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.color-input-item label {
+    display: block;
+    color: #aaa;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.color-picker-wrapper input[type="color"] {
+    width: 50px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.color-picker-wrapper input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+}
+
+.color-picker-wrapper input[type="text"]:focus {
+    outline: none;
+    border-color: #8a73ff;
+    box-shadow: 0 0 10px rgba(138, 115, 255, 0.3);
+}
+
+/* Téma előnézet */
+.theme-preview-section {
+    margin-top: 25px;
+}
+
+.theme-live-preview {
+    margin-bottom: 20px;
+}
+
+.preview-bg {
+    padding: 30px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.preview-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.theme-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.theme-actions .action-btn {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-actions .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Dinamikus téma változók alkalmazása */
+:root {
+    --bg-color-1: #1f005c;
+    --bg-color-2: #10002b;
+    --bg-color-3: #000000;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --accent-color: #8a73ff;
+}
+
+/* Téma alkalmazása a body-ra */
+body.custom-theme {
+    background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 50%, var(--bg-color-3) 100%);
+    color: var(--text-primary);
+}
+
+body.custom-theme .stat-info p,
+body.custom-theme .color-input-item label,
+body.custom-theme .setting-info p {
+    color: var(--text-secondary);
+}
+
+body.custom-theme .switch-auth,
+body.custom-theme .live-search-input:focus {
+    border-color: var(--accent-color);
+}
+
+/* Reszponzív dizájn */
+@media (max-width: 768px) {
+    .preset-themes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .color-inputs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-actions {
+        flex-direction: column;
+    }
+    
+    .theme-actions .action-btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-preset-btn span {
+        font-size: 0.7rem;
+    }
+    
+    .theme-preview {
+        height: 50px;
+    }
+}
+
 
 
 
