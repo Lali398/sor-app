@@ -662,6 +662,143 @@
                                 </select>
                             </div>
                         </div>
+
+                            <!-- Insert this section in the Settings tab (user-settings-content), after the existing settings items -->
+<!-- Add this right after the viewModeSelector setting-item div (around line 663) -->
+
+                            <!-- TÉMA TESTRESZABÁS SZEKCIÓ -->
+                            <div class="setting-item" style="display: block; padding: 25px;">
+                                <div class="setting-info" style="margin-bottom: 20px;">
+                                    <h4>🎨 Téma Testreszabás</h4>
+                                    <p>Válassz előre beállított témát, vagy hozz létre sajátot!</p>
+                                </div>
+
+                                <!-- Előre beállított témák -->
+                                <div style="margin-bottom: 25px;">
+                                    <label style="display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 10px; font-weight: 500;">
+                                        Előre beállított témák
+                                    </label>
+                                    <div class="preset-themes-grid">
+                                        <button class="theme-preset-btn active" data-theme="dark-purple">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);"></div>
+                                            <span>Sötét Lila</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="ocean">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);"></div>
+                                            <span>Óceán</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="sunset">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 50%, #000 100%);"></div>
+                                            <span>Naplemente</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="forest">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #134E5E 0%, #71B280 50%, #000 100%);"></div>
+                                            <span>Erdő</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="midnight">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #232526 0%, #414345 50%, #000 100%);"></div>
+                                            <span>Éjfél</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="aurora">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #00467F 0%, #A5CC82 50%, #000 100%);"></div>
+                                            <span>Aurora</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="fire">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #C33764 0%, #1D2671 50%, #000 100%);"></div>
+                                            <span>Tűz</span>
+                                        </button>
+                                        <button class="theme-preset-btn" data-theme="cyber">
+                                            <div class="theme-preview" style="background: linear-gradient(135deg, #0F2027 0%, #2C5364 50%, #000 100%);"></div>
+                                            <span>Cyber</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Egyéni téma szerkesztő -->
+                                <div class="custom-theme-editor">
+                                    <label style="display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 15px; font-weight: 500;">
+                                        Egyéni téma létrehozása
+                                    </label>
+
+                                    <!-- Háttér színek -->
+                                    <div class="color-section">
+                                        <h5 style="color: #ccc; font-size: 0.85rem; margin-bottom: 10px;">Háttér színek</h5>
+                                        <div class="color-inputs-grid">
+                                            <div class="color-input-item">
+                                                <label>Kezdő szín</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="bgColor1" value="#1f005c">
+                                                    <input type="text" id="bgColor1Text" value="#1f005c" maxlength="7">
+                                                </div>
+                                            </div>
+                                            <div class="color-input-item">
+                                                <label>Közép szín</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="bgColor2" value="#10002b">
+                                                    <input type="text" id="bgColor2Text" value="#10002b" maxlength="7">
+                                                </div>
+                                            </div>
+                                            <div class="color-input-item">
+                                                <label>Vég szín</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="bgColor3" value="#000000">
+                                                    <input type="text" id="bgColor3Text" value="#000000" maxlength="7">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Szöveg színek -->
+                                    <div class="color-section" style="margin-top: 20px;">
+                                        <h5 style="color: #ccc; font-size: 0.85rem; margin-bottom: 10px;">Szöveg színek</h5>
+                                        <div class="color-inputs-grid">
+                                            <div class="color-input-item">
+                                                <label>Fő szöveg</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="textColor" value="#e0e0e0">
+                                                    <input type="text" id="textColorText" value="#e0e0e0" maxlength="7">
+                                                </div>
+                                            </div>
+                                            <div class="color-input-item">
+                                                <label>Másodlagos</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="textSecondary" value="#b0b0b0">
+                                                    <input type="text" id="textSecondaryText" value="#b0b0b0" maxlength="7">
+                                                </div>
+                                            </div>
+                                            <div class="color-input-item">
+                                                <label>Kiemelés</label>
+                                                <div class="color-picker-wrapper">
+                                                    <input type="color" id="accentColor" value="#8a73ff">
+                                                    <input type="text" id="accentColorText" value="#8a73ff" maxlength="7">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Előnézet és gombok -->
+                                    <div class="theme-preview-section">
+                                        <div class="theme-live-preview">
+                                            <div class="preview-bg" id="themePreviewBg">
+                                                <div class="preview-card">
+                                                    <h4 id="previewText" style="margin: 0 0 10px 0;">Előnézet</h4>
+                                                    <p id="previewSecondary" style="margin: 0 0 10px 0; font-size: 0.85rem;">Ez a másodlagos szöveg</p>
+                                                    <span id="previewAccent" style="font-size: 0.8rem;">Kiemelés</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="theme-actions">
+                                            <button class="action-btn" id="applyCustomTheme" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                                <span>✨</span> Egyéni téma alkalmazása
+                                            </button>
+                                            <button class="action-btn" id="resetTheme" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                                                <span>🔄</span> Alapértelmezett visszaállítása
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- 2FAKTOROS HÍTELESÍTÉS -->
                             <div class="setting-item">
                                 <div class="setting-info">
@@ -2217,6 +2354,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
