@@ -4554,11 +4554,6 @@ body.user-view-active #prizeFloatingBtn { display: flex; }
 }
 
 /* Téma alkalmazása a body-ra */
-body.custom-theme {
-    background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 50%, var(--bg-color-3) 100%);
-    color: var(--text-primary);
-}
-
 body.custom-theme .stat-info p,
 body.custom-theme .color-input-item label,
 body.custom-theme .setting-info p {
@@ -4721,6 +4716,7 @@ body.custom-theme *[style*="border"],
 body.custom-theme *[class*="separator"] {
     border-color: var(--accent-color) !important;
 }
+
 
 
 
