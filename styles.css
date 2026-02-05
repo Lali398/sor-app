@@ -4681,23 +4681,25 @@ body.custom-theme .stat-label-small {
         border-top: 2px solid var(--accent-color);
     }
 }
-/* Ezt add a styles.css végére vagy a custom-theme részhez */
-
-/* 1. JAVÍTÁS: A háttér átmenet (gradient) is vegye fel a választott színt */
+/* JAVÍTOTT HÁTTÉR: Most már figyeli a Háttér 1, 2, 3 beállításokat */
 body.custom-theme {
-    /* Itt a közepébe (50%) belekeverjük a választott színt, de sötétítve */
-    background: linear-gradient(135deg, #000000 0%, var(--accent-color) 50%, #000000 100%) !important;
-    background-attachment: fixed;
+    /* A hardcoded #000000 és accent-color helyett a változókat használjuk */
+    background: linear-gradient(135deg, var(--bg-color-1) 0%, var(--bg-color-2) 50%, var(--bg-color-3) 100%) !important;
+    
+    /* Fontos, hogy ne csússzon el görgetéskor */
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
 }
 
-/* 2. JAVÍTÁS: A kártyák (upload-card) háttere ne legyen sima fekete */
-body.custom-theme .drink-upload-card,
-body.custom-theme .modal-content,
-body.custom-theme .user-upload-card {
-    /* A sima rgba(0,0,0,0.4) helyett egy nagyon halvány színátmenetet adunk neki */
-    background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5)) !important;
-    /* Opcionális: ha azt akarod, hogy a kártya is picit színes legyen: */
-    /* box-shadow: inset 0 0 20px rgba(var(--accent-color), 0.1); */
+/* Opcionális: Ha a kártyák túl sötétek lennének a közepén */
+body.custom-theme .auth-card,
+body.custom-theme .stat-card,
+body.custom-theme .modal-content {
+    /* Kicsit világosítunk a kártyák hátterén, hogy olvashatóbb legyen */
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid var(--accent-color) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
 }
 /* 3. JAVÍTÁS: Minden vonal és elválasztó vegye át a színt */
 
@@ -4719,6 +4721,7 @@ body.custom-theme *[style*="border"],
 body.custom-theme *[class*="separator"] {
     border-color: var(--accent-color) !important;
 }
+
 
 
 
