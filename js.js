@@ -6460,7 +6460,8 @@ function initThemeCustomization() {
     });
     
     // Egyéni téma alkalmazása
-    const applyBtn = document.getElementById('applyCustomTheme');
+    const appl
+yBtn = document.getElementById('applyCustomTheme');
     if (applyBtn) {
         applyBtn.addEventListener('click', () => {
             const theme = {
@@ -6486,41 +6487,25 @@ function initThemeCustomization() {
     // Téma visszaállítása
     const resetBtn = document.getElementById('resetTheme');
     if (resetBtn) {
-        resetBtn.onclick = function() {
-            // 1. Megadjuk a pontos gyári színeket
-            const defaultTheme = {
-                bgColor1: '#1f005c',
-                bgColor2: '#10002b',
-                bgColor3: '#000000',
-                textColor: '#e0e0e0',
-                textSecondary: '#b0b0b0',
-                accentColor: '#ffd700', // Az eredeti arany színed
-                preset: 'dark-purple'
-            };
-
-            // 2. Aktiváljuk a "Sötét Lila" gombot vizuálisan
+        resetBtn.addEventListener('click', () => {
+            const defaultTheme = presetThemes['dark-purple'];
+            defaultTheme.preset = 'dark-purple';
+            
+            applyTheme(defaultTheme);
+            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
+            
+            // Alapértelmezett téma kijelölése
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.theme === 'dark-purple') {
                     btn.classList.add('active');
                 }
             });
-
-            // 3. Alkalmazzuk a színeket a webappon
-            applyTheme(defaultTheme);
-
-            // 4. Frissítjük a színválasztó csúszkákat és szövegeket
-            updateColorInputs(defaultTheme);
-
-            // 5. Mentjük a böngészőbe
-            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
-
-            // Értesítés
-            if (typeof showNotification === 'function') {
-                showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
-            }
-        };
+            
+            showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
+        });
     }
+}
 
 // Élő előnézet frissítése
 function updateLivePreview() {
@@ -6593,7 +6578,6 @@ function updateLivePreview() {
         }
     `;
     document.head.appendChild(style);
-    
     // === TÉMA LENYITÓ FUNKCIÓ ===
 window.toggleThemeSection = function() {
     const content = document.getElementById('themeContent');
@@ -6611,178 +6595,3 @@ window.toggleThemeSection = function() {
     }
 }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
