@@ -4681,6 +4681,45 @@ body.custom-theme .stat-label-small {
         border-top: 2px solid var(--accent-color);
     }
 }
+/* Ezt add a styles.css végére vagy a custom-theme részhez */
+
+/* 1. JAVÍTÁS: A háttér átmenet (gradient) is vegye fel a választott színt */
+body.custom-theme {
+    /* Itt a közepébe (50%) belekeverjük a választott színt, de sötétítve */
+    background: linear-gradient(135deg, #000000 0%, var(--accent-color) 50%, #000000 100%) !important;
+    background-attachment: fixed;
+}
+
+/* 2. JAVÍTÁS: A kártyák (upload-card) háttere ne legyen sima fekete */
+body.custom-theme .drink-upload-card,
+body.custom-theme .modal-content,
+body.custom-theme .user-upload-card {
+    /* A sima rgba(0,0,0,0.4) helyett egy nagyon halvány színátmenetet adunk neki */
+    background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5)) !important;
+    /* Opcionális: ha azt akarod, hogy a kártya is picit színes legyen: */
+    /* box-shadow: inset 0 0 20px rgba(var(--accent-color), 0.1); */
+}
+/* 3. JAVÍTÁS: Minden vonal és elválasztó vegye át a színt */
+
+/* Vízszintes vonalak (<hr>) színezése */
+body.custom-theme hr {
+    border-color: var(--accent-color) !important;
+    opacity: 0.6; /* Hogy ne legyen túl bántóan éles */
+    background-color: var(--accent-color) !important; /* Ha a hr stílusa nem border alapú */
+}
+
+/* Ha vannak listaelemek (pl. italok listája), aminek van alsó kerete */
+body.custom-theme .drink-item, 
+body.custom-theme .list-group-item {
+    border-bottom-color: var(--accent-color) !important;
+}
+
+/* Minden egyéb elem, aminek van kerete, kapja meg a színt */
+body.custom-theme *[style*="border"],
+body.custom-theme *[class*="separator"] {
+    border-color: var(--accent-color) !important;
+}
+
 
 
 
