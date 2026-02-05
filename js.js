@@ -6577,7 +6577,25 @@ function updateLivePreview() {
         }
     `;
     document.head.appendChild(style);
+    
+    // === TÉMA LENYITÓ FUNKCIÓ ===
+window.toggleThemeSection = function() {
+    const content = document.getElementById('themeContent');
+    const arrow = document.getElementById('themeArrow');
+    const header = arrow.closest('.theme-accordion-header');
+
+    if (content.classList.contains('active')) {
+        // Bezárás
+        content.classList.remove('active');
+        header.classList.remove('active');
+    } else {
+        // Kinyitás
+        content.classList.add('active');
+        header.classList.add('active');
+    }
+}
 });
+
 
 
 
