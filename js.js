@@ -6486,33 +6486,40 @@ function initThemeCustomization() {
     // Téma visszaállítása
     const resetBtn = document.getElementById('resetTheme');
     if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            // 1. Az EREDETI "Sötét Lila" témát vesszük alapul
-            const defaultTheme = { 
-                ...presetThemes['dark-purple'], 
-                preset: 'dark-purple' // FONTOS: Jelezzük, hogy ez a gyári preset!
+        resetBtn.onclick = function() {
+            // 1. Megadjuk a pontos gyári színeket
+            const defaultTheme = {
+                bgColor1: '#1f005c',
+                bgColor2: '#10002b',
+                bgColor3: '#000000',
+                textColor: '#e0e0e0',
+                textSecondary: '#b0b0b0',
+                accentColor: '#ffd700', // Az eredeti arany színed
+                preset: 'dark-purple'
             };
-            
-            // 2. Frissítjük a gombok állapotát (Sötét Lila legyen aktív)
+
+            // 2. Aktiváljuk a "Sötét Lila" gombot vizuálisan
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.theme === 'dark-purple') {
                     btn.classList.add('active');
                 }
             });
-            
-            // 3. Alkalmazzuk a témát
+
+            // 3. Alkalmazzuk a színeket a webappon
             applyTheme(defaultTheme);
-            
-            // 4. KITÖLTJÜK az input mezőket is az alapértékekkel
-            // Így látod a színeket, de a rendszer "full" alapállapoton van
+
+            // 4. Frissítjük a színválasztó csúszkákat és szövegeket
             updateColorInputs(defaultTheme);
 
-            // 5. Mentés a böngészőbe
+            // 5. Mentjük a böngészőbe
             localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
-            
-            showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
-        });
+
+            // Értesítés
+            if (typeof showNotification === 'function') {
+                showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
+            }
+        };
     }
 
 // Élő előnézet frissítése
@@ -6604,6 +6611,7 @@ window.toggleThemeSection = function() {
     }
 }
 });
+
 
 
 
