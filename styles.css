@@ -4599,6 +4599,89 @@ body.custom-theme .live-search-input:focus {
         height: 50px;
     }
 }
+/* ========================================= */
+/* === EGYÉNI TÉMA KITERJESZTÉSE (FIX) === */
+/* ========================================= */
+
+/* 1. Fejléc színezése a választott színekkel */
+body.custom-theme .admin-header {
+    /* Az első és második szín átmenete */
+    background: linear-gradient(90deg, var(--bg-color-1), var(--bg-color-2)) !important;
+    border-bottom: 1px solid var(--accent-color);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* 2. Oldalsáv (Sidebar) színezése */
+body.custom-theme .dashboard-sidebar,
+body.custom-theme .sidebar {
+    /* A középső (2-es) szín használata */
+    background: var(--bg-color-2) !important;
+    border-right: 1px solid var(--accent-color);
+}
+
+/* Aktív menüpont a "Kiemelés" színét kapja */
+body.custom-theme .nav-item.active {
+    border-left-color: var(--accent-color);
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    opacity: 0.9;
+}
+
+body.custom-theme .nav-item:hover {
+    color: var(--accent-color);
+}
+
+/* 3. Kártyák (Cards) és Panelek színezése */
+body.custom-theme .card,
+body.custom-theme .stat-card,
+body.custom-theme .kpi-card,
+body.custom-theme .beer-upload-card,
+body.custom-theme .drink-upload-card,
+body.custom-theme .modal-content {
+    /* Sötétített alap, hogy olvasható legyen, de a téma színeivel */
+    background: rgba(0, 0, 0, 0.4) !important; 
+    border: 1px solid var(--accent-color) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* 4. Beviteli mezők és gombok igazítása */
+body.custom-theme .live-search-input,
+body.custom-theme input, 
+body.custom-theme select, 
+body.custom-theme textarea {
+    border-color: var(--accent-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.custom-theme .live-search-input:focus {
+    box-shadow: 0 0 10px var(--accent-color);
+}
+
+/* 5. Szövegszínek kényszerítése */
+body.custom-theme h1,
+body.custom-theme h2,
+body.custom-theme h3,
+body.custom-theme h4,
+body.custom-theme .stat-value-small,
+body.custom-theme strong {
+    color: var(--text-primary) !important;
+}
+
+body.custom-theme p,
+body.custom-theme span,
+body.custom-theme label,
+body.custom-theme td,
+body.custom-theme .stat-label-small {
+    color: var(--text-secondary) !important;
+}
+
+/* Mobil nézetben az alsó sáv javítása */
+@media (max-width: 768px) {
+    body.custom-theme .dashboard-sidebar {
+        background: var(--bg-color-2) !important;
+        border-top: 2px solid var(--accent-color);
+    }
+}
+
 
 
 
