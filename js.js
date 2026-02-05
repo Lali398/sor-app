@@ -6302,7 +6302,7 @@ function loadThemeFromStorage() {
             const theme = JSON.parse(savedTheme);
             applyTheme(theme);
             
-            // Ha előre beállított téma, jelöljük aktívnak
+            // Ha van mentett téma, jelöljük be a gombot
             if (theme.preset) {
                 document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                     btn.classList.remove('active');
@@ -6314,6 +6314,14 @@ function loadThemeFromStorage() {
         } catch (e) {
             console.error('Hiba a téma betöltésekor:', e);
         }
+    } else {
+        // HA NINCS MENTETT TÉMA -> Biztosítjuk, hogy az eredeti nézet legyen
+        document.body.classList.remove('custom-theme');
+        document.body.style.background = '';
+        
+        // (Opcionális) A Sötét Lila gombot jelöljük aktívnak, mert az az alapértelmezett
+        const defaultBtn = document.querySelector('.theme-preset-btn[data-theme="dark-purple"]');
+        if(defaultBtn) defaultBtn.classList.add('active');
     }
 }
 
@@ -6486,25 +6494,36 @@ yBtn = document.getElementById('applyCustomTheme');
     
     // Téma visszaállítása
     const resetBtn = document.getElementById('resetTheme');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            const defaultTheme = presetThemes['dark-purple'];
-            defaultTheme.preset = 'dark-purple';
-            
-            applyTheme(defaultTheme);
-            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
-            
-            // Alapértelmezett téma kijelölése
-            document.querySelectorAll('.theme-preset-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.theme === 'dark-purple') {
-                    btn.classList.add('active');
-                }
-            });
-            
-            showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        // 1. Törlés a localStorage-ból
+        localStorage.removeItem('userTheme');
+
+        // 2. 'custom-theme' osztály levétele a body-ról
+        // Ez a legfontosabb: így visszaáll az eredeti CSS
+        document.body.classList.remove('custom-theme');
+
+        // 3. Inline stílusok (háttér és változók) takarítása
+        document.body.style.background = '';
+        document.body.style.backgroundAttachment = '';
+        document.documentElement.style = ''; 
+
+        // 4. Input mezők visszaállítása a "Sötét Lila" értékeire (vizuális okokból)
+        const defaultTheme = presetThemes['dark-purple'];
+        updateColorInputs(defaultTheme);
+        updateThemePreview(defaultTheme);
+        
+        // 5. Gombok aktív állapotának kezelése
+        document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+            btn.classList.remove('active');
+            // Opcionális: A Sötét Lila gombot jelöljük meg, mert az hasonlít az eredetire
+            if (btn.dataset.theme === 'dark-purple') {
+                btn.classList.add('active');
+            }
         });
-    }
+        
+        showNotification('🔄 Eredeti kinézet visszaállítva', 'success');
+    });
 }
 
 // Élő előnézet frissítése
@@ -6595,3 +6614,4 @@ window.toggleThemeSection = function() {
     }
 }
 });
+
