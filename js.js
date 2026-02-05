@@ -6371,6 +6371,37 @@ function updateThemePreview(theme) {
         previewAccent.style.color = theme.accentColor;
     }
 }
+    // Téma alkalmazása
+function applyTheme(theme) {
+    // CSS változók beállítása
+    document.documentElement.style.setProperty('--bg-color-1', theme.bgColor1);
+    document.documentElement.style.setProperty('--bg-color-2', theme.bgColor2);
+    document.documentElement.style.setProperty('--bg-color-3', theme.bgColor3);
+    document.documentElement.style.setProperty('--text-primary', theme.textColor);
+    document.documentElement.style.setProperty('--text-secondary', theme.textSecondary);
+    document.documentElement.style.setProperty('--accent-color', theme.accentColor);
+    
+    // Custom theme class aktiválása
+    document.body.classList.add('custom-theme');
+    
+    // Input mezők frissítése (ha láthatóak)
+    const bgColor1Input = document.getElementById('bgColor1');
+    const bgColor2Input = document.getElementById('bgColor2');
+    const bgColor3Input = document.getElementById('bgColor3');
+    const textColorInput = document.getElementById('textColor');
+    const textSecondaryInput = document.getElementById('textSecondary');
+    const accentColorInput = document.getElementById('accentColor');
+    
+    if (bgColor1Input) bgColor1Input.value = theme.bgColor1;
+    if (bgColor2Input) bgColor2Input.value = theme.bgColor2;
+    if (bgColor3Input) bgColor3Input.value = theme.bgColor3;
+    if (textColorInput) textColorInput.value = theme.textColor;
+    if (textSecondaryInput) textSecondaryInput.value = theme.textSecondary;
+    if (accentColorInput) accentColorInput.value = theme.accentColor;
+    
+    // Élő előnézet frissítése
+    updateThemePreview(theme);
+}
 
 // Event listener-ek inicializálása
 function initThemeCustomization() {
@@ -6547,6 +6578,7 @@ function updateLivePreview() {
     `;
     document.head.appendChild(style);
 });
+
 
 
 
