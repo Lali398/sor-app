@@ -6508,9 +6508,7 @@ function showNotification(message, type = 'info') {
         }, 3000);
     }
 }
-
-// Oldal betöltésekor
-document.addEventListener('DOMContentLoaded', () => {
+    
     // Téma betöltése
     loadThemeFromStorage();
     
@@ -6533,6 +6531,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 });
+
 
 
 
