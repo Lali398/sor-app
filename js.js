@@ -1294,7 +1294,7 @@ function setupAdminRecap() {
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
 
-        // 2. Globális adatok nullázása
+        // 2. Globális adatok nullázása (Achievement bug ellen)
         currentUserBeers = [];
         currentUserDrinks = [];
         beersData = []; 
@@ -1329,10 +1329,12 @@ function setupAdminRecap() {
             userWelcomeMessage.textContent = '';
         }
 
+        // --- ÚJ RÉSZ: A SEGÍTSÉG GOMB VISSZAHOZÁSA ---
         const guestSupportBtn = document.getElementById('guestSupportBtn');
         if (guestSupportBtn) {
-            guestSupportBtn.style.display = 'block';
+            guestSupportBtn.style.display = 'block'; // Vagy 'flex', ha elcsúszna, de a block általában jó
         }
+        // ---------------------------------------------
 
         // 4. Nézetek kezelése
         guestView.style.display = 'block';
@@ -1351,26 +1353,7 @@ function setupAdminRecap() {
         
         if (typeof liveSearchInput !== 'undefined') liveSearchInput.value = '';
         if (typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
-        }
-
-        // --- ÚJ RÉSZ: A SEGÍTSÉG GOMB VISSZAHOZÁSA ---
-        const guestSupportBtn = document.getElementById('guestSupportBtn');
-        if (guestSupportBtn) {
-            guestSupportBtn.style.display = 'block'; // Vagy 'flex', ha elcsúszna, de a block általában jó
-        }
-        // ---------------------------------------------
-
-        // 4. Nézetek kezelése
-        guestView.style.display = 'block';
-        adminView.style.display = 'none';
-        userView.style.display = 'none';
-        
-        document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-        
-        if (typeof liveSearchInput !== 'undefined') liveSearchInput.value = '';
-        if (typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
-        }
+    }
     
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -1720,12 +1703,10 @@ function updateStreakDisplay() {
         guestView.style.display = 'none';
         userView.style.display = 'none';
         adminView.style.display = 'block';
+        document.body.style.background = '#f8fafc';
 
-        // Alapértelmezett háttér
         document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
-        document.body.style.backgroundAttachment = 'fixed';
-
-        // --- JAVÍTÁS: Téma visszatöltése ---
+        document.body.style.backgroundAttachment = 'fixed'; // Háttér fixálása
         if (typeof loadThemeFromStorage === 'function') {
             loadThemeFromStorage();
         }
@@ -1735,7 +1716,7 @@ function updateStreakDisplay() {
 
         loadAdminData();
         initializeLiveSearch();
-        setupStatistics(); 
+        setupStatistics(); // Statisztika fül inicializálása
         setupAdminRecap();
     }
 
@@ -2845,31 +2826,27 @@ window.loadAllIdeasForAdmin = loadAllIdeasForAdmin;
 switchToUserView = function() {
     const guestSupportBtn = document.getElementById('guestSupportBtn');
     if(guestSupportBtn) guestSupportBtn.style.display = 'none';
-    
     // Nézetek kezelése
     document.getElementById('guestView').style.display = 'none';
     document.getElementById('adminView').style.display = 'none';
     document.getElementById('userView').style.display = 'block';
     
-    // Alapértelmezett háttér (ha nincs téma)
     document.body.style.background = 'linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%)';
     document.body.style.backgroundAttachment = 'fixed';
-    
-    // --- JAVÍTÁS: Téma visszatöltése ---
-    // Ha van mentett téma, itt töltjük be újra, hogy felülírja a fenti alapot
     if (typeof loadThemeFromStorage === 'function') {
         loadThemeFromStorage();
     }
     
-    // === BIZTONSÁGOS RESET ===
-    allRecommendationsData = []; 
+    // === ÚJ SOROK - BIZTONSÁGOS RESET ===
+    allRecommendationsData = []; // Ajánlások törlése az új user betöltése előtt
     
+    // Töröljük az ajánlások konténert is, hogy ne látszódjanak régi adatok
     const recList = document.getElementById('recommendationsList');
     if (recList) {
         recList.innerHTML = '<div class="recap-spinner"></div>';
     }
     
-    // Adatok betöltése
+    // Adatok betöltése (ha léteznek a függvények a scope-ban)
     if (typeof initializeMainTabs === 'function') initializeMainTabs(document.getElementById('userView'));
     if (typeof loadUserData === 'function') loadUserData();
 
@@ -2879,14 +2856,15 @@ switchToUserView = function() {
         }
     }, 1500);
 
-    if (typeof loadUserDrinks === 'function') loadUserDrinks();
+     // ⬇️ EZT A SORT ADD HOZZÁ! ⬇️
+    if (typeof loadUserDrinks === 'function') loadUserDrinks(); // Ez betölti az italokat
     if (typeof loadRecommendations === 'function') {
         setTimeout(() => {
-            loadRecommendations();
-        }, 500);
+            loadRecommendations(); // Betöltjük az ajánlásokat is
+        }, 500); // Kis késleltetés, hogy ne akadjon minden egyszerre
     }
 
-    // Beállítások frissítése
+    // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
 };
     // === SÖR SZERKESZTÉS ===
@@ -6569,6 +6547,7 @@ function updateLivePreview() {
     `;
     document.head.appendChild(style);
 });
+
 
 
 
