@@ -6487,13 +6487,13 @@ function initThemeCustomization() {
     const resetBtn = document.getElementById('resetTheme');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            const defaultTheme = presetThemes['dark-purple'];
-            defaultTheme.preset = 'dark-purple';
+            // 1. Az EREDETI "Sötét Lila" témát vesszük alapul
+            const defaultTheme = { 
+                ...presetThemes['dark-purple'], 
+                preset: 'dark-purple' // FONTOS: Jelezzük, hogy ez a gyári preset!
+            };
             
-            applyTheme(defaultTheme);
-            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
-            
-            // Alapértelmezett téma kijelölése
+            // 2. Frissítjük a gombok állapotát (Sötét Lila legyen aktív)
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.theme === 'dark-purple') {
@@ -6501,10 +6501,19 @@ function initThemeCustomization() {
                 }
             });
             
+            // 3. Alkalmazzuk a témát
+            applyTheme(defaultTheme);
+            
+            // 4. KITÖLTJÜK az input mezőket is az alapértékekkel
+            // Így látod a színeket, de a rendszer "full" alapállapoton van
+            updateColorInputs(defaultTheme);
+
+            // 5. Mentés a böngészőbe
+            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
+            
             showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
         });
     }
-}
 
 // Élő előnézet frissítése
 function updateLivePreview() {
@@ -6595,6 +6604,7 @@ window.toggleThemeSection = function() {
     }
 }
 });
+
 
 
 
