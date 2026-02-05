@@ -1351,7 +1351,7 @@ function setupAdminRecap() {
         
         if (typeof liveSearchInput !== 'undefined') liveSearchInput.value = '';
         if (typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
-    }
+        }
 
         // --- ÚJ RÉSZ: A SEGÍTSÉG GOMB VISSZAHOZÁSA ---
         const guestSupportBtn = document.getElementById('guestSupportBtn');
@@ -1370,7 +1370,7 @@ function setupAdminRecap() {
         
         if (typeof liveSearchInput !== 'undefined') liveSearchInput.value = '';
         if (typeof hideSearchSuggestions === 'function') hideSearchSuggestions();
-    }
+        }
     
     async function loadUserData() {
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -6569,6 +6569,7 @@ function updateLivePreview() {
     `;
     document.head.appendChild(style);
 });
+
 
 
 
