@@ -4716,6 +4716,56 @@ body.custom-theme *[style*="border"],
 body.custom-theme *[class*="separator"] {
     border-color: var(--accent-color) !important;
 }
+/* === LENYITHATÓ TÉMA SZERKESTŐ === */
+
+.theme-accordion-container {
+    display: block !important;
+    padding: 0 !important; /* Levesszük a paddingot a konténerről */
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.theme-accordion-header {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.theme-accordion-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-accordion-content {
+    display: none; /* Alapból rejtve */
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideDownFade 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.theme-accordion-content.active {
+    display: block; /* Megjelenik ha aktív */
+}
+
+.accordion-arrow {
+    font-size: 1.2rem;
+    color: #aaa;
+    transition: transform 0.3s ease;
+}
+
+/* Nyíl forgatása ha nyitva van */
+.theme-accordion-header.active .accordion-arrow {
+    transform: rotate(180deg);
+    color: #ffd700;
+}
+
+@keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 
 
 
