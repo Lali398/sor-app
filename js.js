@@ -572,8 +572,8 @@ async function loadUserIdeas() {
 
                 // Jelentés gomb (ha NEM saját)
                 const reportBtn = (!isOwner && currentUserEmail)
-                    ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', '${escapeHtml(item.idea)}', '${item.email}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
-                    : '';
+                ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', ${item.index}, '${escapeHtml(item.idea)}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
+                : '';
 
                 const card = `
                 <div class="pending-idea-card">
@@ -4157,8 +4157,8 @@ function applyRecFilters() {
         // 1. Jelentés gomb (Csak ha NEM a sajátom)
         // Átadjuk: Típus, Tartalom neve, Beküldő emailje
         const reportBtn = !item.isMine 
-            ? `<button class="report-btn" onclick="openReportModal('Ajánlás', '${escapeHtml(item.itemName)}', '${item.email}')" title="Jelentés">🚩</button>` 
-            : '';
+        ? `<button class="report-btn" onclick="openReportModal('Ajánlás', ${item.originalIndex}, '${escapeHtml(item.itemName)}')" title="Jelentés">🚩</button>` 
+        : '';
 
         // 2. Szerkesztés és Törlés gombok (Csak ha a SAJÁTOM)
         const ownerBtns = item.isMine 
@@ -6732,11 +6732,22 @@ window.filterTickets = function(status) {
 }
     // === JELENTÉS RENDSZER (USER SIDE) ===
 
-window.openReportModal = function(type, contentId, targetEmail) {
+window.openReportModal = function(type, contentId, contentName) {
     document.getElementById('reportType').value = type;
     document.getElementById('reportContentId').value = contentId;
-    document.getElementById('reportTargetUser').value = targetEmail;
-    document.getElementById('reportTargetName').textContent = targetEmail; // Vagy név ha elérhető
+    
+    // A 'reportTargetUser' hidden input már nem kell, vagy üresen hagyjuk
+    if(document.getElementById('reportTargetUser')) {
+        document.getElementById('reportTargetUser').value = ''; 
+    }
+
+    // A modalban a "Kit jelentesz?" helyett azt írjuk ki, hogy "Mit jelentesz?"
+    // Így nem az email jelenik meg, hanem pl. a Sör neve vagy az Ötlet szövege
+    const targetDisplay = document.getElementById('reportTargetName');
+    if (targetDisplay) {
+        targetDisplay.textContent = contentName ? `"${contentName}"` : `#${contentId}`;
+        targetDisplay.style.fontStyle = 'italic';
+    }
     
     document.getElementById('reportModal').classList.add('active');
 }
@@ -6755,7 +6766,7 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         action: 'REPORT_CONTENT',
         type: document.getElementById('reportType').value,
         contentId: document.getElementById('reportContentId').value,
-        reportedUserEmail: document.getElementById('reportTargetUser').value,
+        // reportedUserEmail: TÖRÖLVE! A backend keresi ki ID alapján.
         reason: document.getElementById('reportReason').value + ' ' + document.getElementById('reportDetails').value
     };
 
@@ -6900,6 +6911,7 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
+
 
 
 
