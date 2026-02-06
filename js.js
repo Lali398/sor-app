@@ -6777,9 +6777,10 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
 });
     // === MODERÁCIÓ (ADMIN SIDE) ===
 
+// 1. Jelentések betöltése (ID hozzáadása a kártyákhoz a könnyebb törlésért)
 async function loadModerationTasks() {
     const container = document.getElementById('moderationList');
-    if (!container) return; // Biztonsági ellenőrzés
+    if (!container) return;
 
     container.innerHTML = '<div class="recap-spinner"></div>';
     
@@ -6791,56 +6792,84 @@ async function loadModerationTasks() {
         });
         const reports = await response.json();
         
-        container.innerHTML = '';
+        container.innerHTML = ''; // Spinner törlése
         
-        if (!response.ok) throw new Error("Hiba a betöltéskor.");
-
+        if (!response.ok) throw new Error("Hiba.");
         if (reports.length === 0) {
-            container.innerHTML = '<p class="no-results">Nincs nyitott jelentés. Minden csendes. 🕊️</p>';
+            container.innerHTML = '<p class="no-results">Nincs nyitott jelentés. 🕊️</p>';
             return;
         }
 
         reports.forEach(rep => {
-            // Biztonságos szöveg (XSS védelem)
-            const safeContent = escapeHtml(rep.content);
-            const safeReason = escapeHtml(rep.reason);
-            const safeUser = escapeHtml(rep.reportedUser);
-
+            // Egyedi ID-t adunk a kártyának: ticket-card-INDEX
             const html = `
-            <div class="ticket-card" style="border-left: 4px solid #e74c3c;">
+            <div class="ticket-card" id="ticket-card-${rep.index}" style="border-left: 4px solid #e74c3c;">
                 <div class="ticket-header">
                     <span>${rep.date}</span>
                     <span style="color: #e74c3c; font-weight:bold;">${escapeHtml(rep.type)}</span>
                 </div>
                 <div class="ticket-body">
-                    <p style="color:#aaa; font-size:0.8rem;">Panaszolt felhasználó:</p>
-                    <h4 style="color:white; margin-bottom:10px;">${safeUser}</h4>
-                    
-                    <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; margin-bottom:10px; border: 1px dashed #555;">
-                        <em style="color: #ccc;">"${safeContent}"</em>
-                    </div>
-                    
-                    <p style="color:#f39c12;">Jelentés oka: <strong>${safeReason}</strong></p>
-                    <p style="font-size:0.8rem; color:#666; margin-top:5px;">Jelentette: ${escapeHtml(rep.reporter)}</p>
+                    <h4 style="color:white;">${escapeHtml(rep.reportedUser)}</h4>
+                    <p style="color:#aaa; font-style:italic;">"${escapeHtml(rep.content)}"</p>
+                    <p style="color:#f39c12; margin-top:5px;">Ok: <strong>${escapeHtml(rep.reason)}</strong></p>
                 </div>
-                <div class="ticket-actions" style="margin-top:15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                    <button class="delete-btn-mini" style="background:#555;" onclick="dismissReport(${rep.index})">Elvetés (Nincs gond)</button>
-                    <button class="delete-btn-mini" style="background:#e74c3c;" onclick="warnUser('${rep.reportedUser}', ${rep.index})">⚠️ Figyelmeztetés (+1)</button>
+                <div class="ticket-actions" style="margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+                    <button class="delete-btn-mini" style="background:#555;" onclick="dismissReport(${rep.index})">Elvetés</button>
+                    <button class="delete-btn-mini" style="background:#e74c3c;" onclick="warnUser('${rep.reportedUser}', ${rep.index})">⚠️ Figyelmeztetés</button>
                 </div>
-            </div>
-            `;
+            </div>`;
             container.insertAdjacentHTML('beforeend', html);
         });
-
     } catch (e) { 
         console.error(e); 
-        container.innerHTML = '<p class="error">Nem sikerült betölteni a jelentéseket.</p>';
+        container.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
 
-// Figyelmeztetés kiosztása
+// 2. Elvetés javítása (Azonnali eltüntetés)
+window.dismissReport = async function(reportIndex) {
+    if(!confirm("Biztosan elveted a jelentést?")) return;
+    
+    // Azonnal elrejtjük a kártyát, hogy gyorsnak tűnjön
+    const card = document.getElementById(`ticket-card-${reportIndex}`);
+    if(card) card.style.opacity = '0.3'; // Vizuális visszajelzés, hogy dolgozunk
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'UPDATE_TICKET_STATUS', 
+                originalIndex: reportIndex, 
+                newStatus: 'Lezárva (Elvetve)'
+            })
+        });
+        
+        if (response.ok) {
+            // Ha sikeres, végleg töröljük a DOM-ból
+            if(card) card.remove();
+            showSuccess("Jelentés elvetve.");
+            
+            // Ha üres lett a lista, írjuk ki, hogy nincs több
+            if(document.getElementById('moderationList').children.length === 0) {
+                 document.getElementById('moderationList').innerHTML = '<p class="no-results">Nincs több jelentés. 🕊️</p>';
+            }
+        } else {
+            if(card) card.style.opacity = '1'; // Ha hiba, visszaállítjuk
+            showError("Hiba történt.");
+        }
+    } catch (e) {
+        if(card) card.style.opacity = '1';
+        console.error(e);
+    }
+}
+
+// 3. Figyelmeztetés javítása (Azonnali eltüntetés)
 window.warnUser = async function(email, reportIndex) {
-    if(!confirm(`Biztosan figyelmeztetést adsz neki: ${email}? \nHa ez a második, automatikusan kitiltásra kerül!`)) return;
+    if(!confirm(`Biztosan figyelmeztetést adsz neki: ${email}?`)) return;
+
+    const card = document.getElementById(`ticket-card-${reportIndex}`);
+    if(card) card.style.opacity = '0.3';
 
     try {
         const response = await fetch('/api/sheet', {
@@ -6855,44 +6884,23 @@ window.warnUser = async function(email, reportIndex) {
         
         const res = await response.json();
         if (response.ok) {
-            alert(res.message); // Kiírja, ha bannolva lett
-            loadModerationTasks(); // Frissítés
+            if(card) card.remove(); // Töröljük a kártyát
+            alert(res.message); // Kiírjuk az infót (pl. "Felhasználó kitiltva")
+            
+            if(document.getElementById('moderationList').children.length === 0) {
+                 document.getElementById('moderationList').innerHTML = '<p class="no-results">Nincs több jelentés. 🕊️</p>';
+            }
         } else {
+            if(card) card.style.opacity = '1';
             showError("Hiba történt.");
         }
-    } catch (e) { showError(e.message); }
-}
-
-// Elvetés (csak lezárjuk a ticketet büntetés nélkül)
-window.dismissReport = async function(reportIndex) {
-    if(!confirm("Biztosan elveted a jelentést? A jelentés lezárul, a felhasználó nem kap büntetést.")) return;
-    
-    try {
-        const response = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ 
-                action: 'UPDATE_TICKET_STATUS', // Újrahasznosítjuk a ticket update funkciót
-                originalIndex: reportIndex, // A jelentés sorának indexe (sheetben)
-                newStatus: 'Lezárva (Elvetve)'
-            })
-        });
-              
-        if (response.ok) {
-             showSuccess("Jelentés elvetve és lezárva.");
-             loadModerationTasks(); // Lista frissítése
-        } else {
-             
-             
-             warnUser('SYSTEM_DISMISS', reportIndex);
-             showError("Hiba az elvetéskor.");
-        }
-    } catch (e) {
-        console.error(e);
-        showError("Hálózati hiba.");
+    } catch (e) { 
+        if(card) card.style.opacity = '1';
+        showError(e.message); 
     }
 }
 });
+
 
 
 
