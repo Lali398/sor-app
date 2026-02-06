@@ -376,31 +376,28 @@ export default async function handler(req, res) {
     const { email, password } = req.body;
     const usersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:G` // Most már A-tól G-ig kérjük
+        range: `${USERS_SHEET}!A:N` // Most már A-tól N-ig kérjük
     });
     
     const rows = usersResponse.data.values || [];
     const rowIndex = rows.findIndex(row => row[1] === email);
-    
     if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
     
     const userRow = rows[rowIndex];
     const isPasswordValid = await bcrypt.compare(password, userRow[2]);
     if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
 
+    if (userRow[13] === 'TRUE') {
+        return res.status(403).json({ error: "A fiókod fel lett függesztve a szabályzat megsértése miatt. 🚫" });
+    }
+
     // 2FA ellenőrzés (E oszlop - index 4)
     const is2FAEnabled = userRow[4] === 'TRUE';
-
     if (is2FAEnabled) {
         return res.status(200).json({ 
             require2fa: true, 
             tempEmail: email
         });
-      
-      const isBanned = userRow[13] === 'TRUE';
-            if (isBanned) {
-                return res.status(403).json({ error: "A fiókod fel lett függesztve a szabályzat megsértése miatt. (2/2 Figyelmeztetés)" });
-            }
     }
     
     // ÚJ: Achievements betöltése (F oszlop - index 5)
@@ -1824,7 +1821,7 @@ case 'EDIT_USER_DRINK': {
                 // Ha a te táblázatodban máshol van hely, írd át az indexeket!
                 const usersResponse = await sheets.spreadsheets.values.get({ 
                     spreadsheetId: SPREADSHEET_ID, 
-                    range: `${USERS_SHEET}!A:L` 
+                    range: `${USERS_SHEET}!A:N` 
                 });
                 
                 const rows = usersResponse.data.values || [];
@@ -1870,6 +1867,9 @@ case 'EDIT_USER_DRINK': {
                 } else {
                     // Ha VAN ilyen email -> Belépés és esetleges összekötés
                     userRow = rows[rowIndex];
+
+                    if (userRow[13] === 'TRUE') {
+                    return res.status(403).json({ error: "A fiókod fel lett függesztve a szabályzat megsértése miatt. 🚫" });
                     
                     // Ha még nincs beírva a Google ID az L oszlopba, pótoljuk
                     if (!userRow[11]) {
@@ -1978,6 +1978,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
