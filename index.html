@@ -1172,6 +1172,7 @@
     <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
     <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
     <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendég Ötletek</button>
+    <button class="main-tab-btn" data-tab-content="admin-tickets-content">🎫 Hibajegyek</button>
     <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
 </nav>
 
@@ -1409,6 +1410,25 @@
                         </div>
                     </section>
                 </div>
+
+                <div class="main-tab-pane" id="admin-tickets-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Beérkezett Hibajelentések 📨</h3>
+            <div class="ticket-filters">
+                <button class="filter-chip active" onclick="filterTickets('all')">Összes</button>
+                <button class="filter-chip" onclick="filterTickets('Új')">🔴 Új</button>
+                <button class="filter-chip" onclick="filterTickets('Folyamatban')">🟡 Folyamatban</button>
+                <button class="filter-chip" onclick="filterTickets('Megoldva')">🟢 Megoldva</button>
+                <button class="refresh-btn-small" onclick="loadAdminTickets()">🔄</button>
+            </div>
+        </header>
+        
+        <div id="ticketsGrid" class="tickets-grid-container">
+            <div class="recap-spinner"></div>
+        </div>
+    </section>
+</div>
 
                 <!-- VISSZATEKINTŐ TAB -->
                 <div class="main-tab-pane" id="admin-recap-content">
@@ -2352,6 +2372,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
