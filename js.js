@@ -4112,6 +4112,7 @@ function applyRecFilters() {
     const filterType = document.getElementById('filterRecType').value;
     const filterCat = document.getElementById('filterRecCategory').value;
     const filterMyRecs = document.getElementById('filterMyRecs').checked;
+    
 
     container.innerHTML = '';
 
@@ -4135,7 +4136,7 @@ function applyRecFilters() {
         
         const badgeHtml = (item.badge && !item.isAnon) 
             ? `<span class="user-badge-display tiny">${escapeHtml(item.badge)}</span>` : '';
-
+        
         
         // SZERKESZTÉS ÉS TÖRLÉS GOMBOK - csak ha a sajátja
         const actionBtns = item.isMine 
@@ -4148,6 +4149,20 @@ function applyRecFilters() {
         const editedHtml = item.isEdited 
             ? `<span class="rec-edited-tag">(módosítva)</span>` 
             : '';
+        const reportBtn = !item.isMine 
+            ? `<button class="report-btn" onclick="openReportModal('Ajánlás', '${escapeHtml(item.itemName)}', '${item.email}')" title="Jelentés">🚩</button>` 
+            : '';
+
+        // 2. Szerkesztés és Törlés gombok (Csak akkor, ha a SAJÁTOD)
+        const ownerBtns = item.isMine 
+            ? `
+                <button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>
+                <button class="delete-rec-btn" onclick="deleteUserRecommendation(${item.originalIndex})" title="Törlés">🗑️</button>
+              ` 
+            : '';
+            
+        // 3. A kettő összefűzése (Ez megy majd a HTML-be)
+        const actionBtns = reportBtn + ownerBtns;
 
         const html = `
         <div class="rec-card ${typeClass}">
@@ -6704,14 +6719,131 @@ window.filterTickets = function(status) {
         renderTickets(filtered);
     }
 }
+    // === JELENTÉS RENDSZER (USER SIDE) ===
 
-// 5. Inicializálás bekötése
-// Keresd meg a `initializeMainTabs` függvényt vagy a tab váltó eseménykezelőt a js.js-ben[cite: 794], 
-// és add hozzá ezt a sort:
-/*
-    if(targetPaneId === 'admin-tickets-content') loadAdminTickets();
-*/
+window.openReportModal = function(type, contentId, targetEmail) {
+    document.getElementById('reportType').value = type;
+    document.getElementById('reportContentId').value = contentId;
+    document.getElementById('reportTargetUser').value = targetEmail;
+    document.getElementById('reportTargetName').textContent = targetEmail; // Vagy név ha elérhető
+    
+    document.getElementById('reportModal').classList.add('active');
+}
+
+window.closeReportModal = function() {
+    document.getElementById('reportModal').classList.remove('active');
+    document.getElementById('reportForm').reset();
+}
+
+document.getElementById('reportForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    setLoading(btn, true);
+
+    const data = {
+        action: 'REPORT_CONTENT',
+        type: document.getElementById('reportType').value,
+        contentId: document.getElementById('reportContentId').value,
+        reportedUserEmail: document.getElementById('reportTargetUser').value,
+        reason: document.getElementById('reportReason').value + ' ' + document.getElementById('reportDetails').value
+    };
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            showSuccess("Jelentés sikeresen elküldve! 🛡️");
+            closeReportModal();
+        } else {
+            showError("Hiba a küldéskor.");
+        }
+    } catch(err) { showError(err.message); }
+    finally { setLoading(btn, false); }
 });
+    // === MODERÁCIÓ (ADMIN SIDE) ===
+
+async function loadModerationTasks() {
+    const container = document.getElementById('moderationList');
+    container.innerHTML = '<div class="recap-spinner"></div>';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_MODERATION_TASKS' })
+        });
+        const reports = await response.json();
+        
+        container.innerHTML = '';
+        if (reports.length === 0) {
+            container.innerHTML = '<p class="no-results">Nincs nyitott jelentés. Minden csendes. 🕊️</p>';
+            return;
+        }
+
+        reports.forEach(rep => {
+            const html = `
+            <div class="ticket-card" style="border-left: 4px solid #e74c3c;">
+                <div class="ticket-header">
+                    <span>${rep.date}</span>
+                    <span style="color: #e74c3c; font-weight:bold;">${rep.type}</span>
+                </div>
+                <div class="ticket-body">
+                    <p style="color:#aaa; font-size:0.8rem;">Panaszolt:</p>
+                    <h4 style="color:white; margin-bottom:10px;">${rep.reportedUser}</h4>
+                    
+                    <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; margin-bottom:10px;">
+                        <em>"${escapeHtml(rep.content)}"</em>
+                    </div>
+                    
+                    <p style="color:#f39c12;">Indok: <strong>${escapeHtml(rep.reason)}</strong></p>
+                    <p style="font-size:0.8rem; color:#666;">Jelentette: ${rep.reporter}</p>
+                </div>
+                <div class="ticket-actions" style="margin-top:15px;">
+                    <button class="delete-btn-mini" style="background:#555;" onclick="dismissReport(${rep.index})">Elvetés (Nincs gond)</button>
+                    <button class="delete-btn-mini" style="background:#e74c3c;" onclick="warnUser('${rep.reportedUser}', ${rep.index})">⚠️ Figyelmeztetés (+1)</button>
+                </div>
+            </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+
+    } catch (e) { console.error(e); }
+}
+
+// Figyelmeztetés kiosztása
+window.warnUser = async function(email, reportIndex) {
+    if(!confirm(`Biztosan figyelmeztetést adsz neki: ${email}? \nHa ez a második, automatikusan kitiltásra kerül!`)) return;
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'WARN_USER', 
+                targetEmail: email,
+                reportIndex: reportIndex
+            })
+        });
+        
+        const res = await response.json();
+        if (response.ok) {
+            alert(res.message); // Kiírja, ha bannolva lett
+            loadModerationTasks(); // Frissítés
+        } else {
+            showError("Hiba történt.");
+        }
+    } catch (e) { showError(e.message); }
+}
+
+// Elvetés (csak lezárjuk a ticketet büntetés nélkül)
+window.dismissReport = async function(reportIndex) {
+}
+});
+
 
 
 
