@@ -1003,10 +1003,17 @@ async function markIdeaAsDone(index) {
                 pane.classList.toggle('active', pane.id === targetPaneId);
             });
             
-            // Ha az ötletekre váltunk, töltsük be
             if(targetPaneId === 'user-ideas-content') loadUserIdeas();
             if(targetPaneId === 'admin-ideas-content') loadAllIdeasForAdmin();
+            
+            // 2. Hibajegyek betöltése
             if(targetPaneId === 'admin-tickets-content') loadAdminTickets();
+            
+            // 3. JELENTÉSEK (MODERÁCIÓ) BETÖLTÉSE - EZ HIÁNYZOTT!
+            if(targetPaneId === 'admin-moderation-content') loadModerationTasks();
+            
+            // 4. Sörök listájának frissítése (hogy mindig friss legyen)
+            if(targetPaneId === 'admin-beers-content') loadAdminData();
         });
     });
 }
@@ -6772,8 +6779,10 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
 
 async function loadModerationTasks() {
     const container = document.getElementById('moderationList');
-    container.innerHTML = '<div class="recap-spinner"></div>';
+    if (!container) return; // Biztonsági ellenőrzés
 
+    container.innerHTML = '<div class="recap-spinner"></div>';
+    
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
@@ -6783,30 +6792,38 @@ async function loadModerationTasks() {
         const reports = await response.json();
         
         container.innerHTML = '';
+        
+        if (!response.ok) throw new Error("Hiba a betöltéskor.");
+
         if (reports.length === 0) {
             container.innerHTML = '<p class="no-results">Nincs nyitott jelentés. Minden csendes. 🕊️</p>';
             return;
         }
 
         reports.forEach(rep => {
+            // Biztonságos szöveg (XSS védelem)
+            const safeContent = escapeHtml(rep.content);
+            const safeReason = escapeHtml(rep.reason);
+            const safeUser = escapeHtml(rep.reportedUser);
+
             const html = `
             <div class="ticket-card" style="border-left: 4px solid #e74c3c;">
                 <div class="ticket-header">
                     <span>${rep.date}</span>
-                    <span style="color: #e74c3c; font-weight:bold;">${rep.type}</span>
+                    <span style="color: #e74c3c; font-weight:bold;">${escapeHtml(rep.type)}</span>
                 </div>
                 <div class="ticket-body">
-                    <p style="color:#aaa; font-size:0.8rem;">Panaszolt:</p>
-                    <h4 style="color:white; margin-bottom:10px;">${rep.reportedUser}</h4>
+                    <p style="color:#aaa; font-size:0.8rem;">Panaszolt felhasználó:</p>
+                    <h4 style="color:white; margin-bottom:10px;">${safeUser}</h4>
                     
-                    <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; margin-bottom:10px;">
-                        <em>"${escapeHtml(rep.content)}"</em>
+                    <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; margin-bottom:10px; border: 1px dashed #555;">
+                        <em style="color: #ccc;">"${safeContent}"</em>
                     </div>
                     
-                    <p style="color:#f39c12;">Indok: <strong>${escapeHtml(rep.reason)}</strong></p>
-                    <p style="font-size:0.8rem; color:#666;">Jelentette: ${rep.reporter}</p>
+                    <p style="color:#f39c12;">Jelentés oka: <strong>${safeReason}</strong></p>
+                    <p style="font-size:0.8rem; color:#666; margin-top:5px;">Jelentette: ${escapeHtml(rep.reporter)}</p>
                 </div>
-                <div class="ticket-actions" style="margin-top:15px;">
+                <div class="ticket-actions" style="margin-top:15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
                     <button class="delete-btn-mini" style="background:#555;" onclick="dismissReport(${rep.index})">Elvetés (Nincs gond)</button>
                     <button class="delete-btn-mini" style="background:#e74c3c;" onclick="warnUser('${rep.reportedUser}', ${rep.index})">⚠️ Figyelmeztetés (+1)</button>
                 </div>
@@ -6815,7 +6832,10 @@ async function loadModerationTasks() {
             container.insertAdjacentHTML('beforeend', html);
         });
 
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        container.innerHTML = '<p class="error">Nem sikerült betölteni a jelentéseket.</p>';
+    }
 }
 
 // Figyelmeztetés kiosztása
@@ -6845,8 +6865,35 @@ window.warnUser = async function(email, reportIndex) {
 
 // Elvetés (csak lezárjuk a ticketet büntetés nélkül)
 window.dismissReport = async function(reportIndex) {
+    if(!confirm("Biztosan elveted a jelentést? A jelentés lezárul, a felhasználó nem kap büntetést.")) return;
+    
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ 
+                action: 'UPDATE_TICKET_STATUS', // Újrahasznosítjuk a ticket update funkciót
+                originalIndex: reportIndex, // A jelentés sorának indexe (sheetben)
+                newStatus: 'Lezárva (Elvetve)'
+            })
+        });
+              
+        if (response.ok) {
+             showSuccess("Jelentés elvetve és lezárva.");
+             loadModerationTasks(); // Lista frissítése
+        } else {
+             
+             
+             warnUser('SYSTEM_DISMISS', reportIndex);
+             showError("Hiba az elvetéskor.");
+        }
+    } catch (e) {
+        console.error(e);
+        showError("Hálózati hiba.");
+    }
 }
 });
+
 
 
 
