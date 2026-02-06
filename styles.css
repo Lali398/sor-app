@@ -4765,6 +4765,155 @@ body.custom-theme *[class*="separator"] {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* styles.css - Hibajegy rendszer */
+
+.tickets-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.ticket-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ticket-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.ticket-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.ticket-subject {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.ticket-sender {
+    font-size: 0.9rem;
+    color: #8a73ff;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.ticket-message {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    max-height: 150px;
+    overflow-y: auto;
+    /* Szép scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #667eea rgba(0,0,0,0.3);
+}
+
+.ticket-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.ticket-status-select {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+}
+
+.ticket-reply-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 15px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+}
+.ticket-reply-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Szűrő gombok */
+.ticket-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aaa;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+}
+
+.filter-chip:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.filter-chip.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+}
+
+.refresh-btn-small {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: auto;
+}
+.refresh-btn-small:hover {
+    transform: rotate(180deg);
+    transition: transform 0.5s;
+}
+
 
 
 
