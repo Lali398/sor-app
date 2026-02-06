@@ -997,6 +997,7 @@ async function markIdeaAsDone(index) {
             // Ha az ötletekre váltunk, töltsük be
             if(targetPaneId === 'user-ideas-content') loadUserIdeas();
             if(targetPaneId === 'admin-ideas-content') loadAllIdeasForAdmin();
+            if(targetPaneId === 'admin-tickets-content') loadAdminTickets();
         });
     });
 }
@@ -6561,7 +6562,157 @@ function updateLivePreview() {
         }
     `;
     document.head.appendChild(style);
+
+// Globális változó a jegyek tárolására
+let allTickets = [];
+
+// 1. Hibajegyek betöltése
+async function loadAdminTickets() {
+    const container = document.getElementById('ticketsGrid');
+    if(!container) return;
+    
+    container.innerHTML = '<div class="recap-spinner"></div>';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_SUPPORT_TICKETS' })
+        });
+        const tickets = await response.json();
+        
+        if (!response.ok) throw new Error(tickets.error || "Hiba a betöltéskor");
+
+        allTickets = tickets;
+        renderTickets(allTickets); // Megjelenítés
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = '<p class="no-results">Hiba történt a jegyek betöltésekor.</p>';
+    }
+}
+
+// 2. Megjelenítés (Render)
+function renderTickets(ticketsToRender) {
+    const container = document.getElementById('ticketsGrid');
+    container.innerHTML = '';
+
+    if (ticketsToRender.length === 0) {
+        container.innerHTML = '<p class="no-results">Nincs megjeleníthető hibajegy. 🎉</p>';
+        return;
+    }
+
+    ticketsToRender.forEach(ticket => {
+        // Státusz szerinti színek és ikonok
+        let statusColor = '#3498db'; // Default kék
+        let statusIcon = '🆕';
+        
+        if (ticket.status === 'Új') { statusColor = '#e74c3c'; statusIcon = '🔴'; }
+        if (ticket.status === 'Folyamatban') { statusColor = '#f39c12'; statusIcon = '⏳'; }
+        if (ticket.status === 'Megoldva') { statusColor = '#27ae60'; statusIcon = '✅'; }
+
+        // Biztonságos szöveg
+        const safeSubject = ticket.subject.replace(/</g, "&lt;");
+        const safeMsg = ticket.message.replace(/</g, "&lt;").replace(/\n/g, '<br>');
+
+        const card = `
+        <div class="ticket-card" style="border-left: 4px solid ${statusColor};">
+            <div class="ticket-header">
+                <span class="ticket-id">#${ticket.originalIndex}</span>
+                <span class="ticket-date">${ticket.date}</span>
+                <div class="ticket-status-badge" style="background: ${statusColor}20; color: ${statusColor}; border: 1px solid ${statusColor};">
+                    ${statusIcon} ${ticket.status}
+                </div>
+            </div>
+            
+            <div class="ticket-body">
+                <h4 class="ticket-subject">${safeSubject}</h4>
+                <div class="ticket-sender">
+                    👤 <strong>${ticket.name}</strong> &lt;<a href="mailto:${ticket.email}" style="color:#aaa;">${ticket.email}</a>&gt;
+                </div>
+                <div class="ticket-message">${safeMsg}</div>
+            </div>
+
+            <div class="ticket-actions">
+                <select class="ticket-status-select" onchange="updateTicketStatus(${ticket.originalIndex}, this.value)">
+                    <option value="" disabled selected>Státusz módosítása...</option>
+                    <option value="Új">🔴 Vissza: Új</option>
+                    <option value="Folyamatban">⏳ Folyamatban</option>
+                    <option value="Megoldva">✅ Kész (Megoldva)</option>
+                </select>
+                <a href="mailto:${ticket.email}?subject=Válasz: ${encodeURIComponent(ticket.subject)}" class="ticket-reply-btn">
+                    ✉️ Válasz
+                </a>
+            </div>
+        </div>
+        `;
+        container.insertAdjacentHTML('beforeend', card);
+    });
+}
+
+// 3. Státusz Frissítése
+window.updateTicketStatus = async function(index, newStatus) {
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'UPDATE_TICKET_STATUS', 
+                originalIndex: index,
+                newStatus: newStatus
+            })
+        });
+
+        if (response.ok) {
+            showSuccess(`Státusz frissítve: ${newStatus}`);
+            // Helyi adat frissítése újratöltés nélkül
+            const ticket = allTickets.find(t => t.originalIndex === index);
+            if(ticket) ticket.status = newStatus;
+            
+            // Újrarenderelés az aktuális szűrővel
+            const activeFilter = document.querySelector('.filter-chip.active')?.innerText.replace(/🔴|🟡|🟢/g, '').trim() || 'all';
+            filterTickets(activeFilter);
+        } else {
+            showError("Hiba a mentéskor.");
+        }
+    } catch (e) {
+        console.error(e);
+        showError("Hálózati hiba.");
+    }
+}
+
+// 4. Szűrés (Kliens oldali)
+window.filterTickets = function(status) {
+    // Gombok aktív állapota
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.innerText.includes(status) || (status==='all' && btn.innerText==='Összes')) {
+            btn.classList.add('active');
+        }
+    });
+
+    if (status === 'all') {
+        renderTickets(allTickets);
+    } else {
+        const filtered = allTickets.filter(t => t.status === status);
+        renderTickets(filtered);
+    }
+}
+
+// 5. Inicializálás bekötése
+// Keresd meg a `initializeMainTabs` függvényt vagy a tab váltó eseménykezelőt a js.js-ben[cite: 794], 
+// és add hozzá ezt a sort:
+/*
+    if(targetPaneId === 'admin-tickets-content') loadAdminTickets();
+*/
 });
+
 
 
 
