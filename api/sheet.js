@@ -853,7 +853,7 @@ case 'EDIT_USER_DRINK': {
     });
 }
 
-            // api/sheet.js
+            
 
             case 'GET_SUPPORT_TICKETS': {
                 const userData = verifyUser(req);
@@ -1856,6 +1856,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
