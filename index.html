@@ -1172,6 +1172,7 @@
     <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
     <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
     <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendég Ötletek</button>
+    <button class="main-tab-btn" data-tab-content="admin-moderation-content">🛡️ Moderáció</button>
     <button class="main-tab-btn" data-tab-content="admin-tickets-content">🎫 Hibajegyek</button>
     <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
 </nav>
@@ -1408,6 +1409,17 @@
                                 </tbody>
                             </table>
                         </div>
+                    </section>
+                </div>
+
+                <div class="main-tab-pane" id="admin-moderation-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Nyitott Jelentések 🚨</h3>
+                            <button class="refresh-btn-small" onclick="loadModerationTasks()">🔄</button>
+                        </header>
+                        <div id="moderationList" class="tickets-grid-container">
+                            </div>
                     </section>
                 </div>
 
@@ -2407,6 +2419,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
