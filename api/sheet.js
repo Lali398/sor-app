@@ -357,6 +357,121 @@ const user = {
     return res.status(200).json({ token: jwtToken, user });
 }
 
+            // api/sheet.js
+
+            // === JELENTÉS BEKÜLDÉSE (USER) ===
+            case 'REPORT_CONTENT': {
+                const userData = verifyUser(req);
+                const { type, contentId, reportedUserEmail, reason } = req.body;
+                
+                if (!reason) return res.status(400).json({ error: "Indoklás kötelező!" });
+
+                const timestamp = new Date().toLocaleString('hu-HU');
+                
+                // Mentés a Jelentések munkalapra
+                const newRow = [
+                    timestamp,              // A: Dátum
+                    userData.email,         // B: Jelentő
+                    type,                   // C: Típus (Ötlet/Ajánlás)
+                    contentId,              // D: Tartalom (vagy ID)
+                    reportedUserEmail,      // E: Panaszolt fél
+                    reason,                 // F: Indok
+                    'Nyitott'               // G: Státusz
+                ];
+
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `Jelentések!A:G`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [newRow] }
+                });
+
+                return res.status(200).json({ message: "Jelentés elküldve a moderátoroknak. Köszönjük az éberséget! 🛡️" });
+            }
+
+            // === MODERÁCIÓS LISTA LEKÉRÉSE (ADMIN) ===
+            case 'GET_MODERATION_TASKS': {
+                const userData = verifyUser(req);
+                // (Itt érdemes lenne ellenőrizni, hogy admin-e)
+
+                const reportsRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `Jelentések!A:G` });
+                const reports = (reportsRes.data.values || []).map((row, i) => {
+                    if (i===0 || !row[0]) return null;
+                    return {
+                        index: i, // Sor index
+                        date: row[0],
+                        reporter: row[1],
+                        type: row[2],
+                        content: row[3],
+                        reportedUser: row[4],
+                        reason: row[5],
+                        status: row[6]
+                    };
+                }).filter(r => r && r.status !== 'Lezárva').reverse();
+
+                return res.status(200).json(reports);
+            }
+
+            // === FIGYELMEZTETÉS / KITILTÁS (ADMIN) ===
+            case 'WARN_USER': {
+                const userData = verifyUser(req);
+                const { targetEmail, reportIndex } = req.body; // reportIndex: hogy lezárjuk a jelentést
+
+                // 1. Felhasználó megkeresése
+                const usersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${USERS_SHEET}!A:N` });
+                const rows = usersRes.data.values || [];
+                const rowIndex = rows.findIndex(row => row[1] === targetEmail);
+
+                if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+
+                const userRow = rows[rowIndex];
+                let warnings = [];
+                try {
+                    // M oszlop (index 12) a figyelmeztetések
+                    if (userRow[12]) warnings = JSON.parse(userRow[12]);
+                } catch (e) {}
+
+                // 2. Lejárt figyelmeztetések törlése (TISZTÍTÁS)
+                const now = new Date();
+                const sixMonthsAgo = new Date();
+                sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+                warnings = warnings.filter(w => new Date(w.date) > sixMonthsAgo);
+
+                // 3. Új figyelmeztetés hozzáadása
+                warnings.push({ date: now.toISOString(), reason: "Admin által jóváhagyott jelentés" });
+
+                // 4. Kitiltás ellenőrzése (Ha eléri a 2-t)
+                let isBanned = 'FALSE';
+                let message = "Figyelmeztetés kiadva.";
+                
+                if (warnings.length >= 2) {
+                    isBanned = 'TRUE';
+                    message = "Figyelmeztetés kiadva. A felhasználó automatikusan KITILTÁSRA került (2/2). 🚫";
+                }
+
+                // 5. Adatok mentése (M és N oszlop)
+                const range = `${USERS_SHEET}!M${rowIndex + 1}:N${rowIndex + 1}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[JSON.stringify(warnings), isBanned]] }
+                });
+
+                // 6. Jelentés lezárása (ha volt kapcsolódó jelentés)
+                if (reportIndex) {
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `Jelentések!G${parseInt(reportIndex) + 1}`,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: [['Lezárva (Büntetve)']] }
+                    });
+                }
+
+                return res.status(200).json({ message, activeWarnings: warnings.length });
+            }
+
             case 'MANAGE_2FA': {
                 const userData = verifyUser(req);
                 const { subAction, code, secret } = req.body; // subAction: 'GENERATE', 'ENABLE', 'DISABLE'
@@ -1856,6 +1971,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
