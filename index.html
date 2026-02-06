@@ -2368,10 +2368,46 @@
         </div>
     </div>
 </div>
+    <div class="modal-overlay" id="reportModal" style="z-index: 10002;">
+    <div class="modal-content delete-zone-card" style="border-color: #e74c3c !important;">
+        <header class="modal-header">
+            <h3 style="color: #e74c3c;">🚨 Szabálysértés Jelentése</h3>
+            <button class="modal-close" onclick="closeReportModal()">&times;</button>
+        </header>
+        <form id="reportForm">
+            <input type="hidden" id="reportType">
+            <input type="hidden" id="reportContentId">
+            <input type="hidden" id="reportTargetUser">
+            
+            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px;">
+                Biztosan jelenteni szeretnéd a felhasználót (<span id="reportTargetName" style="color: white; font-weight: bold;"></span>)?
+            </p>
+
+            <div class="input-group">
+                <select id="reportReason" required class="cool-select" style="width: 100%; background: #000;">
+                    <option value="" disabled selected>Válassz indokot...</option>
+                    <option value="Trágár, sértő beszéd">Trágár, sértő beszéd</option>
+                    <option value="Spam / Reklám">Spam / Reklám</option>
+                    <option value="Valótlan információ">Valótlan információ</option>
+                    <option value="Egyéb">Egyéb</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="reportDetails" placeholder="Opcionális megjegyzés..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px;"></textarea>
+            </div>
+
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                Jelentés Beküldése 👮
+            </button>
+        </form>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
