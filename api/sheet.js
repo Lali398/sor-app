@@ -852,6 +852,63 @@ case 'EDIT_USER_DRINK': {
         message: "Hibajelentésed sikeresen elküldve! Hamarosan válaszolunk az emaileden keresztül. 📧" 
     });
 }
+
+            // api/sheet.js
+
+            case 'GET_SUPPORT_TICKETS': {
+                const userData = verifyUser(req);
+                // Csak admin férhet hozzá!
+                // (Feltételezzük, hogy az admin tokenben benne van az isAdmin: true, 
+                // vagy az email alapján ellenőrzöd, mint a többi helyen)
+                
+                const ticketsResponse = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `Hibajelentések!A:F` // A:Dátum, B:Név, C:Email, D:Tárgy, E:Üzenet, F:Státusz
+                });
+
+                const allRows = ticketsResponse.data.values || [];
+                
+                // Átalakítás objektumokká (kihagyjuk a fejlécet, ha van)
+                const tickets = allRows.map((row, index) => {
+                    if (index === 0 && row[0] === 'Dátum') return null; // Fejléc szűrés
+                    if (!row || row.length === 0) return null;
+
+                    return {
+                        originalIndex: index, // Fontos a módosításhoz (Sor index - 1)
+                        date: row[0],
+                        name: row[1],
+                        email: row[2],
+                        subject: row[3],
+                        message: row[4],
+                        status: row[5] || 'Új'
+                    };
+                }).filter(item => item !== null).reverse(); // Legújabb elöl
+
+                return res.status(200).json(tickets);
+            }
+
+            case 'UPDATE_TICKET_STATUS': {
+                const userData = verifyUser(req);
+                const { originalIndex, newStatus } = req.body;
+
+                if (originalIndex === undefined || !newStatus) {
+                    return res.status(400).json({ error: "Hiányzó adatok!" });
+                }
+
+                // A Sheetben a sor indexe: originalIndex + 1 (mivel a tömb 0-tól indul, sheet 1-től)
+                const rowIndex = parseInt(originalIndex) + 1;
+                const range = `Hibajelentések!F${rowIndex}`; // F oszlop a Státusz
+
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[newStatus]] }
+                });
+
+                return res.status(200).json({ message: "Státusz sikeresen frissítve! ✅" });
+            }
+            
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
                 
@@ -1799,6 +1856,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
