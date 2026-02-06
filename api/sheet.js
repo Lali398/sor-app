@@ -257,36 +257,82 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: "Jelszó sikeresen megváltoztatva! Most már beléphetsz." });
 }
 
-            // api/sheet.js
-
-            // === JELENTÉS BEKÜLDÉSE (USER) ===
             case 'REPORT_CONTENT': {
                 const userData = verifyUser(req);
-                const { type, contentId, reportedUserEmail, reason } = req.body;
+                // MÁR NEM kérünk be 'reportedUserEmail'-t a klienstől, csak contentId-t (ami az index)
+                const { type, contentId, reason } = req.body; 
                 
                 if (!reason) return res.status(400).json({ error: "Indoklás kötelező!" });
+                if (contentId === undefined || contentId === null) return res.status(400).json({ error: "Hiányzó tartalom azonosító!" });
 
-                const timestamp = new Date().toLocaleString('hu-HU');
-                
-                // Mentés a Jelentések munkalapra
-                const newRow = [
-                    timestamp,              // A: Dátum
-                    userData.email,         // B: Jelentő
-                    type,                   // C: Típus (Ötlet/Ajánlás)
-                    contentId,              // D: Tartalom (vagy ID)
-                    reportedUserEmail,      // E: Panaszolt fél
-                    reason,                 // F: Indok
-                    'Nyitott'               // G: Státusz
-                ];
+                let targetSheet = '';
+                let emailColumn = ''; // A betűjele az oszlopnak, ahol az email van
 
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: `Jelentések!A:G`,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [newRow] }
-                });
+                // 1. Meghatározzuk, melyik munkalapon kell keresni
+                switch (type) {
+                    case 'Sör': // Vendég Sör Teszt
+                        targetSheet = GUEST_BEERS_SHEET;
+                        emailColumn = 'N'; // N oszlop (13. index)
+                        break;
+                    case 'Ital': // Vendég ital teszt
+                        targetSheet = GUEST_DRINKS_SHEET;
+                        emailColumn = 'N'; // N oszlop (13. index)
+                        break;
+                    case 'Ötlet': // Vendég ötletek
+                        targetSheet = IDEAS_SHEET;
+                        emailColumn = 'F'; // F oszlop (5. index)
+                        break;
+                    case 'Ajánlás': // Vendég sör ajánló
+                        targetSheet = RECOMMENDATIONS_SHEET;
+                        emailColumn = 'C'; // C oszlop (2. index)
+                        break;
+                    default:
+                        return res.status(400).json({ error: "Ismeretlen tartalom típus!" });
+                }
 
-                return res.status(200).json({ message: "Jelentés elküldve a moderátoroknak. Köszönjük az éberséget! 🛡️" });
+                try {
+                    // 2. Kikeresjük a panaszolt fél e-mail címét a táblázatból
+                    // A Sheets sorok 1-től kezdődnek, a frontend tömb indexe 0-tól.
+                    // Általában: SorIndex = ContentId + 1 
+                    // (Feltételezve, hogy a contentId a tömb indexe, és a sheet 1. sora a fejléc)
+                    const rowIndex = parseInt(contentId) + 1; 
+
+                    const emailRes = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${targetSheet}!${emailColumn}${rowIndex}`
+                    });
+
+                    const foundEmail = emailRes.data.values ? emailRes.data.values[0][0] : null;
+
+                    if (!foundEmail) {
+                        return res.status(404).json({ error: "A jelentett tartalom vagy felhasználó nem található." });
+                    }
+
+                    // 3. Mentés a Jelentések munkalapra
+                    const timestamp = new Date().toLocaleString('hu-HU');
+                    const newRow = [
+                        timestamp,              // A: Dátum
+                        userData.email,         // B: Jelentő
+                        type,                   // C: Típus
+                        contentId,              // D: Tartalom ID (Index)
+                        foundEmail,             // E: Panaszolt fél (MOST KERESTÜK KI)
+                        reason,                 // F: Indok
+                        'Nyitott'               // G: Státusz
+                    ];
+
+                    await sheets.spreadsheets.values.append({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `Jelentések!A:G`,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: [newRow] }
+                    });
+
+                    return res.status(200).json({ message: "Jelentés elküldve a moderátoroknak. Köszönjük az éberséget! 🛡️" });
+
+                } catch (error) {
+                    console.error("Jelentés hiba:", error);
+                    return res.status(500).json({ error: "Szerver hiba a jelentés feldolgozása közben." });
+                }
             }
 
             // === MODERÁCIÓS LISTA LEKÉRÉSE (ADMIN) ===
@@ -1983,6 +2029,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
