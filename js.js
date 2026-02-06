@@ -508,7 +508,8 @@ async function loadUserIdeas() {
     const hallContainer = document.getElementById('hallOfFameList');
     const pendingContainer = document.getElementById('pendingIdeasList');
     
-    hallContainer.innerHTML = '<div class="recap-spinner"></div>';
+    // Spinner csak a pending részre, a Hall of Fame maradhat statikusabb
+    if(pendingContainer) pendingContainer.innerHTML = '<div class="recap-spinner"></div>';
     
     try {
         const response = await fetch('/api/sheet', {
@@ -517,22 +518,23 @@ async function loadUserIdeas() {
             body: JSON.stringify({ action: 'GET_ALL_IDEAS' })
         });
         const ideas = await response.json();
+        
         if (!response.ok) throw new Error("Nem sikerült betölteni az ötleteket.");
         
-        hallContainer.innerHTML = '';
-        pendingContainer.innerHTML = '';
-        
+        if(hallContainer) hallContainer.innerHTML = '';
+        if(pendingContainer) pendingContainer.innerHTML = '';
+
         if(ideas.length === 0) {
-            pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">Még nincsenek ötletek. Légy te az első!</p>';
+            if(pendingContainer) pendingContainer.innerHTML = '<p style="text-align:center; color:#aaa;">Még nincsenek ötletek. Légy te az első!</p>';
             return;
         }
 
-        // Aktuális felhasználó email-je
+        // Aktuális felhasználó email-je az összehasonlításhoz
         const userData = JSON.parse(localStorage.getItem('userData'));
         const currentUserEmail = userData ? userData.email : null;
 
         let hasFame = false;
-        let pendingIndex = 0; // Számláló a törölhető ötletekhez
+        let pendingIndex = 0; // Számláló a törölhető ötletekhez (indexelés miatt)
 
         ideas.forEach(item => {
             const isDone = (item.status === 'Megcsinálva');
@@ -543,7 +545,7 @@ async function loadUserIdeas() {
                     : '';
 
             if (isDone) {
-                // DICSŐSÉGFAL
+                // --- DICSŐSÉGFAL (Itt nem szokás jelenteni, de ha akarod, ide is rakhatsz gombot) ---
                 hasFame = true;
                 const card = `
                 <div class="fame-card">
@@ -554,17 +556,23 @@ async function loadUserIdeas() {
                             ${badgeHtml}
                         </span>
                     </div>
-                    <div class="fame-idea">"${item.idea}"</div>
+                    <div class="fame-idea">"${escapeHtml(item.idea)}"</div>
                     <div class="fame-footer">
                         Köszönjük az ötletet! • ${item.date}
                     </div>
                 </div>`;
-                hallContainer.insertAdjacentHTML('beforeend', card);
+                if(hallContainer) hallContainer.insertAdjacentHTML('beforeend', card);
             } else {
-                // VÁRAKOZÓ LISTA
-                // Csak a saját, nem elfogadott ötleteinél jelenik meg törlés gomb
+                // --- VÁRAKOZÓ LISTA ---
+                
+                // Törlés gomb (ha saját)
                 const deleteBtn = isOwner 
                     ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
+                    : '';
+
+                // Jelentés gomb (ha NEM saját)
+                const reportBtn = (!isOwner && currentUserEmail)
+                    ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', '${escapeHtml(item.idea)}', '${item.email}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
                     : '';
 
                 const card = `
@@ -577,23 +585,24 @@ async function loadUserIdeas() {
                     </div>
                     <div class="pending-actions">
                         <div class="pending-status">⏳ ${item.status}</div>
+                        ${reportBtn}
                         ${deleteBtn}
                     </div>
                 </div>`;
-                pendingContainer.insertAdjacentHTML('beforeend', card);
+                if(pendingContainer) pendingContainer.insertAdjacentHTML('beforeend', card);
                 
-                // Csak a nem kész ötleteket számláljuk (mert csak ezeket lehet törölni)
+                // Csak a nem kész ötleteket számláljuk az indexeléshez
                 pendingIndex++;
             }
         });
         
-        if(!hasFame) {
+        if(!hasFame && hallContainer) {
             hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
         }
 
     } catch (error) {
         console.error(error);
-        hallContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
+        if(pendingContainer) pendingContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
     }
 }
     
@@ -4112,10 +4121,9 @@ function applyRecFilters() {
     const filterType = document.getElementById('filterRecType').value;
     const filterCat = document.getElementById('filterRecCategory').value;
     const filterMyRecs = document.getElementById('filterMyRecs').checked;
-    
 
     container.innerHTML = '';
-
+    
     const filtered = allRecommendationsData.filter(item => {
         if (filterType !== 'all' && item.type !== filterType) return false;
         if (filterCat !== 'all' && item.category !== filterCat) return false;
@@ -4136,24 +4144,16 @@ function applyRecFilters() {
         
         const badgeHtml = (item.badge && !item.isAnon) 
             ? `<span class="user-badge-display tiny">${escapeHtml(item.badge)}</span>` : '';
+
+        // --- GOMBOK LOGIKA ---
         
-        
-        // SZERKESZTÉS ÉS TÖRLÉS GOMBOK - csak ha a sajátja
-        const actionBtns = item.isMine 
-            ? `
-                <button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>
-                <button class="delete-rec-btn" onclick="deleteUserRecommendation(${item.originalIndex})" title="Törlés">🗑️</button>
-              ` 
-            : '';
-            
-        const editedHtml = item.isEdited 
-            ? `<span class="rec-edited-tag">(módosítva)</span>` 
-            : '';
+        // 1. Jelentés gomb (Csak ha NEM a sajátom)
+        // Átadjuk: Típus, Tartalom neve, Beküldő emailje
         const reportBtn = !item.isMine 
             ? `<button class="report-btn" onclick="openReportModal('Ajánlás', '${escapeHtml(item.itemName)}', '${item.email}')" title="Jelentés">🚩</button>` 
             : '';
 
-        // 2. Szerkesztés és Törlés gombok (Csak akkor, ha a SAJÁTOD)
+        // 2. Szerkesztés és Törlés gombok (Csak ha a SAJÁTOM)
         const ownerBtns = item.isMine 
             ? `
                 <button class="edit-rec-btn" onclick="openRecModal(${item.originalIndex})" title="Szerkesztés">✏️</button>
@@ -4161,8 +4161,12 @@ function applyRecFilters() {
               ` 
             : '';
             
-        // 3. A kettő összefűzése (Ez megy majd a HTML-be)
+        // Gombok összefűzése
         const actionBtns = reportBtn + ownerBtns;
+
+        const editedHtml = item.isEdited 
+            ? `<span class="rec-edited-tag">(módosítva)</span>` 
+            : '';
 
         const html = `
         <div class="rec-card ${typeClass}">
@@ -6843,6 +6847,7 @@ window.warnUser = async function(email, reportIndex) {
 window.dismissReport = async function(reportIndex) {
 }
 });
+
 
 
 
