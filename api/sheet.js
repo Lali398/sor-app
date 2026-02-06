@@ -434,12 +434,16 @@ export default async function handler(req, res) {
     
     const usersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:G` 
+        range: `${USERS_SHEET}!A:N` 
     });
-    const rows = usersResponse.data.values || [];
+   const rows = usersResponse.data.values || [];
     const userRow = rows.find(row => row[1] === email);
-
     if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
+
+
+    if (userRow[13] === 'TRUE') {
+        return res.status(403).json({ error: "A fiókod fel lett függesztve. 🚫" });
+    }
 
     const secret = userRow[3];
     const isValid = authenticator.check(inputToken, secret);
@@ -1870,6 +1874,7 @@ case 'EDIT_USER_DRINK': {
 
                     if (userRow[13] === 'TRUE') {
                     return res.status(403).json({ error: "A fiókod fel lett függesztve a szabályzat megsértése miatt. 🚫" });
+                    }
                     
                     // Ha még nincs beírva a Google ID az L oszlopba, pótoljuk
                     if (!userRow[11]) {
@@ -1978,6 +1983,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
