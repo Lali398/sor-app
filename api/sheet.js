@@ -257,106 +257,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: "Jelszó sikeresen megváltoztatva! Most már beléphetsz." });
 }
 
-            case 'LOGIN_USER': {
-    const { email, password } = req.body;
-    const usersResponse = await sheets.spreadsheets.values.get({ 
-        spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:G` // Most már A-tól G-ig kérjük
-    });
-    
-    const rows = usersResponse.data.values || [];
-    const rowIndex = rows.findIndex(row => row[1] === email);
-    
-    if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-    
-    const userRow = rows[rowIndex];
-    const isPasswordValid = await bcrypt.compare(password, userRow[2]);
-    if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
-
-    // 2FA ellenőrzés (E oszlop - index 4)
-    const is2FAEnabled = userRow[4] === 'TRUE';
-
-    if (is2FAEnabled) {
-        return res.status(200).json({ 
-            require2fa: true, 
-            tempEmail: email
-        });
-    }
-    
-    // ÚJ: Achievements betöltése (F oszlop - index 5)
-    let achievements = { unlocked: [] };
-    try {
-        if (userRow[5]) {
-            achievements = JSON.parse(userRow[5]);
-        }
-    } catch (e) {
-        console.warn("Achievements parse error:", e);
-    }
-    
-    // ÚJ: Badge betöltése (G oszlop - index 6)
-    const badge = userRow[6] || '';
-    const currentStreak = parseInt(userRow[9]) || 0;
-    const longestStreak = parseInt(userRow[10]) || 0;
-    
-    // Hagyományos belépés
-    const user = { 
-        name: userRow[0], 
-        email: userRow[1], 
-        has2FA: false,
-        achievements: achievements, // ÚJ
-        badge: badge, // ÚJ
-        streak: { current: currentStreak, longest: longestStreak },
-        isGoogleLinked: !!userRow[11]
-    };
-    
-    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
-    return res.status(200).json({ token, user });
-}
-            case 'VERIFY_2FA_LOGIN': {
-    const { email, token: inputToken } = req.body;
-    
-    const usersResponse = await sheets.spreadsheets.values.get({ 
-        spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:G` 
-    });
-    const rows = usersResponse.data.values || [];
-    const userRow = rows.find(row => row[1] === email);
-
-    if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
-
-    const secret = userRow[3];
-    const isValid = authenticator.check(inputToken, secret);
-
-    if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
-
-    // ÚJ: Achievements betöltése
-    let achievements = { unlocked: [] };
-    try {
-        if (userRow[5]) {
-            achievements = JSON.parse(userRow[5]);
-        }
-    } catch (e) {
-        console.warn("Achievements parse error:", e);
-    }
-    
-    const badge = userRow[6] || '';
-    const currentStreak = parseInt(userRow[9]) || 0;
-    const longestStreak = parseInt(userRow[10]) || 0;
-
-const user = { 
-    name: userRow[0], 
-    email: userRow[1], 
-    has2FA: (action === 'VERIFY_2FA_LOGIN' ? true : false), // Vagy ahogy a te kódodban van
-    achievements: achievements,
-    badge: badge,
-    streak: { current: currentStreak, longest: longestStreak },
-    isGoogleLinked: !!userRow[11]
-};
-    
-    const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
-    return res.status(200).json({ token: jwtToken, user });
-}
-
             // api/sheet.js
 
             // === JELENTÉS BEKÜLDÉSE (USER) ===
@@ -471,6 +371,113 @@ const user = {
 
                 return res.status(200).json({ message, activeWarnings: warnings.length });
             }
+
+            case 'LOGIN_USER': {
+    const { email, password } = req.body;
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` // Most már A-tól G-ig kérjük
+    });
+    
+    const rows = usersResponse.data.values || [];
+    const rowIndex = rows.findIndex(row => row[1] === email);
+    
+    if (rowIndex === -1) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+    
+    const userRow = rows[rowIndex];
+    const isPasswordValid = await bcrypt.compare(password, userRow[2]);
+    if (!isPasswordValid) return res.status(401).json({ error: "Hibás e-mail cím vagy jelszó." });
+
+    // 2FA ellenőrzés (E oszlop - index 4)
+    const is2FAEnabled = userRow[4] === 'TRUE';
+
+    if (is2FAEnabled) {
+        return res.status(200).json({ 
+            require2fa: true, 
+            tempEmail: email
+        });
+      
+      const isBanned = userRow[13] === 'TRUE';
+            if (isBanned) {
+                return res.status(403).json({ error: "A fiókod fel lett függesztve a szabályzat megsértése miatt. (2/2 Figyelmeztetés)" });
+            }
+    }
+    
+    // ÚJ: Achievements betöltése (F oszlop - index 5)
+    let achievements = { unlocked: [] };
+    try {
+        if (userRow[5]) {
+            achievements = JSON.parse(userRow[5]);
+        }
+    } catch (e) {
+        console.warn("Achievements parse error:", e);
+    }
+    
+    // ÚJ: Badge betöltése (G oszlop - index 6)
+    const badge = userRow[6] || '';
+    const currentStreak = parseInt(userRow[9]) || 0;
+    const longestStreak = parseInt(userRow[10]) || 0;
+    
+    // Hagyományos belépés
+    const user = { 
+        name: userRow[0], 
+        email: userRow[1], 
+        has2FA: false,
+        achievements: achievements, // ÚJ
+        badge: badge, // ÚJ
+        streak: { current: currentStreak, longest: longestStreak },
+        isGoogleLinked: !!userRow[11]
+    };
+    
+    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ token, user });
+}
+            case 'VERIFY_2FA_LOGIN': {
+    const { email, token: inputToken } = req.body;
+    
+    const usersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: `${USERS_SHEET}!A:G` 
+    });
+    const rows = usersResponse.data.values || [];
+    const userRow = rows.find(row => row[1] === email);
+
+    if (!userRow) return res.status(401).json({ error: "Hiba az azonosításban." });
+
+    const secret = userRow[3];
+    const isValid = authenticator.check(inputToken, secret);
+
+    if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
+
+    // ÚJ: Achievements betöltése
+    let achievements = { unlocked: [] };
+    try {
+        if (userRow[5]) {
+            achievements = JSON.parse(userRow[5]);
+        }
+    } catch (e) {
+        console.warn("Achievements parse error:", e);
+    }
+    
+    const badge = userRow[6] || '';
+    const currentStreak = parseInt(userRow[9]) || 0;
+    const longestStreak = parseInt(userRow[10]) || 0;
+
+const user = { 
+    name: userRow[0], 
+    email: userRow[1], 
+    has2FA: (action === 'VERIFY_2FA_LOGIN' ? true : false), // Vagy ahogy a te kódodban van
+    achievements: achievements,
+    badge: badge,
+    streak: { current: currentStreak, longest: longestStreak },
+    isGoogleLinked: !!userRow[11]
+};
+    
+    const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
+    return res.status(200).json({ token: jwtToken, user });
+}
+
+            
 
             case 'MANAGE_2FA': {
                 const userData = verifyUser(req);
@@ -1971,6 +1978,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
