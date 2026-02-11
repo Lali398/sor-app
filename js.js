@@ -3816,23 +3816,32 @@ function showAchievementToast(achi) {
 
 const originalUserViewInit = switchToUserView;
 
-switchToUserView = function() {
-    // 1. Lefuttatjuk az eredeti inicializálást (betölti a söröket, beállításokat)
-    originalUserViewInit(); 
+const originalUserViewInit = switchToUserView;
 
-    // 2. Biztosítjuk, hogy az italok is betöltődjenek (ha még nem történt meg)
+switchToUserView = function() {
+    // 1. Eredeti inicializálás
+    originalUserViewInit();
+
+    // 2. Italok betöltése
     if (typeof loadUserDrinks === 'function') loadUserDrinks();
 
-    // 3. Várakozunk kicsit, hogy az API válaszok (sörök + italok) megérkezzenek
-    // Fontos: Itt hívjuk meg a checkAchievements-t, hogy újraszámolja a százalékokat!
+    // 3. Adatok és BEÁLLÍTÁSOK szinkronizálása a felhőből
+    // Ezt mindenképp lefuttatjuk induláskor!
+    setTimeout(() => {
+        refreshUserData(); // <--- EZT HÍVJUK MEG, ez húzza le a settingset
+    }, 500);
+
+    // 4. Achievementek ellenőrzése (maradhat a timeoutban)
     setTimeout(async () => {
-        // Ellenőrizzük, vannak-e betöltött adatok
         if (currentUserBeers.length > 0 || currentUserDrinks.length > 0) {
-            console.log("Adatok betöltve, Achievementek ellenőrzése...");
-            
-            // FONTOS: Ez számolja ki a progress-t az aktuális listák alapján!
             await checkAchievements(); 
         }
+        renderAchievements();
+        updateHeaderBadge();
+        updateSettingsUI();
+        updateStreakDisplay();
+    }, 1500);
+};
         
         // Frissítjük a vizuális elemeket (Rács + Header Badge)
         renderAchievements();
@@ -6256,24 +6265,44 @@ window.confirmDisable2FA = async function() {
     }
 }
     async function refreshUserData() {
-    const response = await fetch('/api/sheet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-        body: JSON.stringify({ action: 'REFRESH_USER_DATA' })
-    });
-    if(response.ok) {
-        const data = await response.json();
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        // Frissítjük a lokális adatokat
-        userData.streak = data.streak;
-        userData.achievements = data.achievements;
-        userData.badge = data.badge;
-        localStorage.setItem('userData', JSON.stringify(userData));
-        syncSettingsToCloud();
-        
-        // UI frissítés
-        updateStreakDisplay();
-        renderAchievements();
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'REFRESH_USER_DATA' })
+        });
+
+        if(response.ok) {
+            const data = await response.json();
+            const userData = JSON.parse(localStorage.getItem('userData'));
+
+            // Frissítjük a lokális adatokat
+            userData.streak = data.streak;
+            userData.achievements = data.achievements;
+            userData.badge = data.badge;
+            
+            // --- ÚJ RÉSZ: Beállítások mentése és alkalmazása ---
+            if (data.settings) {
+                // Elmentjük a settings-et a userData-ba is, hogy konzisztens legyen
+                userData.settings = data.settings;
+                
+                // És ami a legfontosabb: ALKALMAZZUK ŐKET!
+                // Ez állítja be a témát, limitet, kurzort a felhő alapján
+                applyCloudSettings(data.settings, userData.email);
+            }
+            // --------------------------------------------------
+
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // UI frissítés
+            updateStreakDisplay();
+            renderAchievements();
+            
+            // Ha változott a téma vagy beállítás, a felületet is frissítjük
+            updateSettingsUI(); 
+        }
+    } catch (error) {
+        console.error("Hiba az adatok frissítésekor:", error);
     }
 }
     window.unlinkGoogleAccount = async function() {
@@ -7076,6 +7105,7 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
+
 
 
 
