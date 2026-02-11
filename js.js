@@ -63,6 +63,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         if (isOver18) {
             // Ha elmúlt 18 -> Elmentjük és bezárjuk
             localStorage.setItem('ageVerified', 'true');
+            syncSettingsToCloud();
             const ageModal = document.getElementById('ageVerificationModal');
             
             // Animációval tüntetjük el
@@ -282,6 +283,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
             if (result.adminToken) {
                 console.log("Admin token sikeresen mentve!");
                 localStorage.setItem('userToken', result.adminToken);
+                syncSettingsToCloud();
                 localStorage.setItem('userData', JSON.stringify({ 
                     name: 'Adminisztrátor', 
                     email: 'admin@sortablazat.hu', 
@@ -801,6 +803,11 @@ async function markIdeaAsDone(index) {
             // Normál belépés
             localStorage.setItem('userToken', result.token);
             localStorage.setItem('userData', JSON.stringify(result.user));
+            syncSettingsToCloud();
+
+            if (result.user.settings) {
+            applyCloudSettings(result.user.settings, result.user.email);
+            }
 
             showSuccess(`Sikeres bejelentkezés, ${result.user.name}!`);
             setTimeout(() => {
@@ -922,6 +929,11 @@ async function markIdeaAsDone(index) {
             // Sikeres belépés mentése
             localStorage.setItem('userToken', result.token);
             localStorage.setItem('userData', JSON.stringify(result.user));
+            syncSettingsToCloud();
+
+            if (result.user.settings) {
+            applyCloudSettings(result.user.settings, result.user.email);
+            }
 
             showSuccess(`Sikeres belépés Google-lel! Szia ${result.user.name}!`);
             
@@ -954,6 +966,7 @@ async function markIdeaAsDone(index) {
             const userData = JSON.parse(localStorage.getItem('userData'));
             userData.isGoogleLinked = true;
             localStorage.setItem('userData', JSON.stringify(userData));
+            syncSettingsToCloud();
             
             // UI újrarajzolása
             updateSettingsUI();
@@ -2406,7 +2419,9 @@ window.addEventListener('scroll', function() {
         if (currentUserEmail) {
             const storageKey = `cursor_pref_${currentUserEmail}`;
             localStorage.setItem(storageKey, isActive);
+            syncSettingsToCloud();
             toggleCustomCursor(isActive);
+            syncSettingsToCloud();
             
             // Szinkronizáljuk a másik gombot is (hogy ne legyen eltérés ha nézetet váltasz)
             const userToggle = document.getElementById('userCursorToggle');
@@ -2670,6 +2685,7 @@ document.getElementById('confirm2FABtn').addEventListener('click', async () => {
             const userData = JSON.parse(localStorage.getItem('userData'));
             userData.has2FA = true;
             localStorage.setItem('userData', JSON.stringify(userData));
+            syncSettingsToCloud();
         } else {
             const res = await response.json();
             showError(res.error || "Hibás kód!");
@@ -2694,6 +2710,7 @@ async function disable2FA() {
             const userData = JSON.parse(localStorage.getItem('userData'));
             userData.has2FA = false;
             localStorage.setItem('userData', JSON.stringify(userData));
+            syncSettingsToCloud();
         }
     } catch (error) {
         showError("Nem sikerült kikapcsolni.");
@@ -2735,6 +2752,7 @@ document.getElementById('verify2FALoginForm').addEventListener('submit', async (
         // Sikeres belépés
         localStorage.setItem('userToken', result.token);
         localStorage.setItem('userData', JSON.stringify(result.user));
+        syncSettingsToCloud();
         
         login2FAModal.classList.remove('active');
         showSuccess(`Sikeres belépés!`);
@@ -3034,6 +3052,7 @@ window.acceptPolicyUpdate = function() {
     
     // Elmentjük a böngészőbe, hogy elfogadta
     localStorage.setItem(POLICY_VERSION, 'true');
+    syncSettingsToCloud();
     
     // Bezárjuk az ablakot
     const modal = document.getElementById('policyUpdateModal');
@@ -3491,6 +3510,7 @@ async function checkAchievements() {
     // 4. Ha volt új feloldás, mentünk a szerverre és frissítjük a UI-t
     if (newUnlock) {
         localStorage.setItem('userData', JSON.stringify(userData));
+        syncSettingsToCloud();
         renderAchievements();
         await saveAchievementsToCloud(userData.achievements, userData.badge);
     }
@@ -3727,6 +3747,7 @@ function updateBadgeSelector(maxLevelName, currentBadge) {
         const userData = JSON.parse(localStorage.getItem('userData'));
         userData.badge = select.value;
         localStorage.setItem('userData', JSON.stringify(userData));
+        syncSettingsToCloud();
         
         // Frissítjük a UI-t (Headerben a badge)
         updateHeaderBadge();
@@ -3951,6 +3972,7 @@ window.closeRecoveryModal = function() {
             // Így frissítés után is összecsukva marad, ha úgy hagytad
             const isCollapsed = userHeader.classList.contains('manual-collapsed');
             localStorage.setItem('headerCollapsedPreference', isCollapsed);
+            syncSettingsToCloud();
         });
 
         // +1. Betöltéskor ellenőrizzük a mentett állapotot
@@ -5059,6 +5081,7 @@ switchToUserView = function() {
 };
     window.acceptCookies = function() {
     localStorage.setItem('cookieConsentSeen', 'true');
+    syncSettingsToCloud();
     const toast = document.getElementById('cookieToast');
     if (toast) {
         toast.style.opacity = '0';
@@ -5711,6 +5734,7 @@ function initViewModeSelector() {
     selector.addEventListener('change', (e) => {
         const newMode = e.target.value;
         localStorage.setItem('preferredViewMode', newMode);
+        syncSettingsToCloud();
         applyViewMode(newMode);
         showSuccess(`Nézet átállítva: ${e.target.options[e.target.selectedIndex].text}`);
     });
@@ -5730,6 +5754,7 @@ function initListLimitSelector() {
     selector.addEventListener('change', (e) => {
         const newLimit = e.target.value;
         localStorage.setItem('preferredListLimit', newLimit);
+        syncSettingsToCloud();
         
         // Listák azonnali újrarajzolása az új limittel
         // (A globális tömbökből dolgozunk: currentUserBeers, currentUserDrinks)
@@ -6217,6 +6242,7 @@ window.confirmDisable2FA = async function() {
             if(userData) {
                 userData.has2FA = false;
                 localStorage.setItem('userData', JSON.stringify(userData));
+                syncSettingsToCloud();
             }
         } else {
             const result = await response.json();
@@ -6243,6 +6269,7 @@ window.confirmDisable2FA = async function() {
         userData.achievements = data.achievements;
         userData.badge = data.badge;
         localStorage.setItem('userData', JSON.stringify(userData));
+        syncSettingsToCloud();
         
         // UI frissítés
         updateStreakDisplay();
@@ -6279,6 +6306,7 @@ window.confirmDisable2FA = async function() {
         const userData = JSON.parse(localStorage.getItem('userData'));
         userData.isGoogleLinked = false;
         localStorage.setItem('userData', JSON.stringify(userData));
+        syncSettingsToCloud();
 
         // UI Frissítése
         updateSettingsUI();
@@ -6291,6 +6319,91 @@ window.confirmDisable2FA = async function() {
         }
     }
 }
+
+    // === BEÁLLÍTÁSOK SZINKRONIZÁLÁSA A FELHŐBE ===
+
+async function syncSettingsToCloud() {
+    // 1. Összegyűjtjük az aktuális beállításokat a localStorage-ból
+    const userEmail = JSON.parse(localStorage.getItem('userData'))?.email;
+    if (!userEmail) return; // Ha nincs bejelentkezve, nem mentünk felhőbe
+
+    const settings = {
+        cursorActive: localStorage.getItem(`cursor_pref_${userEmail}`) === 'true',
+        theme: JSON.parse(localStorage.getItem('userTheme') || '{}'),
+        viewMode: localStorage.getItem('preferredViewMode') || 'auto',
+        listLimit: localStorage.getItem('preferredListLimit') || '50',
+        headerCollapsed: localStorage.getItem('headerCollapsedPreference') === 'true'
+    };
+
+    // 2. Elküldjük a szervernek (háttérben)
+    try {
+        await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'SAVE_SETTINGS', 
+                settings: settings 
+            })
+        });
+        console.log("Beállítások szinkronizálva a felhőbe. ☁️");
+    } catch (e) {
+        console.warn("Nem sikerült menteni a beállításokat:", e);
+    }
+}
+
+// === BEÁLLÍTÁSOK BETÖLTÉSE BELÉPÉSKOR ===
+function applyCloudSettings(settings, userEmail) {
+    if (!settings || Object.keys(settings).length === 0) return;
+
+    console.log("Felhő beállítások alkalmazása...", settings);
+
+    // 1. Kurzor
+    if (settings.cursorActive !== undefined) {
+        localStorage.setItem(`cursor_pref_${userEmail}`, settings.cursorActive);
+        syncSettingsToCloud();
+        // Azonnali frissítés
+        if (settings.cursorActive) document.body.classList.add('custom-cursor-active');
+        else document.body.classList.remove('custom-cursor-active');
+    }
+
+    // 2. Téma
+    if (settings.theme && Object.keys(settings.theme).length > 0) {
+        localStorage.setItem('userTheme', JSON.stringify(settings.theme));
+        syncSettingsToCloud();
+        if (typeof applyTheme === 'function') applyTheme(settings.theme);
+    }
+
+    // 3. Nézet mód
+    if (settings.viewMode) {
+        localStorage.setItem('preferredViewMode', settings.viewMode);
+        syncSettingsToCloud();
+        // Ha van applyViewMode függvényed
+        if (typeof applyViewMode === 'function') applyViewMode(settings.viewMode);
+    }
+
+    // 4. Lista Limit
+    if (settings.listLimit) {
+        localStorage.setItem('preferredListLimit', settings.listLimit);
+        syncSettingsToCloud();
+        const limitSelector = document.getElementById('listLimitSelector');
+        if (limitSelector) limitSelector.value = settings.listLimit;
+    }
+    
+    // 5. Header
+    if (settings.headerCollapsed !== undefined) {
+        localStorage.setItem('headerCollapsedPreference', settings.headerCollapsed);
+        syncSettingsToCloud();
+        const header = document.getElementById('userHeader');
+        if(header) {
+            if(settings.headerCollapsed) header.classList.add('manual-collapsed');
+            else header.classList.remove('manual-collapsed');
+        }
+    }
+}
+    
    // === TÉMA TESTRESZABÁS FUNKCIÓK ===
 
 // Előre beállított témák definíciója
@@ -6463,6 +6576,8 @@ function initThemeCustomization() {
             
             // Mentés
             localStorage.setItem('userTheme', JSON.stringify(theme));
+            syncSettingsToCloud();
+            
             
             // Értesítés
             showNotification('✨ Téma alkalmazva: ' + theme.name, 'success');
@@ -6521,6 +6636,7 @@ function initThemeCustomization() {
             
             applyTheme(theme);
             localStorage.setItem('userTheme', JSON.stringify(theme));
+            syncSettingsToCloud();
             
             showNotification('✨ Egyéni téma alkalmazva!', 'success');
         });
@@ -6535,6 +6651,7 @@ function initThemeCustomization() {
             
             applyTheme(defaultTheme);
             localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
+            syncSettingsToCloud();
             
             // Alapértelmezett téma kijelölése
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
@@ -6959,6 +7076,7 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
+
 
 
 
