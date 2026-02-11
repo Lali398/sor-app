@@ -3815,11 +3815,12 @@ function showAchievementToast(achi) {
 // vagy kibővítjük a `switchToUserView`-t.
 
 const originalUserViewInit = switchToUserView;
-switchToUserView = function() {
-    // 1. Eredeti inicializálás
-    originalUserViewInit();
 
-    // 2. Italok betöltése
+switchToUserView = function() {
+    // 1. Lefuttatjuk az eredeti inicializálást (betölti a söröket, beállításokat)
+    originalUserViewInit(); 
+
+    // 2. Biztosítjuk, hogy az italok is betöltődjenek (ha még nem történt meg)
     if (typeof loadUserDrinks === 'function') loadUserDrinks();
 
     // 3. Adatok és BEÁLLÍTÁSOK szinkronizálása a felhőből
@@ -3828,17 +3829,16 @@ switchToUserView = function() {
         refreshUserData(); // <--- EZT HÍVJUK MEG, ez húzza le a settingset
     }, 500);
 
-    // 4. Achievementek ellenőrzése (maradhat a timeoutban)
+    // 4. Várakozunk kicsit, hogy az API válaszok (sörök + italok) megérkezzenek
+    // Fontos: Itt hívjuk meg a checkAchievements-t, hogy újraszámolja a százalékokat!
     setTimeout(async () => {
+        // Ellenőrizzük, vannak-e betöltött adatok
         if (currentUserBeers.length > 0 || currentUserDrinks.length > 0) {
+            console.log("Adatok betöltve, Achievementek ellenőrzése...");
+            
+            // FONTOS: Ez számolja ki a progress-t az aktuális listák alapján!
             await checkAchievements(); 
         }
-        renderAchievements();
-        updateHeaderBadge();
-        updateSettingsUI();
-        updateStreakDisplay();
-    }, 1500);
-};
         
         // Frissítjük a vizuális elemeket (Rács + Header Badge)
         renderAchievements();
@@ -6480,7 +6480,8 @@ const presetThemes = {
         accentColor: '#78909c'
     },
     'aurora': {
-        name: 'Aurora',
+ 
+       name: 'Aurora',
         bgColor1: '#00467F',
         bgColor2: '#A5CC82',
         bgColor3: '#000000',
@@ -7102,185 +7103,3 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
