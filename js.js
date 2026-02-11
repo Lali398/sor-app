@@ -3137,6 +3137,7 @@ const originalSwitchToUserViewUpdate = switchToUserView;
 switchToUserView = function() {
     originalSwitchToUserViewUpdate(); // Eredeti logika futtatása
     initViewModeSelector();
+    initListLimitSelector();
     
     // Név frissítése a sidebarban is
     const user = JSON.parse(localStorage.getItem('userData'));
@@ -4803,23 +4804,25 @@ window.closeViewDrinkModal = function() {
     document.body.style.overflow = 'auto';
 }
 
-// === 3. TÁBLÁZAT FRISSÍTÉSEK (renderUserBeers és renderUserDrinks módosítása) ===
-
-// CSERÉLD LE A RÉGI renderUserBeers FÜGGVÉNYT EZZEL:
 function renderUserBeers(beers) {
     userBeerTableBody.innerHTML = '';
     if (!beers || beers.length === 0) {
-        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem.</td></tr>`;
+        userBeerTableBody.innerHTML = `<tr><td colspan="10" class="no-results">Még nem értékeltél egy sört sem (vagy nincs találat).</td></tr>`;
         return;
     }
-    
-    // FONTOS: Itt a 'beer' objektumból vesszük ki az 'originalIndex'-et!
-    beers.forEach((beer) => {  // Itt már nem is feltétlenül kell a második 'index' paraméter
-        
-        // Ha véletlenül nincs originalIndex (pl. régi cache miatt), akkor fallback megoldásként keressük meg
-        // De az 1. lépés miatt lennie kell.
-        const safeIndex = (beer.originalIndex !== undefined) ? beer.originalIndex : currentUserBeers.indexOf(beer);
 
+    // --- LIMIT ALKALMAZÁSA ---
+    const limitSetting = localStorage.getItem('preferredListLimit') || '50';
+    let beersToRender = beers;
+
+    if (limitSetting !== 'all') {
+        const limit = parseInt(limitSetting);
+        beersToRender = beers.slice(0, limit);
+    }
+    // -------------------------
+    
+    beersToRender.forEach((beer) => {
+        const safeIndex = (beer.originalIndex !== undefined) ? beer.originalIndex : currentUserBeers.indexOf(beer);
         const formattedDate = beer.date ? new Date(beer.date).toLocaleDateString('hu-HU') : 'N/A';
         const formattedAvg = beer.avg ? parseFloat(beer.avg.toString().replace(',', '.')).toFixed(2) : '0.00';
         
@@ -4834,18 +4837,24 @@ function renderUserBeers(beers) {
                 <td data-label="Íz">${beer.taste || 0}</td>
                 <td data-label="Összpontszám">${beer.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                <td data-label="Művelet" class="action-buttons-cell">
                     <button class="view-btn" onclick="openViewBeerModal(${safeIndex})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditBeerModal(${safeIndex})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserBeer(${safeIndex})">🗑️ Törlés</button>
+                    <button class="edit-btn" onclick="openEditBeerModal(${safeIndex})">✏️</button>
+                    <button class="delete-btn-mini" onclick="deleteUserBeer(${safeIndex})">🗑️</button>
                 </td>
             </tr>
         `;
         userBeerTableBody.insertAdjacentHTML('beforeend', row);
     });
+
+    // Jelzés, ha több adat van, mint a limit
+    if (limitSetting !== 'all' && beers.length > parseInt(limitSetting)) {
+        const remaining = beers.length - parseInt(limitSetting);
+        const infoRow = `<tr><td colspan="10" style="text-align:center; color:#aaa; padding:15px; font-style:italic;">...és még ${remaining} db sör. (Növeld a limitet a beállításokban az összes megtekintéséhez)</td></tr>`;
+        userBeerTableBody.insertAdjacentHTML('beforeend', infoRow);
+    }
 }
 
-// CSERÉLD LE A RÉGI renderUserDrinks FÜGGVÉNYT EZZEL:
 function renderUserDrinks(drinks) {
     userDrinkTableBody.innerHTML = '';
     if (!drinks || drinks.length === 0) {
@@ -4853,10 +4862,18 @@ function renderUserDrinks(drinks) {
         return;
     }
     
-    drinks.forEach((drink) => {
-        // ITT IS: safeIndex használata az eredeti pozícióhoz
-        const safeIndex = (drink.originalIndex !== undefined) ? drink.originalIndex : currentUserDrinks.indexOf(drink);
+    // --- LIMIT ALKALMAZÁSA ---
+    const limitSetting = localStorage.getItem('preferredListLimit') || '50';
+    let drinksToRender = drinks;
 
+    if (limitSetting !== 'all') {
+        const limit = parseInt(limitSetting);
+        drinksToRender = drinks.slice(0, limit);
+    }
+    // -------------------------
+
+    drinksToRender.forEach((drink) => {
+        const safeIndex = (drink.originalIndex !== undefined) ? drink.originalIndex : currentUserDrinks.indexOf(drink);
         const formattedDate = drink.date ? new Date(drink.date).toLocaleDateString('hu-HU') : 'N/A';
         const scoreSum = (parseFloat(drink.look) || 0) + (parseFloat(drink.smell) || 0) + (parseFloat(drink.taste) || 0);
         const calculatedAvg = scoreSum / 3;
@@ -4875,15 +4892,22 @@ function renderUserDrinks(drinks) {
                 <td data-label="Íz">${drink.taste || 0}</td>
                 <td data-label="Összpontszám">${drink.totalScore || 0}</td>
                 <td data-label="Átlag" class="average-cell">${formattedAvg}</td>
-                <td data-label="Művelet" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                <td data-label="Művelet" class="action-buttons-cell">
                     <button class="view-btn" onclick="openViewDrinkModal(${safeIndex})" title="Teljes adat">👁️</button>
-                    <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️ Szerkesztés</button>
-                    <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️ Törlés</button>
+                    <button class="edit-btn" onclick="openEditDrinkModal(${safeIndex})">✏️</button>
+                    <button class="delete-btn-mini" onclick="deleteUserDrink(${safeIndex})">🗑️</button>
                 </td>
             </tr>
         `;
         userDrinkTableBody.insertAdjacentHTML('beforeend', row);
     });
+
+    // Jelzés, ha több adat van, mint a limit
+    if (limitSetting !== 'all' && drinks.length > parseInt(limitSetting)) {
+        const remaining = drinks.length - parseInt(limitSetting);
+        const infoRow = `<tr><td colspan="12" style="text-align:center; color:#aaa; padding:15px; font-style:italic;">...és még ${remaining} db ital. (Növeld a limitet a beállításokban)</td></tr>`;
+        userDrinkTableBody.insertAdjacentHTML('beforeend', infoRow);
+    }
 }
     // === TÁBLÁZAT RENDEZÉS (SORTING) FUNKCIÓ ===
 
@@ -5689,6 +5713,30 @@ function initViewModeSelector() {
         localStorage.setItem('preferredViewMode', newMode);
         applyViewMode(newMode);
         showSuccess(`Nézet átállítva: ${e.target.options[e.target.selectedIndex].text}`);
+    });
+}
+
+    // === LISTA LIMIT LOGIKA ===
+
+function initListLimitSelector() {
+    const selector = document.getElementById('listLimitSelector');
+    if (!selector) return;
+
+    // 1. Mentett beállítás betöltése (alapértelmezett: 50)
+    const savedLimit = localStorage.getItem('preferredListLimit') || '50';
+    selector.value = savedLimit;
+
+    // 2. Változás figyelése
+    selector.addEventListener('change', (e) => {
+        const newLimit = e.target.value;
+        localStorage.setItem('preferredListLimit', newLimit);
+        
+        // Listák azonnali újrarajzolása az új limittel
+        // (A globális tömbökből dolgozunk: currentUserBeers, currentUserDrinks)
+        if (typeof renderUserBeers === 'function') renderUserBeers(currentUserBeers);
+        if (typeof renderUserDrinks === 'function') renderUserDrinks(currentUserDrinks);
+        
+        showSuccess(`Limit frissítve: ${e.target.options[e.target.selectedIndex].text}`);
     });
 }
 
@@ -6911,6 +6959,7 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
+
 
 
 
