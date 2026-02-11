@@ -422,7 +422,7 @@ export default async function handler(req, res) {
     const { email, password } = req.body;
     const usersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:N` // Most már A-tól N-ig kérjük
+        range: `${USERS_SHEET}!A:O` // Most már A-tól O-ig kérjük
     });
     
     const rows = usersResponse.data.values || [];
@@ -455,6 +455,8 @@ export default async function handler(req, res) {
     } catch (e) {
         console.warn("Achievements parse error:", e);
     }
+    let settings = {};
+    try { if (userRow[14]) settings = JSON.parse(userRow[14]); } catch (e) {}
     
     // ÚJ: Badge betöltése (G oszlop - index 6)
     const badge = userRow[6] || '';
@@ -469,7 +471,8 @@ export default async function handler(req, res) {
         achievements: achievements, // ÚJ
         badge: badge, // ÚJ
         streak: { current: currentStreak, longest: longestStreak },
-        isGoogleLinked: !!userRow[11]
+        isGoogleLinked: !!userRow[11],
+        settings: settings
     };
     
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -480,7 +483,7 @@ export default async function handler(req, res) {
     
     const usersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
-        range: `${USERS_SHEET}!A:N` 
+        range: `${USERS_SHEET}!A:O` 
     });
    const rows = usersResponse.data.values || [];
     const userRow = rows.find(row => row[1] === email);
@@ -505,6 +508,8 @@ export default async function handler(req, res) {
     } catch (e) {
         console.warn("Achievements parse error:", e);
     }
+    let settings = {};
+    try { if (userRow[14]) settings = JSON.parse(userRow[14]); } catch (e) {}
     
     const badge = userRow[6] || '';
     const currentStreak = parseInt(userRow[9]) || 0;
@@ -517,7 +522,8 @@ const user = {
     achievements: achievements,
     badge: badge,
     streak: { current: currentStreak, longest: longestStreak },
-    isGoogleLinked: !!userRow[11]
+    isGoogleLinked: !!userRow[11],
+    settings: settings
 };
     
     const jwtToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -1723,31 +1729,60 @@ case 'EDIT_USER_DRINK': {
 }
 
             case 'REFRESH_USER_DATA': {
-    const userData = verifyUser(req);
-    const usersResponse = await sheets.spreadsheets.values.get({ 
-        spreadsheetId: SPREADSHEET_ID, 
-        range: `Felhasználók!A:K` 
-    });
-    const rows = usersResponse.data.values || [];
-    const userRow = rows.find(row => row[1] === userData.email);
-    
-    if (!userRow) return res.status(404).json({error: "User not found"});
+              const userData = verifyUser(req);
+              const usersResponse = await sheets.spreadsheets.values.get({ 
+                  spreadsheetId: SPREADSHEET_ID, 
+                  range: `Felhasználók!A:K` 
+              });
+              const rows = usersResponse.data.values || [];
+              const userRow = rows.find(row => row[1] === userData.email);
+              
+              if (!userRow) return res.status(404).json({error: "User not found"});
+          
+              // Streak adatok
+              const currentStreak = parseInt(userRow[9]) || 0;
+              const longestStreak = parseInt(userRow[10]) || 0;
+              
+              // Achievementek
+              let achievements = { unlocked: [] };
+              try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
+          
+              return res.status(200).json({
+                  streak: { current: currentStreak, longest: longestStreak },
+                  achievements: achievements,
+                  badge: userRow[6] || ''
+              });
+          }
 
-    // Streak adatok
-    const currentStreak = parseInt(userRow[9]) || 0;
-    const longestStreak = parseInt(userRow[10]) || 0;
-    
-    // Achievementek
-    let achievements = { unlocked: [] };
-    try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
-
-    return res.status(200).json({
-        streak: { current: currentStreak, longest: longestStreak },
-        achievements: achievements,
-        badge: userRow[6] || ''
-    });
-}
-            
+          case 'SAVE_SETTINGS': {
+              const userData = verifyUser(req);
+              const { settings } = req.body; // Ez egy JSON objektum lesz
+          
+              if (!settings) return res.status(400).json({ error: "Nincs beállítás adat." });
+          
+              const usersResponse = await sheets.spreadsheets.values.get({ 
+                  spreadsheetId: SPREADSHEET_ID, 
+                  range: `${USERS_SHEET}!A:O` 
+              });
+              const rows = usersResponse.data.values || [];
+              const rowIndex = rows.findIndex(row => row[1] === userData.email);
+          
+              if (rowIndex === -1) return res.status(404).json({ error: "Felhasználó nem található." });
+          
+              // O oszlop frissítése (index 14)
+              // A sor indexe a Sheetben: rowIndex + 1
+              const updateRange = `${USERS_SHEET}!O${rowIndex + 1}`;
+          
+              await sheets.spreadsheets.values.update({
+                  spreadsheetId: SPREADSHEET_ID,
+                  range: updateRange,
+                  valueInputOption: 'USER_ENTERED',
+                  resource: { values: [[JSON.stringify(settings)]] }
+              });
+          
+              return res.status(200).json({ message: "Beállítások mentve." });
+          }
+                      
             
             case 'DELETE_USER': {
                 const userData = verifyUser(req);
@@ -1871,7 +1906,7 @@ case 'EDIT_USER_DRINK': {
                 // Ha a te táblázatodban máshol van hely, írd át az indexeket!
                 const usersResponse = await sheets.spreadsheets.values.get({ 
                     spreadsheetId: SPREADSHEET_ID, 
-                    range: `${USERS_SHEET}!A:N` 
+                    range: `${USERS_SHEET}!A:O` 
                 });
                 
                 const rows = usersResponse.data.values || [];
@@ -1937,6 +1972,9 @@ case 'EDIT_USER_DRINK': {
                 // User objektum összeállítása a frontendnek
                 let achievements = { unlocked: [] };
                 try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
+              
+                let settings = {};
+                try { if (userRow[14]) settings = JSON.parse(userRow[14]); } catch (e) {}
 
                 const user = { 
                     name: userRow[0], 
@@ -1945,7 +1983,8 @@ case 'EDIT_USER_DRINK': {
                     achievements: achievements,
                     badge: userRow[6] || '',
                     streak: { current: parseInt(userRow[9])||0, longest: parseInt(userRow[10])||0 },
-                    isGoogleLinked: true
+                    isGoogleLinked: true,
+                    settings: settings
                 };
 
                 const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1d' });
@@ -2029,6 +2068,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
