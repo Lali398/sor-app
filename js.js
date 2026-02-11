@@ -3815,9 +3815,6 @@ function showAchievementToast(achi) {
 // vagy kibővítjük a `switchToUserView`-t.
 
 const originalUserViewInit = switchToUserView;
-
-const originalUserViewInit = switchToUserView;
-
 switchToUserView = function() {
     // 1. Eredeti inicializálás
     originalUserViewInit();
@@ -7105,6 +7102,7 @@ window.warnUser = async function(email, reportIndex) {
     }
 }
 });
+
 
 
 
