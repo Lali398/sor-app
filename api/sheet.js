@@ -1732,7 +1732,7 @@ case 'EDIT_USER_DRINK': {
               const userData = verifyUser(req);
               const usersResponse = await sheets.spreadsheets.values.get({ 
                   spreadsheetId: SPREADSHEET_ID, 
-                  range: `Felhasználók!A:K` 
+                  range: `Felhasználók!A:O` // Kiterjesztjük O-ig, ahol a settings van
               });
               const rows = usersResponse.data.values || [];
               const userRow = rows.find(row => row[1] === userData.email);
@@ -1746,11 +1746,15 @@ case 'EDIT_USER_DRINK': {
               // Achievementek
               let achievements = { unlocked: [] };
               try { if (userRow[5]) achievements = JSON.parse(userRow[5]); } catch(e){}
+
+              let settings = {};
+              try { if (userRow[14]) settings = JSON.parse(userRow[14]); } catch (e) {}
           
               return res.status(200).json({
                   streak: { current: currentStreak, longest: longestStreak },
                   achievements: achievements,
-                  badge: userRow[6] || ''
+                  badge: userRow[6] || '',
+                  settings: settings // Visszaküldjük a kliensnek
               });
           }
 
@@ -2068,6 +2072,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
