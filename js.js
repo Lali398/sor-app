@@ -7102,4 +7102,53 @@ window.warnUser = async function(email, reportIndex) {
         showError(e.message); 
     }
 }
+    // js.js - Fájl vége
+
+// === DOKUMENTUM MEGJELENÍTŐ (ÁSZF / ADATVÉDELEM) ===
+
+function openDocumentModal(url, title) {
+    const modal = document.getElementById('documentModal');
+    const frame = document.getElementById('documentFrame');
+    const titleEl = document.getElementById('documentTitle');
+    const loader = document.getElementById('docLoader');
+
+    if (!modal || !frame) return;
+
+    // Cím beállítása
+    titleEl.textContent = title;
+    
+    // Loader megjelenítése, iframe elrejtése amíg tölt
+    if(loader) loader.style.display = 'block';
+    
+    // Iframe betöltése
+    frame.src = url;
+    
+    // Ha betöltött, eltüntetjük a loadert
+    frame.onload = function() {
+        if(loader) loader.style.display = 'none';
+    };
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Háttér görgetés tiltása
+}
+
+function closeDocumentModal() {
+    const modal = document.getElementById('documentModal');
+    const frame = document.getElementById('documentFrame');
+    
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        
+        // Kis késleltetéssel ürítjük az iframe-et, hogy ne villanjon
+        setTimeout(() => {
+            if(frame) frame.src = 'about:blank';
+        }, 300);
+    }
+}
+
+// Globális elérés biztosítása (hogy a HTML gombok lássák)
+window.openDocumentModal = openDocumentModal;
+window.closeDocumentModal = closeDocumentModal;
 });
+
