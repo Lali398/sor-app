@@ -4914,6 +4914,15 @@ body.custom-theme *[class*="separator"] {
     transition: transform 0.5s;
 }
 
+/* Dokumentum gombok mobilon legyenek teljes szélességűek */
+@media (max-width: 480px) {
+    .setting-item button.action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
 
 
 
