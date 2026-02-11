@@ -670,6 +670,22 @@
                             </div>
                         </div>
 
+                            <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Lista Limit (Adatok száma) ⚡</h4>
+                                <p>Mennyi adatot töltsünk be egyszerre? Ha lassú az oldal, állítsd kisebbre.</p>
+                            </div>
+                            <div class="badge-selector-wrapper">
+                                <select id="listLimitSelector" class="badge-dropdown">
+                                    <option value="10">10 db (Leggyorsabb)</option>
+                                    <option value="25">25 db</option>
+                                    <option value="50" selected>50 db (Ajánlott)</option>
+                                    <option value="100">100 db</option>
+                                    <option value="all">Összes (Lassabb lehet)</option>
+                                </select>
+                            </div>
+                        </div>
+
                             <div class="setting-item theme-accordion-container" id="themeAccordion">
     
                                 <div class="theme-accordion-header" onclick="toggleThemeSection()">
@@ -2425,6 +2441,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
