@@ -57,7 +57,7 @@
                                 <input type="password" id="loginPassword" placeholder=" " required>
                                 <label for="loginPassword">Jelszó</label>
                                 <span class="input-highlight"></span>
-                                <span class="password-toggle-icon">👁️</span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
                             </div>
                             <button type="submit" class="auth-btn">
                                 <span class="btn-text">Bejelentkezés</span>
@@ -102,13 +102,13 @@
                             <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
                                 Min. 8 karakter, 1 szám, 1 spec. karakter.
                             </small>
-                            <span class="password-toggle-icon">👁️</span>
+                            <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
                         </div>
                             <div class="input-group">
                                 <input type="password" id="registerPasswordConfirm" placeholder=" " required>
                                 <label for="registerPasswordConfirm">Jelszó megerősítés</label>
                                 <span class="input-highlight"></span>
-                                <span class="password-toggle-icon">👁️</span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
                             </div>
                             <div class="terms-group">
                                 <input type="checkbox" id="registerTerms" required>
@@ -2481,6 +2481,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
