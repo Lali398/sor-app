@@ -1465,9 +1465,10 @@ case 'EDIT_USER_DRINK': {
                     const userData = verifyUser(req);
                     const { index } = req.body;
                     
+                    // JAVÍTÁS: A:H tartományt kérünk le, hogy a szavazatok (G, H) is benne legyenek!
                     const ideasResponse = await sheets.spreadsheets.values.get({
                         spreadsheetId: SPREADSHEET_ID,
-                        range: `${IDEAS_SHEET}!A:F`
+                        range: `${IDEAS_SHEET}!A:H` 
                     });
                     
                     const allRows = ideasResponse.data.values || [];
@@ -1488,21 +1489,22 @@ case 'EDIT_USER_DRINK': {
                     const targetOriginalIndex = userPendingIdeas[index].originalIndex;
                     const cleanRows = allRows.filter((_, idx) => idx !== targetOriginalIndex);
                     
+                    // JAVÍTÁS: A teljes tartományt (A:H) töröljük és írjuk vissza
                     await sheets.spreadsheets.values.clear({ 
                         spreadsheetId: SPREADSHEET_ID, 
-                        range: `${IDEAS_SHEET}!A:F` 
+                        range: `${IDEAS_SHEET}!A:H` 
                     });
                     
                     if (cleanRows.length > 0) {
                         await sheets.spreadsheets.values.update({
                             spreadsheetId: SPREADSHEET_ID,
-                            range: `${IDEAS_SHEET}!A:F`,
+                            range: `${IDEAS_SHEET}!A:H`,
                             valueInputOption: 'USER_ENTERED',
                             resource: { values: cleanRows }
                         });
                     }
                     
-                    return res.status(200).json({ message: "Ötlet sikeresen törölve!" });
+                    return res.status(200).json({ message: "Ötlet és a hozzá tartozó szavazatok sikeresen törölve!" });
                 }
                 
                 case 'DELETE_USER_RECOMMENDATION': {
@@ -1510,6 +1512,7 @@ case 'EDIT_USER_DRINK': {
                     const { originalIndex } = req.body;
                     
                     // Ellenőrizzük, hogy a sajátja-e
+                    // Itt is fontos a sorindex korrekció (+1)
                     const rowIndex = parseInt(originalIndex) + 1;
                     const rangeCheck = `${RECOMMENDATIONS_SHEET}!C${rowIndex}`;
                     
@@ -1524,30 +1527,31 @@ case 'EDIT_USER_DRINK': {
                         return res.status(403).json({ error: "Csak a saját ajánlásodat törölheted!" });
                     }
                     
-                    // Törlés
+                    // JAVÍTÁS: A:K tartományt kérünk le (J=Count, K=Voters)
                     const recResponse = await sheets.spreadsheets.values.get({
                         spreadsheetId: SPREADSHEET_ID,
-                        range: `${RECOMMENDATIONS_SHEET}!A:I`
+                        range: `${RECOMMENDATIONS_SHEET}!A:K`
                     });
                     
                     const allRows = recResponse.data.values || [];
                     const cleanRows = allRows.filter((_, idx) => idx !== originalIndex);
                     
+                    // JAVÍTÁS: Teljes törlés és visszaírás A:K tartományban
                     await sheets.spreadsheets.values.clear({ 
                         spreadsheetId: SPREADSHEET_ID, 
-                        range: `${RECOMMENDATIONS_SHEET}!A:I` 
+                        range: `${RECOMMENDATIONS_SHEET}!A:K` 
                     });
                     
                     if (cleanRows.length > 0) {
                         await sheets.spreadsheets.values.update({
                             spreadsheetId: SPREADSHEET_ID,
-                            range: `${RECOMMENDATIONS_SHEET}!A:I`,
+                            range: `${RECOMMENDATIONS_SHEET}!A:K`,
                             valueInputOption: 'USER_ENTERED',
                             resource: { values: cleanRows }
                         });
                     }
                     
-                    return res.status(200).json({ message: "Ajánlás sikeresen törölve!" });
+                    return res.status(200).json({ message: "Ajánlás és a hozzá tartozó szavazatok sikeresen törölve!" });
                 }
 
             case 'CLAIM_REWARD': {
@@ -1918,51 +1922,87 @@ case 'EDIT_USER_DRINK': {
                         });
                     }
                     
-                    // --- 4. ÖTLETEK TÖRLÉSE (Anonimokat is, ha az új rendszerrel lettek mentve) ---
+                    // --- 4. ÖTLETEK TÖRLÉSE + SZAVAZATOK TISZTÍTÁSA ---
                     const ideasRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
                     const allIdeas = ideasRes.data.values || [];
+                    
+                    // Két dolgot csinálunk: 
+                    // 1. Kiszedjük a saját ötleteit.
+                    // 2. A maradékban megnézzük, szavazott-e, és ha igen, töröljük a szavazatát.
                     const cleanIdeas = allIdeas.filter((row, index) => {
-                        if (index === 0) return true; 
-                        // Itt az 5. index (F oszlop) az email. 
-                        // Az 1. lépésben javítottuk, hogy anonimnál is itt legyen az email.
-                        return row[5] !== userEmail; 
-                    });
-                    if (cleanIdeas.length !== allIdeas.length) {
-                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
-                        await sheets.spreadsheets.values.update({
-                            spreadsheetId: SPREADSHEET_ID,
-                            range: IDEAS_SHEET,
-                            valueInputOption: 'USER_ENTERED',
-                            resource: { values: cleanIdeas }
-                        });
-                    }
+                        if (index === 0) return true; // Fejléc marad
+                        return row[5] !== userEmail; // Saját ötlet törlése
+                    }).map((row, index) => {
+                        if (index === 0) return row; // Fejlécet ne bántsuk
 
-                    // --- 5. ÚJ: AJÁNLÁSOK TÖRLÉSE (Anonimokat is) ---
-                    const recRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
-                    const allRecs = recRes.data.values || [];
-                    const cleanRecs = allRecs.filter((row, index) => {
-                        if (index === 0) return true;
-                        // Az ajánlásoknál a 2. index (C oszlop) az email, akkor is ha anonim
-                        return row[2] !== userEmail;
+                        // Szavazatok tisztítása (G oszlop: Count, H oszlop: JSON)
+                        let count = parseInt(row[6]) || 0;
+                        let voters = [];
+                        try { if(row[7]) voters = JSON.parse(row[7]); } catch(e){}
+
+                        if (voters.includes(userEmail)) {
+                            // Ha szavazott, kivesszük
+                            voters = voters.filter(v => v !== userEmail);
+                            count = Math.max(0, count - 1);
+                            
+                            // Frissítjük a sort
+                            row[6] = count;
+                            row[7] = JSON.stringify(voters);
+                        }
+                        return row;
+                    });
+
+                    // Mindig frissítjük, mert lehet, hogy csak szavazatot töröltünk
+                    await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: IDEAS_SHEET });
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: IDEAS_SHEET,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: cleanIdeas }
                     });
                     
-                    if (cleanRecs.length !== allRecs.length) {
-                        await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
-                        await sheets.spreadsheets.values.update({
-                            spreadsheetId: SPREADSHEET_ID,
-                            range: RECOMMENDATIONS_SHEET,
-                            valueInputOption: 'USER_ENTERED',
-                            resource: { values: cleanRecs }
-                        });
-                    }
 
-                    return res.status(200).json({ message: "Fiók, adatok, ajánlások és ötletek sikeresen törölve." });
+                    // --- 5. AJÁNLÁSOK TÖRLÉSE + SZAVAZATOK TISZTÍTÁSA ---
+                    const recRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
+                    const allRecs = recRes.data.values || [];
+                    
+                    const cleanRecs = allRecs.filter((row, index) => {
+                        if (index === 0) return true;
+                        return row[2] !== userEmail; // C oszlop az email
+                    }).map((row, index) => {
+                        if (index === 0) return row;
+
+                        // Szavazatok tisztítása (J oszlop: Count, K oszlop: JSON)
+                        // Figyelem: indexek 0-tól -> J=9, K=10
+                        let count = parseInt(row[9]) || 0;
+                        let voters = [];
+                        try { if(row[10]) voters = JSON.parse(row[10]); } catch(e){}
+
+                        if (voters.includes(userEmail)) {
+                            voters = voters.filter(v => v !== userEmail);
+                            count = Math.max(0, count - 1);
+                            
+                            row[9] = count;
+                            row[10] = JSON.stringify(voters);
+                        }
+                        return row;
+                    });
+                    
+                    await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: RECOMMENDATIONS_SHEET });
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: RECOMMENDATIONS_SHEET,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: { values: cleanRecs }
+                    });
+                    
+
+                    return res.status(200).json({ message: "Fiók, adatok, ajánlások és leadott szavazatok sikeresen törölve." });
                 } catch (error) {
                     console.error("Törlési hiba:", error);
                     return res.status(500).json({ error: "Hiba történt a fiók törlése közben." });
                 }
             }
-
             // === GOOGLE LOGIN ÉS REGISZTRÁCIÓ ===
             case 'GOOGLE_LOGIN': {
                 const { token: googleToken } = req.body;
@@ -2146,6 +2186,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
