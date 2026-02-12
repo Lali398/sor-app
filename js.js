@@ -335,24 +335,35 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     // === VENDÉG FELHASZNÁLÓ FUNKCIÓK ===
     // ======================================================
 
-    async function handleAddBeer(e) {
+    async function handleAddDrink(e) {
     e.preventDefault();
-    const beerName = document.getElementById('beerName').value;
-    const type = document.getElementById('beerType').value;
-    const location = document.getElementById('beerLocation').value;
-    const beerPercentage = document.getElementById('beerPercentage').value;
-    const look = document.getElementById('beerLook').value;
-    const smell = document.getElementById('beerSmell').value;
-    const taste = document.getElementById('beerTaste').value;
-    const notes = document.getElementById('beerNotes').value;
-    const submitBtn = addBeerForm.querySelector('.auth-btn');
+    const drinkName = document.getElementById('drinkName').value;
+    const category = document.getElementById('drinkCategory').value;
+    const type = document.getElementById('drinkType').value;
+    const location = document.getElementById('drinkLocation').value;
+    const drinkPercentage = document.getElementById('drinkPercentage').value || 0;
+    const look = document.getElementById('drinkLook').value;
+    const smell = document.getElementById('drinkSmell').value;
+    const taste = document.getElementById('drinkTaste').value;
+    const notes = document.getElementById('drinkNotes').value;
+    const submitBtn = addDrinkForm.querySelector('.auth-btn');
+
+    // --- ANIMÁCIÓ KEZDETE ---
+    const btnTextSpan = submitBtn.querySelector('.btn-text');
+    const originalText = btnTextSpan.innerText;
+    btnTextSpan.innerText = "Mentés folyamatban";
+    btnTextSpan.classList.add('loading-dots');
+    // -----------------------
 
     setLoading(submitBtn, true);
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ action: 'ADD_USER_BEER', beerName, type, location, beerPercentage, look, smell, taste, notes })
+            body: JSON.stringify({ 
+                action: 'ADD_USER_DRINK', 
+                drinkName, category, type, location, drinkPercentage, look, smell, taste, notes 
+            })
         });
         const result = await response.json();
         if (!response.ok) {
@@ -363,16 +374,21 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
             }
             throw new Error(result.error || 'Szerverhiba');
         }
-        showSuccess('Sör sikeresen hozzáadva!');
-        addBeerForm.reset();
-        closeAddModal('beer');
-        loadUserData();
+        showSuccess('Ital sikeresen hozzáadva!');
+        addDrinkForm.reset();
+        closeAddModal('drink');
+        loadUserDrinks();
         refreshUserData();
     } catch (error) {
-        console.error("Hiba sör hozzáadásakor:", error);
-        showError(error.message || "Nem sikerült a sört hozzáadni.");
+        console.error("Hiba ital hozzáadásakor:", error);
+        showError(error.message || "Nem sikerült az italt hozzáadni.");
     } finally {
         setLoading(submitBtn, false);
+        // --- ANIMÁCIÓ VÉGE ---
+        if(btnTextSpan) {
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
+        }
     }
 }
 
@@ -388,6 +404,11 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     const taste = document.getElementById('drinkTaste').value;
     const notes = document.getElementById('drinkNotes').value;
     const submitBtn = addDrinkForm.querySelector('.auth-btn');
+    const btnTextSpan = submitBtn.querySelector('.btn-text');
+    const originalText = btnTextSpan.innerText;
+        
+    btnTextSpan.innerText = "Mentés folyamatban";
+    btnTextSpan.classList.add('loading-dots');
 
     setLoading(submitBtn, true);
     try {
@@ -496,6 +517,15 @@ async function handleIdeaSubmit(e) {
     const isAnon = document.getElementById('ideaAnonymous').checked;
     const btn = e.target.querySelector('button');
     
+    // --- ANIMÁCIÓ KEZDETE ---
+    const btnTextSpan = btn.querySelector('.btn-text');
+    const originalText = btnTextSpan ? btnTextSpan.innerText : "Küldés";
+    if(btnTextSpan) {
+        btnTextSpan.innerText = "Küldés folyamatban";
+        btnTextSpan.classList.add('loading-dots');
+    }
+    // -----------------------
+    
     setLoading(btn, true);
 
     try {
@@ -513,13 +543,18 @@ async function handleIdeaSubmit(e) {
         if (!response.ok) throw new Error(result.error || "Hiba történt.");
 
         showSuccess(result.message || "Ötlet sikeresen beküldve! Köszi! 💡");
-        document.getElementById('ideaText').value = ''; // Törlés
-        loadUserIdeas(); // Lista frissítése
+        document.getElementById('ideaText').value = '';
+        loadUserIdeas();
 
     } catch (error) {
         showError(error.message);
     } finally {
         setLoading(btn, false);
+        // --- ANIMÁCIÓ VÉGE ---
+        if(btnTextSpan) {
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
+        }
     }
 }
 
@@ -858,39 +893,56 @@ async function markIdeaAsDone(index) {
     // --- ÚJ: FELHASZNÁLÓI FIÓK KEZELÉSE ---
     
     async function handleChangePassword(e) {
-        e.preventDefault();
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
-        const submitBtn = changePasswordForm.querySelector('.action-btn');
+    e.preventDefault();
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+    const submitBtn = changePasswordForm.querySelector('.action-btn');
 
-        if (newPassword !== newPasswordConfirm) {
-            showError("Az új jelszavak nem egyeznek!");
-            return;
-        }
-        if (newPassword.length < 6) {
-             showError("Az új jelszónak legalább 6 karakter hosszúnak kell lennie.");
-             return;
-        }
+    // --- ANIMÁCIÓ KEZDETE ---
+    const btnTextSpan = submitBtn.querySelector('.btn-text');
+    const originalText = btnTextSpan ? btnTextSpan.innerText : "Mentés";
+    if(btnTextSpan) {
+        btnTextSpan.innerText = "Mentés folyamatban";
+        btnTextSpan.classList.add('loading-dots');
+    }
+    
 
-        setLoading(submitBtn, true);
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-                body: JSON.stringify({ action: 'CHANGE_PASSWORD', oldPassword: currentPassword, newPassword: newPassword })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Szerverhiba");
-            
-            showSuccess("Jelszó sikeresen módosítva!");
-            changePasswordForm.reset();
-        } catch (error) {
-            showError(error.message || "Nem sikerült a jelszó módosítása.");
-        } finally {
-            setLoading(submitBtn, false);
+    if (newPassword !== newPasswordConfirm) {
+        showError("Az új jelszavak nem egyeznek!");
+        // Reset animáció hiba esetén
+        if(btnTextSpan) { btnTextSpan.innerText = originalText; btnTextSpan.classList.remove('loading-dots'); }
+        return;
+    }
+    if (newPassword.length < 6) {
+         showError("Az új jelszónak legalább 6 karakter hosszúnak kell lennie.");
+         if(btnTextSpan) { btnTextSpan.innerText = originalText; btnTextSpan.classList.remove('loading-dots'); }
+         return;
+    }
+
+    setLoading(submitBtn, true);
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'CHANGE_PASSWORD', oldPassword: currentPassword, newPassword: newPassword })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Szerverhiba");
+        
+        showSuccess("Jelszó sikeresen módosítva!");
+        changePasswordForm.reset();
+    } catch (error) {
+        showError(error.message || "Nem sikerült a jelszó módosítása.");
+    } finally {
+        setLoading(submitBtn, false);
+        // --- ANIMÁCIÓ VÉGE ---
+        if(btnTextSpan) {
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
         }
     }
+}
 
 
     // === GOOGLE AUTH KONFIGURÁCIÓ ===
@@ -3267,7 +3319,14 @@ document.getElementById('supportForm').addEventListener('submit', async (e) => {
     const message = document.getElementById('supportMessage').value;
     const btn = e.target.querySelector('.auth-btn');
     
-    // Email cím lekérése
+    // --- ANIMÁCIÓ KEZDETE ---
+    const btnTextSpan = btn.querySelector('.btn-text');
+    const originalText = btnTextSpan ? btnTextSpan.innerText : "Beküldés";
+    if(btnTextSpan) {
+        btnTextSpan.innerText = "Küldés folyamatban";
+        btnTextSpan.classList.add('loading-dots');
+    }
+    
     let email;
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (userData) {
@@ -3283,14 +3342,10 @@ document.getElementById('supportForm').addEventListener('submit', async (e) => {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json'
-                // NEM kell token, mert vendégek is elérhetik
             },
             body: JSON.stringify({ 
                 action: 'SUBMIT_SUPPORT_TICKET', 
-                name, 
-                email, 
-                subject, 
-                message 
+                name, email, subject, message 
             })
         });
         
@@ -3304,6 +3359,11 @@ document.getElementById('supportForm').addEventListener('submit', async (e) => {
         showError(error.message || "Nem sikerült elküldeni az üzenetet.");
     } finally {
         setLoading(btn, false);
+        // --- ANIMÁCIÓ VÉGE ---
+        if(btnTextSpan) {
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
+        }
     }
 });
 
@@ -3909,23 +3969,31 @@ if (forgotForm) {
         const email = document.getElementById('forgotEmail').value;
         const code = document.getElementById('forgotRecoveryCode').value;
         const newPass = document.getElementById('forgotNewPassword').value;
-        // ÚJ: Megerősítő jelszó kiolvasása
         const confirmPass = document.getElementById('forgotNewPasswordConfirm').value;
-        
         const btn = forgotForm.querySelector('.auth-btn');
 
-        // 1. ÚJ ELLENŐRZÉS: Egyezés vizsgálata
+        // --- ANIMÁCIÓ KEZDETE ---
+        const btnTextSpan = btn.querySelector('.btn-text');
+        const originalText = btnTextSpan ? btnTextSpan.innerText : "Küldés";
+        if(btnTextSpan) {
+            btnTextSpan.innerText = "Mentés folyamatban";
+            btnTextSpan.classList.add('loading-dots');
+        }
+        // -----------------------
+
         if (newPass !== confirmPass) {
             showError("A két jelszó nem egyezik!");
-            // Opcionális: töröljük a jelszó mezőket, hogy újraírhassa
             document.getElementById('forgotNewPassword').value = '';
             document.getElementById('forgotNewPasswordConfirm').value = '';
+            // Reset animáció
+            if(btnTextSpan) { btnTextSpan.innerText = originalText; btnTextSpan.classList.remove('loading-dots'); }
             return;
         }
 
-        // 2. Hossz ellenőrzése
         if (newPass.length < 8) {
             showError("Az új jelszó túl rövid (min. 8 karakter)!");
+            // Reset animáció
+            if(btnTextSpan) { btnTextSpan.innerText = originalText; btnTextSpan.classList.remove('loading-dots'); }
             return;
         }
 
@@ -3947,6 +4015,11 @@ if (forgotForm) {
             showError(error.message);
         } finally {
             setLoading(btn, false);
+            // --- ANIMÁCIÓ VÉGE ---
+            if(btnTextSpan) {
+                btnTextSpan.innerText = originalText;
+                btnTextSpan.classList.remove('loading-dots');
+            }
         }
     });
 }
@@ -4085,57 +4158,63 @@ window.closeRecModal = function() {
 const addRecForm = document.getElementById('addRecForm');
 if (addRecForm) {
     addRecForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const originalIndex = parseInt(document.getElementById('recEditIndex').value);
-        const itemName = document.getElementById('recItemName').value;
-        const itemType = document.getElementById('recItemType').value;
-        const category = document.getElementById('recCategory').value;
-        const description = document.getElementById('recDescription').value;
-        const isAnonymous = document.getElementById('recAnonymous').checked;
-        const btn = addRecForm.querySelector('.auth-btn');
+    e.preventDefault();
+    
+    const originalIndex = parseInt(document.getElementById('recEditIndex').value);
+    const itemName = document.getElementById('recItemName').value;
+    const itemType = document.getElementById('recItemType').value;
+    const category = document.getElementById('recCategory').value;
+    const description = document.getElementById('recDescription').value;
+    const isAnonymous = document.getElementById('recAnonymous').checked;
+    const btn = addRecForm.querySelector('.auth-btn');
 
-        const action = originalIndex === -1 ? 'ADD_RECOMMENDATION' : 'EDIT_RECOMMENDATION';
+    // --- ANIMÁCIÓ KEZDETE ---
+    const btnTextSpan = btn.querySelector('.btn-text');
+    const originalText = btnTextSpan.innerText;
+    btnTextSpan.innerText = "Küldés folyamatban";
+    btnTextSpan.classList.add('loading-dots');
+    // -----------------------
 
-        setLoading(btn, true);
+    const action = originalIndex === -1 ? 'ADD_RECOMMENDATION' : 'EDIT_RECOMMENDATION';
 
-        try {
-            const bodyData = { 
-                action, 
-                itemName, 
-                itemType, 
-                category, 
-                description, 
-                isAnonymous 
-            };
+    setLoading(btn, true);
 
-            if (originalIndex !== -1) {
-                bodyData.originalIndex = originalIndex;
-            }
+    try {
+        const bodyData = { 
+            action, itemName, itemType, category, description, isAnonymous 
+        };
 
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                },
-                body: JSON.stringify(bodyData)
-            });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Hiba történt.");
-
-            showSuccess(originalIndex === -1 ? "Ajánlás sikeresen beküldve! 📢" : "Sikeres módosítás! ✅");
-            closeRecModal();
-            loadRecommendations(); 
-
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            setLoading(btn, false);
+        if (originalIndex !== -1) {
+            bodyData.originalIndex = originalIndex;
         }
-    });
-}
+
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify(bodyData)
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Hiba történt.");
+
+        showSuccess(originalIndex === -1 ? "Ajánlás sikeresen beküldve! 📢" : "Sikeres módosítás! ✅");
+        closeRecModal();
+        loadRecommendations(); 
+
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        setLoading(btn, false);
+        // --- ANIMÁCIÓ VÉGE ---
+        if(btnTextSpan) {
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
+        }
+    }
+});
 
 // 4. Betöltés
 async function loadRecommendations() {
@@ -7171,6 +7250,7 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
 
 
