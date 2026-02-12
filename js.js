@@ -614,17 +614,6 @@ async function loadUserIdeas() {
             } else {
                 // --- VÁRAKOZÓ LISTA ---
                 
-                // Törlés gomb (ha saját)
-                const deleteBtn = isOwner 
-                    ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
-                    : '';
-
-                // Jelentés gomb (ha NEM saját)
-                const reportBtn = (!isOwner && currentUserEmail)
-                ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', ${item.index}, '${escapeHtml(item.idea)}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
-                : '';
-
-                const voteActiveClass = item.hasVoted ? 'active' : '';
                 
                 // Törlés gomb (ha saját)
                 const deleteBtn = isOwner 
@@ -7339,5 +7328,6 @@ async function handleVote(type, index, buttonElement) {
     }
 }
 });
+
 
 
