@@ -2804,6 +2804,8 @@ select.cool-select {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 10px;
     font-size: 0.85rem;
+    position: relative;
+    left: 25px;
 }
 
 .rec-user {
@@ -2821,6 +2823,10 @@ select.cool-select {
 .rec-date {
     color: #777;
     font-size: 0.75rem;
+    position: relative;
+    top: 45px;
+    right: 20px;
+    
 }
 /* === AJÁNLÓ RENDSZER - VÉGLEGES STÍLUSOK === */
 
@@ -5014,6 +5020,7 @@ body.custom-theme *[class*="separator"] {
     .vote-btn { font-size: 1.2rem; }
     .vote-count { font-size: 0.8rem; }
 }
+
 
 
 
