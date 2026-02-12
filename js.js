@@ -6673,25 +6673,36 @@ function initThemeCustomization() {
     const resetBtn = document.getElementById('resetTheme');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            const defaultTheme = presetThemes['dark-purple'];
-            defaultTheme.preset = 'dark-purple';
+            // 1. Töröljük a mentett témát a helyi tárolóból
+            localStorage.removeItem('userTheme');
             
-            applyTheme(defaultTheme);
-            localStorage.setItem('userTheme', JSON.stringify(defaultTheme));
+            // 2. Levesszük a 'custom-theme' osztályt a body-ról
+            document.body.classList.remove('custom-theme');
+            
+            // 3. Töröljük a JS által rárakott inline stílusokat (háttér, stb.)
+            document.body.style.background = '';
+            document.body.style.backgroundAttachment = '';
+            
+            // 4. Töröljük a CSS változókat (színeket)
+            document.documentElement.style = '';
+
+            // 5. Szinkronizálás a felhőbe (hogy ott is törlődjön a beállítás)
+            // Mivel töröltük a localStorage-ból, a syncSettingsToCloud üres objektumot küld majd
             syncSettingsToCloud();
             
-            // Alapértelmezett téma kijelölése
+            // 6. Előre beállított gombokról levesszük az "active" jelzést
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.dataset.theme === 'dark-purple') {
-                    btn.classList.add('active');
-                }
             });
+            
+            // 7. Input mezők visszaállítása alapértelmezettre (opcionális, de szép)
+            // Visszaállítjuk a dark-purple értékeit a mezőkbe, hogy ne maradjanak az előzőn
+            const defaultValues = presetThemes['dark-purple'];
+            updateColorInputs(defaultValues);
             
             showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
         });
     }
-}
 
 // Élő előnézet frissítése
 function updateLivePreview() {
@@ -7151,4 +7162,5 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
