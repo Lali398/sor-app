@@ -495,6 +495,8 @@ async function handleIdeaSubmit(e) {
     const text = document.getElementById('ideaText').value;
     const isAnon = document.getElementById('ideaAnonymous').checked;
     const btn = e.target.querySelector('button');
+    btnTextSpan.innerText = "Ötlet Beküldése"; 
+    btnTextSpan.classList.add('loading-dots');
 
     setLoading(btn, true);
 
@@ -7171,6 +7173,7 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
 
 
