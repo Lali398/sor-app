@@ -6391,8 +6391,7 @@ window.confirmDisable2FA = async function() {
                 userData.settings = data.settings;
                 
                 // És ami a legfontosabb: ALKALMAZZUK ŐKET!
-                // Ez állítja be 
-a témát, limitet, kurzort a felhő alapján
+                // Ez állítja be
                 applyCloudSettings(data.settings, userData.email);
             }
             // --------------------------------------------------
@@ -7329,3 +7328,4 @@ async function handleVote(type, index, buttonElement) {
     }
 }
 });
+
