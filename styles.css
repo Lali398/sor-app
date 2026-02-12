@@ -4921,6 +4921,31 @@ body.custom-theme *[class*="separator"] {
         justify-content: center;
     }
 }
+/* === JELSZÓ MEGJELENÍTŐ IKON === */
+.input-group .password-toggle-icon {
+    position: absolute;
+    right: 10px;
+    top: 15px; /* A mező közepére igazítva */
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.2rem;
+    user-select: none;
+    background: transparent;
+    border: none;
+    filter: grayscale(1);
+    transition: filter 0.3s;
+}
+
+.input-group .password-toggle-icon:hover {
+    filter: grayscale(0);
+}
+
+/* Helyet csinálunk az ikonnak a jelszó mezőben */
+.input-group input[type="password"],
+.input-group input[type="text"].password-visible {
+    padding-right: 40px !important;
+}
+
 
 
 
