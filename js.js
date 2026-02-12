@@ -6701,8 +6701,7 @@ function initThemeCustomization() {
             updateColorInputs(defaultValues);
             
             showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
-        });
-    }
+        }
 
 // Élő előnézet frissítése
 function updateLivePreview() {
@@ -7162,5 +7161,6 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
 
