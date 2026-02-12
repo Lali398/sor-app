@@ -1087,56 +1087,47 @@ case 'EDIT_USER_DRINK': {
             case 'GET_ALL_IDEAS': {
                 const userData = verifyUser(req);
                 
-                // 1. Ötletek lekérése
                 const ideasResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${IDEAS_SHEET}!A:F` 
+                    // Bővítettük A:H-ra (G=Count, H=Voters)
+                    range: `${IDEAS_SHEET}!A:H` 
                 });
                 
-                // 2. Felhasználók lekérése (hogy tudjuk a rangokat)
                 const usersResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${USERS_SHEET}!A:G` // G oszlop a Badge
+                    range: `${USERS_SHEET}!A:G`
                 });
                 
                 const allRows = ideasResponse.data.values || [];
                 const allUsers = usersResponse.data.values || [];
 
-                // Csinálunk egy gyors keresőtáblát: Email -> Badge
-                // userRow[1] az email, userRow[6] a badge (G oszlop)
                 const userBadges = {};
                 allUsers.forEach(row => {
-                    if (row[1] && row[6]) {
-                        userBadges[row[1]] = row[6];
-                    }
+                    if (row[1] && row[6]) userBadges[row[1]] = row[6];
                 });
                 
-                // Átalakítás objektumokká + Badge hozzáadása
                 const ideas = allRows.map((row, index) => {
                     if (!row || row.length === 0) return null;
                     if (row[0] === 'Beküldő' || row[0] === 'Ki javasolta?') return null;
 
-                    const storedEmail = row[5] || ''; // Ez a valódi email a sheetben
+                    const storedEmail = row[5] || '';
                     const submitterName = row[0] || 'Névtelen';
                     
-                    // JAVÍTÁS: Ha Anonymous a név, akkor a kliens felé NE küldjük el a valódi emailt, 
-                    // kivéve ha a sajátja (hogy a törlés gomb megjelenjen).
-                    // De mivel a frontend a localstorage emaillel hasonlít össze,
-                    // trükköznünk kell: A törléshez a backend ellenőrzi a tokent.
-                    // A frontend csak a megjelenítéshez kéri.
-                    
                     let emailForFrontend = storedEmail;
-                    if (submitterName === 'Anonymous') {
-                        // Ha a lekérő user nem azonos a beküldővel, rejtsük el az emailt
-                        if (storedEmail !== userData.email) {
-                            emailForFrontend = 'rejtett@anonymous.hu';
-                        }
+                    if (submitterName === 'Anonymous' && storedEmail !== userData.email) {
+                        emailForFrontend = 'rejtett@anonymous.hu';
                     }
 
                     let badge = '';
                     if (submitterName !== 'Anonymous' && userBadges[storedEmail]) {
                         badge = userBadges[storedEmail];
                     }
+
+                    // --- SZAVAZAT KEZELÉS ---
+                    const voteCount = parseInt(row[6]) || 0; // G oszlop
+                    let voters = [];
+                    try { if(row[7]) voters = JSON.parse(row[7]); } catch(e){} // H oszlop
+                    const hasVoted = voters.includes(userData.email);
 
                     return {
                         index: index,
@@ -1145,10 +1136,15 @@ case 'EDIT_USER_DRINK': {
                         timestamp: row[2] || '',
                         status: row[3] || 'Megcsinálásra vár',
                         date: row[4] || '',
-                        email: emailForFrontend, // A maszkolt vagy valódi email
-                        badge: badge
+                        email: emailForFrontend,
+                        badge: badge,
+                        voteCount: voteCount, // ÚJ
+                        hasVoted: hasVoted    // ÚJ
                     };
                 }).filter(item => item !== null);
+
+                // RENDEZÉS: Legtöbb szavazat elöl
+                ideas.sort((a, b) => b.voteCount - a.voteCount);
 
                 return res.status(200).json(ideas);
             }
@@ -1214,10 +1210,10 @@ case 'EDIT_USER_DRINK': {
 
             case 'GET_RECOMMENDATIONS': {
                 const userData = verifyUser(req);
-                // Lekérjük az A:I tartományt (Kategória és Módosítva is kell)
+                // Bővítettük A:K-ra (J=Count, K=Voters)
                 const recResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
-                    range: `${RECOMMENDATIONS_SHEET}!A:I`
+                    range: `${RECOMMENDATIONS_SHEET}!A:K`
                 });
                 const usersResponse = await sheets.spreadsheets.values.get({
                     spreadsheetId: SPREADSHEET_ID,
@@ -1241,27 +1237,105 @@ case 'EDIT_USER_DRINK': {
                     
                     let displayName = isAnon ? 'Anonymus 🕵️' : (row[1] || 'Ismeretlen');
                     let displayBadge = isAnon ? '' : (userBadges[email] || '');
-
-                    // Ellenőrizzük, hogy a jelenlegi user-e a tulajdonos (a szerkesztés gombhoz)
                     const isMine = (email === userData.email);
 
+                    // --- SZAVAZAT KEZELÉS ---
+                    const voteCount = parseInt(row[9]) || 0; // J oszlop
+                    let voters = [];
+                    try { if(row[10]) voters = JSON.parse(row[10]); } catch(e){} // K oszlop
+                    const hasVoted = voters.includes(userData.email);
+
                     return {
-                        originalIndex: index, // Fontos a szerkesztéshez! (Ez a sor száma - 1)
+                        originalIndex: index,
                         date: row[0] ? row[0].substring(0, 10) : '',
                         submitter: displayName,
-                        email: email, // Kliens oldalon is kellhet az ellenőrzéshez
+                        email: email,
                         badge: displayBadge,
                         itemName: row[3],
                         type: row[4],
                         description: row[5] || '',
                         isAnon: isAnon,
-                        category: row[7] || 'Egyéb', // Kategória
-                        isEdited: row[8] === 'TRUE', // Módosítva flag
-                        isMine: isMine // Saját-e?
+                        category: row[7] || 'Egyéb',
+                        isEdited: row[8] === 'TRUE',
+                        isMine: isMine,
+                        voteCount: voteCount, // ÚJ
+                        hasVoted: hasVoted    // ÚJ
                     };
-                }).filter(item => item !== null).reverse();
+                }).filter(item => item !== null);
+
+                // RENDEZÉS: Legtöbb szavazat elöl
+                recommendations.sort((a, b) => b.voteCount - a.voteCount);
 
                 return res.status(200).json(recommendations);
+            }
+
+            // === SZAVAZÁS KEZELÉSE ===
+            case 'VOTE_CONTENT': {
+                const userData = verifyUser(req);
+                const { type, index, isUpvote } = req.body; // type: 'idea' vagy 'recommendation'
+
+                let sheetName = '';
+                let countCol = '';
+                let votersCol = '';
+                
+                // Melyik munkalapon dolgozunk?
+                if (type === 'idea') {
+                    sheetName = IDEAS_SHEET;
+                    countCol = 'G'; // 6. index
+                    votersCol = 'H'; // 7. index
+                } else if (type === 'recommendation') {
+                    sheetName = RECOMMENDATIONS_SHEET;
+                    countCol = 'J'; // 9. index
+                    votersCol = 'K'; // 10. index
+                } else {
+                    return res.status(400).json({ error: "Ismeretlen típus" });
+                }
+
+                // Az index a Sheetben (Frontend index + fejléc miatti eltolás)
+                // Ideas: tömb index = sheet sor index (mivel a map indexet használjuk)
+                // De a sheet API sorai 1-től kezdődnek.
+                // A 'GET' logikádban az `originalIndex` a tömb indexe (ami a teljes sheet.values tömb indexe).
+                // Tehát Sheet Sor = index + 1.
+                const rowIndex = parseInt(index) + 1;
+
+                // 1. Lekérjük a jelenlegi szavazatokat
+                const range = `${sheetName}!${countCol}${rowIndex}:${votersCol}${rowIndex}`;
+                const rowRes = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range
+                });
+
+                const rowData = rowRes.data.values ? rowRes.data.values[0] : [0, "[]"];
+                let currentCount = parseInt(rowData[0]) || 0;
+                let voters = [];
+                try { voters = JSON.parse(rowData[1] || "[]"); } catch(e) {}
+
+                // 2. Logika: Hozzáadás vagy Elvétel
+                const userEmail = userData.email;
+                
+                if (voters.includes(userEmail)) {
+                    // Már szavazott -> visszavonjuk (toggle off)
+                    voters = voters.filter(e => e !== userEmail);
+                    currentCount = Math.max(0, currentCount - 1);
+                } else {
+                    // Még nem szavazott -> hozzáadjuk
+                    voters.push(userEmail);
+                    currentCount++;
+                }
+
+                // 3. Mentés
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: range,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: { values: [[currentCount, JSON.stringify(voters)]] }
+                });
+
+                return res.status(200).json({ 
+                    message: "Szavazat rögzítve", 
+                    newCount: currentCount,
+                    voted: voters.includes(userEmail)
+                });
             }
 
             case 'EDIT_RECOMMENDATION': {
@@ -2072,6 +2146,7 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
 
 
 
