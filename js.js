@@ -97,6 +97,24 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
         Chart.defaults.color = '#e0e0e0';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
     }
+
+    // === JELSZÓ MEGJELENÍTŐ FUNKCIÓ (Globális) ===
+    window.togglePasswordVisibility = function(iconElement) {
+        // Megkeressük az adott input csoportban lévő inputot
+        // Az 'iconElement' itt maga a szem ikon (this)
+        const group = iconElement.closest('.input-group');
+        const input = group.querySelector('input');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            input.classList.add('password-visible');
+            iconElement.textContent = '🙈'; // Csukott szem
+        } else {
+            input.type = 'password';
+            input.classList.remove('password-visible');
+            iconElement.textContent = '👁️'; // Nyitott szem
+        }
+    };
     
     // --- NÉZETEK ÉS ELEMEK ---
     // --- KURZOR ELEMEK ÉS LOGIKA ---
@@ -688,39 +706,39 @@ async function markIdeaAsDone(index) {
         const termsAccepted = document.getElementById('registerTerms').checked;
         const submitBtn = registerForm.querySelector('.auth-btn');
 
-        // --- VALIDÁCIÓK  ---
+        // --- ÚJ RÉSZ: Animáció beállítása ---
+        const btnTextSpan = submitBtn.querySelector('.btn-text');
+        const originalText = btnTextSpan.innerText; // "Regisztráció" elmentése
         
-        // 1. Minimum 8 karakter ellenőrzése
+        // --- VALIDÁCIÓK  ---
         if (password.length < 8) {
             showError("A jelszónak legalább 8 karakter hosszúnak kell lennie!");
             return;
         }
-
-        // 2. Szám ellenőrzése (RegExp)
         if (!/\d/.test(password)) {
             showError("A jelszónak tartalmaznia kell legalább egy számot!");
             return;
         }
-
-        // 3. Speciális karakter ellenőrzése
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
             showError("A jelszónak tartalmaznia kell legalább egy speciális karaktert!");
             return;
         }
-
         if (password !== passwordConfirm) {
             showError("A két jelszó nem egyezik!");
             return;
         }
-        
         if (!termsAccepted) {
             showError("A regisztrációhoz el kell fogadnod az Adatvédelmi Tájékoztatót!");
             return;
         }
 
         // --- BEKÜLDÉS ---
-
         setLoading(submitBtn, true);
+        
+        // Animáció indítása
+        btnTextSpan.innerText = "Regisztráció folyamatban"; 
+        btnTextSpan.classList.add('loading-dots');
+
         try {
             const response = await fetch('/api/sheet', {
                 method: 'POST',
@@ -731,30 +749,26 @@ async function markIdeaAsDone(index) {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Szerverhiba');
 
-            // --- ITT AZ ÚJ MENŐ RÉSZ ---
             if (result.recoveryCode) {
-            // Bezárjuk a regisztrációt
-            registerCard.classList.remove('active');
-            
-            // Beírjuk a kódot az új menő ablakba
-            document.getElementById('newRecoveryCodeDisplay').textContent = result.recoveryCode;
-            
-            // Megnyitjuk a menő ablakot
-            document.getElementById('recoveryCodeModal').classList.add('active');
-        } else {
-            showSuccess('Sikeres regisztráció!');
-            registerCard.classList.remove('active');
-            setTimeout(() => loginCard.classList.add('active'), 300);
-        }
-        // ---------------------------
+                registerCard.classList.remove('active');
+                document.getElementById('newRecoveryCodeDisplay').textContent = result.recoveryCode;
+                document.getElementById('recoveryCodeModal').classList.add('active');
+            } else {
+                showSuccess('Sikeres regisztráció!');
+                registerCard.classList.remove('active');
+                setTimeout(() => loginCard.classList.add('active'), 300);
+            }
 
-    } catch (error) {
-        console.error("Regisztrációs hiba:", error);
-        showError(error.message || 'A regisztráció sikertelen.');
-    } finally {
-        setLoading(submitBtn, false);
+        } catch (error) {
+            console.error("Regisztrációs hiba:", error);
+            showError(error.message || 'A regisztráció sikertelen.');
+        } finally {
+            setLoading(submitBtn, false);
+            // Animáció leállítása és szöveg visszaállítása
+            btnTextSpan.innerText = originalText;
+            btnTextSpan.classList.remove('loading-dots');
+        }
     }
-}
 
     async function handleGuestLogin(e) {
         e.preventDefault();
@@ -7157,6 +7171,7 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
 
 
