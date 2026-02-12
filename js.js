@@ -6586,32 +6586,29 @@ function updateThemePreview(theme) {
         previewAccent.style.color = theme.accentColor;
     }
 }
+
 // Event listener-ek inicializálása
 function initThemeCustomization() {
-    // Előre beállított témák
+    // 1. Előre beállított témák gombjai
     document.querySelectorAll('.theme-preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const themeName = btn.dataset.theme;
             const theme = { ...presetThemes[themeName], preset: themeName };
             
-            // Aktív állapot beállítása
+            // Aktív állapot beállítása a gombokon
             document.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            // Téma alkalmazása
+            // Téma alkalmazása és mentése
             applyTheme(theme);
-            
-            // Mentés
             localStorage.setItem('userTheme', JSON.stringify(theme));
             syncSettingsToCloud();
             
-            
-            // Értesítés
             showNotification('✨ Téma alkalmazva: ' + theme.name, 'success');
         });
     });
     
-    // Színválasztók szinkronizálása
+    // 2. Színválasztók szinkronizálása (Input és Text mezők)
     const colorInputPairs = [
         ['bgColor1', 'bgColor1Text'],
         ['bgColor2', 'bgColor2Text'],
@@ -6626,13 +6623,13 @@ function initThemeCustomization() {
         const textInput = document.getElementById(textId);
         
         if (colorInput && textInput) {
-            // Color picker változás
+            // Ha a színválasztót tekergeted
             colorInput.addEventListener('input', (e) => {
                 textInput.value = e.target.value;
                 updateLivePreview();
             });
             
-            // Text input változás
+            // Ha a szöveges mezőbe írsz
             textInput.addEventListener('input', (e) => {
                 let value = e.target.value;
                 // Hex szín validáció
@@ -6644,7 +6641,7 @@ function initThemeCustomization() {
         }
     });
     
-    // Egyéni téma alkalmazása
+    // 3. Egyéni téma alkalmazása gomb
     const applyBtn = document.getElementById('applyCustomTheme');
     if (applyBtn) {
         applyBtn.addEventListener('click', () => {
@@ -6655,7 +6652,7 @@ function initThemeCustomization() {
                 textColor: document.getElementById('textColor').value,
                 textSecondary: document.getElementById('textSecondary').value,
                 accentColor: document.getElementById('accentColor').value,
-                preset: null // Egyéni téma
+                preset: null // Ez egyéni téma, nincs preset neve
             };
             
             // Előre beállított témák kijelölésének megszüntetése
@@ -6669,39 +6666,38 @@ function initThemeCustomization() {
         });
     }
     
-    // Téma visszaállítása
+    // 4. Téma visszaállítása (TELJES ALAPHELYZET)
     const resetBtn = document.getElementById('resetTheme');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            // 1. Töröljük a mentett témát a helyi tárolóból
+            // Töröljük a mentett beállítást
             localStorage.removeItem('userTheme');
             
-            // 2. Levesszük a 'custom-theme' osztályt a body-ról
+            // Levesszük a 'custom-theme' osztályt, így visszatér a CSS-ben lévő eredeti
             document.body.classList.remove('custom-theme');
             
-            // 3. Töröljük a JS által rárakott inline stílusokat (háttér, stb.)
+            // Töröljük a JS által beállított inline stílusokat
             document.body.style.background = '';
             document.body.style.backgroundAttachment = '';
-            
-            // 4. Töröljük a CSS változókat (színeket)
-            document.documentElement.style = '';
+            document.documentElement.style = ''; // CSS változók törlése
 
-            // 5. Szinkronizálás a felhőbe (hogy ott is törlődjön a beállítás)
-            // Mivel töröltük a localStorage-ból, a syncSettingsToCloud üres objektumot küld majd
+            // Szinkronizálás (törlés a felhőből is)
             syncSettingsToCloud();
             
-            // 6. Előre beállított gombokról levesszük az "active" jelzést
+            // Gombok kijelölésének törlése
             document.querySelectorAll('.theme-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // 7. Input mezők visszaállítása alapértelmezettre (opcionális, de szép)
-            // Visszaállítjuk a dark-purple értékeit a mezőkbe, hogy ne maradjanak az előzőn
-            const defaultValues = presetThemes['dark-purple'];
-            updateColorInputs(defaultValues);
+            // Opcionális: Inputok visszaállítása egy alapértelmezett értékre, hogy ne nézzenek ki furán
+            if (typeof presetThemes !== 'undefined' && presetThemes['dark-purple']) {
+                 updateColorInputs(presetThemes['dark-purple']);
+            }
             
-            showNotification('🔄 Alapértelmezett téma visszaállítva', 'success');
-        }
+            showNotification('🔄 Eredeti kinézet visszaállítva', 'success');
+        });
+    }
+}
 
 // Élő előnézet frissítése
 function updateLivePreview() {
@@ -7161,6 +7157,7 @@ function closeDocumentModal() {
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 });
+
 
 
 
