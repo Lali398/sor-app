@@ -594,7 +594,7 @@ async function loadUserIdeas() {
                     : '';
 
             if (isDone) {
-                // --- DICSŐSÉGFAL (Itt nem szokás jelenteni, de ha akarod, ide is rakhatsz gombot) ---
+                // --- DICSŐSÉGFAL ---
                 hasFame = true;
                 const card = `
                 <div class="fame-card">
@@ -614,7 +614,9 @@ async function loadUserIdeas() {
             } else {
                 // --- VÁRAKOZÓ LISTA ---
                 
-                
+                // Szavazógomb állapota (ÚJ)
+                const voteActiveClass = item.hasVoted ? 'active' : '';
+
                 // Törlés gomb (ha saját)
                 const deleteBtn = isOwner 
                     ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
@@ -652,16 +654,6 @@ async function loadUserIdeas() {
                 pendingIndex++;
             }
         });
-        
-        if(!hasFame && hallContainer) {
-            hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
-        }
-
-    } catch (error) {
-        console.error(error);
-        if(pendingContainer) pendingContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
-    }
-}
     
 // 3. Ötletek betöltése (Admin oldal)
 async function loadAllIdeasForAdmin() {
@@ -7328,6 +7320,7 @@ async function handleVote(type, index, buttonElement) {
     }
 }
 });
+
 
 
 
