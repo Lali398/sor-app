@@ -7266,7 +7266,7 @@ window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
 
     // === SZAVAZÁS KEZELÉSE (UPVOTE) ===
-async function handleVote(type, index, buttonElement) {
+window.handleVote = async function(type, index, buttonElement) {
     // UI Frissítése azonnal (Optimistic UI)
     const countEl = buttonElement.nextElementSibling;
     let currentCount = parseInt(countEl.textContent);
@@ -7328,4 +7328,5 @@ async function handleVote(type, index, buttonElement) {
     }
 }
 });
+
 
