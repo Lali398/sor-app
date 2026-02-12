@@ -7242,4 +7242,62 @@ function closeDocumentModal() {
 // Globális elérés biztosítása (hogy a HTML gombok lássák)
 window.openDocumentModal = openDocumentModal;
 window.closeDocumentModal = closeDocumentModal;
+
+    // === SZAVAZÁS KEZELÉSE (UPVOTE) ===
+async function handleVote(type, index, buttonElement) {
+    // Vizuális visszajelzés azonnal (Optimistic UI)
+    const countEl = buttonElement.nextElementSibling; // A szám a gomb alatt
+    let currentCount = parseInt(countEl.textContent);
+    const isActive = buttonElement.classList.contains('active');
+
+    // Ha már szavazott, levesszük (ha támogatod a visszavonást), ha nem, hozzáadjuk
+    if (isActive) {
+        // Visszavonás (opcionális, ha nem akarod, vedd ki ezt az ágat)
+        currentCount--;
+        buttonElement.classList.remove('active');
+    } else {
+        // Hozzáadás
+        currentCount++;
+        buttonElement.classList.add('active');
+        
+        // Animáció
+        confetti({
+            particleCount: 30,
+            spread: 50,
+            origin: { y: 0.6 },
+            colors: ['#ff4500', '#ffd700']
+        });
+    }
+    countEl.textContent = currentCount;
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ 
+                action: 'VOTE_CONTENT', 
+                type: type, // 'idea' vagy 'recommendation'
+                index: index,
+                isUpvote: !isActive // Ha nem volt aktív, akkor most upvote
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Hiba a szavazáskor");
+        }
+        
+        // Siker esetén nem kell semmit tenni, mert már frissítettük a UI-t
+        // De ha pontos akarsz lenni, újratöltheted a listát a háttérben
+        
+    } catch (error) {
+        console.error(error);
+        showError("Nem sikerült elmenteni a szavazatot.");
+        // Visszavonás hiba esetén
+        countEl.textContent = isActive ? currentCount + 1 : currentCount - 1;
+        buttonElement.classList.toggle('active');
+    }
+}
 });
+
