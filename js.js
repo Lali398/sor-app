@@ -594,7 +594,7 @@ async function loadUserIdeas() {
                     : '';
 
             if (isDone) {
-                // --- DICSŐSÉGFAL ---
+                // --- DICSŐSÉGFAL (Itt nem szokás jelenteni, de ha akarod, ide is rakhatsz gombot) ---
                 hasFame = true;
                 const card = `
                 <div class="fame-card">
@@ -614,9 +614,6 @@ async function loadUserIdeas() {
             } else {
                 // --- VÁRAKOZÓ LISTA ---
                 
-                // Szavazógomb állapota (ÚJ)
-                const voteActiveClass = item.hasVoted ? 'active' : '';
-
                 // Törlés gomb (ha saját)
                 const deleteBtn = isOwner 
                     ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
@@ -627,6 +624,7 @@ async function loadUserIdeas() {
                 ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', ${item.index}, '${escapeHtml(item.idea)}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
                 : '';
 
+                const voteActiveClass = item.hasVoted ? 'active' : '';
                 const card = `
                 <div class="pending-idea-card">
                     <div class="vote-container">
@@ -654,6 +652,16 @@ async function loadUserIdeas() {
                 pendingIndex++;
             }
         });
+        
+        if(!hasFame && hallContainer) {
+            hallContainer.innerHTML = '<p style="color:#aaa; font-style:italic;">Még üres a dicsőségfal. Küldj be egy jó ötletet!</p>';
+        }
+
+    } catch (error) {
+        console.error(error);
+        if(pendingContainer) pendingContainer.innerHTML = '<p class="error">Hiba a betöltéskor.</p>';
+    }
+}
     
 // 3. Ötletek betöltése (Admin oldal)
 async function loadAllIdeasForAdmin() {
@@ -6383,7 +6391,8 @@ window.confirmDisable2FA = async function() {
                 userData.settings = data.settings;
                 
                 // És ami a legfontosabb: ALKALMAZZUK ŐKET!
-                // Ez állítja be a témát, limitet, kurzort a felhő alapján
+                // Ez állítja be 
+a témát, limitet, kurzort a felhő alapján
                 applyCloudSettings(data.settings, userData.email);
             }
             // --------------------------------------------------
@@ -7320,7 +7329,3 @@ async function handleVote(type, index, buttonElement) {
     }
 }
 });
-
-
-
-
