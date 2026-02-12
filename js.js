@@ -624,8 +624,27 @@ async function loadUserIdeas() {
                 ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', ${item.index}, '${escapeHtml(item.idea)}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
                 : '';
 
+                const voteActiveClass = item.hasVoted ? 'active' : '';
+                
+                // Törlés gomb (ha saját)
+                const deleteBtn = isOwner 
+                    ? `<button class="delete-idea-btn" onclick="deleteUserIdea(${pendingIndex})" title="Törlés">🗑️</button>`
+                    : '';
+
+                // Jelentés gomb (ha NEM saját)
+                const reportBtn = (!isOwner && currentUserEmail)
+                ? `<button class="report-idea-btn" onclick="openReportModal('Ötlet', ${item.index}, '${escapeHtml(item.idea)}')" title="Jelentés" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">🚩</button>`
+                : '';
+
                 const card = `
                 <div class="pending-idea-card">
+                    <div class="vote-container">
+                        <button class="vote-btn ${voteActiveClass}" onclick="handleVote('idea', ${item.index}, this)">
+                            ▲
+                        </button>
+                        <span class="vote-count">${item.voteCount}</span>
+                    </div>
+
                     <div class="pending-content">
                         <h4>${escapeHtml(item.idea)}</h4>
                         <p>
@@ -4289,21 +4308,35 @@ function applyRecFilters() {
             ? `<span class="rec-edited-tag">(módosítva)</span>` 
             : '';
 
+        const voteActiveClass = item.hasVoted ? 'active' : '';
+
         const html = `
         <div class="rec-card ${typeClass}">
             <div class="rec-action-btns">
                 ${actionBtns}
             </div>
-            <div class="rec-header">
-                <div>
-                    <div class="rec-item-name">${escapeHtml(item.itemName)}</div>
-                    <div class="rec-sub-info">${escapeHtml(item.category)}</div>
-                </div>
-                <div class="rec-type-badge">${typeIcon} ${item.type}</div>
-            </div>
             
-            <div class="rec-desc">
-                "${escapeHtml(item.description)}"
+            <div style="display: flex; gap: 15px;">
+                <div class="vote-container">
+                    <button class="vote-btn ${voteActiveClass}" onclick="handleVote('recommendation', ${item.originalIndex}, this)">
+                        ▲
+                    </button>
+                    <span class="vote-count">${item.voteCount}</span>
+                </div>
+
+                <div class="rec-main-content" style="flex: 1;">
+                    <div class="rec-header">
+                        <div>
+                            <div class="rec-item-name">${escapeHtml(item.itemName)}</div>
+                            <div class="rec-sub-info">${escapeHtml(item.category)}</div>
+                        </div>
+                        <div class="rec-type-badge">${typeIcon} ${item.type}</div>
+                    </div>
+                    
+                    <div class="rec-desc">
+                        "${escapeHtml(item.description)}"
+                    </div>
+                </div>
             </div>
             
             <div class="rec-footer">
@@ -7245,30 +7278,39 @@ window.closeDocumentModal = closeDocumentModal;
 
     // === SZAVAZÁS KEZELÉSE (UPVOTE) ===
 async function handleVote(type, index, buttonElement) {
-    // Vizuális visszajelzés azonnal (Optimistic UI)
-    const countEl = buttonElement.nextElementSibling; // A szám a gomb alatt
+    // UI Frissítése azonnal (Optimistic UI)
+    const countEl = buttonElement.nextElementSibling;
     let currentCount = parseInt(countEl.textContent);
     const isActive = buttonElement.classList.contains('active');
 
-    // Ha már szavazott, levesszük (ha támogatod a visszavonást), ha nem, hozzáadjuk
     if (isActive) {
-        // Visszavonás (opcionális, ha nem akarod, vedd ki ezt az ágat)
-        currentCount--;
+        // Visszavonás
+        currentCount = Math.max(0, currentCount - 1);
         buttonElement.classList.remove('active');
     } else {
         // Hozzáadás
         currentCount++;
         buttonElement.classList.add('active');
         
-        // Animáció
-        confetti({
-            particleCount: 30,
-            spread: 50,
-            origin: { y: 0.6 },
-            colors: ['#ff4500', '#ffd700']
-        });
+        // Konfetti effekt (ha be van töltve a könyvtár)
+        if (typeof confetti === 'function') {
+            const rect = buttonElement.getBoundingClientRect();
+            // Pozícionáljuk a gombhoz
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+            
+            confetti({
+                particleCount: 20,
+                spread: 40,
+                origin: { x: x, y: y },
+                colors: ['#ff4500', '#ffd700'],
+                disableForReducedMotion: true,
+                scalar: 0.6 // Kisebb konfettik
+            });
+        }
     }
     countEl.textContent = currentCount;
+
     try {
         const response = await fetch('/api/sheet', {
             method: 'POST',
@@ -7280,7 +7322,7 @@ async function handleVote(type, index, buttonElement) {
                 action: 'VOTE_CONTENT', 
                 type: type, // 'idea' vagy 'recommendation'
                 index: index,
-                isUpvote: !isActive // Ha nem volt aktív, akkor most upvote
+                isUpvote: !isActive
             })
         });
 
@@ -7288,16 +7330,14 @@ async function handleVote(type, index, buttonElement) {
             throw new Error("Hiba a szavazáskor");
         }
         
-        // Siker esetén nem kell semmit tenni, mert már frissítettük a UI-t
-        // De ha pontos akarsz lenni, újratöltheted a listát a háttérben
-        
     } catch (error) {
         console.error(error);
         showError("Nem sikerült elmenteni a szavazatot.");
-        // Visszavonás hiba esetén
+        // Visszaállítás hiba esetén
         countEl.textContent = isActive ? currentCount + 1 : currentCount - 1;
         buttonElement.classList.toggle('active');
     }
 }
 });
+
 
