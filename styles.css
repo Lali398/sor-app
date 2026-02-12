@@ -4945,6 +4945,76 @@ body.custom-theme *[class*="separator"] {
 .input-group input[type="text"].password-visible {
     padding-right: 40px !important;
 }
+/* === UPVOTE / PUSH UP RENDSZER === */
+
+/* Konténer a szavazáshoz */
+.vote-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    min-width: 40px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+/* Maga a gomb (Nyíl) */
+.vote-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.vote-btn:hover {
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Ha már szavazott (Aktív) */
+.vote-btn.active {
+    color: #ff4500; /* Reddit narancs */
+    text-shadow: 0 0 10px rgba(255, 69, 0, 0.4);
+}
+
+/* Szavazat számláló */
+.vote-count {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-top: 2px;
+}
+
+/* Kártya elrendezés módosítása, hogy kiférjen a szavazó gomb */
+.pending-idea-card, 
+.rec-card {
+    display: flex; /* Flexboxra váltunk */
+    flex-direction: row; /* Sorba rendezzük */
+    align-items: center; /* Függőleges közép */
+}
+
+/* Az eredeti tartalom töltse ki a maradék helyet */
+.pending-content, 
+.rec-main-content {
+    flex: 1; 
+}
+
+/* Mobil nézet igazítás */
+@media (max-width: 768px) {
+    .vote-container {
+        margin-right: 10px;
+        padding: 2px;
+    }
+    .vote-btn { font-size: 1.2rem; }
+    .vote-count { font-size: 0.8rem; }
+}
+
 
 
 
