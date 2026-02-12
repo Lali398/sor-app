@@ -601,11 +601,13 @@
                                 <input type="password" id="currentPassword" placeholder=" " required>
                                 <label for="currentPassword">Jelenlegi jelszó</label>
                                 <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
                             </div>
                             <div class="input-group">
                                 <input type="password" id="newPassword" placeholder=" " required>
                                 <label for="newPassword">Új jelszó</label>
                                 <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
                             </div>
                             <div class="input-group">
                                 <input type="password" id="newPasswordConfirm" placeholder=" " required>
@@ -1636,12 +1638,14 @@
                 <input type="password" id="forgotNewPassword" required placeholder=" ">
                 <label for="forgotNewPassword">Új jelszó</label>
                 <span class="input-highlight"></span>
+                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
             </div>
 
             <div class="input-group">
                 <input type="password" id="forgotNewPasswordConfirm" required placeholder=" ">
                 <label for="forgotNewPasswordConfirm">Új jelszó megerősítése</label>
                 <span class="input-highlight"></span>
+                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
             </div>
             <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
                 <span class="btn-text">Jelszó Mentése 💾</span>
@@ -2481,6 +2485,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
