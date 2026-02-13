@@ -2487,28 +2487,60 @@
 </div>
 
     <div class="modal-overlay" id="randomPickerModal">
-    <div class="modal-content" style="max-width: 500px; background: linear-gradient(135deg, #1a0b2e 0%, #000000 100%); border: 2px solid #8a73ff; box-shadow: 0 0 40px rgba(138, 115, 255, 0.3);">
+    <div class="modal-content" style="max-width: 600px; background: linear-gradient(135deg, #1a0b2e 0%, #000000 100%); border: 2px solid #8a73ff; box-shadow: 0 0 40px rgba(138, 115, 255, 0.3);">
         <div class="modal-hero-header" style="border-bottom: none; padding-bottom: 0;">
             <div class="hero-icon" style="font-size: 3.5rem;">🎲</div>
-            <h3 style="color: #fff; text-shadow: 0 0 10px rgba(138, 115, 255, 0.8);">Sorsolás</h3>
-            <p style="color: #bbb;">Nem tudsz dönteni? A gép segít!</p>
+            <h3 style="color: #fff; text-shadow: 0 0 10px rgba(138, 115, 255, 0.8);">Professzionális Sorsoló</h3>
+            <p style="color: #bbb;">Szűkítsd a kört, és bízd a véletlenre!</p>
             <button class="modal-close-abs" onclick="closeRandomPickerModal()">✕</button>
         </div>
 
         <div style="padding: 20px;">
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <select id="pickerTypeFilter" class="cool-select" style="flex: 1;">
-                        <option value="all">🍺 + 🍹 Minden</option>
+            <div class="picker-filter-grid">
+                <div class="cool-input-group">
+                    <label>Mit innál?</label>
+                    <select id="pickerTypeFilter" class="cool-select" onchange="handlePickerTypeChange()">
+                        <option value="all">🍺 + 🍹 Mindegy</option>
                         <option value="beer">🍺 Csak Sör</option>
                         <option value="drink">🍹 Csak Ital</option>
                     </select>
-                    <select id="pickerScoreFilter" class="cool-select" style="flex: 1;">
-                        <option value="0">Bármilyen pontszám</option>
-                        <option value="5">Legalább 5 pont</option>
-                        <option value="7">Csak a jók (7+)</option>
-                        <option value="9">Top kategória (9+)</option>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Min. Minőség</label>
+                    <select id="pickerScoreFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="0">🗑️ Bármilyen</option>
+                        <option value="5">😐 Iható (5+)</option>
+                        <option value="7">🙂 Jó (7+)</option>
+                        <option value="8.5">🤩 Kiváló (8.5+)</option>
+                        <option value="9.5">👑 Csak a krém (9.5+)</option>
                     </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Konkrét fajta</label>
+                    <select id="pickerCategoryFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="all">Bármilyen fajta</option>
+                        </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Hol ittad?</label>
+                    <select id="pickerLocationFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="all">Bárhol</option>
+                        </select>
+                </div>
+            </div>
+
+            <div class="pool-stats-bar">
+                <div class="pool-stat-item">
+                    <span class="stat-label">A kalapban:</span>
+                    <span id="poolCountDisplay" class="stat-val">0 db</span>
+                </div>
+                <div class="pool-stat-divider"></div>
+                <div class="pool-stat-item">
+                    <span class="stat-label">Pool Átlag:</span>
+                    <span id="poolAvgDisplay" class="stat-val">0.0</span>
                 </div>
             </div>
 
@@ -2516,15 +2548,15 @@
                 <div class="roulette-window">
                     <div id="rouletteText" class="roulette-text">❓</div>
                 </div>
-                <div class="roulette-decoration"></div>
             </div>
 
             <div id="winnerDetails" style="text-align: center; margin-top: 15px; opacity: 0; transition: opacity 0.5s; height: 0; overflow: hidden;">
                 <p id="winnerType" style="color: #8a73ff; font-weight: bold; font-size: 0.9rem; text-transform: uppercase;"></p>
                 <div id="winnerScore" style="color: #ffd700; font-size: 1.2rem; margin-top: 5px;"></div>
+                <div id="winnerLoc" style="color: #ccc; font-size: 0.8rem; margin-top: 2px;"></div>
             </div>
 
-            <button id="spinBtn" class="auth-btn" onclick="startRoulette()" style="background: linear-gradient(135deg, #8a73ff, #6c5ce7); margin-top: 25px; font-size: 1.2rem; font-weight: 800; letter-spacing: 2px;">
+            <button id="spinBtn" class="auth-btn" onclick="startRoulette()" style="background: linear-gradient(135deg, #8a73ff, #6c5ce7); margin-top: 20px; font-size: 1.2rem; font-weight: 800; letter-spacing: 2px;">
                 PÖRGETÉS! 🎰
             </button>
         </div>
@@ -2534,6 +2566,7 @@
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
