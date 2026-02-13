@@ -7328,69 +7328,152 @@ window.handleVote = async function(type, index, buttonElement) {
     }
 }
     // ======================================================
-// === MIT IGYAK MA (ROULETTE) LOGIKA ===
+// === MIT IGYAK MA (ROULETTE) PRO LOGIKA ===
 // ======================================================
 
 let rouletteInterval;
 let isSpinning = false;
+let currentPool = []; // Itt tároljuk az aktuálisan szűrt listát
 
-// 1. Modal megnyitása
+// 1. Modal megnyitása és inicializálás
 window.openRandomPickerModal = function() {
     const fabContainer = document.getElementById('fabContainer');
     if(fabContainer) fabContainer.classList.remove('active');
 
-    // Reseteljük a felületet
+    // UI Reset
     document.getElementById('rouletteText').textContent = "❓";
     document.getElementById('rouletteText').className = "roulette-text";
     document.getElementById('winnerDetails').style.opacity = '0';
     document.getElementById('winnerDetails').style.height = '0';
     
-    // Ellenőrizzük, van-e egyáltalán adat
-    if ((!currentUserBeers || currentUserBeers.length === 0) && (!currentUserDrinks || currentUserDrinks.length === 0)) {
-        showError("Előbb tölts fel néhány sört vagy italt az adatbázisba!");
-        return;
-    }
+    // Alaphelyzetbe állítás
+    document.getElementById('pickerTypeFilter').value = 'all';
+    document.getElementById('pickerScoreFilter').value = '0';
+    
+    // Szűrők feltöltése és Statisztika frissítése
+    populatePickerFilters(); // Helyszínek és kategóriák betöltése
+    updateRouletteStats();   // Pool kiszámolása
 
     document.getElementById('randomPickerModal').classList.add('active');
 }
 
 // 2. Modal bezárása
 window.closeRandomPickerModal = function() {
-    if (isSpinning) return; // Ne lehessen bezárni pörgetés közben
+    if (isSpinning) return;
     document.getElementById('randomPickerModal').classList.remove('active');
 }
 
-// 3. PÖRGETÉS INDÍTÁSA
-window.startRoulette = function() {
-    if (isSpinning) return;
-
-    // --- ADATGYŰJTÉS ÉS SZŰRÉS ---
-    const typeFilter = document.getElementById('pickerTypeFilter').value;
-    const scoreFilter = parseFloat(document.getElementById('pickerScoreFilter').value);
+// 3. Dinamikus listák feltöltése (Helyszínek, Kategóriák)
+function populatePickerFilters() {
+    const type = document.getElementById('pickerTypeFilter').value;
+    const catSelect = document.getElementById('pickerCategoryFilter');
+    const locSelect = document.getElementById('pickerLocationFilter');
     
-    let pool = [];
+    // Jelenlegi kiválasztás mentése (ha van)
+    const savedCat = catSelect.value;
+    const savedLoc = locSelect.value;
 
-    // Típus szerinti gyűjtés
-    if (typeFilter === 'all' || typeFilter === 'beer') {
-        pool = pool.concat(currentUserBeers.map(b => ({...b, _source: 'Sör'})));
-    }
-    if (typeFilter === 'all' || typeFilter === 'drink') {
-        pool = pool.concat(currentUserDrinks.map(d => ({...d, _source: 'Ital'})));
-    }
+    // Reset
+    catSelect.innerHTML = '<option value="all">Bármilyen fajta</option>';
+    locSelect.innerHTML = '<option value="all">Bárhol</option>';
 
-    // Pontszám szerinti szűrés
-    // Figyelem: a pontszám lehet string ("8,5") vagy szám
-    pool = pool.filter(item => {
-        const score = parseFloat(item.avg.toString().replace(',', '.')) || 0;
-        return score >= scoreFilter;
+    // Adatok gyűjtése
+    let tempPool = [];
+    if (type === 'all' || type === 'beer') tempPool = tempPool.concat(currentUserBeers || []);
+    if (type === 'all' || type === 'drink') tempPool = tempPool.concat(currentUserDrinks || []);
+
+    // Egyedi értékek kigyűjtése
+    const categories = new Set();
+    const locations = new Set();
+
+    tempPool.forEach(item => {
+        // Kategória logika: Sörnél 'type', Italnál 'category' a fő jellemző
+        if (item.beerName) categories.add(item.type); // Sör típus
+        if (item.drinkName) categories.add(item.category); // Ital kategória
+        
+        if (item.location) locations.add(item.location);
     });
 
-    // Ha nincs találat a szűrőre
-    if (pool.length === 0) {
-        document.getElementById('rouletteText').textContent = "Nincs találat 😔";
-        showError("A választott szűrők alapján nincs miből sorsolni. Próbálj lazább feltételeket!");
-        return;
+    // Feltöltés ABC sorrendben
+    Array.from(categories).sort().forEach(cat => {
+        catSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`);
+    });
+    
+    Array.from(locations).sort().forEach(loc => {
+        locSelect.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(loc)}">${escapeHtml(loc)}</option>`);
+    });
+
+    // Visszaállítás, ha még létezik az opció
+    if (Array.from(catSelect.options).some(o => o.value === savedCat)) catSelect.value = savedCat;
+    if (Array.from(locSelect.options).some(o => o.value === savedLoc)) locSelect.value = savedLoc;
+}
+
+// 4. Ha változik a Típus (Sör/Ital), újra kell tölteni a kategóriákat
+window.handlePickerTypeChange = function() {
+    // Reseteljük a kategóriát "all"-ra, mert a sör kategóriák nem érvényesek italnál
+    document.getElementById('pickerCategoryFilter').value = 'all';
+    populatePickerFilters();
+    updateRouletteStats();
+}
+
+// 5. Statisztika Frissítése és Pool Kiszámolása (Ez fut minden változáskor)
+window.updateRouletteStats = function() {
+    const typeFilter = document.getElementById('pickerTypeFilter').value;
+    const scoreFilter = parseFloat(document.getElementById('pickerScoreFilter').value);
+    const catFilter = document.getElementById('pickerCategoryFilter').value;
+    const locFilter = document.getElementById('pickerLocationFilter').value;
+
+    let pool = [];
+
+    // 1. Alaphalmaz
+    if (typeFilter === 'all' || typeFilter === 'beer') {
+        pool = pool.concat(currentUserBeers.map(b => ({...b, _source: 'Sör', _cat: b.type})));
     }
+    if (typeFilter === 'all' || typeFilter === 'drink') {
+        pool = pool.concat(currentUserDrinks.map(d => ({...d, _source: 'Ital', _cat: d.category})));
+    }
+
+    // 2. Szűrés
+    currentPool = pool.filter(item => {
+        // Pontszám
+        const score = parseFloat(item.avg.toString().replace(',', '.')) || 0;
+        if (score < scoreFilter) return false;
+
+        // Kategória
+        if (catFilter !== 'all' && item._cat !== catFilter) return false;
+
+        // Helyszín
+        if (locFilter !== 'all' && item.location !== locFilter) return false;
+
+        return true;
+    });
+
+    // 3. UI Frissítése
+    const countEl = document.getElementById('poolCountDisplay');
+    const avgEl = document.getElementById('poolAvgDisplay');
+    const spinBtn = document.getElementById('spinBtn');
+
+    countEl.textContent = `${currentPool.length} db`;
+    
+    if (currentPool.length > 0) {
+        const totalAvg = currentPool.reduce((sum, item) => sum + (parseFloat(item.avg.toString().replace(',', '.')) || 0), 0);
+        avgEl.textContent = (totalAvg / currentPool.length).toFixed(2);
+        
+        spinBtn.disabled = false;
+        spinBtn.style.opacity = '1';
+        spinBtn.innerHTML = 'PÖRGETÉS! 🎰';
+    } else {
+        avgEl.textContent = '0.0';
+        spinBtn.disabled = true;
+        spinBtn.style.opacity = '0.5';
+        spinBtn.innerHTML = 'NINCS TALÁLAT 🚫';
+    }
+}
+
+// 6. PÖRGETÉS INDÍTÁSA
+window.startRoulette = function() {
+    if (isSpinning) return;
+    if (currentPool.length === 0) return;
 
     // --- ANIMÁCIÓ KEZDÉSE ---
     isSpinning = true;
@@ -7398,37 +7481,35 @@ window.startRoulette = function() {
     const spinBtn = document.getElementById('spinBtn');
     const detailsDiv = document.getElementById('winnerDetails');
     
+    // UI letiltása
     spinBtn.disabled = true;
     spinBtn.textContent = "PÖRGÉS... 🎰";
+    document.querySelectorAll('.picker-filter-grid select').forEach(s => s.disabled = true);
     
     textEl.className = "roulette-text blur";
     detailsDiv.style.opacity = '0';
     detailsDiv.style.height = '0';
 
-    // Pörgetés hang (opcionális, ha van fájlod)
-    // const audio = new Audio('spin.mp3'); audio.play().catch(()=>{});
-
     let counter = 0;
-    const totalSpins = 30; // Hányszor váltson nevet
-    let speed = 50; // Kezdő sebesség (ms)
+    const totalSpins = 30 + Math.floor(Math.random() * 10); // Véletlenszerű hossz
+    let speed = 50;
 
-    // Rekurzív timeout a lassuló effektért
     function spinLoop() {
-        // Véletlenszerű elem a poolból
-        const randomItem = pool[Math.floor(Math.random() * pool.length)];
+        // Véletlenszerű elem a SZŰRT poolból
+        const randomItem = currentPool[Math.floor(Math.random() * currentPool.length)];
         const name = randomItem.beerName || randomItem.drinkName;
         textEl.textContent = name;
 
         counter++;
 
         if (counter < totalSpins) {
-            // Lassulás: minden körben kicsit növeljük a várakozást
-            if (counter > totalSpins - 10) speed += 30; 
-            else if (counter > totalSpins - 5) speed += 60;
+            // Exponenciális lassulás
+            if (counter > totalSpins - 5) speed += 100;
+            else if (counter > totalSpins - 10) speed += 40;
+            else if (counter > totalSpins - 20) speed += 10;
             
             setTimeout(spinLoop, speed);
         } else {
-            // --- VÉGE: NYERTES KIHIRDETÉSE ---
             finalizeWinner(randomItem);
         }
     }
@@ -7442,24 +7523,27 @@ function finalizeWinner(item) {
     const detailsDiv = document.getElementById('winnerDetails');
     const typeEl = document.getElementById('winnerType');
     const scoreEl = document.getElementById('winnerScore');
+    const locEl = document.getElementById('winnerLoc');
 
     // Név beállítása
     const name = item.beerName || item.drinkName;
     const score = item.avg;
     const source = item._source || 'Tétel';
     const subType = item.type || item.category || '';
+    const location = item.location || 'Ismeretlen hely';
 
     textEl.textContent = name;
-    textEl.className = "roulette-text winner"; // Pop animáció
+    textEl.className = "roulette-text winner"; 
 
     // Részletek megjelenítése
     typeEl.textContent = `${source} • ${subType}`;
     scoreEl.textContent = `${score} pont ⭐`;
+    locEl.textContent = `📍 ${location}`;
     
     detailsDiv.style.height = 'auto';
     detailsDiv.style.opacity = '1';
 
-    // Konfetti kilövése (canvas-confetti könyvtárral)
+    // Konfetti
     if (typeof confetti === 'function') {
         confetti({
             particleCount: 150,
@@ -7469,12 +7553,14 @@ function finalizeWinner(item) {
         });
     }
 
-    // Reset gomb
+    // Reset UI
     isSpinning = false;
     spinBtn.disabled = false;
     spinBtn.textContent = "ÚJRA PÖRGETÉS 🔄";
+    document.querySelectorAll('.picker-filter-grid select').forEach(s => s.disabled = false);
 }
 });
+
 
 
 
