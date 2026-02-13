@@ -928,6 +928,10 @@
                 <span class="emoji">📢</span>
                 <span class="tooltip">Ajánlás írása</span>
             </button>
+            <button class="fab-option" onclick="openRandomPickerModal()">
+                <span class="emoji">🎲</span>
+                <span class="tooltip">Mit igyak ma?</span>
+            </button>
             <button class="fab-option" onclick="openSupportModal()">
                 <span class="emoji">❓</span>
                 <span class="tooltip">Segítség kérése</span>
@@ -2481,10 +2485,56 @@
         </div>
     </div>
 </div>
+
+    <div class="modal-overlay" id="randomPickerModal">
+    <div class="modal-content" style="max-width: 500px; background: linear-gradient(135deg, #1a0b2e 0%, #000000 100%); border: 2px solid #8a73ff; box-shadow: 0 0 40px rgba(138, 115, 255, 0.3);">
+        <div class="modal-hero-header" style="border-bottom: none; padding-bottom: 0;">
+            <div class="hero-icon" style="font-size: 3.5rem;">🎲</div>
+            <h3 style="color: #fff; text-shadow: 0 0 10px rgba(138, 115, 255, 0.8);">Sorsolás</h3>
+            <p style="color: #bbb;">Nem tudsz dönteni? A gép segít!</p>
+            <button class="modal-close-abs" onclick="closeRandomPickerModal()">✕</button>
+        </div>
+
+        <div style="padding: 20px;">
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <select id="pickerTypeFilter" class="cool-select" style="flex: 1;">
+                        <option value="all">🍺 + 🍹 Minden</option>
+                        <option value="beer">🍺 Csak Sör</option>
+                        <option value="drink">🍹 Csak Ital</option>
+                    </select>
+                    <select id="pickerScoreFilter" class="cool-select" style="flex: 1;">
+                        <option value="0">Bármilyen pontszám</option>
+                        <option value="5">Legalább 5 pont</option>
+                        <option value="7">Csak a jók (7+)</option>
+                        <option value="9">Top kategória (9+)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="roulette-container">
+                <div class="roulette-window">
+                    <div id="rouletteText" class="roulette-text">❓</div>
+                </div>
+                <div class="roulette-decoration"></div>
+            </div>
+
+            <div id="winnerDetails" style="text-align: center; margin-top: 15px; opacity: 0; transition: opacity 0.5s; height: 0; overflow: hidden;">
+                <p id="winnerType" style="color: #8a73ff; font-weight: bold; font-size: 0.9rem; text-transform: uppercase;"></p>
+                <div id="winnerScore" style="color: #ffd700; font-size: 1.2rem; margin-top: 5px;"></div>
+            </div>
+
+            <button id="spinBtn" class="auth-btn" onclick="startRoulette()" style="background: linear-gradient(135deg, #8a73ff, #6c5ce7); margin-top: 25px; font-size: 1.2rem; font-weight: 800; letter-spacing: 2px;">
+                PÖRGETÉS! 🎰
+            </button>
+        </div>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
