@@ -5020,6 +5020,79 @@ body.custom-theme *[class*="separator"] {
     .vote-btn { font-size: 1.2rem; }
     .vote-count { font-size: 0.8rem; }
 }
+/* === ROULETTE / MIT IGYAK MA STÍLUSOK === */
+
+.roulette-container {
+    position: relative;
+    margin: 20px 0;
+    perspective: 1000px;
+}
+
+.roulette-window {
+    background: #000;
+    border: 4px solid #8a73ff;
+    border-radius: 15px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(138, 115, 255, 0.4);
+}
+
+/* A szöveg stílusa */
+.roulette-text {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    padding: 0 10px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    word-wrap: break-word;
+    z-index: 2;
+}
+
+/* Blur effekt pörgetés közben */
+.roulette-text.blur {
+    filter: blur(4px);
+    transform: scale(0.9);
+    opacity: 0.8;
+}
+
+/* Nyertes effekt */
+.roulette-text.winner {
+    animation: winnerPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+}
+
+@keyframes winnerPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Díszítő csík középen (mint a nyerőgépeken) */
+.roulette-window::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+/* Gomb letiltott állapota pörgetés közben */
+#spinBtn:disabled {
+    filter: grayscale(1);
+    cursor: not-allowed;
+    transform: scale(0.98);
+}
+
 
 
 
