@@ -7599,45 +7599,61 @@ window.addEventListener('online', () => {
 const installAppBtn = document.getElementById('installAppBtn');
 
 // Elkapjuk a telepítési eseményt
+let deferredPrompt;
+
+// 1. Esemény elkapása (Amikor a böngésző jelzi, hogy telepíthető)
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Megakadályozzuk, hogy a böngésző magától feldobja a saját csúnya bannerét
+    // Megakadályozzuk a gyári csúnya sávot
     e.preventDefault();
-    // Elmentjük az eseményt, hogy később meghívhassuk
     deferredPrompt = e;
-    // Megjelenítjük a mi szép gombunkat
-    if (installAppBtn) {
-        installAppBtn.style.display = 'block';
-    }
+    
+    console.log("PWA telepítés elérhető! Gombok megjelenítése...");
+
+    // A) Fejléc gomb megjelenítése
+    const headerBtns = document.querySelectorAll('.header-btn.pwa-install-trigger');
+    headerBtns.forEach(btn => btn.style.display = 'flex');
+
+    // B) Beállítások SOR megjelenítése (hogy szép legyen a lista)
+    const settingsRows = document.querySelectorAll('.pwa-install-row');
+    settingsRows.forEach(row => row.style.display = 'flex');
 });
 
-// Mi történik, ha a user rákattint a gombra?
-if (installAppBtn) {
-    installAppBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            // Megjelenítjük a rendszer telepítő ablakát
-            deferredPrompt.prompt();
-            
-            // Megvárjuk, mit választ a felhasználó (Telepít vagy Mégse)
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`Telepítés eredménye: ${outcome}`);
-            
-            // Ha egyszer reagált, a promptot nem lehet újra használni
-            deferredPrompt = null;
-            // Eltüntetjük a gombot
-            installAppBtn.style.display = 'none';
+// 2. Kattintás kezelése (Bármelyik gombra kattintasz)
+document.addEventListener('click', async (e) => {
+    // Megnézzük, hogy a kattintott elem (vagy szülője) a telepítő gomb-e
+    const btn = e.target.closest('.pwa-install-trigger');
+    
+    if (btn && deferredPrompt) {
+        // Feldobjuk a rendszer ablakát
+        deferredPrompt.prompt();
+        
+        // Megvárjuk a választ
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Telepítés eredménye: ${outcome}`);
+        
+        deferredPrompt = null;
+        
+        // Ha telepítette, tüntessük el a gombokat/sorokat
+        if (outcome === 'accepted') {
+            hideInstallUI();
         }
-    });
-}
-
-// Ha sikeresen feltelepült az app, eltüntetjük a gombot
-window.addEventListener('appinstalled', () => {
-    if (installAppBtn) {
-        installAppBtn.style.display = 'none';
     }
+});
+
+// 3. Ha sikeresen feltelepült
+window.addEventListener('appinstalled', () => {
+    hideInstallUI();
     deferredPrompt = null;
-    console.log('PWA sikeresen telepítve!');
+    if(typeof showSuccess === 'function') showSuccess("Az alkalmazás telepítése sikeres! 🎉");
 });
+
+// Segédfüggvény az eltüntetéshez
+function hideInstallUI() {
+    document.querySelectorAll('.pwa-install-trigger').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.pwa-install-row').forEach(el => el.style.display = 'none');
+}
 });
+
 
 
 
