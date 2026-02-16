@@ -1,7 +1,7 @@
 {
-  "name": "Sör Teszt App",
-  "short_name": "SörApp",
-  "description": "Sör és ital értékelő alkalmazás baráti társaságoknak.",
+  "name": "Sör És Ital Teszt App",
+  "short_name": "Sörapp",
+  "description": "Sör és ital értékelő alkalmazás",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
@@ -52,3 +52,4 @@
     }
   ]
 }
+
