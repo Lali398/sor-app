@@ -7596,48 +7596,55 @@ window.addEventListener('online', () => {
     
 });
     let deferredPrompt;
-const installAppBtn = document.getElementById('installAppBtn');
+const installBtnGuest = document.getElementById('installAppBtnGuest');
+const installBtnSettings = document.getElementById('installAppBtnSettings');
 
 // Elkapjuk a telepítési eseményt
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Megakadályozzuk, hogy a böngésző magától feldobja a saját csúnya bannerét
     e.preventDefault();
-    // Elmentjük az eseményt, hogy később meghívhassuk
     deferredPrompt = e;
-    // Megjelenítjük a mi szép gombunkat
-    if (installAppBtn) {
-        installAppBtn.style.display = 'block';
-    }
+    
+    // Megjelenítjük a gombokat (ha léteznek a DOM-ban)
+    if (installBtnGuest) installBtnGuest.style.display = 'block';
+    if (installBtnSettings) installBtnSettings.style.display = 'block';
 });
 
-// Mi történik, ha a user rákattint a gombra?
-if (installAppBtn) {
-    installAppBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            // Megjelenítjük a rendszer telepítő ablakát
-            deferredPrompt.prompt();
-            
-            // Megvárjuk, mit választ a felhasználó (Telepít vagy Mégse)
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`Telepítés eredménye: ${outcome}`);
-            
-            // Ha egyszer reagált, a promptot nem lehet újra használni
-            deferredPrompt = null;
-            // Eltüntetjük a gombot
-            installAppBtn.style.display = 'none';
-        }
-    });
+// Közös függvény a telepítés elindítására
+async function handleInstallClick() {
+    if (deferredPrompt) {
+        // Megjelenítjük a rendszer telepítő ablakát
+        deferredPrompt.prompt();
+        
+        // Megvárjuk, mit választ a felhasználó
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Telepítés eredménye: ${outcome}`);
+        
+        // Ha egyszer reagált, a promptot nem lehet újra használni
+        deferredPrompt = null;
+        
+        // Eltüntetjük a gombokat, mert már telepítve van
+        if (installBtnGuest) installBtnGuest.style.display = 'none';
+        if (installBtnSettings) installBtnSettings.style.display = 'none';
+    }
 }
 
-// Ha sikeresen feltelepült az app, eltüntetjük a gombot
+// Eseménykezelők hozzáadása mindkét gombhoz
+if (installBtnGuest) {
+    installBtnGuest.addEventListener('click', handleInstallClick);
+}
+if (installBtnSettings) {
+    installBtnSettings.addEventListener('click', handleInstallClick);
+}
+
+// Sikeres telepítés után (ha a rendszerből telepíti, nem a mi gombunkkal)
 window.addEventListener('appinstalled', () => {
-    if (installAppBtn) {
-        installAppBtn.style.display = 'none';
-    }
+    console.log('Az alkalmazás sikeresen telepítve!');
     deferredPrompt = null;
-    console.log('PWA sikeresen telepítve!');
+    if (installBtnGuest) installBtnGuest.style.display = 'none';
+    if (installBtnSettings) installBtnSettings.style.display = 'none';
 });
 });
+
 
 
 
