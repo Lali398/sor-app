@@ -2566,13 +2566,24 @@
     </div>
 </div>
 
-<button id="installAppBtn" class="install-fab" style="display: none;">
-    ⬇️ App Letöltése
-</button>
+<div id="installBanner" class="install-banner" style="display: none;">
+    <div class="banner-content">
+        <img src="logo.png" alt="SörApp" class="banner-logo">
+        <div class="banner-text">
+            <strong>SörApp Telepítése</strong>
+            <span>Gyorsabb elérés és offline mód!</span>
+        </div>
+    </div>
+    <div class="banner-actions">
+        <button id="installAppBtn" class="banner-btn-install">Telepítés</button>
+        <button id="closeBannerBtn" class="banner-btn-close">✖</button>
+    </div>
+</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
