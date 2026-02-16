@@ -1,17 +1,16 @@
-const CACHE_NAME = 'beer-app-v3'; // Frissítettem a verziót
+const CACHE_NAME = 'beer-app-v4'; // Frissítettem a verziót
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/styles.css',    // Ez a legfontosabb a kinézet miatt!
   '/js.js',
   '/logo.png',
-  '/manifest.json'
-  '/icon-192.png'
-  '/icon-512.png'
-  '/screenshot-mobile.png'
-  '/screenshot-desktop.png'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/screenshot-mobile.png',
+  '/screenshot-desktop.png',
   '/sorkurzor.png'
-  
 ];
 
 // 1. TELEPÍTÉS
@@ -74,3 +73,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
