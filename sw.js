@@ -1,85 +1,75 @@
-const CACHE_NAME = 'beer-app-v2'; // Verziószám növelve
-
-// Csak a KRITIKUS, SAJÁT fájlokat tesszük a telepítési listába.
-// A külső linkeket (CDN, Google Fonts) kivettük innen, azokat röptében cache-eljük majd.
+const CACHE_NAME = 'beer-app-v3'; // Frissítettem a verziót
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
+  '/styles.css',    // Ez a legfontosabb a kinézet miatt!
   '/js.js',
   '/logo.png',
   '/manifest.json'
+  '/icon-192.png'
+  '/icon-512.png'
+  '/screenshot-mobile.png'
+  '/screenshot-desktop.png'
+  '/sorkurzor.png'
+  
 ];
 
-// 1. Telepítés: Csak a biztosan létező helyi fájlok cache-elése
+// 1. TELEPÍTÉS
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Azonnal aktiválódjon az új SW
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('SW: Kritikus fájlok cache-elése...');
+      console.log('SW: Stilusok és szkriptek mentése...');
       return cache.addAll(STATIC_ASSETS);
-    }).catch((err) => {
-        console.error('SW: Hiba a telepítésnél:', err);
     })
   );
 });
 
-// 2. Aktiválás: Régi cache törlése
+// 2. AKTIVÁLÁS
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       );
-    }).then(() => self.clients.claim()) // Azonnal átveszi az irányítást
+    }).then(() => self.clients.claim())
   );
 });
 
-// 3. Lekérések kezelése (Network First stratégia HTML-re, Cache First a többire)
+// 3. LEKÉRÉSEK KEZELÉSE
 self.addEventListener('fetch', (event) => {
-  const requestUrl = new URL(event.request.url);
+  const url = new URL(event.request.url);
 
-  // API hívásokat soha ne cache-eljünk
-  if (requestUrl.pathname.includes('/api/')) {
-    return;
-  }
-
-  // Ha az oldal navigációjáról van szó (HTML), próbáljuk meg a hálózatot, ha nincs, jöjjön a cache
-  if (event.request.mode === 'navigate') {
+  // A) API HÍVÁSOK: Ha nincs net, azonnal dobjunk hibát, NE VÁRAKOZZUNK!
+  // Ez akadályozza meg a "kifagyást"
+  if (url.pathname.includes('/api/')) {
     event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          return caches.match('/index.html');
-        })
+      fetch(event.request).catch(() => {
+        // Ha nincs net, egy üres JSON választ küldünk vissza, nem fagyunk le
+        return new Response(JSON.stringify({ error: "Offline mód" }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
     );
     return;
   }
 
-  // Minden más fájl (CSS, JS, Képek, Fontok, CDN-ek)
+  // B) MINDEN MÁS (HTML, CSS, Képek): Cache First stratégia
+  // Ha megvan cache-ben, onnan adjuk, ha nincs, letöltjük és elmentjük
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // 1. Ha megvan cache-ben, visszaadjuk azt
       if (cachedResponse) {
         return cachedResponse;
       }
-
-      // 2. Ha nincs, letöltjük a netről
       return fetch(event.request).then((networkResponse) => {
-        // Ellenőrizzük, hogy érvényes-e a válasz
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors' && networkResponse.type !== 'opaque') {
-          return networkResponse;
+        // Dinamikus cache-elés (pl. Google Fonts, külső ikonok)
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+           const responseToCache = networkResponse.clone();
+           caches.open(CACHE_NAME).then((cache) => {
+             cache.put(event.request, responseToCache);
+           });
         }
-
-        // 3. Ha sikeres a letöltés, elmentjük a cache-be a következő alkalomra (Dinamikus Caching)
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-
         return networkResponse;
-      }).catch(() => {
-        // Ha nincs net és nincs cache-ben sem (pl. egy kép), itt lehetne placeholder képet visszaadni
-        console.log('Nincs hálózat és nincs cache:', event.request.url);
       });
     })
   );
