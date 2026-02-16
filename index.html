@@ -136,6 +136,20 @@
                 </div>
             </div>
 
+            <div id="installBanner" class="install-banner" style="display: none;">
+    <div class="banner-content">
+        <img src="logo.png" alt="SörApp" class="banner-logo">
+        <div class="banner-text">
+            <strong>SörApp Telepítése</strong>
+            <span>Gyorsabb elérés és offline mód!</span>
+        </div>
+    </div>
+    <div class="banner-actions">
+        <button id="installAppBtn" class="banner-btn-install">Telepítés</button>
+        <button id="closeInstallBtn" class="banner-btn-close">✕</button>
+    </div>
+</div>
+
      <div class="support-section" style="margin-top: 0px;">
             <button class="support-btn" id="guestSupportBtn">
                 <span class="support-icon">❓</span>
@@ -649,6 +663,13 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
+                            
+
+                            <button id="installFromSettingsBtn" class="auth-btn" style="display: none; background: linear-gradient(135deg, #2ecc71, #27ae60); margin-top: 15px;">
+                                📲 Alkalmazás Telepítése
+                            </button>
+
+                            
                             
                                     <!-- MEGJELENÍTÉSI TAB -->
                             <div class="setting-item">
@@ -2565,24 +2586,11 @@
         </div>
     </div>
 </div>
-
-<div id="installBanner" class="install-banner" style="display: none;">
-    <div class="banner-content">
-        <img src="logo.png" alt="SörApp" class="banner-logo">
-        <div class="banner-text">
-            <strong>SörApp Telepítése</strong>
-            <span>Gyorsabb elérés és offline mód!</span>
-        </div>
-    </div>
-    <div class="banner-actions">
-        <button id="installAppBtn" class="banner-btn-install">Telepítés</button>
-        <button id="closeBannerBtn" class="banner-btn-close">✖</button>
-    </div>
-</div>
     
     <script src="js.js"></script>
 </body>
 </html>
+
 
 
 
