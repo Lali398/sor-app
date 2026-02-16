@@ -7595,49 +7595,59 @@ window.addEventListener('online', () => {
     loadUserData();
     
 });
-    let deferredPrompt;
-const installAppBtn = document.getElementById('installAppBtn');
+    // === PWA TELEPÍTÉS KEZELÉSE (BEÁLLÍTÁSOKBA MOZGATVA) ===
+let deferredPrompt;
+const installContainer = document.getElementById('pwaInstallContainer');
+const installBtn = document.getElementById('installPwaSettingsBtn');
 
-// Elkapjuk a telepítési eseményt
+// 1. Elkapjuk a telepítési eseményt (ha a böngésző engedi)
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Megakadályozzuk, hogy a böngésző magától feldobja a saját csúnya bannerét
+    // Megakadályozzuk az automatikus mini-infobar megjelenését mobilon
     e.preventDefault();
-    // Elmentjük az eseményt, hogy később meghívhassuk
+    // Elmentjük az eseményt későbbre
     deferredPrompt = e;
-    // Megjelenítjük a mi szép gombunkat
-    if (installAppBtn) {
-        installAppBtn.style.display = 'block';
+    
+    // Megjelenítjük a gombot a beállításokban
+    if (installContainer) {
+        // Fontos: flex-re állítjuk, hogy illeszkedjen a többi setting-itemhez
+        installContainer.style.display = 'flex'; 
+        console.log('PWA telepítés elérhető, gomb megjelenítve.');
     }
 });
 
-// Mi történik, ha a user rákattint a gombra?
-if (installAppBtn) {
-    installAppBtn.addEventListener('click', async () => {
+// 2. Gombnyomás kezelése
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
         if (deferredPrompt) {
-            // Megjelenítjük a rendszer telepítő ablakát
+            // Feldobjuk a natív telepítő ablakot
             deferredPrompt.prompt();
             
-            // Megvárjuk, mit választ a felhasználó (Telepít vagy Mégse)
+            // Megvárjuk a felhasználó döntését
             const { outcome } = await deferredPrompt.userChoice;
             console.log(`Telepítés eredménye: ${outcome}`);
             
-            // Ha egyszer reagált, a promptot nem lehet újra használni
+            // Ha elfogadta, vagy elutasította, töröljük a promptot (csak egyszer használható)
             deferredPrompt = null;
-            // Eltüntetjük a gombot
-            installAppBtn.style.display = 'none';
+            
+            // Ha telepítette, elrejthetjük a gombot
+            if (outcome === 'accepted') {
+                installContainer.style.display = 'none';
+            }
         }
     });
 }
 
-// Ha sikeresen feltelepült az app, eltüntetjük a gombot
+// 3. Ha sikeresen feltelepült az app
 window.addEventListener('appinstalled', () => {
-    if (installAppBtn) {
-        installAppBtn.style.display = 'none';
+    if (installContainer) {
+        installContainer.style.display = 'none';
     }
     deferredPrompt = null;
     console.log('PWA sikeresen telepítve!');
+    showSuccess('Az alkalmazás sikeresen telepítve! 🎉');
 });
 });
+
 
 
 
