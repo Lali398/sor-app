@@ -5161,7 +5161,19 @@ body.custom-theme *[class*="separator"] {
     top: 300px;
     left: 750px;
 }
+.pwadowloand {
+    width: 200px;
+    position: absolute;
+    top: 1010px;
+    left: 800px;
+}
+.installAppBtnGuest {
+    position: absolute;
+    top: 1010px;
+    left: 800px;
+}
     
+
 
 
 
