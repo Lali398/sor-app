@@ -5232,6 +5232,22 @@ body.custom-theme *[class*="separator"] {
 .banner-btn-close:hover {
     color: #fff;
 }
+/* A banner bezáró gombja */
+.banner-btn-close {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: 5px;
+    transition: color 0.3s ease;
+}
+
+.banner-btn-close:hover {
+    color: #fff;
+}
+
 
 
 
