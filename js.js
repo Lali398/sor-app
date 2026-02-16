@@ -469,6 +469,10 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
 }
 
 async function loadUserDrinks() {
+    if (!navigator.onLine) {
+        console.log("Offline mód: Adatok betöltése a helyi tárolóból (ha lenne offline DB)...");
+        return; 
+    }
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) return;
 
@@ -1473,6 +1477,10 @@ function setupAdminRecap() {
     }
     
     async function loadUserData() {
+        if (!navigator.onLine) {
+        console.log("Offline mód: Adatok betöltése a helyi tárolóból (ha lenne offline DB)...");
+        return; 
+    }
     const user = JSON.parse(localStorage.getItem('userData'));
     if (!user) {
         if(document.getElementById('userView').style.display !== 'none') {
@@ -7647,6 +7655,7 @@ window.addEventListener('appinstalled', () => {
     showSuccess('Az alkalmazás sikeresen telepítve! 🎉');
 });
 });
+
 
 
 
