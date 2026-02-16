@@ -5156,7 +5156,6 @@ body.custom-theme *[class*="separator"] {
 .install-fab {
     position: fixed;
     bottom: 20px;
-    right: 20px;
     background: linear-gradient(135deg, #8a73ff, #6c5ce7);
     color: white;
     border: none;
@@ -5179,6 +5178,7 @@ body.custom-theme *[class*="separator"] {
 body.logged-in #installAppBtn {
     display: none !important;
 }
+
 
 
 
