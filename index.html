@@ -136,15 +136,22 @@
                 </div>
             </div>
 
-            <div class="guest-action-container" id="guestActionButtons">
-    <button id="helpBtn" class="auth-btn" style="display: block;">Segítség ❓</button>
-    <button id="installAppBtnGuest" class="auth-btn">Letöltés 📱</button>
+            <div class="pwadowloand" style="margin-top: 0px;">
+            <button id="installAppBtnGuest" class="auth-btn" style="display: none; background: #8a73ff;">
+                <span class="support-icon">⬇️</span>
+                <span class="support-text">App letöltése</span>
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="settings-install-wrapper">
-    <button id="installAppBtnSettings" class="auth-btn">
-        App Telepítése ⬇️
-    </button>
+     <div class="support-section" style="margin-top: 0px;">
+            <button class="support-btn" id="guestSupportBtn">
+                <span class="support-icon">❓</span>
+                <span class="support-text">Segítség kérése</span>
+            </button>
+        </div>
+    </div>
 </div>
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
@@ -2580,8 +2587,6 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
 
 
 
