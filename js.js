@@ -7595,9 +7595,6 @@ window.addEventListener('online', () => {
     loadUserData();
     
 });
-    let deferredPrompt;
-const installAppBtn = document.getElementById('installAppBtn');
-
 // Elkapjuk a telepítési eseményt
 let deferredPrompt;
 
@@ -7653,6 +7650,7 @@ function hideInstallUI() {
     document.querySelectorAll('.pwa-install-row').forEach(el => el.style.display = 'none');
 }
 });
+
 
 
 
