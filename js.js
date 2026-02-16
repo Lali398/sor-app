@@ -1,5 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Service Worker regisztrálása a PWA-hoz
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('Service Worker sikeresen regisztrálva! Scope:', registration.scope);
+            })
+            .catch((error) => {
+                console.error('Service Worker regisztráció sikertelen:', error);
+            });
+    });
+}
+
 
     function escapeHtml(text) {
     if (!text) return text;
@@ -336,6 +349,10 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     // ======================================================
 
     async function handleAddBeer(e) {
+        if (!navigator.onLine) {
+    showError("Nincs internetkapcsolat! Kérlek csatlakozz a hálózatra a mentéshez.");
+    return;
+}
     e.preventDefault();
     const beerName = document.getElementById('beerName').value;
     const type = document.getElementById('beerType').value;
@@ -386,6 +403,10 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
 }
 
     async function handleAddDrink(e) {
+        if (!navigator.onLine) {
+    showError("Nincs internetkapcsolat! Kérlek csatlakozz a hálózatra a mentéshez.");
+    return;
+}
     e.preventDefault();
     const drinkName = document.getElementById('drinkName').value;
     const category = document.getElementById('drinkCategory').value;
@@ -808,6 +829,10 @@ async function markIdeaAsDone(index) {
     }
 
     async function handleGuestLogin(e) {
+        if (!navigator.onLine) {
+    showError("Nincs internetkapcsolat! Kérlek csatlakozz a hálózatra a mentéshez.");
+    return;
+}
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
@@ -7559,7 +7584,18 @@ function finalizeWinner(item) {
     spinBtn.textContent = "ÚJRA PÖRGETÉS 🔄";
     document.querySelectorAll('.picker-filter-grid select').forEach(s => s.disabled = false);
 }
+    window.addEventListener('offline', () => {
+    showError('Már nem vagy az internetre csatlakoztatva! (Offline mód)');
+    document.body.style.filter = 'grayscale(0.5)'; // Kicsit szürkítjük az oldalt
 });
+
+window.addEventListener('online', () => {
+    showSuccess('Újra online vagy! 🌐');
+    document.body.style.filter = 'grayscale(0)'; // Visszaadjuk a színeket
+    // Itt akár meghívhatod a loadUserData() függvényt is, hogy frissítsen!
+});
+});
+
 
 
 
