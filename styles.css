@@ -5152,6 +5152,45 @@ body.custom-theme *[class*="separator"] {
         gap: 10px;
     }
 }
+/* Konténer a vendég gomboknak (Segítség + Letöltés) */
+.guest-action-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+}
+
+/* A gombok alap stílusa a vendég oldalon */
+.guest-action-container .auth-btn {
+    flex: 1; /* Egyforma szélesek lesznek */
+    margin-top: 0 !important; /* Felülbíráljuk az alap margót */
+    display: none; /* Alapból rejtve, a JS fedi fel */
+    font-size: 0.9rem;
+    padding: 12px 5px;
+}
+
+/* Speciális szín a letöltés gombnak, hogy elüssön a segítségtől */
+#installAppBtnGuest, #installAppBtnSettings {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#installAppBtnGuest:hover, #installAppBtnSettings:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+}
+
+/* Beállítások gomb egyedi igazítása */
+.settings-install-wrapper {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 
 
 
