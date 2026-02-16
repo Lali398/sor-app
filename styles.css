@@ -5152,50 +5152,87 @@ body.custom-theme *[class*="separator"] {
         gap: 10px;
     }
 }
-/* PWA Telepítő gomb stílusa */
-/* PWA Telepítő gomb stílusa - Modern Pirula */
-.install-fab {
+.install-banner {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 9999; /* Biztosan legfelül legyen, de csak a sarokban */
-    background: rgba(138, 115, 255, 0.85); /* A te lila színed, picit átlátszóan */
-    backdrop-filter: blur(10px); /* Üveghatás */
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 12px 28px;
-    border-radius: 50px; /* Lekerekített pirula forma */
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    background: rgba(16, 0, 43, 0.9); /* Sötétlila üveges háttér */
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(138, 115, 255, 0.3);
+    border-radius: 15px;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     font-family: 'Poppins', sans-serif;
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banner-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.banner-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.banner-text strong {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.banner-text span {
+    color: #aaa;
+    font-size: 0.75rem;
+}
+
+.banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.banner-btn-install {
+    background: #8a73ff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 1rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     cursor: pointer;
-    transition: all 0.3s ease;
-    display: none; /* Alapból rejtett, a JS kapcsolja be! */
+    transition: background 0.2s;
 }
 
-/* Hover effektus */
-.install-fab:hover {
-    background: rgba(138, 115, 255, 1);
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(138, 115, 255, 0.4);
+.banner-btn-install:hover {
+    background: #6c5ce7;
 }
 
-/* Mobil nézet: Alul középen, hogy kézre essen */
-@media (max-width: 480px) {
-    .install-fab {
-        bottom: 25px;
-        right: auto;
-        left: 50%;
-        transform: translateX(-50%);
-        width: max-content;
-        padding: 12px 35px;
-    }
-    
-    .install-fab:hover {
-        transform: translateX(-50%) translateY(-3px);
-    }
+.banner-btn-close {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
 }
+
+.banner-btn-close:hover {
+    color: #fff;
+}
+
 
 
 
