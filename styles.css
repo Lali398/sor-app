@@ -5175,6 +5175,11 @@ body.custom-theme *[class*="separator"] {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(138, 115, 255, 0.6);
 }
+/* Ha a body-n rajta van a 'logged-in' class, a gomb tűnjön el, bármi is történik */
+body.logged-in #installAppBtn {
+    display: none !important;
+}
+
 
 
 
