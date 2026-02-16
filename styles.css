@@ -1852,10 +1852,6 @@ input:checked + .slider:before {
     align-items: center;
     gap: 8px;
     margin: 0 auto;
-    width: 200px;
-    position: absolute;
-    top: 300px;
-    left: 550px;
 }
 
 .support-btn:hover {
@@ -5156,28 +5152,29 @@ body.custom-theme *[class*="separator"] {
         gap: 10px;
     }
 }
-.pwadowloand {
-    position: absolute;
-    top: 300px;
-    left: 750px;
+/* PWA Telepítő gomb stílusa */
+.install-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #8a73ff, #6c5ce7);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 4px 15px rgba(138, 115, 255, 0.4);
+    cursor: pointer;
+    z-index: 9999;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.pwadowloand {
-    width: 200px;
-    position: absolute;
-    top: 1010px;
-    left: 800px;
+
+.install-fab:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(138, 115, 255, 0.6);
 }
-.installAppBtnGuest {
-    position: absolute;
-    top: 1010px;
-    left: 800px;
-}
-    
-
-
-
-
-
 
 
 
