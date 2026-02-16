@@ -7591,10 +7591,54 @@ function finalizeWinner(item) {
 
 window.addEventListener('online', () => {
     showSuccess('Újra online vagy! 🌐');
-    document.body.style.filter = 'grayscale(0)'; // Visszaadjuk a színeket
-    // Itt akár meghívhatod a loadUserData() függvényt is, hogy frissítsen!
+    document.body.style.filter = 'grayscale(0)';
+    loadUserData();
+    
+});
+    let deferredPrompt;
+const installAppBtn = document.getElementById('installAppBtn');
+
+// Elkapjuk a telepítési eseményt
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Megakadályozzuk, hogy a böngésző magától feldobja a saját csúnya bannerét
+    e.preventDefault();
+    // Elmentjük az eseményt, hogy később meghívhassuk
+    deferredPrompt = e;
+    // Megjelenítjük a mi szép gombunkat
+    if (installAppBtn) {
+        installAppBtn.style.display = 'block';
+    }
+});
+
+// Mi történik, ha a user rákattint a gombra?
+if (installAppBtn) {
+    installAppBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Megjelenítjük a rendszer telepítő ablakát
+            deferredPrompt.prompt();
+            
+            // Megvárjuk, mit választ a felhasználó (Telepít vagy Mégse)
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Telepítés eredménye: ${outcome}`);
+            
+            // Ha egyszer reagált, a promptot nem lehet újra használni
+            deferredPrompt = null;
+            // Eltüntetjük a gombot
+            installAppBtn.style.display = 'none';
+        }
+    });
+}
+
+// Ha sikeresen feltelepült az app, eltüntetjük a gombot
+window.addEventListener('appinstalled', () => {
+    if (installAppBtn) {
+        installAppBtn.style.display = 'none';
+    }
+    deferredPrompt = null;
+    console.log('PWA sikeresen telepítve!');
 });
 });
+
 
 
 
