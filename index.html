@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -849,6 +848,59 @@
                                 <div id="googleLinkBtn"></div>
                             </div>
 
+                        <!-- GYORSBILLENTYŰK -->
+                            <div class="setting-item hotkey-accordion-container" id="hotkeyAccordion">
+                                <div class="hotkey-accordion-header" onclick="toggleHotkeySection()">
+                                    <div class="setting-info">
+                                        <h4>⌨️ Gyorsbillentyűk</h4>
+                                        <p>Rendeld hozzá a FAB gomb akcióihoz a kedvenc billentyűidet!</p>
+                                    </div>
+                                    <span id="hotkeyArrow" class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="hotkey-accordion-content" id="hotkeyContent">
+                                    <p class="hotkey-hint">
+                                        A billentyűk <strong>beviteli mezőn kívül</strong> működnek. Kattints a <kbd>Módosítás</kbd> gombra, majd nyomj le egy billentyűt.
+                                    </p>
+                                    <div class="hotkey-settings-list">
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🍺 Sör hozzáadása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-beer">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="beer" onclick="startHotkeyCapture('beer')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('beer')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🍹 Ital hozzáadása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-drink">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="drink" onclick="startHotkeyCapture('drink')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('drink')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">📢 Ajánlás írása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-rec">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="rec" onclick="startHotkeyCapture('rec')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('rec')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🎲 Mit igyak ma?</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-roulette">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="roulette" onclick="startHotkeyCapture('roulette')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('roulette')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">❓ Segítség kérése</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-support">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="support" onclick="startHotkeyCapture('support')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('support')" title="Törlés">✕</button>
+                                        </div>
+                                    </div>
+                                    <div class="hotkey-footer-actions">
+                                        <button class="action-btn" onclick="resetHotkeys()" style="background: linear-gradient(135deg, #f39c12, #e67e22); font-size: 0.85rem; padding: 8px 16px;">
+                                            <span>🔄</span> Alapértelmezett visszaállítása
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         <!-- ÁSZF, ADATVÉDELMI -->
 
                         <div class="setting-item">
@@ -932,25 +984,30 @@
     <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
     <div class="fab-container" id="fabContainer">
         <div class="fab-options">
-            <button class="fab-option" onclick="openAddModal('beer')">
+            <button class="fab-option" data-action="beer" onclick="openAddModal('beer')">
                 <span class="emoji">🍺</span>
                 <span class="tooltip">Sör hozzáadása</span>
+                <span class="hotkey-badge"></span>
             </button>
-            <button class="fab-option" onclick="openAddModal('drink')">
+            <button class="fab-option" data-action="drink" onclick="openAddModal('drink')">
                 <span class="emoji">🍹</span>
                 <span class="tooltip">Ital hozzáadása</span>
+                <span class="hotkey-badge"></span>
             </button>
-            <button class="fab-option" onclick="openRecModal()">
+            <button class="fab-option" data-action="rec" onclick="openRecModal()">
                 <span class="emoji">📢</span>
                 <span class="tooltip">Ajánlás írása</span>
+                <span class="hotkey-badge"></span>
             </button>
-            <button class="fab-option" onclick="openRandomPickerModal()">
+            <button class="fab-option" data-action="roulette" onclick="openRandomPickerModal()">
                 <span class="emoji">🎲</span>
                 <span class="tooltip">Mit igyak ma?</span>
+                <span class="hotkey-badge"></span>
             </button>
-            <button class="fab-option" onclick="openSupportModal()">
+            <button class="fab-option" data-action="support" onclick="openSupportModal()">
                 <span class="emoji">❓</span>
                 <span class="tooltip">Segítség kérése</span>
+                <span class="hotkey-badge"></span>
             </button>
         </div>
         <button class="fab-main" id="fabMainBtn">+</button>
@@ -2581,116 +2638,3 @@
     <script src="js.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
