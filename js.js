@@ -6226,8 +6226,157 @@ function closeTutorialModal() {
 document.addEventListener('keydown', function(event) {
     if (event.key === "Escape") {
         closeTutorialModal();
+        // Hotkey capture megszakítása ESC-re
+        if (capturingAction) {
+            cancelHotkeyCapture();
+        }
     }
 });
+
+// === GYORSBILLENTYŰ (HOTKEY) RENDSZER ===
+
+const FAB_ACTIONS = [
+    { id: 'beer',     label: '🍺 Sör hozzáadása',  fn: () => { if(typeof openAddModal === 'function') openAddModal('beer'); } },
+    { id: 'drink',    label: '🍹 Ital hozzáadása',  fn: () => { if(typeof openAddModal === 'function') openAddModal('drink'); } },
+    { id: 'rec',      label: '📢 Ajánlás írása',    fn: () => { if(typeof openRecModal === 'function') openRecModal(); } },
+    { id: 'roulette', label: '🎲 Mit igyak ma?',    fn: () => { if(typeof openRandomPickerModal === 'function') openRandomPickerModal(); } },
+    { id: 'support',  label: '❓ Segítség kérése',  fn: () => { if(typeof openSupportModal === 'function') openSupportModal(); } },
+];
+
+const DEFAULT_HOTKEYS = { beer: 'b', drink: 'd', rec: 'r', roulette: 'g', support: 's' };
+let currentHotkeys = {};
+let capturingAction = null;
+
+function loadHotkeys() {
+    try {
+        const saved = localStorage.getItem('fabHotkeys');
+        currentHotkeys = saved ? JSON.parse(saved) : { ...DEFAULT_HOTKEYS };
+    } catch(e) {
+        currentHotkeys = { ...DEFAULT_HOTKEYS };
+    }
+    applyHotkeyBadges();
+    updateHotkeySettingsUI();
+}
+
+function saveHotkeys() {
+    localStorage.setItem('fabHotkeys', JSON.stringify(currentHotkeys));
+    applyHotkeyBadges();
+    updateHotkeySettingsUI();
+}
+
+function applyHotkeyBadges() {
+    FAB_ACTIONS.forEach(action => {
+        const btn = document.querySelector(`.fab-option[data-action="${action.id}"]`);
+        if (!btn) return;
+        const badge = btn.querySelector('.hotkey-badge');
+        if (!badge) return;
+        const key = currentHotkeys[action.id];
+        if (key) {
+            badge.textContent = key.length === 1 ? key.toUpperCase() : key;
+            badge.classList.add('visible');
+        } else {
+            badge.textContent = '';
+            badge.classList.remove('visible');
+        }
+    });
+}
+
+function updateHotkeySettingsUI() {
+    FAB_ACTIONS.forEach(action => {
+        const display = document.getElementById(`hotkey-display-${action.id}`);
+        if (!display) return;
+        const key = currentHotkeys[action.id];
+        if (key) {
+            display.textContent = key.length === 1 ? key.toUpperCase() : key;
+            display.classList.remove('hotkey-empty');
+        } else {
+            display.textContent = '—';
+            display.classList.add('hotkey-empty');
+        }
+    });
+}
+
+window.startHotkeyCapture = function(actionId) {
+    // Ha már rögzítünk valamit, előbb leállítjuk
+    if (capturingAction) cancelHotkeyCapture();
+    capturingAction = actionId;
+    const btn = document.querySelector(`.hotkey-capture-btn[data-action="${actionId}"]`);
+    if (btn) {
+        btn.textContent = '⌨️ Nyomj egy gombot...';
+        btn.classList.add('capturing');
+    }
+};
+
+function cancelHotkeyCapture() {
+    if (!capturingAction) return;
+    const btn = document.querySelector(`.hotkey-capture-btn[data-action="${capturingAction}"]`);
+    if (btn) {
+        btn.textContent = 'Módosítás';
+        btn.classList.remove('capturing');
+    }
+    capturingAction = null;
+}
+
+window.clearHotkey = function(actionId) {
+    currentHotkeys[actionId] = null;
+    saveHotkeys();
+};
+
+window.resetHotkeys = function() {
+    currentHotkeys = { ...DEFAULT_HOTKEYS };
+    saveHotkeys();
+};
+
+window.toggleHotkeySection = function() {
+    const content = document.getElementById('hotkeyContent');
+    const arrow = document.getElementById('hotkeyArrow');
+    if (!content) return;
+    const isOpen = content.style.display === 'block';
+    content.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+};
+
+// Globális billentyű elfogó (rögzítésre ÉS végrehajtásra)
+document.addEventListener('keydown', function(e) {
+    // --- RÖGZÍTÉSI MÓD ---
+    if (capturingAction) {
+        if (e.key === 'Escape') { cancelHotkeyCapture(); return; }
+        if (['Control', 'Alt', 'Shift', 'Meta', 'Tab', 'CapsLock'].includes(e.key)) return;
+        e.preventDefault();
+        const key = e.key.toLowerCase();
+        // Duplikátum eltávolítása
+        Object.keys(currentHotkeys).forEach(id => {
+            if (currentHotkeys[id] === key && id !== capturingAction) {
+                currentHotkeys[id] = null;
+            }
+        });
+        currentHotkeys[capturingAction] = key;
+        saveHotkeys();
+        cancelHotkeyCapture();
+        return;
+    }
+
+    // --- NORMÁL VÉGREHAJTÁSI MÓD ---
+    // Input mezőkben ne aktiválódjon
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+
+    const key = e.key.toLowerCase();
+    const action = FAB_ACTIONS.find(a => currentHotkeys[a.id] === key);
+    if (action) {
+        e.preventDefault();
+        action.fn();
+    }
+});
+
+// Betöltés a DOM felépülése után
+document.addEventListener('DOMContentLoaded', function() {
+    loadHotkeys();
+});
+// Ha a DOMContentLoaded már lefutott (inline script eset)
+if (document.readyState !== 'loading') {
+    loadHotkeys();
+}
 
 // Bezárás, ha a sötét háttérre kattintanak
 document.getElementById('tutorialModal')?.addEventListener('click', function(e) {
@@ -7655,10 +7804,3 @@ window.addEventListener('appinstalled', () => {
     showSuccess('Az alkalmazás sikeresen telepítve! 🎉');
 });
 });
-
-
-
-
-
-
-
