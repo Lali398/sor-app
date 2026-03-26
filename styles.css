@@ -5270,3 +5270,189 @@ body.logged-in #installAppBtn {
 
 
 
+
+/* === HOTKEY BADGE A FAB GOMBOKON === */
+.hotkey-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 5px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    display: none;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    font-family: 'Courier New', monospace;
+    transition: opacity 0.2s;
+}
+
+.hotkey-badge.visible {
+    display: block;
+}
+
+/* === HOTKEY BEÁLLÍTÁSOK PANEL === */
+.hotkey-accordion-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+}
+
+.hotkey-accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 15px 0;
+    user-select: none;
+}
+
+.hotkey-accordion-header:hover .setting-info h4 {
+    color: #8a73ff;
+}
+
+.hotkey-accordion-content {
+    display: none;
+    padding: 15px 0 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hotkey-hint {
+    color: #aaa;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.hotkey-hint kbd {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.78rem;
+    color: #ddd;
+    font-family: 'Courier New', monospace;
+}
+
+.hotkey-settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hotkey-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.2s;
+}
+
+.hotkey-row:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+.hotkey-action-label {
+    flex: 1;
+    color: #e0e0e0;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.hotkey-display {
+    background: rgba(138, 115, 255, 0.15);
+    border: 1.5px solid rgba(138, 115, 255, 0.5);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    color: #c9bfff;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.hotkey-display.hotkey-empty {
+    color: #666;
+    border-color: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+}
+
+.hotkey-capture-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 6px 13px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'Poppins', sans-serif;
+}
+
+.hotkey-capture-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.hotkey-capture-btn.capturing {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulseCap 0.9s ease infinite;
+}
+
+@keyframes pulseCap {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
+    50%       { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+}
+
+.hotkey-clear-btn {
+    background: rgba(255,255,255,0.07);
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+.hotkey-clear-btn:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
+.hotkey-footer-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+}
