@@ -51,28 +51,22 @@ self.addEventListener('activate', (event) => {
 // 3. FETCH – kérések kezelése
 // ─────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+  const url = event.request.url;
 
-  // Csak saját origint kezelünk (ne zavarjuk a Google Fonts stb. CDN-eket)
-  // Kivétel: CDN-eket is cache-elhetjük, de az egyszerűség kedvéért hagyjuk
-  const isApiCall   = url.pathname.startsWith('/api/');
-  const isGetMethod = request.method === 'GET';
+  // ✅ CSAK http/https kéréseket kezelünk
+  if (!url.startsWith('http')) return;
 
-  // A) API GET → Network First, Cache fallback
-  if (isApiCall && isGetMethod) {
-    event.respondWith(networkFirstWithCache(request));
-    return;
-  }
+  // API hívásokat ne cache-eljük
+  if (url.includes('/api/')) return;
 
-  // B) API mutáció (POST / PATCH / DELETE / PUT) → Network, vagy queue
-  if (isApiCall && !isGetMethod) {
-    event.respondWith(mutationWithQueue(request));
-    return;
-  }
-
-  // C) Statikus fájlok → Cache First
-  event.respondWith(cacheFirst(request));
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
+    }).catch(() => {
+      // Ha offline és nincs cache - csend
+      return new Response('Offline', { status: 503 });
+    })
+  );
 });
 
 // ─────────────────────────────────────────────
