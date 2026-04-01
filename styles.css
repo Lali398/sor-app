@@ -10544,3 +10544,13 @@ body.logged-in #installAppBtn {
     display: flex;
     justify-content: flex-end;
 }
+/* === OFFLINE BANNER KOMPATIBILITÁS === */
+body.offline-mode .install-fab {
+    bottom: 68px; /* 48px banner magasság + 20px eredeti offset */
+    transition: bottom 0.3s ease;
+}
+
+/* Sticky fejléc ne kerüljön a banner mögé mobilon */
+body.offline-mode .admin-header {
+    top: 0; /* marad sticky, de a banner alatta van fixed-ként */
+}
