@@ -1,9 +1,3 @@
-// ============================================================
-// offline.js – Offline állapot kezelő és UI visszajelzések
-// Ezt a fájlt az index.html-be kell beilleszteni a js.js ELŐTT:
-//   <script src="offline.js"></script>
-// ============================================================
-
 (function () {
   'use strict';
 
@@ -72,9 +66,6 @@
         justify-content: center;
         font-size: 11px;
         font-weight: 700;
-      }
-      body.offline-mode {
-        padding-bottom: 48px;
       }
     `;
 
