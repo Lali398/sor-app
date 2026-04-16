@@ -3642,6 +3642,7 @@ async function saveAchievementsToCloud(achievements, badge) {
         console.error("Hiba az achievement mentésekor:", e);
     }
 }
+window.saveAchievementsToCloud = saveAchievementsToCloud;
 
 // --- UI MEGJELENÍTÉS (JAVÍTOTT PROGRESS BAR) ---
 function renderAchievements() {
@@ -3827,6 +3828,7 @@ function renderAchievements() {
         updateBadgeSelector(currentLevel.name, userData.badge);
     }
 }
+window.renderAchievements = renderAchievements;
 
 // --- BADGE VÁLASZTÓ FRISSÍTÉSE ---
 function updateBadgeSelector(maxLevelName, currentBadge) {
