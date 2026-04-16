@@ -126,7 +126,7 @@
         renderAchievements();
       }
     } catch (e) {
-      console.warn('Pince Titka – achievement save hiba:', e);
+      console.warn('A te titkod– achievement save hiba:', e);
     }
   }
 
@@ -140,10 +140,10 @@
     m.innerHTML = `
       <div style="background:linear-gradient(135deg,#1a0030,#0d001a);border:2px solid #ffd700;border-radius:20px;padding:40px 30px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 60px rgba(255,215,0,0.3);animation:pincePopIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;font-family:Poppins,sans-serif;color:#fff;">
         <div style="font-size:4rem;margin-bottom:10px;animation:pinceSpin 1s ease-out;">🗝️</div>
-        <h2 style="color:#ffd700;font-size:1.6rem;margin:0 0 8px;">A Pince Titka</h2>
+        <h2 style="color:#ffd700;font-size:1.6rem;margin:0 0 8px;">Rejtvény</h2>
         <p style="color:#a29bfe;font-size:0.9rem;margin:0 0 20px;">Titkos achievement kinyitva!</p>
         <p style="color:#e0e0e0;font-size:0.88rem;line-height:1.6;margin-bottom:25px;">
-          Végigjártad a pince összes titkát. A sörmester útja nem mindig egyenes – de te kitartottál a végéig. 🏆
+          Megcsináltad az összes rejtélyt,<strong>Gratulálunk</strong>. 🏆
         </p>
         <button onclick="document.getElementById('pinceModal').remove()" style="background:linear-gradient(135deg,#ffd700,#f39c12);color:#000;font-weight:800;border:none;padding:12px 30px;border-radius:12px;font-size:1rem;cursor:pointer;font-family:Poppins,sans-serif;">
           ✨ Köszönöm, büszke vagyok!
@@ -356,7 +356,7 @@
         accountPanel.prepend(card);
       }
     } catch (e) {
-      console.warn('Pince Titka – avatar inject hiba:', e);
+      console.warn('A te titkod – avatar inject hiba:', e);
     }
   }
 
@@ -433,7 +433,7 @@
       injectAvatarIntoAccount();
     }).observe(document.body, { childList: true, subtree: true });
 
-    console.log('🗝️ Pince Titka – Easter egg aktív. Haladás:', getStep(), '/ 10');
+    console.log('🗝️ A te titkod – Easter egg aktív. Haladás:', getStep(), '/ 10');
   }
 
   // DOM kész után indul
