@@ -256,6 +256,7 @@
         if (rowDate === oldestFmt && !dateTd.dataset.eggMarked) {
           dateTd.dataset.eggMarked = 'oldest';
           dateTd.style.cursor = 'pointer';
+          dateTd.style.userSelect = 'none';
           dateTd.title = '🗝️ Kattints ide...';
           dateTd.addEventListener('click', () => tryAdvance(2), { once: false });
         }
@@ -264,6 +265,7 @@
         if (avgTd.textContent.trim() === bestFmt && !avgTd.dataset.eggStep3) {
           avgTd.dataset.eggStep3 = '1';
           avgTd.style.cursor = 'pointer';
+          avgTd.style.userSelect = 'none';
           avgTd.title = '⭐ Kattints a csúcsra...';
           avgTd.addEventListener('click', () => tryAdvance(3), { once: false });
         }
@@ -272,6 +274,7 @@
         if (worstFmt && avgTd.textContent.trim() === worstFmt && !avgTd.dataset.eggStep4) {
           avgTd.dataset.eggStep4 = '1';
           avgTd.style.cursor = 'pointer';
+          avgTd.style.userSelect = 'none';
           avgTd.title = '💀 Kattints a mélypontra...';
           avgTd.addEventListener('click', () => tryAdvance(4), { once: false });
         }
