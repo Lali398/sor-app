@@ -143,7 +143,7 @@
         <h2 style="color:#ffd700;font-size:1.6rem;margin:0 0 8px;">Rejtvény</h2>
         <p style="color:#a29bfe;font-size:0.9rem;margin:0 0 20px;">Titkos achievement kinyitva!</p>
         <p style="color:#e0e0e0;font-size:0.88rem;line-height:1.6;margin-bottom:25px;">
-          Megcsináltad az összes rejtélyt,<strong>Gratulálunk</strong>. 🏆
+          Megcsináltad az összes rejtélyt. <strong>Gratulálunk</strong>. 🏆
         </p>
         <button onclick="document.getElementById('pinceModal').remove()" style="background:linear-gradient(135deg,#ffd700,#f39c12);color:#000;font-weight:800;border:none;padding:12px 30px;border-radius:12px;font-size:1rem;cursor:pointer;font-family:Poppins,sans-serif;">
           ✨ Köszönöm, büszke vagyok!
