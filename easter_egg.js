@@ -208,79 +208,44 @@
   }
 
   /* ═══════════════════════════════════════════════
-       STEP 2 – Legrégebbi bejegyzés dátumcellájára kattintás
-       STEP 3 – Legjobb pontszám cellájára kattintás
-       STEP 4 – Legrosszabb pontszám cellájára kattintás
+       STEP 2 – Dátum szerint rendezés növekvő (legrégebbi elöl)
+       STEP 3 – Átlag szerint rendezés csökkenő (legjobb elöl)
+       STEP 4 – Átlag szerint rendezés növekvő (legrosszabb elöl)
   ═══════════════════════════════════════════════ */
-  function markSpecialCells() {
-    // Összegyűjtjük a globális adatokat
-    const beers  = (typeof currentUserBeers  !== 'undefined' ? currentUserBeers  : []) || [];
-    const drinks = (typeof currentUserDrinks !== 'undefined' ? currentUserDrinks : []) || [];
-    const all    = [...beers, ...drinks];
-    if (all.length === 0) return;
+  function hookSorting() {
+    if (typeof window.sortTable !== 'function') return;
+    if (window._eggSortHooked) return;
+    window._eggSortHooked = true;
 
-    // Legrégebbi (step 2)
-    const oldest = all.reduce((a, b) => {
-      const da = a.date ? new Date(a.date) : new Date(0);
-      const db = b.date ? new Date(b.date) : new Date(0);
-      return da < db ? a : b;
-    });
-    // Legjobb avg (step 3)
-    const best   = all.reduce((a, b) => (parseFloat(a.avg) > parseFloat(b.avg) ? a : b));
-    // Legrosszabb avg (legalább > 0) (step 4)
-    const worstPool = all.filter(x => parseFloat(x.avg) > 0);
-    const worst  = worstPool.length ? worstPool.reduce((a, b) => (parseFloat(a.avg) < parseFloat(b.avg) ? a : b)) : null;
+    const original = window.sortTable;
+    window.sortTable = function (tableType, column, dataType, headerElement) {
+      original.apply(this, arguments);
 
-    // Jelöljük a cellákat mindkét táblában
-    [
-      document.getElementById('userBeerTableBody'),
-      document.getElementById('userDrinkTableBody')
-    ].forEach(tbody => {
-      if (!tbody) return;
-      const rows = tbody.querySelectorAll('tr');
-      rows.forEach(row => {
-        // Dátumcella: első <td>
-        const dateTd   = row.querySelector('td:first-child');
-        // Átlagcella: 9. vagy 11. <td> (sör: 9, ital: 11)
-        const avgTd    = row.querySelector('td.average-cell');
+      // Az eredeti sortTable már beállította a currentSort-ot,
+      // ezért a frissített irányból olvassuk ki
+      const state = window.currentSort && window.currentSort[tableType];
+      if (!state) return;
 
-        if (!dateTd || !avgTd) return;
+      const col = state.column;
+      const dir = state.direction;
 
-        const rowAvg   = parseFloat(avgTd.textContent);
-        const rowDate  = dateTd.textContent.trim();
-        const oldestFmt = oldest.date ? new Date(oldest.date).toLocaleDateString('hu-HU') : '';
-        const bestFmt  = parseFloat(best.avg || 0).toFixed(2);
-        const worstFmt = worst ? parseFloat(worst.avg || 0).toFixed(2) : null;
-
-        // STEP 2 marker
-        if (rowDate === oldestFmt && !dateTd.dataset.eggMarked) {
-          dateTd.dataset.eggMarked = 'oldest';
-          dateTd.style.cursor = 'pointer';
-          dateTd.style.userSelect = 'none';
-          dateTd.title = '🗝️ Kattints ide...';
-          dateTd.addEventListener('click', () => tryAdvance(2), { once: false });
-        }
-
-        // STEP 3 marker
-        if (avgTd.textContent.trim() === bestFmt && !avgTd.dataset.eggStep3) {
-          avgTd.dataset.eggStep3 = '1';
-          avgTd.style.cursor = 'pointer';
-          avgTd.style.userSelect = 'none';
-          avgTd.title = '⭐ Kattints a csúcsra...';
-          avgTd.addEventListener('click', () => tryAdvance(3), { once: false });
-        }
-
-        // STEP 4 marker
-        if (worstFmt && avgTd.textContent.trim() === worstFmt && !avgTd.dataset.eggStep4) {
-          avgTd.dataset.eggStep4 = '1';
-          avgTd.style.cursor = 'pointer';
-          avgTd.style.userSelect = 'none';
-          avgTd.title = '💀 Kattints a mélypontra...';
-          avgTd.addEventListener('click', () => tryAdvance(4), { once: false });
-        }
-      });
-    });
+      // STEP 2 – dátum, növekvő (legrégebbi elöl)
+      if (col === 'date' && dir === 'asc') {
+        tryAdvance(2);
+      }
+      // STEP 3 – avg, csökkenő (legjobb elöl)
+      if (col === 'avg' && dir === 'desc') {
+        tryAdvance(3);
+      }
+      // STEP 4 – avg, növekvő (legrosszabb elöl)
+      if (col === 'avg' && dir === 'asc') {
+        tryAdvance(4);
+      }
+    };
   }
+
+  // Megtartjuk üresen, hogy a többi hívás ne törjön el
+  function markSpecialCells() {}
 
   /* ═══════════════════════════════════════════════
        STEP 5 – Radar chart kattintás (Ízvilág)
@@ -426,27 +391,15 @@
        MEGFIGYELŐK ÉS PERIÓDIKUS ELLENŐRZÉSEK
   ═══════════════════════════════════════════════ */
 
-  // MutationObserver – table-k frissülésére reagál
-  const tableObserver = new MutationObserver(() => {
-    markSpecialCells();
-  });
-
-  function startObservers() {
-    const beerBody  = document.getElementById('userBeerTableBody');
-    const drinkBody = document.getElementById('userDrinkTableBody');
-    if (beerBody)  tableObserver.observe(beerBody,  { childList: true, subtree: true });
-    if (drinkBody) tableObserver.observe(drinkBody, { childList: true, subtree: true });
-  }
-
   // Navigáció figyelése (tab váltáskor újra hoookoljuk a dolgokat)
   function onTabSwitch() {
     setTimeout(() => {
       hookRoulette();
       hookRecModal();
+      hookSorting();
       attachChartListeners();
       attachHallOfFameListener();
       injectAvatarIntoAccount();
-      markSpecialCells();
     }, 200);
   }
 
@@ -464,12 +417,11 @@
     hookRenderAchievements();
     hookRoulette();
     hookRecModal();
-    startObservers();
+    hookSorting();
     watchNavClicks();
     attachChartListeners();
     attachHallOfFameListener();
     injectAvatarIntoAccount();
-    markSpecialCells();
 
     // Achievements grid folyamatos figyelése
     const achGrid = document.getElementById('achievementsGrid');
@@ -481,6 +433,7 @@
 
     // Chart-ok utólagos beillesztésének figyelése
     new MutationObserver(() => {
+      hookSorting();
       attachChartListeners();
       attachHallOfFameListener();
       injectAvatarIntoAccount();
