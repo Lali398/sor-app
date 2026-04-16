@@ -213,35 +213,30 @@
        STEP 4 – Átlag szerint rendezés növekvő (legrosszabb elöl)
   ═══════════════════════════════════════════════ */
   function hookSorting() {
-    if (typeof window.sortTable !== 'function') return;
-    if (window._eggSortHooked) return;
-    window._eggSortHooked = true;
+    const selectors = [
+      '#user-beers-content .sortable',
+      '#user-drinks-content .sortable'
+    ];
 
-    const original = window.sortTable;
-    window.sortTable = function (tableType, column, dataType, headerElement) {
-      original.apply(this, arguments);
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(header => {
+        if (header.dataset.eggSortBound) return;
+        header.dataset.eggSortBound = '1';
 
-      // Az eredeti sortTable már beállította a currentSort-ot,
-      // ezért a frissített irányból olvassuk ki
-      const state = window.currentSort && window.currentSort[tableType];
-      if (!state) return;
+        header.addEventListener('click', () => {
+          const column = header.dataset.sort;
+          // Kis delay: updateSortArrows után olvassuk a CSS osztályt
+          setTimeout(() => {
+            const isAsc  = header.classList.contains('sort-asc');
+            const isDesc = header.classList.contains('sort-desc');
 
-      const col = state.column;
-      const dir = state.direction;
-
-      // STEP 2 – dátum, növekvő (legrégebbi elöl)
-      if (col === 'date' && dir === 'asc') {
-        tryAdvance(2);
-      }
-      // STEP 3 – avg, csökkenő (legjobb elöl)
-      if (col === 'avg' && dir === 'desc') {
-        tryAdvance(3);
-      }
-      // STEP 4 – avg, növekvő (legrosszabb elöl)
-      if (col === 'avg' && dir === 'asc') {
-        tryAdvance(4);
-      }
-    };
+            if (column === 'date' && isAsc)  tryAdvance(2); // legrégebbi elöl
+            if (column === 'avg'  && isDesc) tryAdvance(3); // legjobb elöl
+            if (column === 'avg'  && isAsc)  tryAdvance(4); // legrosszabb elöl
+          }, 50);
+        });
+      });
+    });
   }
 
   // Megtartjuk üresen, hogy a többi hívás ne törjön el
@@ -433,7 +428,6 @@
 
     // Chart-ok utólagos beillesztésének figyelése
     new MutationObserver(() => {
-      hookSorting();
       attachChartListeners();
       attachHallOfFameListener();
       injectAvatarIntoAccount();
