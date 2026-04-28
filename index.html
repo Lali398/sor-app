@@ -1,281 +1,2643 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fejlesztés alatt</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
-
-    :root {
-      --purple-deep: #10002b;
-      --purple-mid: #1f005c;
-      --purple-bright: #7b2fff;
-      --purple-glow: #a855f7;
-      --accent: #c084fc;
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --text: #e0e0e0;
-      --text-dim: rgba(224, 224, 224, 0.55);
-    }
-
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
-      background-attachment: fixed;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    /* ── Animated background ── */
-    .animated-bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .bubble {
-      position: absolute;
-      bottom: -200px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.04);
-      animation: floatUp linear infinite;
-      pointer-events: none;
-    }
-
-    .bubble:nth-child(1)  { width:  80px; height:  80px; left: 10%; animation-duration:  9s; animation-delay: 0s; }
-    .bubble:nth-child(2)  { width: 120px; height: 120px; left: 20%; animation-duration: 12s; animation-delay: 2s; }
-    .bubble:nth-child(3)  { width:  60px; height:  60px; left: 70%; animation-duration: 10s; animation-delay: 4s; }
-    .bubble:nth-child(4)  { width: 100px; height: 100px; left: 80%; animation-duration: 14s; animation-delay: 1s; }
-    .bubble:nth-child(5)  { width: 140px; height: 140px; left: 50%; animation-duration: 16s; animation-delay: 3s; }
-    .bubble:nth-child(6)  { width:  55px; height:  55px; left: 35%; animation-duration:  8s; animation-delay: 5s; }
-    .bubble:nth-child(7)  { width:  90px; height:  90px; left: 60%; animation-duration: 11s; animation-delay: 6s; }
-    .bubble:nth-child(8)  { width:  70px; height:  70px; left:  5%; animation-duration: 13s; animation-delay: 1.5s; }
-
-    @keyframes floatUp {
-      0%   { transform: translateY(0)    rotate(0deg);   opacity: 0; }
-      5%   { opacity: 0.7; }
-      90%  { opacity: 0.4; }
-      100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
-    }
-
-    /* Subtle radial glow */
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glow-orb-1 {
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(123,47,255,0.25) 0%, transparent 70%);
-      top: -150px; left: -150px;
-      animation: orbDrift 18s ease-in-out infinite alternate;
-    }
-    .glow-orb-2 {
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%);
-      bottom: -100px; right: -100px;
-      animation: orbDrift 22s ease-in-out infinite alternate-reverse;
-    }
-
-    @keyframes orbDrift {
-      from { transform: translate(0, 0); }
-      to   { transform: translate(60px, 40px); }
-    }
-
-    /* ── Main card ── */
-    .card {
-      position: relative;
-      z-index: 10;
-      background: var(--glass-bg);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--glass-border);
-      border-radius: 28px;
-      padding: 60px 52px 52px;
-      max-width: 520px;
-      width: calc(100% - 40px);
-      text-align: center;
-      box-shadow:
-        0 8px 32px rgba(0,0,0,0.45),
-        0 0 0 1px rgba(123,47,255,0.15) inset,
-        0 0 80px rgba(123,47,255,0.08);
-      animation: cardIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(40px) scale(0.96); }
-      to   { opacity: 1; transform: translateY(0)   scale(1); }
-    }
-
-    /* ── Icon ── */
-    .icon-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 72px; height: 72px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(123,47,255,0.35), rgba(168,85,247,0.2));
-      border: 1px solid rgba(168,85,247,0.3);
-      margin-bottom: 28px;
-      animation: iconPulse 3s ease-in-out infinite;
-    }
-
-    @keyframes iconPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); }
-      50%       { box-shadow: 0 0 0 12px rgba(168,85,247,0.12); }
-    }
-
-    .icon-wrap svg {
-      width: 34px; height: 34px;
-      stroke: var(--accent);
-      fill: none;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    /* ── Heading ── */
-    .badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: rgba(168,85,247,0.12);
-      border: 1px solid rgba(168,85,247,0.25);
-      border-radius: 100px;
-      padding: 4px 14px;
-      margin-bottom: 18px;
-    }
-
-    h1 {
-      font-size: clamp(1.65rem, 5vw, 2.2rem);
-      font-weight: 800;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #fff 30%, var(--purple-glow) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 16px;
-    }
-
-    .subtitle {
-      font-size: 1rem;
-      font-weight: 300;
-      color: var(--text-dim);
-      line-height: 1.65;
-      margin-bottom: 36px;
-    }
-
-    /* ── Divider ── */
-    .divider {
-      width: 48px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--purple-bright), transparent);
-      margin: 0 auto 36px;
-      border-radius: 2px;
-    }
-
-    /* ── Progress dots ── */
-    .dots {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 36px;
-    }
-
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: rgba(168,85,247,0.3);
-      animation: dotPop 1.4s ease-in-out infinite;
-    }
-    .dot:nth-child(1) { animation-delay: 0s; }
-    .dot:nth-child(2) { animation-delay: 0.22s; }
-    .dot:nth-child(3) { animation-delay: 0.44s; }
-    .dot:nth-child(4) { animation-delay: 0.66s; }
-    .dot:nth-child(5) { animation-delay: 0.88s; }
-
-    @keyframes dotPop {
-      0%, 100% { background: rgba(168,85,247,0.25); transform: scale(1); }
-      50%       { background: var(--accent); transform: scale(1.45); }
-    }
-
-    /* ── Footer note ── */
-    .footer-note {
-      font-size: 0.78rem;
-      color: rgba(224,224,224,0.3);
-      letter-spacing: 0.04em;
-    }
-
-    .footer-note span {
-      color: rgba(168,85,247,0.55);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sör És Ital Alkalmazás</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png"> <meta property="og:image" content="https://xn--srapp-jua.hu/logo.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#8a73ff">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://xn--srapp-jua.hu/logo.png">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-  <!-- Background -->
-  <div class="animated-bg">
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-  </div>
-  <div class="glow-orb glow-orb-1"></div>
-  <div class="glow-orb glow-orb-2"></div>
+    <div id="beerCursor" class="beer-cursor-img"></div>
+    
+    <!-- VENDÉG NÉZET -->
+    <div class="guest-view" id="guestView">
+        <div class="container">
+            <div class="animated-bg">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+            </div>
 
-  <!-- Card -->
-  <div class="card">
-    <div class="icon-wrap">
-      <!-- Wrench + sparkle icon -->
-      <svg viewBox="0 0 24 24">
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/>
-      </svg>
+            <div class="main-content">
+                <div class="logo-section">
+                    <div class="beer-icon" id="secretAdminTrigger" style="cursor: pointer;">🍺🍹</div>
+                    <h1 class="app-title">Sör és Ital értékelő alkalmazás</h1>
+                    <p class="app-subtitle">Szeretnél bármilyen italt letesztelni és rögzíteni? Itt megteheted.</p>
+                    <p class="mystery-text">És még ennél is többet?</p>
+                </div>
+
+                <div class="auth-container">
+                    <div class="auth-card login-card active" id="loginCard">
+                        <div class="card-header">
+                            <h2>Bejelentkezés</h2>
+                        </div>
+                        <form class="auth-form" id="loginForm">
+                            <div class="input-group">
+                                <input type="email" id="loginEmail" placeholder=" " required>
+                                <label for="loginEmail">Email cím</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="loginPassword" placeholder=" " required>
+                                <label for="loginPassword">Jelszó</label>
+                                <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+                            </div>
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Bejelentkezés</span>
+                                <span class="btn-loading"><div class="spinner"></div></span>
+                            </button>
+                            <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+                                <a href="#" onclick="openForgotModal()" style="color: #bbb; text-decoration: none;">Elfelejtettem a jelszavam</a>
+                            </p>
+                        </form>
+                        <div style="margin-top: 20px; text-align: center;">
+                        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                            <hr style="flex: 1; border: 0; border-top: 1px solid rgba(255,255,255,0.2);">
+                            <span style="padding: 0 10px; color: #aaa; font-size: 12px;">VAGY</span>
+                            <hr style="flex: 1; border: 0; border-top: 1px solid rgba(255,255,255,0.2);">
+                        </div>
+                        <div id="googleLoginBtn"></div> 
+                    </div>
+                        <div class="card-footer">
+                            <p>Nincs még fiókja? <a href="#" class="switch-auth" data-target="register">Regisztráljon itt</a></p>
+                        </div>
+                    </div>
+
+                    <div class="auth-card register-card" id="registerCard">
+                        <div class="card-header">
+                            <h2>Regisztráció</h2>
+                        </div>
+                        <form class="auth-form" id="registerForm">
+                            <div class="input-group">
+                                <input type="text" id="registerName" placeholder=" " required>
+                                <label for="registerName">Teljes név</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="email" id="registerEmail" placeholder=" " required>
+                                <label for="registerEmail">Email cím</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <div class="input-group">
+                            <input type="password" id="registerPassword" placeholder=" " required>
+                            <label for="registerPassword">Jelszó</label>
+                            <span class="input-highlight"></span>
+                            <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                                Min. 8 karakter, 1 szám, 1 spec. karakter.
+                            </small>
+                            <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+                        </div>
+                            <div class="input-group">
+                                <input type="password" id="registerPasswordConfirm" placeholder=" " required>
+                                <label for="registerPasswordConfirm">Jelszó megerősítés</label>
+                                <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+                            </div>
+                            <div class="terms-group">
+                                <input type="checkbox" id="registerTerms" required>
+                                    <label for="registerTerms" style="font-size: 0.85rem; display: block; margin-left: 5px; line-height: 1.5;">
+                                        Kijelentem, hogy elmúltam 18 éves, valamint elolvastam és elfogadom az 
+                                        <a href="adatvedelem.html" target="_blank" style="color: #ffd700; text-decoration: underline;">Adatvédelmi Tájékoztatót</a> 
+                                        és az 
+                                        <a href="aszf.html" target="_blank" style="color: #ffd700; text-decoration: underline;">Általános Szerződési Feltételeket (ÁSZF)</a>.
+                                    </label>
+                            </div>
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Regisztráció</span>
+                                <span class="btn-loading">
+                                    <div class="spinner"></div>
+                                </span>
+                            </button>
+                        </form>
+                        <div class="card-footer">
+                            <p>Van már fiókja? <a href="#" class="switch-auth" data-target="login">Jelentkezzen be itt</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+     <div class="support-section" style="margin-top: 0px;">
+            <button class="support-btn" id="guestSupportBtn">
+                <span class="support-icon">❓</span>
+                <span class="support-text">Segítség kérése</span>
+            </button>
+        </div>
+    </div>
+</div>
+    <!-- FELHASZNÁLÓI NÉZET -->
+<div class="admin-view" id="userView" style="display: none;">
+
+    <!-- FEJLÉC STATOKKAL -->
+    <header id="userHeader" class="admin-header user-header-with-stats">
+        <div class="header-content-grid">
+            <div class="logo">
+                <span class="beer-icon">🍺</span>
+                <h1 id="userWelcomeMessage">Szia!</h1>
+            </div>
+            
+            <div class="header-stats">
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🍻</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Sörök</span>
+                        <span class="stat-value-small" id="headerBeerCount">0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🍺</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Sör Átlag</span>
+                        <span class="stat-value-small" id="headerAvgScore">0.0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🍹</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Italok</span>
+                        <span class="stat-value-small" id="headerDrinkCount">0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item">
+                    <span class="stat-icon-small">🧃</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Ital Átlag</span>
+                        <span class="stat-value-small" id="headerDrinkAvgScore">0.0</span>
+                    </div>
+                </div>
+                <div class="header-stat-item streak-container" title="Heti széria: Tölts fel minden héten valamit!">
+                    <span class="stat-icon-small fire-anim">🔥</span>
+                    <div class="stat-info-inline">
+                        <span class="stat-label-small">Heti Streak</span>
+                        <span class="stat-value-small" id="headerStreakCount">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="header-actions">
+                <button class="header-btn" id="userLogoutBtn">
+                    <span>🚪</span>
+                    <span>Kijelentkezés</span>
+                </button>
+            </div>
+
+            <button id="headerToggleBtn" class="header-toggle-btn" title="Összecsukás/Kinyitás">
+                ▲
+            </button>
+
+        </div>
+    </header>
+
+    <!-- DASHBOARD LAYOUT (SIDEBAR + MAIN) -->
+    <div class="dashboard-layout">
+        <!-- OLDALSÁV (Desktop) / ALSÓ MENÜ (Mobil) -->
+        <aside class="dashboard-sidebar">
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab-content="user-beers-content">
+                    <span class="icon">🍺</span>
+                    <span class="label">Söreim</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-drinks-content">
+                    <span class="icon">🍹</span>
+                    <span class="label">Italjaim</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-recommendations-content">
+                    <span class="icon">📢</span>
+                    <span class="label">Ajánlások</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-ideas-content">
+                    <span class="icon">💡</span>
+                    <span class="label">Ötletláda</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-stats-content">
+                    <span class="icon">📊</span>
+                    <span class="label">Statisztikáim</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-recap-content">
+                    <span class="icon">📈</span>
+                    <span class="label">Visszatekintő</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-achievements-content">
+                    <span class="icon">🏆</span>
+                    <span class="label">Eredmények</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-account-content">
+                    <span class="icon">👤</span>
+                    <span class="label">Fiókom</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-settings-content">
+                    <span class="icon">⚙️</span>
+                    <span class="label">Beállítások</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- FŐ TARTALOM -->
+        <main class="dashboard-main">
+            <!-- Topbar (mobil címsor) -->
+            <div class="dashboard-topbar">
+                <h3>Söreim</h3>
+            </div>
+
+            <!-- TARTALOM PANELEK -->
+            <div class="main-tab-content-container">
+                
+                <!-- SÖREIM TAB - EZ AZ AKTÍV -->
+                <div class="main-tab-pane active" id="user-beers-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját söreid listája</h3>
+                            <div class="live-search-container">
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="userBeerSearchInput" class="live-search-input" placeholder="Keresés a söreim között..." autocomplete="off">
+                                    <div class="search-icon">🔍</div>
+                                    <div class="clear-search" id="userBeerClearSearch" style="display: none;">✕</div>
+                                </div>
+                                <div class="search-suggestions" id="userBeerSuggestions"></div>
+                                <div class="search-results-info" id="userBeerResultsInfo"></div>
+                            </div>
+                        </header>
+
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="date" data-type="date">Dátum <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="beerName" data-type="string">Sör neve <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="location" data-type="string">Főzési hely <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="beerPercentage" data-type="number">Alkohol % <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="look" data-type="number">Külalak <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="smell" data-type="number">Illat <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="taste" data-type="number">Íz <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="totalScore" data-type="number">Összpontszám <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="avg" data-type="number">Átlag <span class="sort-arrow"></span></th>
+                                        <th>Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userBeerTableBody">
+                                    <tr>
+                                        <td colspan="10" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ITALJAIM TAB -->
+                <div class="main-tab-pane" id="user-drinks-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Saját italaid listája</h3>
+                            <div class="live-search-container">
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="userDrinkSearchInput" class="live-search-input" placeholder="Keresés a(z) italaim között..." autocomplete="off">
+                                    <div class="search-icon">🔍</div>
+                                    <div class="clear-search" id="userDrinkClearSearch" style="display: none;">✕</div>
+                                </div>
+                                <div class="search-suggestions" id="userDrinkSuggestions"></div>
+                                <div class="search-results-info" id="userDrinkResultsInfo"></div>
+                            </div>
+                        </header>
+
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="date" data-type="date">Dátum <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="drinkName" data-type="string">Ital neve <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="category" data-type="string">Kategória <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="type" data-type="string">Típus <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="location" data-type="string">Hely <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="drinkPercentage" data-type="number">Alkohol % <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="look" data-type="number">Külalak <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="smell" data-type="number">Illat <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="taste" data-type="number">Íz <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="totalScore" data-type="number">Összpontszám <span class="sort-arrow"></span></th>
+                                        <th class="sortable" data-sort="avg" data-type="number">Átlag <span class="sort-arrow"></span></th>
+                                        <th>Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userDrinkTableBody">
+                                    <tr>
+                                        <td colspan="12" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                
+                <!-- AJÁNLÁSOK TAB -->
+                <div class="main-tab-pane" id="user-recommendations-content">
+    <section class="card">
+        <header class="card-header" style="flex-direction: column; align-items: stretch; gap: 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Közösségi Ajánló 📢</h3>
+                <button class="action-btn" onclick="openRecModal()" style="font-size: 0.9rem; padding: 8px 15px;">
+                    + Új Ajánlás
+                </button>
+            </div>
+            
+            <div class="rec-filters">
+                <select id="filterRecType" class="cool-select" style="max-width: 120px;">
+                    <option value="all">Minden típus</option>
+                    <option value="Sör">🍺 Csak Sör</option>
+                    <option value="Ital">🍹 Csak Ital</option>
+                </select>
+                
+                <select id="filterRecCategory" class="cool-select" style="flex-grow:1;">
+                    <option value="all">Összes kategória</option>
+                    </select>
+                
+                <div class="checkbox-wrapper-filter">
+                     <input type="checkbox" id="filterMyRecs">
+                     <label for="filterMyRecs">Csak a sajátjaim</label>
+                </div>
+            </div>
+        </header>
+        
+        <div id="recommendationsList" class="recommendations-grid">
+            <div class="recap-spinner"></div>
+        </div>
+    </section>
+</div>
+                <!-- ÖTLETLÁDA TAB -->
+                <div class="main-tab-pane" id="user-ideas-content">
+                    <section class="card idea-submit-card">
+                        <header class="card-header">
+                            <h3>Van egy jó ötleted? 💡</h3>
+                        </header>
+                        <form id="submitIdeaForm" class="config-form">
+                            <div class="input-group">
+                                <textarea id="ideaText" required placeholder="Írd le az ötleted, milyen funkciót vagy újítást látnál szívesen..."></textarea>
+                                <span class="input-highlight"></span>
+                            </div>
+                            
+                            <div class="setting-item" style="background: rgba(0,0,0,0.2); padding: 10px 15px; margin-bottom: 20px;">
+                                <div class="setting-info">
+                                    <h4 style="font-size: 0.9rem;">Anonim beküldés 🕵️</h4>
+                                    <p style="font-size: 0.8rem;">Nem jelenik meg a neved a listában.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="ideaAnonymous">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="auth-btn">
+                                <span class="btn-text">Ötlet beküldése 🚀</span>
+                                <span class="btn-loading"><div class="spinner"></div></span>
+                            </button>
+                        </form>
+                    </section>
+
+                    <div class="hall-of-fame-container">
+                        <div class="hall-header">
+                            <h2>🏆 Dicsőségfal 🏆</h2>
+                            <p>Akiknek az ötletei valósággá váltak</p>
+                        </div>
+                        <div id="hallOfFameList" class="idea-grid">
+                            <div class="recap-spinner"></div>
+                        </div>
+                    </div>
+
+                    <section class="card" style="margin-top: 40px;">
+                        <header class="card-header">
+                            <h3>Beküldött ötletek listája ⏳</h3>
+                        </header>
+                        <div id="pendingIdeasList" class="idea-list-vertical"></div>
+                    </section>
+                </div>
+
+                <!-- STATISZTIKA TAB-->
+
+                <div class="main-tab-pane" id="user-stats-content">
+    <section class="card">
+        <header class="card-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h3>Személyes Adatelemző 🧬</h3>
+                <select id="statsScopeFilter" class="cool-select" style="width: auto; background: rgba(0,0,0,0.3);">
+                    <option value="all">Minden (Sör + Ital)</option>
+                    <option value="beer">🍺 Csak Sörök</option>
+                    <option value="drink">🍹 Csak Italok</option>
+                </select>
+            </div>
+
+            <div class="stats-sub-tabs">
+                <button class="stats-sub-btn active" onclick="switchStatsSubTab('overview')">Áttekintés</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('trends')">Idővonal</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('radar')">Ízvilág</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('fun')">Fun Facts</button>
+            </div>
+        </header>
+
+        <div id="stats-sub-overview" class="stats-sub-pane active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h4>Összes kóstolás</h4>
+                    <p id="statTotalCount">0</p>
+                </div>
+                <div class="kpi-card">
+                    <h4>Átlag pontszám</h4>
+                    <p id="statTotalAvg" style="color: #ffd700;">0.0</p>
+                </div>
+                <div class="kpi-card">
+                    <h4>Átlag Alkohol %</h4>
+                    <p id="statAvgAbv">0%</p>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="height: 300px; margin-top: 20px;">
+                <canvas id="statCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <div id="stats-sub-trends" class="stats-sub-pane">
+            <h4 style="color: #aaa; margin-bottom: 15px;">Havi aktivitásod</h4>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="statActivityChart"></canvas>
+            </div>
+            
+            <h4 style="color: #aaa; margin: 25px 0 15px 0;">Melyik napokon iszol?</h4>
+            <div class="chart-container" style="height: 250px;">
+                <canvas id="statDayChart"></canvas>
+            </div>
+        </div>
+
+        <div id="stats-sub-radar" class="stats-sub-pane">
+            <div style="text-align: center; margin-bottom: 20px; color: #ccc;">
+                <p>Az érzékszerveid átlaga (Külalak - Illat - Íz)</p>
+            </div>
+            <div class="chart-container" style="height: 350px;">
+                <canvas id="statRadarChart"></canvas>
+            </div>
+            <div class="kpi-grid" style="margin-top: 20px;">
+                <div class="kpi-card" style="border-color: #36a2eb;">
+                    <h4 style="font-size: 0.8rem;">Legszebb (Külalak)</h4>
+                    <p id="statBestLook" style="font-size: 1.1rem;">-</p>
+                </div>
+                <div class="kpi-card" style="border-color: #ff6384;">
+                    <h4 style="font-size: 0.8rem;">Legfinomabb (Íz)</h4>
+                    <p id="statBestTaste" style="font-size: 1.1rem;">-</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats-sub-fun" class="stats-sub-pane">
+            <div class="recap-card-grid">
+                <div class="recap-stat-sub">
+                    <h4>💪 Legerősebb tétel</h4>
+                    <p id="statStrongest">-</p>
+                    <span id="statStrongestVal">0%</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>💧 Leggyengébb</h4>
+                    <p id="statWeakest">-</p>
+                    <span id="statWeakestVal">0%</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>📍 Kedvenc hely</h4>
+                    <p id="statTopLocation">-</p>
+                    <span id="statTopLocationCount">0 db</span>
+                </div>
+                <div class="recap-stat-sub">
+                    <h4>🏆 Legmagasabb pont</h4>
+                    <p id="statHighScoreName">-</p>
+                    <span id="statHighScoreVal">0</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+                <!-- VISSZATEKINTŐ TAB -->
+                <div class="main-tab-pane" id="user-recap-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Sör Visszatekintő</h3>
+                        </header>
+                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                            Válaszd ki, melyik időszakra vagy kíváncsi. A rendszer dinamikusan összegzi az adott időszakban értékelt söreidet.
+                        </p>
+                        <div class="recap-controls" id="recapControls">
+                            <button class="recap-btn" data-period="weekly">
+                                <span>📅</span>
+                                <span>Heti</span>
+                            </button>
+                            <button class="recap-btn" data-period="monthly">
+                                <span>🗓️</span>
+                                <span>Havi</span>
+                            </button>
+                            <button class="recap-btn" data-period="quarterly">
+                                <span>📊</span>
+                                <span>Negyedéves</span>
+                            </button>
+                            <button class="recap-btn" data-period="yearly">
+                                <span>🎆</span>
+                                <span>Éves</span>
+                            </button>
+                        </div>
+                        
+                        <div class="recap-results-container" id="recapResultsContainer">
+                            <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="main-tab-pane" id="user-achievements-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Eredmények és Szintek 🏆</h3>
+           <div class="level-progress-container">
+    <div class="current-level-badge" id="currentLevelDisplay">Kezdő</div>
+    
+    <div style="flex: 1; position: relative;">
+        <span class="level-text" id="achievementProgressText" style="width: 100%; top: -25px;">0 / 50</span>
+        
+        <div class="level-bar-wrapper" style="width: 100%;">
+            <div class="level-bar-fill" id="achievementProgressBar" style="width: 0%"></div>
+        </div>
+    </div>
+</div>
+        </header>
+        
+        <div class="achievements-grid" id="achievementsGrid">
+            </div>
+    </section>
+</div>
+
+                <!-- FIÓKOM TAB -->
+                <div class="main-tab-pane" id="user-account-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Fiók kezelése</h3>
+                        </header>
+                        
+                        <h4 style="margin-top: 20px; margin-bottom: 15px; color: #fff;">Jelszó módosítása</h4>
+                        <form id="changePasswordForm" class="config-form">
+                            <div class="input-group">
+                                <input type="password" id="currentPassword" placeholder=" " required>
+                                <label for="currentPassword">Jelenlegi jelszó</label>
+                                <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="newPassword" placeholder=" " required>
+                                <label for="newPassword">Új jelszó</label>
+                                <span class="input-highlight"></span>
+                                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="newPasswordConfirm" placeholder=" " required>
+                                <label for="newPasswordConfirm">Új jelszó megerősítés</label>
+                                <span class="input-highlight"></span>
+                            </div>
+                            <button type="submit" class="action-btn">
+                                <span class="btn-text">Jelszó megváltoztatása</span>
+                                <span class="btn-loading">
+                                    <div class="spinner"></div>
+                                </span>
+                            </button>
+                        </form>
+
+                        <p style="margin-top: 30px; color: #aaa; font-size: 14px;">
+                            Ha véglegesen törölni szeretnéd a fiókodat, kattints az alábbi gombra. Ez a művelet nem visszavonható.
+                        </p>
+                        <button id="deleteUserBtn" class="action-btn delete-btn-user" style="margin-top: 15px;">Fiókom végleges törlése</button>
+                    </section>
+                </div>
+
+                <!-- BEÁLLÍTÁSOK TAB -->
+                <div class="main-tab-pane" id="user-settings-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Személyre Szabás</h3>
+                        </header>
+                        <div class="settings-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Sörös Kurzor 🍺</h4>
+                                    <p>Egyedi söröskorsó kurzor használata az oldalon.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="userCursorToggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            
+                                    <!-- MEGJELENÍTÉSI TAB -->
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Megjelenített Rang 🎖️</h4>
+                                    <p>Válaszd ki, melyik rangod jelenjen meg a neved mellett.</p>
+                                </div>
+                                <div class="badge-selector-wrapper">
+                                    <select id="userBadgeSelector" class="badge-dropdown">
+                                        <option value="">Nincs</option>
+                                        </select>
+                                </div>
+                            </div>
+
+                            <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Megjelenítési Mód 📱/💻</h4>
+                                <p>Válaszd ki, hogyan jelenjenek meg a listák (Sörök, Italok).</p>
+                                <p><small>Ha teljesítménybeli hibát tapasztal, akkor ajánlott "Mindig Táblázatot" használni.</small></p>
+                            </div>
+                            <div class="badge-selector-wrapper">
+                                <select id="viewModeSelector" class="badge-dropdown">
+                                    <option value="auto">Automatikus (Eszköz szerint)</option>
+                                    <option value="cards">Mindig Kártyák</option>
+                                    <option value="table">Mindig Táblázat</option>
+                                </select>
+                            </div>
+                        </div>
+
+                            <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Lista Limit (Adatok száma) ⚡</h4>
+                                <p>Mennyi adatot töltsünk be egyszerre? Ha lassú az oldal, állítsd kisebbre.</p>
+                            </div>
+                            <div class="badge-selector-wrapper">
+                                <select id="listLimitSelector" class="badge-dropdown">
+                                    <option value="10">10 db (Leggyorsabb)</option>
+                                    <option value="25">25 db</option>
+                                    <option value="50" selected>50 db (Ajánlott)</option>
+                                    <option value="100">100 db</option>
+                                    <option value="all">Összes (Lassabb lehet)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                            <div class="setting-item theme-accordion-container" id="themeAccordion">
+    
+                                <div class="theme-accordion-header" onclick="toggleThemeSection()">
+                                    <div class="setting-info">
+                                        <h4>🎨 Téma Testreszabás</h4>
+                                        <p>Kattints ide a színek és témák beállításához!</p>
+                                    </div>
+                                    <span id="themeArrow" class="accordion-arrow">▼</span>
+                                </div>
+                            
+                                <div class="theme-accordion-content" id="themeContent">
+                                    
+                                    <div style="margin-bottom: 25px; margin-top: 15px;">
+                                        <label style="display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 10px; font-weight: 500;">
+                                            Előre beállított témák
+                                        </label>
+                                        <div class="preset-themes-grid">
+                                            <button class="theme-preset-btn active" data-theme="dark-purple">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);"></div>
+                                                <span>Sötét Lila</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="ocean">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);"></div>
+                                                <span>Óceán</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="sunset">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 50%, #000 100%);"></div>
+                                                <span>Naplemente</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="forest">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #134E5E 0%, #71B280 50%, #000 100%);"></div>
+                                                <span>Erdő</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="midnight">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #232526 0%, #414345 50%, #000 100%);"></div>
+                                                <span>Éjfél</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="aurora">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #00467F 0%, #A5CC82 50%, #000 100%);"></div>
+                                                <span>Aurora</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="fire">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #C33764 0%, #1D2671 50%, #000 100%);"></div>
+                                                <span>Tűz</span>
+                                            </button>
+                                            <button class="theme-preset-btn" data-theme="cyber">
+                                                <div class="theme-preview" style="background: linear-gradient(135deg, #0F2027 0%, #2C5364 50%, #000 100%);"></div>
+                                                <span>Cyber</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                            
+                                    <div class="custom-theme-editor">
+                                        <label style="display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 15px; font-weight: 500;">
+                                            Egyéni téma létrehozása
+                                        </label>
+                            
+                                        <div class="color-section">
+                                            <h5 style="color: #ccc; font-size: 0.85rem; margin-bottom: 10px;">Háttér színek</h5>
+                                            <div class="color-inputs-grid">
+                                                <div class="color-input-item">
+                                                    <label>Kezdő szín</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="bgColor1" value="#1f005c">
+                                                        <input type="text" id="bgColor1Text" value="#1f005c" maxlength="7">
+                                                    </div>
+                                                </div>
+                                                <div class="color-input-item">
+                                                    <label>Közép szín</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="bgColor2" value="#10002b">
+                                                        <input type="text" id="bgColor2Text" value="#10002b" maxlength="7">
+                                                    </div>
+                                                </div>
+                                                <div class="color-input-item">
+                                                    <label>Vég szín</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="bgColor3" value="#000000">
+                                                        <input type="text" id="bgColor3Text" value="#000000" maxlength="7">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                            
+                                        <div class="color-section" style="margin-top: 20px;">
+                                            <h5 style="color: #ccc; font-size: 0.85rem; margin-bottom: 10px;">Szöveg színek</h5>
+                                            <div class="color-inputs-grid">
+                                                <div class="color-input-item">
+                                                    <label>Fő szöveg</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="textColor" value="#e0e0e0">
+                                                        <input type="text" id="textColorText" value="#e0e0e0" maxlength="7">
+                                                    </div>
+                                                </div>
+                                                <div class="color-input-item">
+                                                    <label>Másodlagos</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="textSecondary" value="#b0b0b0">
+                                                        <input type="text" id="textSecondaryText" value="#b0b0b0" maxlength="7">
+                                                    </div>
+                                                </div>
+                                                <div class="color-input-item">
+                                                    <label>Kiemelés</label>
+                                                    <div class="color-picker-wrapper">
+                                                        <input type="color" id="accentColor" value="#8a73ff">
+                                                        <input type="text" id="accentColorText" value="#8a73ff" maxlength="7">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                            
+                                        <div class="theme-preview-section">
+                                            <div class="theme-live-preview">
+                                                <div class="preview-bg" id="themePreviewBg">
+                                                    <div class="preview-card">
+                                                        <h4 id="previewText" style="margin: 0 0 10px 0;">Előnézet</h4>
+                                                        <p id="previewSecondary" style="margin: 0 0 10px 0; font-size: 0.85rem;">Ez a másodlagos szöveg</p>
+                                                        <span id="previewAccent" style="font-size: 0.8rem;">Kiemelés</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="theme-actions">
+                                                <button class="action-btn" id="applyCustomTheme" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                                    <span>✨</span> Egyéni téma alkalmazása
+                                                </button>
+                                                <button class="action-btn" id="resetTheme" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                                                    <span>🔄</span> Alapértelmezett visszaállítása
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 2FAKTOROS HÍTELESÍTÉS -->
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Kétlépcsős azonosítás (2FA) 🛡️</h4>
+                                    <p>Google Authenticator használata a belépéshez.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="user2FAToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Google Fiók Összekötés 🔗</h4>
+                                    <p>Csatold a fiókod a Google-höz.</p>
+                                </div>
+                                <div id="googleLinkBtn"></div>
+                            </div>
+
+                        <!-- GYORSBILLENTYŰK -->
+                            <div class="setting-item hotkey-accordion-container" id="hotkeyAccordion">
+                                <div class="hotkey-accordion-header" onclick="toggleHotkeySection()">
+                                    <div class="setting-info">
+                                        <h4>⌨️ Gyorsbillentyűk</h4>
+                                        <p>Rendeld hozzá a FAB gomb akcióihoz a kedvenc billentyűidet!</p>
+                                    </div>
+                                    <span id="hotkeyArrow" class="accordion-arrow">▼</span>
+                                </div>
+                                <div class="hotkey-accordion-content" id="hotkeyContent">
+                                    <p class="hotkey-hint">
+                                        A billentyűk <strong>beviteli mezőn kívül</strong> működnek. Kattints a <kbd>Módosítás</kbd> gombra, majd nyomj le egy billentyűt.
+                                    </p>
+                                    <div class="hotkey-settings-list">
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🍺 Sör hozzáadása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-beer">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="beer" onclick="startHotkeyCapture('beer')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('beer')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🍹 Ital hozzáadása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-drink">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="drink" onclick="startHotkeyCapture('drink')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('drink')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">📢 Ajánlás írása</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-rec">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="rec" onclick="startHotkeyCapture('rec')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('rec')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">🎲 Mit igyak ma?</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-roulette">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="roulette" onclick="startHotkeyCapture('roulette')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('roulette')" title="Törlés">✕</button>
+                                        </div>
+                                        <div class="hotkey-row">
+                                            <span class="hotkey-action-label">❓ Segítség kérése</span>
+                                            <kbd class="hotkey-display" id="hotkey-display-support">—</kbd>
+                                            <button class="hotkey-capture-btn" data-action="support" onclick="startHotkeyCapture('support')">Módosítás</button>
+                                            <button class="hotkey-clear-btn" onclick="clearHotkey('support')" title="Törlés">✕</button>
+                                        </div>
+                                    </div>
+                                    <div class="hotkey-footer-actions">
+                                        <button class="action-btn" onclick="resetHotkeys()" style="background: linear-gradient(135deg, #f39c12, #e67e22); font-size: 0.85rem; padding: 8px 16px;">
+                                            <span>🔄</span> Alapértelmezett visszaállítása
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- ÁSZF, ADATVÉDELMI -->
+
+                        <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Általános szerződési feltételek, Adatvédelmi Nyilatkozat Megtekintése 📜</h4>
+                            <p>Itt bármikor elolvashatod a szabályzatokat.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="action-btn" onclick="openDocumentModal('aszf.html', 'Általános Szerződési Feltételek')" style="font-size: 0.85rem; padding: 8px 15px;">
+                                <span>⚖️</span> ÁSZF
+                            </button>
+                            <button class="action-btn" onclick="openDocumentModal('adatvedelem.html', 'Adatvédelmi Tájékoztató')" style="font-size: 0.85rem; padding: 8px 15px;">
+                                <span>🔒</span> Adatvédelem
+                            </button>
+                        </div>
+                    </div>
+
+                        <!-- PWA TELEPÍTŐ-->
+
+                        <div class="setting-item" id="pwaInstallContainer" style="display: none;">
+                        <div class="setting-info">
+                            <h4>Alkalmazás Telepítése 📲</h4>
+                            <p>Telepítsd az appot a kezdőképernyőre a gyorsabb elérésért és offline módhoz.</p>
+                            <p><small>Mivel nagyonsok funkcióhoz elengethetettlen az internetkapcsolat, ezért a letöltésnél utáni használathoz is AJÁNLOTT az internetkapcsolat</small></p>
+                        </div>
+                        <button class="action-btn" id="installPwaSettingsBtn" style="background: linear-gradient(135deg, #00b09b, #96c93d);">
+                            <span>⬇️</span> Telepítés
+                        </button>
+                    </div>
+                    
+                        
+                        <!-- IMPORT, EXPORT -->
+
+                        <div class="settings-group">
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="color: #fff; margin-bottom: 15px;">Adatok Mentése és Visszatöltése 💾</h4>
+                            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;">
+                                Készíts biztonsági mentést az értékeléseidről, vagy töltsd vissza őket egy korábbi fájlból.
+                            </p>
+                    
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <button class="action-btn" onclick="openExportModal()" style="background: linear-gradient(135deg, #2980b9, #2c3e50);">
+                                    <span>📥</span> Mentés letöltése (Export)
+                                </button>
+                    
+                                <button class="action-btn" onclick="document.getElementById('importFileInput').click()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                                    <span>📤</span> Visszatöltés (Import)
+                                </button>
+                                
+                                <input type="file" id="importFileInput" accept=".json, .xlsx, .xls" style="display: none;" onchange="handleImportFile(this)">
+                                <button class="action-btn help-btn" onclick="openTutorialModal()" title="Hogy nézzen ki az Excel?">
+                                        <span>❓ Segítség</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                            
+                        
+                        <!-- FORRÁSKÓD -->
+    
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <h3 style="color: #aaa; margin-bottom: 15px;">Nyílt forráskód</h3>
+                                    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px;">
+                                        Ez a projekt nyílt forráskódú. A teljes kód elérhető GitHubon.
+                                    </p>
+                                    
+                                    <a href="https://github.com/Lali398/sor-app" target="_blank" class="github-btn">
+                                        <svg height="24" width="24" viewBox="0 0 16 16" version="1.1" fill="white">
+                                            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                                        </svg>
+                                        Megtekintés GitHub-on
+                                    </a>
+                                </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    
+    
+    <!-- FLOATING ACTION BUTTON (FAB) - Új sör/ital hozzáadásához -->
+    <div class="fab-container" id="fabContainer">
+        <div class="fab-options">
+            <button class="fab-option" data-action="beer" onclick="openAddModal('beer')">
+                <span class="emoji">🍺</span>
+                <span class="tooltip">Sör hozzáadása</span>
+                <span class="hotkey-badge"></span>
+            </button>
+            <button class="fab-option" data-action="drink" onclick="openAddModal('drink')">
+                <span class="emoji">🍹</span>
+                <span class="tooltip">Ital hozzáadása</span>
+                <span class="hotkey-badge"></span>
+            </button>
+            <button class="fab-option" data-action="rec" onclick="openRecModal()">
+                <span class="emoji">📢</span>
+                <span class="tooltip">Ajánlás írása</span>
+                <span class="hotkey-badge"></span>
+            </button>
+            <button class="fab-option" data-action="roulette" onclick="openRandomPickerModal()">
+                <span class="emoji">🎲</span>
+                <span class="tooltip">Mit igyak ma?</span>
+                <span class="hotkey-badge"></span>
+            </button>
+            <button class="fab-option" data-action="support" onclick="openSupportModal()">
+                <span class="emoji">❓</span>
+                <span class="tooltip">Segítség kérése</span>
+                <span class="hotkey-badge"></span>
+            </button>
+        </div>
+        <button class="fab-main" id="fabMainBtn">+</button>
+    </div>
+</div>
+
+<!-- MODALOK (Sör/Ital hozzáadásához) -->
+<div class="modal-overlay" id="addBeerModal">
+    <div class="modal-content beer-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon beer-bounce">🍺</div>
+            <h3>Sör Csapolása</h3>
+            <p>Új folyékony arany rögzítése</p>
+            <button class="modal-close-abs" onclick="closeAddModal('beer')">✕</button>
+        </div>
+
+        <form id="addBeerForm" class="cool-form">
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Sör Neve</label>
+                    <input type="text" id="beerName" placeholder="Pl. Dreher Gold" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Típus</label>
+                    <input type="text" id="beerType" placeholder="Pl. IPA" required>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Alkohol %</label>
+                    <input type="number" id="beerPercentage" min="0" max="100" step="0.1" placeholder="5.0" required>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Főzési hely / Gyártó</label>
+                    <input type="text" id="beerLocation" placeholder="Pl. Kőbánya" required>
+                </div>
+            </div>
+
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="beerLook" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="beerSmell" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="beerTaste" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+            </div>
+
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
+                <input type="text" id="beerNotes" placeholder="Egyedi gondolatok...">
+            </div>
+
+            <button type="submit" class="auth-btn beer-submit-btn">
+                <span class="btn-text">MENTÉS AZ ADATBÁZISBA 💾</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="addDrinkModal">
+    <div class="modal-content drink-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon drink-shake">🍹</div>
+            <h3>Ital Keverése</h3>
+            <p>Új koktél vagy rövid rögzítése</p>
+            <button class="modal-close-abs" onclick="closeAddModal('drink')">✕</button>
+        </div>
+
+        <form id="addDrinkForm" class="cool-form">
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Ital Neve</label>
+                    <input type="text" id="drinkName" placeholder="Pl. Gin Tonic" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Kategória</label>
+                    <select id="drinkCategory" required class="cool-select">
+                        <option value="" disabled selected>Válassz...</option>
+                        <option value="Energia ital">⚡ Energia ital</option>
+                        <option value="Bor">🍷 Bor</option>
+                        <option value="Pezsgő">🥂 Pezsgő</option>
+                        <option value="Vermut">🍸 Vermut</option>
+                        <option value="Pálinka">🥃 Pálinka</option>
+                        <option value="Whisky">🥃 Whisky</option>
+                        <option value="Vodka">🍾 Vodka</option>
+                        <option value="Rum">🍹 Rum</option>
+                        <option value="Gin">🍸 Gin</option>
+                        <option value="Likőr">🍷 Likőr</option>
+                        <option value="Koktél">🍹 Koktél</option>
+                        <option value="Üdítő">🥤 Üdítő</option>
+                        <option value="Egyéb">❓ Egyéb</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Jelleg</label>
+                    <select id="drinkType" required class="cool-select">
+                        <option value="Alkoholos">🍺 Alkoholos</option>
+                        <option value="Nem alkoholos">🚫 Mentes</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Hely / Származás</label>
+                    <input type="text" id="drinkLocation" placeholder="Pl. Magyarország" required>
+                </div>
+
+                <div class="cool-input-group">
+                     <label>Alkohol %</label>
+                    <input type="number" id="drinkPercentage" min="0" max="100" step="0.1" placeholder="%">
+                </div>
+            </div>
+
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="drinkLook" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="drinkSmell" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="drinkTaste" min="0" max="10" step="0.1" placeholder="-" required>
+                </div>
+            </div>
+
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
+                <input type="text" id="drinkNotes" placeholder="Díszítés, pohár, stb...">
+            </div>
+
+            <button type="submit" class="auth-btn drink-submit-btn">
+                <span class="btn-text">ITAL KEVERÉSE 🍸</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+    
+    <!-- ÁJÁNLÁS MOADAL -->
+
+    <div class="modal-overlay" id="addRecModal">
+    <div class="modal-content beer-upload-card" style="border-color: #00b09b !important;">
+        <div class="modal-hero-header">
+            <div class="hero-icon">📢</div>
+            <h3 id="recModalTitle">Mit ajánlasz?</h3>
+            <p>Oszd meg a többiekkel a tutit!</p>
+            <button class="modal-close-abs" onclick="closeRecModal()">✕</button>
+        </div>
+
+        <form id="addRecForm" class="cool-form">
+            <input type="hidden" id="recEditIndex" value="-1">
+
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Ajánlott Sör/Ital neve</label>
+                    <input type="text" id="recItemName" placeholder="Pl. Guinness Draught" required>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Típus</label>
+                    <select id="recItemType" required class="cool-select" onchange="updateRecCategoryOptions()">
+                        <option value="Sör">🍺 Sör</option>
+                        <option value="Ital">🍹 Ital</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Kategória</label>
+                    <select id="recCategory" required class="cool-select">
+                        </select>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Miért ajánlod? (Leírás)</label>
+                    <textarea id="recDescription" placeholder="Hol kapható? Milyen az íze?" required
+                    style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; padding: 15px; outline: none; min-height: 80px;"></textarea>
+                </div>
+            </div>
+
+            <div class="setting-item" style="background: rgba(0,0,0,0.2); padding: 10px 15px; margin-top: 15px; border-radius: 10px;">
+                <div class="setting-info">
+                    <h4 style="font-size: 0.9rem; margin: 0;">Anonim beküldés 🕵️</h4>
+                    <p style="font-size: 0.75rem; margin: 0; color: #aaa;">A neved és a rangod rejtve marad.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="recAnonymous">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #00b09b, #96c93d); margin-top: 20px;">
+                <span class="btn-text" id="recSubmitBtnText">AJÁNLÁS BEKÜLDÉSE 🚀</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+
+    
+<!-- HIBABEJELENTŐ MODAL -->
+<div class="modal-overlay" id="supportModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>💬 Segítség kérése</h3>
+            <button class="modal-close" onclick="closeSupportModal()">&times;</button>
+        </header>
+        <form id="supportForm" class="config-form">
+            <div class="input-group">
+                <input type="text" id="supportName" required>
+                <label for="supportName">Neved</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <!-- Ez csak vendégeknek látszik -->
+            <div class="input-group" id="supportEmailGroup">
+                <input type="email" id="supportEmail" required>
+                <label for="supportEmail">Email címed</label>
+                <span class="input-highlight"></span>
+                <small style="color: #aaa; font-size: 11px; display: block; margin-top: 5px;">
+                    Erre a címre fogunk válaszolni.
+                </small>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="supportSubject" required>
+                <label for="supportSubject">Tárgy</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="supportMessage" required placeholder="Írd le a problémát vagy kérdésedet részletesen..." style="min-height: 120px; width: 100%; background: rgba(0,0,0,0.2); border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: white; padding: 15px; font-family: 'Poppins', sans-serif; font-size: 16px; resize: vertical; outline: none; border-radius: 10px;"></textarea>
+            </div>
+            
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Beküldés 📨</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+
+    
+    <!-- ADMIN NÉZET -->
+    <div class="admin-view" id="adminView" style="display: none;">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="beer-icon">🍺</span>
+                    <h1>Gabz és Lajos Admin</h1>
+                </div>
+                <div class="admin-actions">
+                    <button class="refresh-btn" id="refreshBtn">
+                        <span>🔄</span>
+                        <span>Frissítés</span>
+                    </button>
+                    <button class="logout-btn" id="logoutBtn">
+                        <span>🚪</span>
+                        <span>Kijelentkezés</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+ 
+       <nav class="main-tabs">
+    <button class="main-tab-btn active" data-tab-content="admin-dashboard-content">📊 Vezérlőpult</button>
+    <button class="main-tab-btn" data-tab-content="admin-beers-content">🍺 Sörök Listája</button>
+    <button class="main-tab-btn" data-tab-content="admin-recap-content">📈 Visszatekintő</button>
+    <button class="main-tab-btn" data-tab-content="admin-ideas-content">💡 Vendég Ötletek</button>
+    <button class="main-tab-btn" data-tab-content="admin-moderation-content">🛡️ Moderáció</button>
+    <button class="main-tab-btn" data-tab-content="admin-tickets-content">🎫 Hibajegyek</button>
+    <button class="main-tab-btn" data-tab-content="admin-settings-content">⚙️ Beállítások</button>
+</nav>
+
+<div class="main-tab-pane" id="admin-settings-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Admin Személyre Szabás</h3>
+        </header>
+        <div class="settings-group">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Sörös Kurzor 🍺</h4>
+                    <p>Legyen söröskorsó a kurzor az admin felületen is.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="adminCursorToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+</div>
+        <div class="main-tab-pane" id="admin-ideas-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Vendégek javaslatai</h3>
+            <button class="refresh-btn" onclick="loadAllIdeasForAdmin()">🔄 Frissítés</button>
+        </header>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dátum</th>
+                        <th>Beküldő</th>
+                        <th>Ötlet</th>
+                        <th>Státusz</th>
+                        <th>Művelet</th>
+                    </tr>
+                </thead>
+                <tbody id="adminIdeasTableBody">
+                    <tr><td colspan="5" class="no-results">Betöltés...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+            <div class="main-tab-content-container">
+                <!-- DASHBOARD TAB -->
+                <div class="main-tab-pane active" id="admin-dashboard-content">
+                    <section class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon users">👥</div>
+                            <div class="stat-info">
+                                <p>Felhasználók</p>
+                                <h3 id="userCount">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon beers">🍺</div>
+                            <div class="stat-info">
+                                <p>Sörök száma</p>
+                                <h3 id="beerCount">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon average">⭐</div>
+                            <div class="stat-info">
+                                <p>Indexált átlag</p>
+                                <h3 id="indexedAverage">0.0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon sheets">📊</div>
+                            <div class="stat-info">
+                                <p>Google Sheets</p>
+                                <h3 id="sheetsStatus" style="color: #27ae60;">Kapcsolódva</h3>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="statsView" class="card" style="margin-top: 30px;">
+                        <header class="card-header">
+                            <h3>Statisztikák</h3>
+                            <div class="stats-tabs" id="statTabButtons">
+                                <button class="stat-tab-btn active" data-tab="common">Közös</button>
+                                <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
+                                <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
+                            </div>
+                        </header>
+
+                        <div class="stats-content">
+                            <!-- KÖZÖS STATISZTIKÁK -->
+                            <div class="stat-pane active" id="common-stats">
+                                <hr>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="common">
+                                </div>
+                                <div class="recap-results-container" id="common-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
+                                <div class="kpi-grid">
+                                    <div class="kpi-card">
+                                        <h4>Legjobb sör</h4>
+                                        <p id="common-best-beer">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Kedvenc típus</h4>
+                                        <p id="common-fav-type">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Leggyakoribb hely</h4>
+                                        <p id="common-fav-location">-</p>
+                                    </div>
+                                </div>
+                                <div class="chart-grid">
+                                    <div class="chart-container">
+                                        <canvas id="common-type-chart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="common-score-dist-chart"></canvas>
+                                    </div>
+                                    <div class="chart-container full-width">
+                                        <canvas id="common-monthly-avg-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GABZ STATISZTIKÁK -->
+                            <div class="stat-pane" id="gabz-stats">
+                                <hr>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="gabz">
+                                </div>
+                                <div class="recap-results-container" id="gabz-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
+                                <div class="kpi-grid">
+                                    <div class="kpi-card">
+                                        <h4>Legjobb sör</h4>
+                                        <p id="gabz-best-beer">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Kedvenc típus</h4>
+                                        <p id="gabz-fav-type">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Átlag pontszám</h4>
+                                        <p id="gabz-avg-score">-</p>
+                                    </div>
+                                </div>
+                                <div class="chart-grid">
+                                    <div class="chart-container">
+                                        <canvas id="gabz-type-chart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="gabz-score-dist-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LAJOS STATISZTIKÁK -->
+                            <div class="stat-pane" id="lajos-stats">
+                                <hr>
+                                <h4>Időszaki Visszatekintő</h4>
+                                <div class="recap-controls admin-recap-controls" data-admin-pane="lajos">
+                                </div>
+                                <div class="recap-results-container" id="lajos-recap-results">
+                                    <p class="recap-placeholder">Válassz egy időszakot a kezdéshez.</p>
+                                </div>
+                                <div class="kpi-grid">
+                                    <div class="kpi-card">
+                                        <h4>Legjobb sör</h4>
+                                        <p id="lajos-best-beer">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Kedvenc típus</h4>
+                                        <p id="lajos-fav-type">-</p>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <h4>Átlag pontszám</h4>
+                                        <p id="lajos-avg-score">-</p>
+                                    </div>
+                                </div>
+                                <div class="chart-grid">
+                                    <div class="chart-container">
+                                        <canvas id="lajos-type-chart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="lajos-score-dist-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- SÖRÖK LISTÁJA TAB -->
+                <div class="main-tab-pane" id="admin-beers-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Sörök listája</h3>
+                            <div class="live-search-container">
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="liveSearchInput" class="live-search-input" placeholder="Keresés sörök között..." autocomplete="off">
+                                    <div class="search-icon">🔍</div>
+                                    <div class="clear-search" id="clearSearch" style="display: none;">✕</div>
+                                </div>
+                                <div class="search-suggestions" id="searchSuggestions"></div>
+                                <div class="search-results-info" id="searchResultsInfo"></div>
+                            </div>
+                        </header>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Dátum</th>
+                                        <th>Sörnév</th>
+                                        <th>Főzési hely</th>
+                                        <th>Alkohol %</th>
+                                        <th>Külalak</th>
+                                        <th>Illat</th>
+                                        <th>Íz</th>
+                                        <th>Összpontszám</th>
+                                        <th>Átlag</th>
+                                        <th>Ki tesztelte</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="beerTableBody">
+                                    <tr>
+                                        <td colspan="10" class="no-results">Betöltés...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="main-tab-pane" id="admin-moderation-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Nyitott Jelentések 🚨</h3>
+                            <button class="refresh-btn-small" onclick="loadModerationTasks()">🔄</button>
+                        </header>
+                        <div id="moderationList" class="tickets-grid-container">
+                            </div>
+                    </section>
+                </div>
+
+                <div class="main-tab-pane" id="admin-tickets-content">
+    <section class="card">
+        <header class="card-header">
+            <h3>Beérkezett Hibajelentések 📨</h3>
+            <div class="ticket-filters">
+                <button class="filter-chip active" onclick="filterTickets('all')">Összes</button>
+                <button class="filter-chip" onclick="filterTickets('Új')">🔴 Új</button>
+                <button class="filter-chip" onclick="filterTickets('Folyamatban')">🟡 Folyamatban</button>
+                <button class="filter-chip" onclick="filterTickets('Megoldva')">🟢 Megoldva</button>
+                <button class="refresh-btn-small" onclick="loadAdminTickets()">🔄</button>
+            </div>
+        </header>
+        
+        <div id="ticketsGrid" class="tickets-grid-container">
+            <div class="recap-spinner"></div>
+        </div>
+    </section>
+</div>
+
+                <!-- VISSZATEKINTŐ TAB -->
+                <div class="main-tab-pane" id="admin-recap-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>Admin Visszatekintő</h3>
+                            <div class="stats-tabs" id="adminRecapTabButtons">
+                                <button class="stat-tab-btn active" data-tab="common">Közös</button>
+                                <button class="stat-tab-btn" data-tab="gabz">Gabz</button>
+                                <button class="stat-tab-btn" data-tab="lajos">Lajos</button>
+                            </div>
+                        </header>
+
+                        <p style="color: #c0c0c0; margin-bottom: 25px; line-height: 1.5;">
+                            Válassz egy időszakot a statisztika generálásához. A kártya a "Közös", "Gabz" vagy "Lajos" füleken kiválasztott adatok alapján jön létre.
+                        </p>
+
+                        <div class="recap-controls" id="adminRecapControls">
+                            <button class="recap-btn" data-period="weekly"><span>📅</span><span>Heti</span></button>
+                            <button class="recap-btn" data-period="monthly"><span>🗓️</span><span>Havi</span></button>
+                            <button class="recap-btn" data-period="quarterly"><span>📊</span><span>Negyedéves</span></button>
+                            <button class="recap-btn" data-period="yearly"><span>🎆</span><span>Éves</span></button>
+                        </div>
+                        
+                        <div class="recap-results-container" id="adminRecapResultsContainer">
+                            <p class="recap-placeholder">Válassz egy admint és egy időszakot a kezdéshez.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div class="badge">Karbantartás</div>
+    <!-- ADMIN MODAL -->
+   <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3>Admin Belépés 🔐</h3>
+                <button id="modalClose" class="modal-close">&times;</button>
+            </header>
+   
+            <form id="adminForm">
+                <div class="input-group" style="display: none;">
+                    <input type="text" id="adminUsername" value="admin_pin_mode">
+                </div>
 
-    <h1>Fejlesztés alatt</h1>
-
-    <div class="divider"></div>
-
-    <p class="subtitle">
-      Az oldal jelenleg fejlesztés alatt áll.<br />
-      <strong style="color: var(--accent); font-weight: 600;">Hamarosan visszatér</strong> – köszönjük a türelmedet!
-    </p>
-
-    <div class="dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+                <div class="input-group">
+                    <input type="password" id="adminPassword" placeholder=" " maxlength="6" inputmode="numeric" required style="text-align: center; letter-spacing: 5px; font-size: 1.5rem;">
+                    <label for="adminPassword" style="text-align: center; width: 100%; left: 0;">6 jegyű PIN kód</label>
+                    <span class="input-highlight"></span>
+                </div>
+                
+                <button type="submit" class="auth-btn">Belépés</button>
+            </form>
+        </div>
     </div>
 
-    <p class="footer-note">© 2026 &nbsp;·&nbsp; <span>Dolgozunk rajta ⚡</span></p>
-  </div>
+    
+<div class="modal-overlay" id="setup2FAModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>2FA Beállítása</h3>
+            <button class="modal-close" onclick="close2FAModal()">&times;</button>
+        </header>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 15px; color: #ddd;">Olvasd be ezt a QR kódot a Google Authenticator alkalmazással:</p>
+            <img id="qrCodeImage" src="" alt="QR Kód" style="width: 200px; height: 200px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="margin-bottom: 10px; font-size: 14px; color: #aaa;">⚠️FONTOS BIZTONSÁGI MENTÉS! Mentsd el ezt a kódot egy biztonságos helyre! Ha elveszíted a telefonod, <b>csak ezzel</b> tudod visszaállítani a fiókodat:  <span id="manualSecret" style="color: #fff; font-family: monospace;"></span></p>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <input type="text" id="setup2FACode" placeholder="Írd be a 6 jegyű kódot" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+            </div>
+            
+            <button id="confirm2FABtn" class="auth-btn" style="margin-top: 10px;">Aktiválás</button>
+        </div>
+    </div>
+</div>
 
+<div class="modal-overlay" id="login2FAModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>Biztonsági ellenőrzés</h3>
+        </header>
+        <div style="text-align: center;">
+            <p style="margin-bottom: 20px; color: #ddd;">Kérlek add meg a Google Authenticator kódot a belépéshez.</p>
+            <div class="beer-icon" style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
+            
+            <form id="verify2FALoginForm">
+                <div class="input-group">
+                    <input type="text" id="login2FACode" required placeholder="000000" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.5rem; color: white;">
+                </div>
+                <button type="submit" class="auth-btn">Ellenőrzés</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <!-- RECOVERY KÓD -->
+    
+<div class="modal-overlay" id="recoveryCodeModal">
+    <div class="modal-content recovery-reveal-card">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px;">
+            <div class="lock-icon-anim">🔓</div>
+            <h3 style="text-align: center; color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.5);">Fiók Elkészült!</h3>
+        </header>
+        
+        <div style="text-align: center;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Ez a titkos <b>Helyreállító Kódod</b>.<br>
+                <span style="font-size: 0.85rem; color: #aaa;">Ha elfelejted a jelszavad, CSAK EZZEL tudsz újat csinálni!</span>
+            </p>
+
+            <div class="code-vault-container">
+                <code id="newRecoveryCodeDisplay">X9K2-M4L1</code>
+                <button class="copy-btn" onclick="copyRecoveryCode()" title="Másolás">
+                    📋
+                </button>
+            </div>
+
+            <p id="copyFeedback" style="color: #00ff88; font-size: 0.8rem; height: 20px; margin-top: 5px; opacity: 0; transition: opacity 0.3s;">
+                Kód a vágólapra másolva!
+            </p>
+
+            <button class="auth-btn" onclick="closeRecoveryModal()" style="background: linear-gradient(135deg, #00b09b, #96c93d);">
+                Megértettem, belépek! 🚀
+            </button>
+        </div>
+    </div>
+</div>
+<!-- UJJ JELSZÓ MODAL -->
+<div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3>🔐 Helyreállítás</h3>
+            <button class="modal-close" onclick="closeForgotModal()">&times;</button>
+        </header>
+        <form id="forgotPasswordForm" class="config-form">
+            <div class="input-group">
+                <input type="email" id="forgotEmail" required placeholder=" ">
+                <label for="forgotEmail">E-mail címed</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="forgotRecoveryCode" required placeholder=" " 
+                       style="font-family: 'Courier New', monospace; letter-spacing: 3px; font-weight: bold; color: #ffd700;">
+                <label for="forgotRecoveryCode">Helyreállító Kód (pl. A1B2C3D4)</label>
+                <span class="input-highlight"></span>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="forgotNewPassword" required placeholder=" ">
+                <label for="forgotNewPassword">Új jelszó</label>
+                <span class="input-highlight"></span>
+                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="forgotNewPasswordConfirm" required placeholder=" ">
+                <label for="forgotNewPasswordConfirm">Új jelszó megerősítése</label>
+                <span class="input-highlight"></span>
+                <span class="password-toggle-icon" onclick="togglePasswordVisibility(this)">👁️</span>
+            </div>
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
+                <span class="btn-text">Jelszó Mentése 💾</span>
+                <span class="btn-loading"><div class="spinner"></div></span>
+            </button>
+        </form>
+    </div>
+</div>
+<!-- FELHASZNÁLÓ TÖRLÉSE -->
+<div class="modal-overlay" id="deleteAccountModal">
+    <div class="modal-content delete-zone-card">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">☠️</div>
+            <h3 style="text-align: center; color: #ff4444; text-shadow: 0 0 10px rgba(255, 68, 68, 0.6); font-size: 1.5rem; margin: 0;">VÉGZETES ZÓNA</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan törölni akarod a fiókodat?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Ez a művelet NEM VISSZAVONHATÓ! Minden söröd, italod és eredményed azonnal törlődik az adatbázisból.</span>
+            </p>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteConfirmationInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteModal()" style="background: #333; color: white;">
+                    Mégsem, maradok! 😅
+                </button>
+                <button class="auth-btn" id="finalDeleteBtn" onclick="confirmDeleteAccount()" disabled style="background: linear-gradient(135deg, #ff416c, #ff4b2b); opacity: 0.5; cursor: not-allowed;">
+                    Végleges Törlés 💣
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- SZERKESZTŐ MODAL (Sörök) -->
+<div class="modal-overlay" id="editBeerModal">
+    <div class="modal-content beer-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon beer-bounce">🍺</div>
+            <h3>Sör Szerkesztése</h3>
+            <p>Adatok pontosítása</p>
+            <button class="modal-close-abs" onclick="closeEditBeerModal()">✕</button>
+        </div>
+
+        <form id="editBeerForm" class="cool-form">
+            <input type="hidden" id="editBeerIndex">
+            
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Sör Neve</label>
+                    <input type="text" id="editBeerName" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Típus</label>
+                    <input type="text" id="editBeerType" required>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Alkohol %</label>
+                    <input type="number" id="editBeerPercentage" min="0" max="100" step="0.1" required>
+                </div>
+
+                <div class="cool-input-group full-width">
+                    <label>Főzési hely</label>
+                    <input type="text" id="editBeerLocation" required>
+                </div>
+            </div>
+            
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="editBeerLook" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="editBeerSmell" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="editBeerTaste" min="0" max="10" step="0.1" required>
+                </div>
+            </div>
+            
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
+                <input type="text" id="editBeerNotes">
+            </div>
+            
+            <button type="submit" class="auth-btn beer-submit-btn">
+                <span class="btn-text">Módosítások mentése 💾</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+    
+<!-- SZERKESZTŐ MODAL (Italok) -->
+<div class="modal-overlay" id="editDrinkModal">
+    <div class="modal-content drink-upload-card">
+        <div class="modal-hero-header">
+            <div class="hero-icon drink-shake">🍹</div>
+            <h3>Ital Szerkesztése</h3>
+            <p>Receptúra frissítése</p>
+            <button class="modal-close-abs" onclick="closeEditDrinkModal()">✕</button>
+        </div>
+
+        <form id="editDrinkForm" class="cool-form">
+            <input type="hidden" id="editDrinkIndex">
+            
+            <div class="input-grid">
+                <div class="cool-input-group full-width">
+                    <label>Ital Neve</label>
+                    <input type="text" id="editDrinkName" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Kategória</label>
+                    <select id="editDrinkCategory" required class="cool-select">
+                        <option value="" disabled>Válassz kategóriát</option>
+                        <option value="Energia ital">⚡ Energia ital</option>
+                        <option value="Bor">🍷 Bor</option>
+                        <option value="Pezsgő">🥂 Pezsgő</option>
+                        <option value="Vermut">🍸 Vermut</option>
+                        <option value="Pálinka">🥃 Pálinka</option>
+                        <option value="Whisky">🥃 Whisky</option>
+                        <option value="Vodka">🍾 Vodka</option>
+                        <option value="Rum">🍹 Rum</option>
+                        <option value="Gin">🍸 Gin</option>
+                        <option value="Likőr">🍷 Likőr</option>
+                        <option value="Koktél">🍹 Koktél</option>
+                        <option value="Üdítő">🥤 Üdítő</option>
+                        <option value="Egyéb">❓ Egyéb</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Jelleg</label>
+                    <select id="editDrinkType" required class="cool-select">
+                        <option value="Alkoholos">🍺 Alkoholos</option>
+                        <option value="Nem alkoholos">🚫 Nem alkoholos</option>
+                    </select>
+                </div>
+                
+                <div class="cool-input-group full-width">
+                    <label>Hely / Származás</label>
+                    <input type="text" id="editDrinkLocation" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>Alkohol %</label>
+                    <input type="number" id="editDrinkPercentage" min="0" max="100" step="0.1">
+                </div>
+            </div>
+
+            <div class="score-grid-title">Értékelés (0-10)</div>
+            <div class="score-grid">
+                <div class="cool-input-group">
+                    <label>👀 Külalak</label>
+                    <input type="number" id="editDrinkLook" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👃 Illat</label>
+                    <input type="number" id="editDrinkSmell" min="0" max="10" step="0.1" required>
+                </div>
+                
+                <div class="cool-input-group">
+                    <label>👅 Íz</label>
+                    <input type="number" id="editDrinkTaste" min="0" max="10" step="0.1" required>
+                </div>
+            </div>
+            
+            <div class="cool-input-group full-width">
+                <label>Jegyzetek</label>
+                <input type="text" id="editDrinkNotes">
+            </div>
+            
+            <button type="submit" class="auth-btn drink-submit-btn">
+                <span class="btn-text">Módosítások mentése 💾</span>
+                <span class="btn-loading">
+                    <div class="spinner"></div>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+<!-- TÖRLÉS MODALOK - Illeszd be az index.html fájlba a deleteAccountModal UTÁN -->
+
+<!-- 1. SÖR TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteBeerModal">
+    <div class="modal-content delete-zone-card">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">🍺💀</div>
+            <h3 style="text-align: center; color: #f39c12; text-shadow: 0 0 10px rgba(243, 156, 18, 0.6); font-size: 1.5rem; margin: 0;">SÖR MEGSEMMISÍTÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan törölni akarod ezt a sörtesztet?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Ez a művelet NEM VISSZAVONHATÓ! A sör örökre eltűnik!</span>
+            </p>
+            
+            <div style="background: rgba(243, 156, 18, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteBeerName" style="font-size: 1.2rem; font-weight: 700; color: #f39c12; margin-bottom: 5px;"></div>
+                <div id="deleteBeerDetails" style="font-size: 0.9rem; color: #aaa;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteBeerConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteBeerModal()" style="background: #333; color: white;">
+                    Mégsem 😅
+                </button>
+                <button class="auth-btn" id="finalDeleteBeerBtn" onclick="confirmDeleteBeer()" disabled style="background: linear-gradient(135deg, #f39c12, #d35400); opacity: 0.5; cursor: not-allowed;">
+                    Sör Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. ITAL TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteDrinkModal">
+    <div class="modal-content delete-zone-card" style="border-color: #d946ef !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">🍹💀</div>
+            <h3 style="text-align: center; color: #d946ef; text-shadow: 0 0 10px rgba(217, 70, 239, 0.6); font-size: 1.5rem; margin: 0;">ITAL KIÖNTÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan kiöntöd ezt az italt?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Nincs visszaút! Az ital lefolyón leér!</span>
+            </p>
+            
+            <div style="background: rgba(217, 70, 239, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteDrinkName" style="font-size: 1.2rem; font-weight: 700; color: #d946ef; margin-bottom: 5px;"></div>
+                <div id="deleteDrinkDetails" style="font-size: 0.9rem; color: #aaa;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteDrinkConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteDrinkModal()" style="background: #333; color: white;">
+                    Mégsem 🙈
+                </button>
+                <button class="auth-btn" id="finalDeleteDrinkBtn" onclick="confirmDeleteDrink()" disabled style="background: linear-gradient(135deg, #8e2de2, #4a00e0); opacity: 0.5; cursor: not-allowed;">
+                    Ital Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. ÖTLET TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteIdeaModal">
+    <div class="modal-content delete-zone-card" style="border-color: #3498db !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">💡💀</div>
+            <h3 style="text-align: center; color: #3498db; text-shadow: 0 0 10px rgba(52, 152, 219, 0.6); font-size: 1.5rem; margin: 0;">ÖTLET ELVETÉS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan elveted ezt az ötletedet?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">A törlés után nem lehet visszaállítani!</span>
+            </p>
+            
+            <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; max-height: 100px; overflow-y: auto;">
+                <div id="deleteIdeaText" style="font-size: 0.9rem; color: #e0e0e0; font-style: italic;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteIdeaConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteIdeaModal()" style="background: #333; color: white;">
+                    Mégsem 🤔
+                </button>
+                <button class="auth-btn" id="finalDeleteIdeaBtn" onclick="confirmDeleteIdea()" disabled style="background: linear-gradient(135deg, #3498db, #2980b9); opacity: 0.5; cursor: not-allowed;">
+                    Ötlet Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. AJÁNLÁS TÖRLÉS MODAL -->
+<div class="modal-overlay" id="deleteRecModal">
+    <div class="modal-content delete-zone-card" style="border-color: #00b09b !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="skull-icon-anim">📢💀</div>
+            <h3 style="text-align: center; color: #00b09b; text-shadow: 0 0 10px rgba(0, 176, 155, 0.6); font-size: 1.5rem; margin: 0;">AJÁNLÁS VISSZAVONÁS</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px;">
+                Biztosan visszavonod ezt az ajánlásodat?<br>
+                <span style="font-size: 0.85rem; color: #ff6b6b;">Mások már nem fogják látni!</span>
+            </p>
+            
+            <div style="background: rgba(0, 176, 155, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="deleteRecName" style="font-size: 1.2rem; font-weight: 700; color: #00b09b; margin-bottom: 5px;"></div>
+                <div id="deleteRecDetails" style="font-size: 0.9rem; color: #aaa; margin-bottom: 10px;"></div>
+                <div id="deleteRecDesc" style="font-size: 0.85rem; color: #ccc; font-style: italic; max-height: 60px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>TÖRLÉS</b></label>
+                <input type="text" id="deleteRecConfirmInput" placeholder="TÖRLÉS" maxlength="6">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDeleteRecModal()" style="background: #333; color: white;">
+                    Mégsem 🙊
+                </button>
+                <button class="auth-btn" id="finalDeleteRecBtn" onclick="confirmDeleteRec()" disabled style="background: linear-gradient(135deg, #00b09b, #96c93d); opacity: 0.5; cursor: not-allowed;">
+                    Ajánlás Törlése 🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SÖR TELJES ADAT MEGTEKINTÉSE MODAL -->
+<div class="modal-overlay" id="viewBeerModal">
+    <div class="modal-content beer-upload-card" style="max-width: 600px;">
+        <div class="modal-hero-header">
+            <div class="hero-icon beer-bounce">🍺</div>
+            <h3>Sör Teljes Adatai</h3>
+            <p>Minden információ egy helyen</p>
+            <button class="modal-close-abs" onclick="closeViewBeerModal()">✕</button>
+        </div>
+
+        <div class="view-beer-content" style="padding: 25px;">
+            <!-- Sör neve és típus -->
+            <div class="view-section">
+                <div class="view-main-title" id="viewBeerName">Dreher Gold</div>
+                <div class="view-subtitle" id="viewBeerType">Lager</div>
+            </div>
+
+            <!-- Fő adatok grid -->
+            <div class="view-info-grid">
+                <div class="view-info-item">
+                    <span class="view-label">📍 Főzési hely</span>
+                    <span class="view-value" id="viewBeerLocation">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">🍻 Alkohol %</span>
+                    <span class="view-value" id="viewBeerPercentage">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">📅 Dátum</span>
+                    <span class="view-value" id="viewBeerDate">-</span>
+                </div>
+            </div>
+
+            <!-- Értékelés kártyák -->
+            <div class="view-scores">
+                <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">📊 Értékelés</h4>
+                <div class="view-score-grid">
+                    <div class="view-score-card">
+                        <div class="score-icon">👀</div>
+                        <div class="score-label">Külalak</div>
+                        <div class="score-number" id="viewBeerLook">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👃</div>
+                        <div class="score-label">Illat</div>
+                        <div class="score-number" id="viewBeerSmell">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👅</div>
+                        <div class="score-label">Íz</div>
+                        <div class="score-number" id="viewBeerTaste">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Összesítés -->
+            <div class="view-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Összpontszám</span>
+                    <span class="summary-big" id="viewBeerTotal">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-big highlight" id="viewBeerAvg">0.0</span>
+                </div>
+            </div>
+
+            <!-- Jegyzetek -->
+            <div class="view-notes" id="viewBeerNotesSection" style="display: none;">
+                <h4 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">📝 Jegyzetek</h4>
+                <div class="notes-box" id="viewBeerNotes">
+                    Nincs megjegyzés
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ITAL TELJES ADAT MEGTEKINTÉSE MODAL -->
+<div class="modal-overlay" id="viewDrinkModal">
+    <div class="modal-content drink-upload-card" style="max-width: 600px;">
+        <div class="modal-hero-header">
+            <div class="hero-icon drink-shake">🍹</div>
+            <h3>Ital Teljes Adatai</h3>
+            <p>Minden információ egy helyen</p>
+            <button class="modal-close-abs" onclick="closeViewDrinkModal()">✕</button>
+        </div>
+
+        <div class="view-drink-content" style="padding: 25px;">
+            <!-- Ital neve és kategória -->
+            <div class="view-section">
+                <div class="view-main-title" id="viewDrinkName">Gin Tonic</div>
+                <div class="view-subtitle">
+                    <span id="viewDrinkCategory">Koktél</span> • <span id="viewDrinkType">Alkoholos</span>
+                </div>
+            </div>
+
+            <!-- Fő adatok grid -->
+            <div class="view-info-grid">
+                <div class="view-info-item">
+                    <span class="view-label">📍 Hely</span>
+                    <span class="view-value" id="viewDrinkLocation">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">🍸 Alkohol %</span>
+                    <span class="view-value" id="viewDrinkPercentage">-</span>
+                </div>
+                <div class="view-info-item">
+                    <span class="view-label">📅 Dátum</span>
+                    <span class="view-value" id="viewDrinkDate">-</span>
+                </div>
+            </div>
+
+            <!-- Értékelés kártyák -->
+            <div class="view-scores">
+                <h4 style="color: #fff; margin-bottom: 15px; font-size: 1.1rem;">📊 Értékelés</h4>
+                <div class="view-score-grid">
+                    <div class="view-score-card">
+                        <div class="score-icon">👀</div>
+                        <div class="score-label">Külalak</div>
+                        <div class="score-number" id="viewDrinkLook">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👃</div>
+                        <div class="score-label">Illat</div>
+                        <div class="score-number" id="viewDrinkSmell">0</div>
+                    </div>
+                    <div class="view-score-card">
+                        <div class="score-icon">👅</div>
+                        <div class="score-label">Íz</div>
+                        <div class="score-number" id="viewDrinkTaste">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Összesítés -->
+            <div class="view-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Összpontszám</span>
+                    <span class="summary-big" id="viewDrinkTotal">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Átlag</span>
+                    <span class="summary-big highlight" id="viewDrinkAvg">0.0</span>
+                </div>
+            </div>
+
+            <!-- Jegyzetek -->
+            <div class="view-notes" id="viewDrinkNotesSection" style="display: none;">
+                <h4 style="color: #fff; margin-bottom: 10px; font-size: 1rem;">📝 Jegyzetek</h4>
+                <div class="notes-box" id="viewDrinkNotes">
+                    Nincs megjegyzés
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    <!-- ÉLETKOR -->
+
+    
+<div class="modal-overlay" id="ageVerificationModal" style="z-index: 99999; background: #000;">
+    <div class="modal-content delete-zone-card" style="border-color: #e74c3c !important; max-width: 450px;">
+        <div class="modal-hero-header" style="border-bottom: none;">
+            <div class="hero-icon" style="font-size: 4rem;">🔞</div>
+            <h3 style="color: #e74c3c; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px;">Korhatáros Tartalom</h3>
+        </div>
+        
+        <div style="text-align: center; padding: 0 10px 20px 10px;">
+            <p style="color: #e0e0e0; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px;">
+                Az oldal alkoholtartalmú italok értékelésével is foglalkozik. 
+                A megtekintéséhez el kell múlnod 18 évesnek.
+            </p>
+            
+            <h4 style="color: white; margin-bottom: 20px;">Elmúltál már 18 éves?</h4>
+
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="auth-btn" onclick="verifyAge(false)" style="background: #333; color: #aaa; width: 120px;">
+                    Nem
+                </button>
+                <button class="auth-btn" onclick="verifyAge(true)" style="background: linear-gradient(135deg, #e74c3c, #c0392b); width: 120px; font-weight: 800; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);">
+                    IGEN
+                </button>
+            </div>
+            <p style="color: #666; font-size: 0.75rem; margin-top: 20px;">
+                A "Nem" gombra kattintva elhagyod az oldalt.
+            </p>
+        </div>
+    </div>
+</div>
+                <!-- COOKIE -->
+    
+    <div id="cookieToast" style="display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 400px; background: rgba(31, 0, 92, 0.95); backdrop-filter: blur(10px); border: 1px solid #764ba2; border-radius: 12px; padding: 20px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+    <div style="display: flex; align-items: start; gap: 15px;">
+        <div style="font-size: 1.5rem;">🍪</div>
+        <div>
+            <h4 style="margin: 0 0 5px 0; color: white;">Sütiket használunk</h4>
+            <p style="margin: 0 0 15px 0; font-size: 0.85rem; line-height: 1.4;">
+                Az oldal működéséhez (belépés, korhatár) szükséges adatokat tárolunk a böngésződben. Nem követünk és nem használunk hirdetéseket.
+                <a href="adatvedelem.html" target="_blank" style="color: #a29bfe; text-decoration: underline;">Részletek</a>
+            </p>
+            <button onclick="acceptCookies()" style="background: #764ba2; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.3s;">
+                Rendben, értem
+            </button>
+        </div>
+    </div>
+</div>
+
+    
+    <div class="modal-overlay" id="prizeModal">
+        <div class="modal-content beer-upload-card" style="border-color: #ffd700 !important; background: linear-gradient(135deg, #1a0505 0%, #2c0b0b 100%) !important;">
+            <div class="modal-hero-header">
+                <div class="hero-icon" style="animation: bounce 1s infinite;">🎉</div>
+                <h3 style="color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">NYEREMÉNYJÁTÉK!</h3>
+                <p style="color: white;">Az első 5 tesztelő ajándékot kap!</p>
+                <button class="modal-close-abs" onclick="closePrizeModal()"></button>
+            </div>
+
+            <div style="padding: 25px; text-align: center;">
+                <p style="color: #e0e0e0; margin-bottom: 20px; font-size: 0.9rem;">
+                    Ha már töltöttél fel legalább egy tesztet, válassz egyet az alábbiak közül:
+                </p>
+
+                <div class="prize-selection-grid">
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Sör">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">🍺</span>
+                            <span>Sör</span>
+                        </div>
+                    </label>
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Cola">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">🥤</span>
+                            <span>Cola</span>
+                        </div>
+                    </label>
+                    <label class="prize-option">
+                        <input type="radio" name="prizeSelect" value="Energia Ital">
+                        <div class="prize-card-inner">
+                            <span class="prize-emoji">⚡</span>
+                            <span>Energia Ital</span>
+                        </div>
+                    </label>
+                </div>
+
+                <button class="auth-btn" onclick="submitPrizeClaim()" style="background: linear-gradient(135deg, #ffd700, #f39c12); color: black; font-weight: 800; margin-top: 20px;">
+                    KÉREM A NYEREMÉNYT! 🖐️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorialModal" class="tutorial-overlay">
+    <div class="tutorial-card">
+        <button class="close-tutorial" onclick="closeTutorialModal()">×</button>
+        <div class="tutorial-header">
+            <h2>📊 Excel Import Segédlet</h2>
+            <p>Ahhoz, hogy a rendszer felismerje az adataidat, használd az alábbi fejléceket az Excel fájlodban.</p>
+        </div>
+        
+        <div class="tutorial-body">
+            <h3>Minta Sörök (Munkalap neve: Sörök)</h3>
+            <div class="table-preview-wrapper">
+                <table class="sample-table">
+                    <thead>
+                        <tr>
+                            <th>Sör neve</th>
+                            <th>Típus</th>
+                            <th>Hely</th>
+                            <th>Külalak</th>
+                            <th>Illat</th>
+                            <th>Íz</th>
+                            <th>Alkohol %</th>
+                            <th>Dátum</th>
+                            <th>Jegyzet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dreher Gold</td>
+                            <td>Lager</td>
+                            <td>Otthon</td>
+                            <td>7</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>5.0</td>
+                            <td>2024.05.20</td>
+                            <td>Kellemes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Minta Italok (Munkalap neve: Italok)</h3>
+            <div class="table-preview-wrapper">
+                <table class="sample-table">
+                    <thead>
+                        <tr>
+                            <th>Ital neve</th>
+                            <th>Kategória</th>
+                            <th>Típus</th>
+                            <th>Hely</th>
+                            <th>Külalak</th>
+                            <th>Illat</th>
+                            <th>Íz</th>
+                            <th>Alkohol %</th>
+                            <th>Dátum</th>
+                            <th>Jegyzet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Minta Whisky</td>
+                            <td>Whisky</td>
+                            <td>Rövid</td>
+                            <td>Otthon</td>
+                            <td>9</td>
+                            <td>8</td>
+                            <td>10</td>
+                            <td>40</td>
+                            <td>2024.01.01</td>
+                            <td>Példa adat.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tutorial-alert">
+                <span>💡</span> 
+                <strong>Tipp:</strong> A munkalapok neve nem kötelező, de segít a rendszernek (pl. "Sörök", "Italok"). 
+                Az értékek lehetnek üresek is, de a név kötelező.
+            </div>
+        </div>
+
+        <div class="tutorial-footer">
+            <button class="download-template-btn" onclick="downloadExcelTemplate()">
+                <span>💾</span> Üres Sablon Letöltése (.xlsx)
+            </button>
+        </div>
+    </div>
+</div>
+
+    <div class="modal-overlay" id="exportModal">
+    <div class="modal-content" style="text-align: center; max-width: 400px;">
+        <div class="modal-header" style="justify-content: center; flex-direction: column; border: none; padding-bottom: 0;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">💾</div>
+            <h3 style="margin: 0;">Válassz formátumot</h3>
+            <p style="color: #aaa; font-size: 0.9rem; margin-top: 5px;">Milyen fájlban szeretnéd megkapni az adataidat?</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
+            <button onclick="confirmExport('xlsx')" class="prize-card-inner" style="width: 100%; border: 1px solid #27ae60; background: rgba(39, 174, 96, 0.1);">
+                <span style="font-size: 2rem;">📊</span>
+                <span style="font-weight: bold; color: #2ecc71; margin-top: 5px;">Excel (.xlsx)</span>
+                <span style="font-size: 0.7rem; color: #ccc;">Táblázatkezelőkhöz</span>
+            </button>
+
+            <button onclick="confirmExport('json')" class="prize-card-inner" style="width: 100%; border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.1);">
+                <span style="font-size: 2rem;">⚙️</span>
+                <span style="font-weight: bold; color: #f39c12; margin-top: 5px;">JSON (.json)</span>
+                <span style="font-size: 0.7rem; color: #ccc;">Biztonsági mentéshez</span>
+            </button>
+        </div>
+
+        <button class="auth-btn" onclick="closeExportModal()" style="background: #333; margin-top: 25px;">
+            Mégsem
+        </button>
+    </div>
+</div>
+
+    <!-- 2FA KIKAPCSOLÁS MODAL -->
+<div class="modal-overlay" id="disable2FAModal">
+    <div class="modal-content delete-zone-card" style="border-color: #f39c12 !important;">
+        <header class="modal-header" style="justify-content: center; flex-direction: column; gap: 10px; border-bottom: none;">
+            <div class="warning-icon-anim">🔓</div>
+            <h3 style="text-align: center; color: #f39c12; text-shadow: 0 0 10px rgba(243, 156, 18, 0.6); font-size: 1.5rem; margin: 0;">BIZTONSÁG CSÖKKENTÉSE</h3>
+        </header>
+        
+        <div style="text-align: center; padding: 10px;">
+            <p style="color: #e0e0e0; margin-bottom: 20px; line-height: 1.6;">
+                Biztosan ki akarod kapcsolni a kétlépcsős azonosítást?<br>
+                <span style="font-size: 0.85rem; color: #f39c12;">⚠️ A fiókod kevésbé lesz biztonságos!</span>
+            </p>
+            
+            <div style="background: rgba(243, 156, 18, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(243, 156, 18, 0.3);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🛡️ ➡️ ❌</div>
+                <p style="color: #ccc; font-size: 0.9rem; margin: 0;">
+                    Többé nem kell majd a Google Authenticator<br>kódot megadnod belépéskor.
+                </p>
+            </div>
+
+            <div class="danger-input-container">
+                <label style="display: block; color: #aaa; font-size: 0.8rem; margin-bottom: 5px;">A megerősítéshez írd be: <b>KIKAPCSOL</b></label>
+                <input type="text" id="disable2FAConfirmInput" placeholder="KIKAPCSOL" maxlength="10">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="auth-btn" onclick="closeDisable2FAModal()" style="background: #27ae60; color: white; flex: 1;">
+                    Mégsem, marad! 🛡️
+                </button>
+                <button class="auth-btn" id="finalDisable2FABtn" onclick="confirmDisable2FA()" disabled style="background: linear-gradient(135deg, #f39c12, #e67e22); opacity: 0.5; cursor: not-allowed; flex: 1;">
+                    Kikapcsolom ⚠️
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="modal-overlay" id="policyUpdateModal" style="z-index: 999999;">
+    <div class="modal-content" style="border: 2px solid #ffd700; background: linear-gradient(135deg, #1f005c, #000);">
+        <div class="modal-hero-header" style="border-bottom: none;">
+            <div class="hero-icon" style="font-size: 3rem;">📜</div>
+            <h3 style="color: #ffd700;">Fontos Változások</h3>
+        </div>
+        
+        <div style="padding: 0 20px 20px 20px; color: #e0e0e0; text-align: center;">
+            <p style="margin-bottom: 20px; line-height: 1.6;">
+                Szia! 👋<br>
+                Fejlesztettünk az alkalmazáson!</b>.
+            </p>
+            <p style="margin-bottom: 20px; font-size: 0.9rem; color: #ccc;">
+                Emiatt frissítettük az <a href="adatvedelem.html" target="_blank" style="color: #ffd700; text-decoration: underline;">Adatvédelmi Tájékoztatót</a> 
+                és az <a href="aszf.html" target="_blank" style="color: #ffd700; text-decoration: underline;">ÁSZF</a>-et. 
+                Az alkalmazás további használatához kérjük, fogadd el az új feltételeket.
+            </p>
+
+            <button class="auth-btn" onclick="acceptPolicyUpdate()" style="background: linear-gradient(135deg, #ffd700, #f39c12); color: #000; font-weight: 800;">
+                Elolvastam és Elfogadom ✅
+            </button>
+        </div>
+    </div>
+</div>
+    <div class="modal-overlay" id="reportModal" style="z-index: 10002;">
+    <div class="modal-content delete-zone-card" style="border-color: #e74c3c !important;">
+        <header class="modal-header">
+            <h3 style="color: #e74c3c;">🚨 Szabálysértés Jelentése</h3>
+            <button class="modal-close" onclick="closeReportModal()">&times;</button>
+        </header>
+        <form id="reportForm">
+            <input type="hidden" id="reportType">
+            <input type="hidden" id="reportContentId">
+            <input type="hidden" id="reportTargetUser">
+            
+            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px;">
+                Biztosan jelenteni szeretnéd a felhasználót (<span id="reportTargetName" style="color: white; font-weight: bold;"></span>)?
+            </p>
+
+            <div class="input-group">
+                <select id="reportReason" required class="cool-select" style="width: 100%; background: #000;">
+                    <option value="" disabled selected>Válassz indokot...</option>
+                    <option value="Trágár, sértő beszéd">Trágár, sértő beszéd</option>
+                    <option value="Spam / Reklám">Spam / Reklám</option>
+                    <option value="Valótlan információ">Valótlan információ</option>
+                    <option value="Egyéb">Egyéb</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="reportDetails" placeholder="Opcionális megjegyzés..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px;"></textarea>
+            </div>
+
+            <button type="submit" class="auth-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                Jelentés Beküldése 👮
+            </button>
+        </form>
+    </div>
+</div>
+
+    <div class="modal-overlay" id="documentModal" style="z-index: 10005;">
+    <div class="modal-content" style="max-width: 800px; width: 95%; height: 85vh; padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+        
+        <div class="modal-header" style="padding: 20px; background: rgba(0,0,0,0.3); margin-bottom: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 id="documentTitle" style="font-size: 1.2rem; margin: 0;">Dokumentum</h3>
+            <button class="modal-close" onclick="closeDocumentModal()">&times;</button>
+        </div>
+
+        <div style="flex: 1; position: relative; background: #fff;">
+            <iframe id="documentFrame" src="" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+            
+            <div id="docLoader" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                <div class="spinner" style="border-color: #333; border-top-color: #667eea; display: block;"></div>
+            </div>
+        </div>
+
+        <div style="padding: 15px; background: rgba(0,0,0,0.3); text-align: right; border-top: 1px solid rgba(255,255,255,0.1);">
+            <button class="auth-btn" onclick="closeDocumentModal()" style="width: auto; margin: 0; padding: 8px 25px; font-size: 0.9rem;">Bezárás</button>
+        </div>
+    </div>
+</div>
+
+    <div class="modal-overlay" id="randomPickerModal">
+    <div class="modal-content" style="max-width: 600px; background: linear-gradient(135deg, #1a0b2e 0%, #000000 100%); border: 2px solid #8a73ff; box-shadow: 0 0 40px rgba(138, 115, 255, 0.3);">
+        <div class="modal-hero-header" style="border-bottom: none; padding-bottom: 0;">
+            <div class="hero-icon" style="font-size: 3.5rem;">🎲</div>
+            <h3 style="color: #fff; text-shadow: 0 0 10px rgba(138, 115, 255, 0.8);">Sorsoló</h3>
+            <p style="color: #bbb;">Szűkítsd a kört, és bízd a véletlenre!</p>
+            <button class="modal-close-abs" onclick="closeRandomPickerModal()">✕</button>
+        </div>
+
+        <div style="padding: 20px;">
+            <div class="picker-filter-grid">
+                <div class="cool-input-group">
+                    <label>Mit innál?</label>
+                    <select id="pickerTypeFilter" class="cool-select" onchange="handlePickerTypeChange()">
+                        <option value="all">🍺 + 🍹 Mindegy</option>
+                        <option value="beer">🍺 Csak Sör</option>
+                        <option value="drink">🍹 Csak Ital</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Min. Minőség</label>
+                    <select id="pickerScoreFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="0">🗑️ Bármilyen</option>
+                        <option value="5">😐 Iható (5+)</option>
+                        <option value="7">🙂 Jó (7+)</option>
+                        <option value="8.5">🤩 Kiváló (8.5+)</option>
+                        <option value="9.5">👑 Csak a krém (9.5+)</option>
+                    </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Konkrét fajta</label>
+                    <select id="pickerCategoryFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="all">Bármilyen fajta</option>
+                        </select>
+                </div>
+
+                <div class="cool-input-group">
+                    <label>Hol ittad?</label>
+                    <select id="pickerLocationFilter" class="cool-select" onchange="updateRouletteStats()">
+                        <option value="all">Bárhol</option>
+                        </select>
+                </div>
+            </div>
+
+            <div class="pool-stats-bar">
+                <div class="pool-stat-item">
+                    <span class="stat-label">A kalapban:</span>
+                    <span id="poolCountDisplay" class="stat-val">0 db</span>
+                </div>
+                <div class="pool-stat-divider"></div>
+                <div class="pool-stat-item">
+                    <span class="stat-label">Pool Átlag:</span>
+                    <span id="poolAvgDisplay" class="stat-val">0.0</span>
+                </div>
+            </div>
+
+            <div class="roulette-container">
+                <div class="roulette-window">
+                    <div id="rouletteText" class="roulette-text">❓</div>
+                </div>
+            </div>
+
+            <div id="winnerDetails" style="text-align: center; margin-top: 15px; opacity: 0; transition: opacity 0.5s; height: 0; overflow: hidden;">
+                <p id="winnerType" style="color: #8a73ff; font-weight: bold; font-size: 0.9rem; text-transform: uppercase;"></p>
+                <div id="winnerScore" style="color: #ffd700; font-size: 1.2rem; margin-top: 5px;"></div>
+                <div id="winnerLoc" style="color: #ccc; font-size: 0.8rem; margin-top: 2px;"></div>
+            </div>
+
+            <button id="spinBtn" class="auth-btn" onclick="startRoulette()" style="background: linear-gradient(135deg, #8a73ff, #6c5ce7); margin-top: 20px; font-size: 1.2rem; font-weight: 800; letter-spacing: 2px;">
+                PÖRGETÉS! 🎰
+            </button>
+        </div>
+    </div>
+</div>
+    <!-- Offline támogatás (sw.js-el együtt működik) -->
+    <script src="offline.js"></script>
+    <script src="js.js"></script>
+    <script src="easter_egg.js"></script>
 </body>
 </html>
