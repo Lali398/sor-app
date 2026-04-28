@@ -972,7 +972,7 @@ async function markIdeaAsDone(index) {
 
     // === GOOGLE AUTH KONFIGURÁCIÓ ===
     // Ide írd be a Google Cloud Console-ból kapott ID-t (ugyanaz, ami a Vercelben van)
-    const GOOGLE_CLIENT_ID = "264393562577-n5788hjp5siglcs5ctl0onh35h5uv7jg.apps.googleusercontent.com";
+    const GOOGLE_CLIENT_ID = "150385298353-u9f3mprds5rj6d6ju1fcscbdflp9bttr.apps.googleusercontent.com";
 
     function initGoogleAuth() {
         if (typeof google === 'undefined') return;
