@@ -5578,19 +5578,24 @@ window.openPrizeModal = function() {
     window.switchStatsSubTab = function(tabName) {
         // Gombok aktív állapota
         document.querySelectorAll('.stats-sub-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if(btn.textContent.toLowerCase().includes(tabName === 'overview' ? 'áttekintés' : 
-               tabName === 'trends' ? 'idővonal' : 
-               tabName === 'radar' ? 'ízvilág' : 'fun')) {
-                btn.classList.add('active');
-            }
-        });
+    btn.classList.remove('active');
+    const labelMap = {
+        overview: 'áttekintés',
+        trends: 'idővonal',
+        radar: 'ízvilág',
+        consumption: 'fogyasztás',
+        fun: 'fun'
+    };
+    if (btn.textContent.toLowerCase().includes(labelMap[tabName] || '')) {
+        btn.classList.add('active');
+    }
+});
     
         // Panelek váltása
         document.querySelectorAll('.stats-sub-pane').forEach(pane => pane.classList.remove('active'));
         document.getElementById(`stats-sub-${tabName}`).classList.add('active');
         if (tabName === 'consumption') {
-            renderConsumptionStats();
+    setTimeout(() => renderConsumptionStats(), 50);
         }
     };
     
