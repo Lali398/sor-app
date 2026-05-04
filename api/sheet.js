@@ -1553,6 +1553,45 @@ case 'EDIT_USER_DRINK': {
                     
                     return res.status(200).json({ message: "Ajánlás és a hozzá tartozó szavazatok sikeresen törölve!" });
                 }
+            case 'ADD_CONSUMPTION': {
+            const userData = verifyUser(req);
+            const { beerName, beerId, qty, dlPerGlass, totalDl, abv } = req.body;
+            const newRow = [
+                new Date().toISOString().replace('T', ' ').substring(0, 19),
+                userData.email,
+                beerName,
+                beerId,
+                qty,
+                dlPerGlass,
+                totalDl,
+                abv
+            ];
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: SPREADSHEET_ID,
+                range: 'Fogyasztás napló',
+                valueInputOption: 'USER_ENTERED',
+                resource: { values: [newRow] },
+            });
+            return res.status(201).json({ message: 'Fogyasztás rögzítve!' });
+        }
+        
+        case 'GET_CONSUMPTIONS': {
+            const userData = verifyUser(req);
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: SPREADSHEET_ID,
+                range: 'Fogyasztás napló!A:H'
+            });
+            const rows = response.data.values || [];
+            const userRows = rows.filter(r => r[1] === userData.email);
+            const consMap = {};
+            userRows.forEach(r => {
+                const beerId = r[3];
+                if (!consMap[beerId]) consMap[beerId] = { count: 0, totalDl: 0 };
+                consMap[beerId].count  += parseInt(r[4]) || 0;
+                consMap[beerId].totalDl += parseInt(r[6]) || 0;
+            });
+            return res.status(200).json(consMap);
+        }
 
             case 'CLAIM_REWARD': {
                 const userData = verifyUser(req);
