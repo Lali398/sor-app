@@ -883,7 +883,6 @@ case 'GET_ACHIEVEMENTS': {
     existingBeerId    // O: UUID
 ];
     const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:O${globalIndex + 1}`;
-    const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
         range: range,
