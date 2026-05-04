@@ -837,6 +837,7 @@ case 'GET_ACHIEVEMENTS': {
     const userData = verifyUser(req);
     const { index, beerName, type, location, beerPercentage, look, smell, taste, notes } = req.body;
     
+    
     const beersResponse = await sheets.spreadsheets.values.get({ 
         spreadsheetId: SPREADSHEET_ID, 
         range: GUEST_BEERS_SHEET 
@@ -859,6 +860,8 @@ case 'GET_ACHIEVEMENTS': {
     
     const totalScore = numLook + numSmell + numTaste;
     const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+    const existingBeerId = targetRow[14] || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
     
     const updatedRow = [
     targetRow[0],    // A: Dátum
@@ -876,9 +879,10 @@ case 'GET_ACHIEVEMENTS': {
     // -----------------------------
     notes || '',     // L: Jegyzetek
     targetRow[12],   // M: Jóváhagyva?
-    userData.email   // N: Email
+    userData.email,   // N: Email
+    existingBeerId    // O: UUID
 ];
-    
+    const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:O${globalIndex + 1}`;
     const range = `${GUEST_BEERS_SHEET}!A${globalIndex + 1}:N${globalIndex + 1}`;
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
