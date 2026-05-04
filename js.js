@@ -1545,6 +1545,8 @@ function setupAdminRecap() {
         if (typeof updateMyStatistics === 'function') {
         updateMyStatistics();
     }
+        // Fogyasztási adatok betöltése induláskor
+        await loadConsumptionData();
 
 
     } catch (error) {
@@ -7808,6 +7810,21 @@ window.addEventListener('appinstalled', () => {
     console.log('PWA sikeresen telepítve!');
     showSuccess('Az alkalmazás sikeresen telepítve! 🎉');
 });
+
+    async function loadConsumptionData() {
+    try {
+        const res = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_CONSUMPTIONS' })
+        });
+        if (res.ok) {
+            currentConsMap = await res.json();
+        }
+    } catch(e) {
+        currentConsMap = {};
+    }
+}
     // ===== FOGYASZTÁS NAPLÓ =====
 let consSelectedBeer = null;
 let consQty = 1;
