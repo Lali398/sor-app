@@ -509,6 +509,7 @@
                 <button class="stats-sub-btn active" onclick="switchStatsSubTab('overview')">Áttekintés</button>
                 <button class="stats-sub-btn" onclick="switchStatsSubTab('trends')">Idővonal</button>
                 <button class="stats-sub-btn" onclick="switchStatsSubTab('radar')">Ízvilág</button>
+                <button class="stats-sub-btn" onclick="switchStatsSubTab('consumption')">Fogyasztás 🍻</button>
                 <button class="stats-sub-btn" onclick="switchStatsSubTab('fun')">Fun Facts</button>
             </div>
         </header>
@@ -591,6 +592,42 @@
         </div>
 
     </section>
+</div>
+
+                <div id="stats-sub-consumption" class="stats-sub-pane">
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <h4>Összes pohár</h4>
+            <p id="statConsGlasses" style="color:#00d4aa;">0</p>
+        </div>
+        <div class="kpi-card">
+            <h4>Összes dl</h4>
+            <p id="statConsDl" style="color:#36a2eb;">0</p>
+        </div>
+        <div class="kpi-card">
+            <h4>Becsült egységek</h4>
+            <p id="statConsUnits" style="color:#ff9f40;">0</p>
+            <small style="color:#666;font-size:0.7rem;">alkohol egység</small>
+        </div>
+    </div>
+
+    <h4 style="color:#aaa;margin:25px 0 10px 0;">Top 5 leggyakrabban ivott sör</h4>
+    <div class="chart-container" style="height:280px;">
+        <canvas id="statConsTopChart"></canvas>
+    </div>
+
+    <h4 style="color:#aaa;margin:25px 0 10px 0;">Fogyasztás az idő folyamán (dl)</h4>
+    <div class="chart-container" style="height:250px;">
+        <canvas id="statConsTrendChart"></canvas>
+    </div>
+
+    <h4 style="color:#aaa;margin:25px 0 10px 0;">Értékelés vs Fogyasztás</h4>
+    <p style="color:#666;font-size:0.8rem;margin-bottom:10px;">Amit a legtöbbet iszol, azt is értékeled a legtöbbre?</p>
+    <div class="chart-container" style="height:280px;">
+        <canvas id="statConsScatterChart"></canvas>
+    </div>
+
 </div>
 
                 <!-- VISSZATEKINTŐ TAB -->
