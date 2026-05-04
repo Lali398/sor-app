@@ -860,7 +860,7 @@ case 'GET_ACHIEVEMENTS': {
     
     const totalScore = numLook + numSmell + numTaste;
     const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
-    const existingBeerId = targetRow[14] || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const existingBeerId = targetRow[14] || `user-${(targetRow[2]||'').replace(/\s+/g,'-')}-${targetRow[0]||''}`;
 
     
     const updatedRow = [
