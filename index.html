@@ -230,6 +230,10 @@
                     <span class="icon">💡</span>
                     <span class="label">Ötletláda</span>
                 </button>
+                <button class="nav-item" data-tab-content="user-consumption-content">
+                    <span class="icon">📦</span>
+                    <span class="label">Fogyasztás</span>
+                </button>
                 <button class="nav-item" data-tab-content="user-stats-content">
                     <span class="icon">📊</span>
                     <span class="label">Statisztikáim</span>
@@ -432,6 +436,60 @@
                         <div id="pendingIdeasList" class="idea-list-vertical"></div>
                     </section>
                 </div>
+
+
+                <div class="main-tab-pane" id="user-consumption-content">
+  <section class="card">
+    <header class="card-header">
+      <h3>Fogyasztás naplózása 📦</h3>
+    </header>
+    <p style="color:#aaa;font-size:0.85rem;margin-bottom:14px;">Válassz egy már értékelt sörtesztet és add meg a mennyiséget.</p>
+
+    <div class="live-search-container">
+      <div class="search-input-wrapper">
+        <input type="text" id="consSearchInput" class="live-search-input" placeholder="Keresés a söreim között..." autocomplete="off" oninput="filterConsList()">
+        <div class="search-icon">🔍</div>
+      </div>
+    </div>
+
+    <div id="consBeerList" style="margin-top:12px;"></div>
+
+    <div id="consSelectedPanel" style="display:none;margin-top:14px;background:rgba(138,115,255,0.1);border:1px solid rgba(138,115,255,0.3);border-radius:12px;padding:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:1rem;font-weight:600;color:#c3aaff;flex:1;" id="consSelName">–</span>
+        <select id="consVolSelect" class="cool-select" style="width:auto;" onchange="consUpdateTotal()">
+          <option value="3">3 dl</option>
+          <option value="4">4 dl</option>
+          <option value="5" selected>5 dl</option>
+          <option value="10">0.5 l</option>
+          <option value="20">1 l</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:0.85rem;color:#aaa;">Mennyiség:</span>
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.3);border-radius:20px;padding:3px;">
+          <button onclick="consChangeQty(-1)" style="width:26px;height:26px;border-radius:50%;background:rgba(138,115,255,0.3);border:1px solid rgba(138,115,255,0.5);color:#c3aaff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+          <span id="consQtyVal" style="min-width:24px;text-align:center;font-weight:700;color:#fff;">1</span>
+          <button onclick="consChangeQty(1)" style="width:26px;height:26px;border-radius:50%;background:rgba(138,115,255,0.3);border:1px solid rgba(138,115,255,0.5);color:#c3aaff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+        </div>
+        <span id="consTotalVol" style="font-size:0.85rem;color:#888;">= 5 dl</span>
+      </div>
+      <button onclick="consLogEntry()" class="auth-btn" style="margin-top:12px;">
+        <span class="btn-text">🍺 Fogyasztás rögzítése</span>
+        <span class="btn-loading"><div class="spinner"></div></span>
+      </button>
+    </div>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+      <h4 style="color:#aaa;font-size:0.85rem;margin-bottom:10px;">📅 Mai összesítő</h4>
+      <div class="kpi-grid">
+        <div class="kpi-card"><h4>Poharak</h4><p id="consTodayGlasses" style="color:#ffd700;">0</p></div>
+        <div class="kpi-card"><h4>Össz. dl</h4><p id="consTodayDl" style="color:#74b9ff;">0</p></div>
+        <div class="kpi-card"><h4>Alk. egység</h4><p id="consTodayUnits" style="color:#00d4aa;">0.0</p></div>
+      </div>
+    </div>
+  </section>
+</div>
 
                 <!-- STATISZTIKA TAB-->
 
