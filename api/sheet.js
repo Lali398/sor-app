@@ -675,6 +675,7 @@ case 'GET_ACHIEVEMENTS': {
                 const userBeers = beersResponse.data.values
                   ?.filter(row => row[13] === userData.email) 
                   .map(row => ({
+                      id: `user-${(row[2] || '').replace(/\s+/g, '-')}-${row[0] || ''}`,
                       date: row[0],
                       beerName: row[2],
                       
