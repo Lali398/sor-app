@@ -684,7 +684,7 @@ case 'GET_ACHIEVEMENTS': {
 
     allRows.forEach((row, i) => {
         if (row[13] === userData.email && !row[14]) {
-            const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            const newId = `${Date.now()}${i}-${Math.random().toString(36).slice(2, 8)}`;
             const oldFallbackId = `user-${(row[2]||'').replace(/\s+/g,'-')}-${row[0]||''}`;
             
             oldToNewIdMap[oldFallbackId] = newId;
