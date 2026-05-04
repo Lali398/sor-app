@@ -1557,6 +1557,16 @@ case 'EDIT_USER_DRINK': {
             case 'ADD_CONSUMPTION': {
             const userData = verifyUser(req);
             const { beerName, beerId, qty, dlPerGlass, totalDl, abv } = req.body;
+            const beersResponse = await sheets.spreadsheets.values.get({
+                spreadsheetId: SPREADSHEET_ID,
+                range: GUEST_BEERS_SHEET
+            });
+            const userOwnsThisBeer = (beersResponse.data.values || [])
+                .some(row => row[13] === userData.email && row[2] === beerName);
+        
+            if (!userOwnsThisBeer) {
+                return res.status(403).json({ error: "Ez a sör nem a te listádban szerepel." });
+            }
             const newRow = [
                 new Date().toISOString().replace('T', ' ').substring(0, 19),
                 userData.email,
