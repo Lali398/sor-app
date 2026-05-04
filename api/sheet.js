@@ -670,31 +670,86 @@ case 'GET_ACHIEVEMENTS': {
 }
             
             case 'GET_USER_BEERS': {
-                const userData = verifyUser(req);
-                const beersResponse = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
-                const userBeers = beersResponse.data.values
-                  ?.filter(row => row[13] === userData.email) 
-                  .map(row => ({
-                      id: row[14] || `user-${(row[2]||'').replace(/\s+/g,'-')}-${row[0]||''}`, // O oszlop, fallback a régiekhez
-                      date: row[0],
-                      beerName: row[2],
-                      
-                      // JAVÍTOTT INDEXEK:
-                      location: row[3],       // D oszlop (volt 4)
-                      type: row[4],           // E oszlop (volt 3)
-                      look: row[5] || 0,
-                      smell: row[6] || 0,
-                      taste: row[7] || 0,
+    const userData = verifyUser(req);
+    const beersResponse = await sheets.spreadsheets.values.get({ 
+        spreadsheetId: SPREADSHEET_ID, 
+        range: GUEST_BEERS_SHEET 
+    });
+    
+    const allRows = beersResponse.data.values || [];
+    
+    // === MIGRÁCIÓ: régi söröknél UUID pótlása ===
+    const oldToNewIdMap = {}; // { 'user-Heineken-2024-01-15': '1720000000000-abc123' }
+    const batchUpdates = [];
 
-                      beerPercentage: row[8] || 0, // I oszlop (volt 8)
-                      totalScore: row[9] || 0,      // J oszlop (volt 9)
-                      avg: row[10] || 0,             // K oszlop (volt 10)
-                      
-                      
-                      notes: row[11] || ''
-                  })) || [];
-              return res.status(200).json(userBeers);
+    allRows.forEach((row, i) => {
+        if (row[13] === userData.email && !row[14]) {
+            const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            const oldFallbackId = `user-${(row[2]||'').replace(/\s+/g,'-')}-${row[0]||''}`;
+            
+            oldToNewIdMap[oldFallbackId] = newId;
+            row[14] = newId;
+
+            batchUpdates.push({
+                range: `${GUEST_BEERS_SHEET}!O${i + 1}`,
+                values: [[newId]]
+            });
+        }
+    });
+
+    // Ha van mit frissíteni
+    if (batchUpdates.length > 0) {
+        // 1. UUID-k mentése a sörökre
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            resource: { valueInputOption: 'USER_ENTERED', data: batchUpdates }
+        });
+
+        // 2. Fogyasztásnapló régi ID-k frissítése
+        const consResponse = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: 'Fogyasztás napló!A:H'
+        });
+        const consRows = consResponse.data.values || [];
+        const consBatchUpdates = [];
+
+        consRows.forEach((row, i) => {
+            if (row[1] === userData.email && oldToNewIdMap[row[3]]) {
+                consBatchUpdates.push({
+                    range: `Fogyasztás napló!D${i + 1}`,
+                    values: [[oldToNewIdMap[row[3]]]]
+                });
             }
+        });
+
+        if (consBatchUpdates.length > 0) {
+            await sheets.spreadsheets.values.batchUpdate({
+                spreadsheetId: SPREADSHEET_ID,
+                resource: { valueInputOption: 'USER_ENTERED', data: consBatchUpdates }
+            });
+        }
+    }
+    // ============================================
+
+    const userBeers = allRows
+        .filter(row => row[13] === userData.email)
+        .map(row => ({
+            id: row[14],
+            date: row[0],
+            beerName: row[2],
+            location: row[3],
+            type: row[4],
+            look: row[5] || 0,
+            smell: row[6] || 0,
+            taste: row[7] || 0,
+            beerPercentage: row[8] || 0,
+            totalScore: row[9] || 0,
+            avg: row[10] || 0,
+            notes: row[11] || ''
+        }));
+
+    return res.status(200).json(userBeers);
+}
 
             case 'ADD_USER_BEER': {
                 const userData = verifyUser(req);
