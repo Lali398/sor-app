@@ -273,6 +273,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     let selectedSuggestionIndex = -1;
     let charts = {};
     let currentUserBeers = [];
+    let currentConsMap = {}; // { beerId: { count, totalDl } }
     let currentUserDrinks = [];
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
@@ -1118,6 +1119,8 @@ async function markIdeaAsDone(index) {
             
             // 4. Sörök listájának frissítése (hogy mindig friss legyen)
             if(targetPaneId === 'admin-beers-content') loadAdminData();
+            // 5.
+            if (targetPaneId === 'user-consumption-content') loadConsBeerList();
         });
     });
 }
@@ -7805,4 +7808,174 @@ window.addEventListener('appinstalled', () => {
     console.log('PWA sikeresen telepítve!');
     showSuccess('Az alkalmazás sikeresen telepítve! 🎉');
 });
+    // ===== FOGYASZTÁS NAPLÓ =====
+let consSelectedBeer = null;
+let consQty = 1;
+let consTodayGlasses = 0;
+let consTodayDl = 0;
+
+async function loadConsBeerList() {
+    const listEl = document.getElementById('consBeerList');
+    if (!listEl) return;
+
+    // Fogyasztási előzmények lekérése
+    try {
+        const res = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({ action: 'GET_CONSUMPTIONS' })
+        });
+        currentConsMap = await res.json();
+    } catch(e) {
+        currentConsMap = {};
+    }
+
+    const beers = currentUserBeers;
+    if (!beers || beers.length === 0) {
+        listEl.innerHTML = '<p style="color:#777;font-size:0.85rem;text-align:center;padding:20px;">Még nincsenek értékelt söreid.</p>';
+        return;
+    }
+
+    const maxCount = Math.max(...Object.values(currentConsMap).map(c => c.count), 1);
+    listEl.innerHTML = '';
+
+    beers.forEach(b => {
+        const cons = currentConsMap[b.id] || { count: 0, totalDl: 0 };
+        const isHigh = cons.count >= 4;
+        const fillPct = Math.round(cons.count / maxCount * 100);
+
+        const bubbleStyle = cons.count === 0
+            ? 'color:#555;background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);'
+            : isHigh
+                ? 'color:#f0a500;background:rgba(243,156,18,0.15);border-color:rgba(243,156,18,0.4);'
+                : 'color:#00d4aa;background:rgba(0,176,155,0.15);border-color:rgba(0,176,155,0.35);';
+
+        const row = document.createElement('div');
+        row.id = 'consRow-' + b.id;
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.25s;margin-bottom:6px;';
+        row.innerHTML = `
+            <span style="font-size:1.3rem;">🍺</span>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:0.85rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(b.beerName)}</div>
+                <div style="font-size:0.75rem;color:#666;">${escapeHtml(b.type || '')} · ${b.beerPercentage || 0}%</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:8px;">${b.avg?.toFixed ? b.avg.toFixed(1) : b.avg || '–'}</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;">
+                <div id="consBubble-${b.id}" style="font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:8px;border:1px solid;white-space:nowrap;${bubbleStyle}">${cons.count === 0 ? '—' : cons.count + 'x'}</div>
+                <div style="width:44px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
+                    <div id="consFill-${b.id}" style="height:100%;border-radius:2px;background:linear-gradient(90deg,#00b09b,#96c93d);width:${fillPct}%;transition:width 0.6s;"></div>
+                </div>
+                <div id="consDl-${b.id}" style="font-size:0.65rem;color:${cons.totalDl > 0 ? '#00b09b' : '#555'};">${cons.totalDl > 0 ? cons.totalDl + ' dl' : ''}</div>
+            </div>`;
+        row.onmouseenter = () => { if (consSelectedBeer?.id !== b.id) row.style.background = 'rgba(138,115,255,0.1)'; };
+        row.onmouseleave = () => { if (consSelectedBeer?.id !== b.id) row.style.background = 'rgba(255,255,255,0.04)'; };
+        row.onclick = () => consSelectBeer(b, row);
+        listEl.appendChild(row);
+    });
+}
+
+function consSelectBeer(b, row) {
+    consSelectedBeer = b;
+    document.querySelectorAll('#consBeerList > div').forEach(r => {
+        r.style.background = 'rgba(255,255,255,0.04)';
+        r.style.borderColor = 'rgba(255,255,255,0.08)';
+    });
+    row.style.background = 'rgba(138,115,255,0.18)';
+    row.style.borderColor = 'rgba(138,115,255,0.5)';
+    document.getElementById('consSelName').textContent = b.beerName;
+    document.getElementById('consSelectedPanel').style.display = 'block';
+    consUpdateTotal();
+}
+
+window.consChangeQty = function(d) {
+    consQty = Math.max(1, Math.min(10, consQty + d));
+    document.getElementById('consQtyVal').textContent = consQty;
+    consUpdateTotal();
+};
+
+window.consUpdateTotal = function() {
+    const dl = parseInt(document.getElementById('consVolSelect').value) * consQty;
+    document.getElementById('consTotalVol').textContent = `= ${dl} dl`;
+};
+
+window.consLogEntry = async function() {
+    if (!consSelectedBeer) return;
+    const btn = document.querySelector('#consSelectedPanel .auth-btn');
+    setLoading(btn, true);
+
+    const dlPerGlass = parseInt(document.getElementById('consVolSelect').value);
+    const totalDl = dlPerGlass * consQty;
+
+    try {
+        const res = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+            body: JSON.stringify({
+                action: 'ADD_CONSUMPTION',
+                beerName: consSelectedBeer.beerName,
+                beerId: consSelectedBeer.id,
+                qty: consQty,
+                dlPerGlass,
+                totalDl,
+                abv: consSelectedBeer.beerPercentage || 0
+            })
+        });
+        if (!res.ok) throw new Error();
+
+        // Mai összesítő frissítése
+        consTodayGlasses += consQty;
+        consTodayDl += totalDl;
+        document.getElementById('consTodayGlasses').textContent = consTodayGlasses;
+        document.getElementById('consTodayDl').textContent = consTodayDl;
+        document.getElementById('consTodayUnits').textContent =
+            (consTodayDl * 0.01 * (consSelectedBeer.beerPercentage || 5) * 0.789).toFixed(1);
+
+        // Bubble élő frissítése (nem kell újratöltés)
+        const bid = consSelectedBeer.id;
+        if (!currentConsMap[bid]) currentConsMap[bid] = { count: 0, totalDl: 0 };
+        currentConsMap[bid].count += consQty;
+        currentConsMap[bid].totalDl += totalDl;
+
+        const newCount = currentConsMap[bid].count;
+        const maxCount = Math.max(...Object.values(currentConsMap).map(c => c.count), 1);
+        const isHigh = newCount >= 4;
+
+        const bubbleEl = document.getElementById('consBubble-' + bid);
+        const fillEl = document.getElementById('consFill-' + bid);
+        const dlEl = document.getElementById('consDl-' + bid);
+
+        if (bubbleEl) {
+            bubbleEl.textContent = newCount + 'x';
+            bubbleEl.style.cssText = `font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:8px;border:1px solid;white-space:nowrap;${
+                isHigh ? 'color:#f0a500;background:rgba(243,156,18,0.15);border-color:rgba(243,156,18,0.4);'
+                       : 'color:#00d4aa;background:rgba(0,176,155,0.15);border-color:rgba(0,176,155,0.35);'}`;
+        }
+        if (fillEl) fillEl.style.width = Math.round(newCount / maxCount * 100) + '%';
+        if (dlEl) { dlEl.textContent = currentConsMap[bid].totalDl + ' dl'; dlEl.style.color = '#00b09b'; }
+
+        // Többi fill arány frissítése
+        Object.keys(currentConsMap).forEach(id => {
+            if (id !== bid) {
+                const f = document.getElementById('consFill-' + id);
+                if (f) f.style.width = Math.round(currentConsMap[id].count / maxCount * 100) + '%';
+            }
+        });
+
+        consQty = 1;
+        document.getElementById('consQtyVal').textContent = 1;
+        showSuccess('Fogyasztás rögzítve! 🍻');
+    } catch(e) {
+        showError('Hiba a rögzítésnél, próbáld újra.');
+    } finally {
+        setLoading(btn, false);
+    }
+};
+
+window.filterConsList = function() {
+    const q = document.getElementById('consSearchInput').value.toLowerCase();
+    document.querySelectorAll('#consBeerList > div').forEach(row => {
+        const name = row.querySelector('div > div')?.textContent.toLowerCase() || '';
+        row.style.display = name.includes(q) ? 'flex' : 'none';
+    });
+};
 });
