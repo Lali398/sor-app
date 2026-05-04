@@ -5589,10 +5589,11 @@ window.openPrizeModal = function() {
         // Panelek váltása
         document.querySelectorAll('.stats-sub-pane').forEach(pane => pane.classList.remove('active'));
         document.getElementById(`stats-sub-${tabName}`).classList.add('active');
+        if (tabName === 'consumption') {
+            renderConsumptionStats();
+        }
     };
-    if (tabName === 'consumption') {
-    renderConsumptionStats();
-}
+    
     // 2. Fő logika: Adatok feldolgozása és kirajzolása
     function updateMyStatistics() {
         const scope = document.getElementById('statsScopeFilter')?.value || 'all';
