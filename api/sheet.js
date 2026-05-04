@@ -675,7 +675,7 @@ case 'GET_ACHIEVEMENTS': {
                 const userBeers = beersResponse.data.values
                   ?.filter(row => row[13] === userData.email) 
                   .map(row => ({
-                      id: `user-${(row[2] || '').replace(/\s+/g, '-')}-${row[0] || ''}`,
+                      id: row[14] || `user-${(row[2]||'').replace(/\s+/g,'-')}-${row[0]||''}`, // O oszlop, fallback a régiekhez
                       date: row[0],
                       beerName: row[2],
                       
@@ -707,6 +707,7 @@ case 'GET_ACHIEVEMENTS': {
                 
                 const totalScore = numLook + numSmell + numTaste;
                 const avgScore = (totalScore / 3).toFixed(2).replace('.', ',');
+                const beerId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 
                 // JAVÍTOTT SORREND:
                 const newRow = [
@@ -725,7 +726,8 @@ case 'GET_ACHIEVEMENTS': {
                 // ------------------------------------------
                 notes || '',     // L: Jegyzetek
                 'Nem',           // M: Jóváhagyva?
-                userData.email   // N: Email
+                userData.email,  // N: Email
+                beerId           //O: Stabil ID
             ];
                 
                 await sheets.spreadsheets.values.append({
