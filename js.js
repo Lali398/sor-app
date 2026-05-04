@@ -274,6 +274,7 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     let charts = {};
     let currentUserBeers = [];
     let currentConsMap = {}; // { beerId: { count, totalDl } }
+    let currentConsEntries = [];
     let currentUserDrinks = [];
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
@@ -5589,7 +5590,9 @@ window.openPrizeModal = function() {
         document.querySelectorAll('.stats-sub-pane').forEach(pane => pane.classList.remove('active'));
         document.getElementById(`stats-sub-${tabName}`).classList.add('active');
     };
-    
+    if (tabName === 'consumption') {
+    renderConsumptionStats();
+}
     // 2. Fő logika: Adatok feldolgozása és kirajzolása
     function updateMyStatistics() {
         const scope = document.getElementById('statsScopeFilter')?.value || 'all';
@@ -5863,6 +5866,146 @@ window.openPrizeModal = function() {
             }
         });
     });
+
+    function renderConsumptionStats() {
+    const entries = currentConsEntries || [];
+    const consMap = currentConsMap || {};
+
+    // --- KPI ---
+    const totalGlasses = entries.reduce((s, e) => s + e.qty, 0);
+    const totalDl = entries.reduce((s, e) => s + e.totalDl, 0);
+    // Alkohol egység = dl * (abv/100) * 0.789
+    const totalUnits = entries.reduce((s, e) => s + (e.totalDl * (e.abv / 100) * 0.789), 0);
+
+    document.getElementById('statConsGlasses').textContent = totalGlasses;
+    document.getElementById('statConsDl').textContent = totalDl;
+    document.getElementById('statConsUnits').textContent = totalUnits.toFixed(1);
+
+    // Előző chartok törlése
+    ['statConsTopChart', 'statConsTrendChart', 'statConsScatterChart'].forEach(id => {
+        if (myStatsCharts[id]) { myStatsCharts[id].destroy(); delete myStatsCharts[id]; }
+    });
+
+    if (entries.length === 0) return;
+
+    // --- 1. TOP 5 BAR CHART ---
+    const beerTotals = {};
+    Object.entries(consMap).forEach(([beerId, data]) => {
+        const beer = (currentUserBeers || []).find(b => b.id === beerId);
+        const name = beer ? beer.beerName : beerId.split('-')[1] || 'Ismeretlen';
+        beerTotals[name] = (beerTotals[name] || 0) + data.count;
+    });
+    const top5 = Object.entries(beerTotals).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+    const ctxTop = document.getElementById('statConsTopChart')?.getContext('2d');
+    if (ctxTop && top5.length > 0) {
+        myStatsCharts['statConsTopChart'] = new Chart(ctxTop, {
+            type: 'bar',
+            data: {
+                labels: top5.map(x => x[0]),
+                datasets: [{
+                    label: 'Poharak száma',
+                    data: top5.map(x => x[1]),
+                    backgroundColor: ['#00d4aa','#36a2eb','#ffce56','#ff6384','#9966ff'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: '#ccc' } },
+                    y: { grid: { display: false }, ticks: { color: '#ccc' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // --- 2. IDŐ TREND (heti dl összesítő) ---
+    const weekMap = {};
+    entries.forEach(e => {
+        if (!e.date) return;
+        const d = new Date(e.date.replace(' ', 'T'));
+        if (isNaN(d.getTime())) return;
+        // ISO hét: YYYY-Www
+        const jan1 = new Date(d.getFullYear(), 0, 1);
+        const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        const key = `${d.getFullYear()}-W${String(week).padStart(2,'0')}`;
+        weekMap[key] = (weekMap[key] || 0) + e.totalDl;
+    });
+    const sortedWeeks = Object.keys(weekMap).sort();
+
+    const ctxTrend = document.getElementById('statConsTrendChart')?.getContext('2d');
+    if (ctxTrend && sortedWeeks.length > 0) {
+        const grad = ctxTrend.createLinearGradient(0, 0, 0, 250);
+        grad.addColorStop(0, 'rgba(0,212,170,0.4)');
+        grad.addColorStop(1, 'rgba(0,212,170,0)');
+        myStatsCharts['statConsTrendChart'] = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: sortedWeeks,
+                datasets: [{
+                    label: 'dl / hét',
+                    data: sortedWeeks.map(w => weekMap[w]),
+                    borderColor: '#00d4aa',
+                    backgroundColor: grad,
+                    fill: true, tension: 0.4, pointRadius: 4,
+                    pointBackgroundColor: '#00d4aa'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: '#ccc' } },
+                    x: { grid: { display: false }, ticks: { color: '#ccc', maxTicksLimit: 8 } }
+                },
+                plugins: { legend: { labels: { color: '#ccc' } } }
+            }
+        });
+    }
+
+    // --- 3. SCATTER: Értékelés vs Fogyasztás ---
+    const scatterData = Object.entries(consMap).map(([beerId, cons]) => {
+        const beer = (currentUserBeers || []).find(b => b.id === beerId);
+        if (!beer) return null;
+        return {
+            x: parseFloat(beer.avg.toString().replace(',','.')) || 0,
+            y: cons.count,
+            label: beer.beerName
+        };
+    }).filter(Boolean);
+
+    const ctxScatter = document.getElementById('statConsScatterChart')?.getContext('2d');
+    if (ctxScatter && scatterData.length > 0) {
+        myStatsCharts['statConsScatterChart'] = new Chart(ctxScatter, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Sörök',
+                    data: scatterData,
+                    backgroundColor: 'rgba(255, 215, 0, 0.7)',
+                    pointRadius: 8, pointHoverRadius: 11
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Értékelés átlag', color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: '#ccc' } },
+                    y: { title: { display: true, text: 'Poharak száma', color: '#aaa' }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: '#ccc' } }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.raw.label}: ${ctx.raw.x} pont, ${ctx.raw.y}x`
+                        }
+                    },
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+}
     // === NÉZET VÁLASZTÓ LOGIKA (TABLE VS CARDS) ===
 
 function initViewModeSelector() {
@@ -7818,11 +7961,15 @@ window.addEventListener('appinstalled', () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
             body: JSON.stringify({ action: 'GET_CONSUMPTIONS' })
         });
+        
         if (res.ok) {
-            currentConsMap = await res.json();
+            const data = await res.json();
+            currentConsMap = data.map || {};      // ✅ .map kell most
+            currentConsEntries = data.entries || []; // ✅ ÚJ globális változó
         }
     } catch(e) {
         currentConsMap = {};
+        currentConsEntries = [];
     }
 }
     // ===== FOGYASZTÁS NAPLÓ =====
@@ -7837,15 +7984,18 @@ async function loadConsBeerList() {
 
     // Fogyasztási előzmények lekérése
     try {
-        const res = await fetch('/api/sheet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
-            body: JSON.stringify({ action: 'GET_CONSUMPTIONS' })
-        });
-        currentConsMap = await res.json();
-    } catch(e) {
-        currentConsMap = {};
-    }
+    const res = await fetch('/api/sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` },
+        body: JSON.stringify({ action: 'GET_CONSUMPTIONS' })
+    });
+    const data = await res.json();
+    currentConsMap = data.map || {};
+    currentConsEntries = data.entries || [];
+} catch(e) {
+    currentConsMap = {};
+    currentConsEntries = [];
+}
 
     const beers = currentUserBeers;
     if (!beers || beers.length === 0) {
