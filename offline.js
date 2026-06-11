@@ -1,6 +1,44 @@
 (function () {
   'use strict';
 
+  // ─── "Liquid Aurora" dizájnréteg betöltése (theme.css + fx.js) ───
+  // Innen töltjük be, hogy az index.html-t ne kelljen módosítani.
+  // A body-t rövid időre elrejtjük, majd áttűnéssel fedjük fel, hogy
+  // ne villanjon a régi dizájn; minden ágon (onload/onerror/timeout)
+  // garantáltan visszakapcsoljuk a láthatóságot.
+  try {
+    var themeLink = document.createElement('link');
+    themeLink.rel = 'stylesheet';
+    themeLink.href = 'theme.css';
+
+    var fxScript = document.createElement('script');
+    fxScript.src = 'fx.js';
+    fxScript.defer = true;
+
+    var veil = document.createElement('style');
+    veil.textContent = 'body{opacity:0}';
+
+    var revealed = false;
+    var reveal = function () {
+      if (revealed) return;
+      revealed = true;
+      veil.textContent = 'body{opacity:1;transition:opacity .5s ease}';
+      setTimeout(function () {
+        try { veil.remove(); } catch (_) { /* no-op */ }
+      }, 700);
+    };
+
+    themeLink.onload = reveal;
+    themeLink.onerror = reveal;
+    setTimeout(reveal, 1200); // biztonsági háló lassú kapcsolatnál
+
+    document.head.appendChild(veil);
+    document.head.appendChild(themeLink);
+    document.head.appendChild(fxScript);
+  } catch (_) {
+    /* a dizájnréteg hibája nem akadályozhatja az appot */
+  }
+
   // ─── Offline banner injektálása ───────────────────────────
   const BANNER_ID = 'offlineBanner';
   const BADGE_ID  = 'offlineQueueBadge';
