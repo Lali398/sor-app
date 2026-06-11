@@ -13,7 +13,7 @@
         /* ---- 1. Ripple effekt a gombokon (eseménydelegálás: a dinamikusan
            létrehozott gombokon is működik) ---- */
         document.addEventListener('pointerdown', function (e) {
-            var btn = e.target.closest && e.target.closest('.auth-btn, .action-btn, .recap-btn');
+            var btn = e.target.closest && e.target.closest('.auth-btn, .action-btn, .recap-btn, .story-btn, .ticket-reply-btn');
             if (!btn) return;
             try {
                 var rect = btn.getBoundingClientRect();
