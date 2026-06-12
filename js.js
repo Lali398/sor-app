@@ -1134,11 +1134,33 @@ async function markIdeaAsDone(index) {
 
 let leaderboardData = [];
 
-// A saját publikus profil kapcsoló állapota (alapértelmezés: bekapcsolva)
+// A saját publikus profil kapcsoló állapota (OPT-IN: alapértelmezés szerint kikapcsolva)
 function isMyProfilePublic() {
     const ud = JSON.parse(localStorage.getItem('userData') || 'null');
-    if (!ud) return true;
-    return localStorage.getItem(`public_profile_${ud.email}`) !== 'false';
+    if (!ud) return false;
+    return localStorage.getItem(`public_profile_optin_${ud.email}`) === 'true';
+}
+
+// A publikus profil be/kikapcsolása egy helyen (kapcsoló, bejelentő modal és toplista-sáv is ezt hívja).
+// Megvárható (await), hogy a felhő-szinkron után már az új állapotot lássa a szerver is.
+async function setPublicProfileOptIn(enabled, silent = false) {
+    const ud = JSON.parse(localStorage.getItem('userData') || 'null');
+    if (!ud) return;
+    localStorage.setItem(`public_profile_optin_${ud.email}`, enabled);
+
+    const ppToggle = document.getElementById('publicProfileToggle');
+    if (ppToggle) ppToggle.checked = enabled;
+
+    if (!silent) {
+        showNotification(
+            enabled
+                ? 'Publikus profil bekapcsolva! Mostantól szerepelsz a toplistán. 🏅'
+                : 'Publikus profil kikapcsolva. Lekerültél a toplistáról. 🔒',
+            'success'
+        );
+    }
+    renderLeaderboard();
+    await syncSettingsToCloud();
 }
 
 async function loadLeaderboard() {
@@ -1338,21 +1360,76 @@ window.closePublicProfileModal = function() {
     // Publikus profil kapcsoló (Fiókom fül)
     const ppToggle = document.getElementById('publicProfileToggle');
     if (ppToggle) {
-        ppToggle.addEventListener('change', (e) => {
-            const ud = JSON.parse(localStorage.getItem('userData') || 'null');
-            if (!ud) return;
-            localStorage.setItem(`public_profile_${ud.email}`, e.target.checked);
-            syncSettingsToCloud();
-            showNotification(
-                e.target.checked
-                    ? 'Publikus profil bekapcsolva! Mostantól szerepelsz a toplistán. 🏅'
-                    : 'Publikus profil kikapcsolva. Lekerültél a toplistáról. 🔒',
-                'success'
-            );
-            renderLeaderboard();
+        ppToggle.addEventListener('change', (e) => setPublicProfileOptIn(e.target.checked));
+    }
+
+    // "Bekapcsolom" gomb a toplista figyelmeztető sávjában
+    const noteBtn = document.getElementById('enablePublicProfileBtn');
+    if (noteBtn) {
+        noteBtn.addEventListener('click', async () => {
+            noteBtn.disabled = true;
+            await setPublicProfileOptIn(true);
+            noteBtn.disabled = false;
+            loadLeaderboard();
         });
     }
 })();
+
+// ======================================================
+// === ÚJ FUNKCIÓ BEJELENTŐ (TOPLISTA ANNOUNCEMENT) ===
+// ======================================================
+
+function maybeShowLeaderboardAnnouncement() {
+    const ud = JSON.parse(localStorage.getItem('userData') || 'null');
+    if (!ud) return;
+
+    const flagKey = `seen_leaderboard_announce_${ud.email}`;
+    if (localStorage.getItem(flagKey)) return;
+
+    // Ha másik eszközön már bekapcsolta, nem zaklatjuk a bejelentővel
+    if (localStorage.getItem(`public_profile_optin_${ud.email}`) === 'true') {
+        localStorage.setItem(flagKey, 'true');
+        return;
+    }
+
+    const modal = document.getElementById('featureAnnouncementModal');
+    if (!modal) return;
+
+    // Csak egyszer jelenik meg felhasználónként
+    localStorage.setItem(flagKey, 'true');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Konfetti a megjelenéshez (ha betöltött a canvas-confetti)
+    if (typeof confetti === 'function') {
+        setTimeout(() => {
+            confetti({ particleCount: 60, spread: 75, origin: { x: 0.3, y: 0.45 }, zIndex: 10050 });
+            confetti({ particleCount: 60, spread: 75, origin: { x: 0.7, y: 0.45 }, zIndex: 10050 });
+        }, 500);
+    }
+}
+
+window.acceptLeaderboardFeature = async function() {
+    window.dismissLeaderboardFeature();
+    showNotification('Publikus profil bekapcsolva! Irány a Toplista! 🏅', 'success');
+
+    if (typeof confetti === 'function') {
+        confetti({ particleCount: 120, spread: 100, origin: { y: 0.6 }, zIndex: 10050 });
+    }
+
+    // Megvárjuk a felhő-szinkront, hogy a betöltődő toplistán már szerepeljen
+    await setPublicProfileOptIn(true, true);
+
+    // Átváltunk a Toplista fülre, hogy rögtön lássa magát
+    const lbNavBtn = document.querySelector('.nav-item[data-tab-content="user-leaderboard-content"]');
+    if (lbNavBtn) lbNavBtn.click();
+};
+
+window.dismissLeaderboardFeature = function() {
+    const modal = document.getElementById('featureAnnouncementModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+};
 
 // 1. Modal megnyitása (JAVÍTVA: function deklarációval, hogy működjön a hívás)
 function handleDeleteUser() { 
@@ -3164,10 +3241,10 @@ function updateSettingsUI() {
         if (aToggle) aToggle.checked = isCursorActive;
     }
 
-    // --- 4. Publikus profil kapcsoló (Toplista) ---
+    // --- 4. Publikus profil kapcsoló (Toplista, OPT-IN) ---
     const ppToggle = document.getElementById('publicProfileToggle');
     if (userData && ppToggle) {
-        ppToggle.checked = localStorage.getItem(`public_profile_${userData.email}`) !== 'false';
+        ppToggle.checked = localStorage.getItem(`public_profile_optin_${userData.email}`) === 'true';
     }
 }
     // Eseménykezelő az ötlet űrlaphoz
@@ -3236,6 +3313,9 @@ switchToUserView = function() {
 
     // A LÉNYEG: Itt hívjuk meg a javított beállítót
     updateSettingsUI();
+
+    // Új funkció bejelentő (Toplista) - kis késleltetéssel, hogy a nézet felépüljön
+    setTimeout(maybeShowLeaderboardAnnouncement, 1200);
 };
     // === SÖR SZERKESZTÉS ===
 window.openEditBeerModal = function(index) {
@@ -7038,7 +7118,7 @@ async function syncSettingsToCloud() {
         viewMode: localStorage.getItem('preferredViewMode') || 'auto',
         listLimit: localStorage.getItem('preferredListLimit') || '50',
         headerCollapsed: localStorage.getItem('headerCollapsedPreference') === 'true',
-        publicProfile: localStorage.getItem(`public_profile_${userEmail}`) !== 'false'
+        publicProfileOptIn: localStorage.getItem(`public_profile_optin_${userEmail}`) === 'true'
     };
 
     // 2. Elküldjük a szervernek (háttérben)
@@ -7110,10 +7190,10 @@ function applyCloudSettings(settings, userEmail) {
         }
     }
 
-    // 6. Publikus profil (Toplista láthatóság)
-    if (settings.publicProfile !== undefined) {
-        const isPublic = settings.publicProfile !== false && settings.publicProfile !== 'false';
-        localStorage.setItem(`public_profile_${userEmail}`, isPublic);
+    // 6. Publikus profil (Toplista láthatóság, OPT-IN)
+    if (settings.publicProfileOptIn !== undefined) {
+        const isPublic = settings.publicProfileOptIn === true || settings.publicProfileOptIn === 'true';
+        localStorage.setItem(`public_profile_optin_${userEmail}`, isPublic);
         syncSettingsToCloud();
         const ppToggle = document.getElementById('publicProfileToggle');
         if (ppToggle) ppToggle.checked = isPublic;
