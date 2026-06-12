@@ -5373,3 +5373,419 @@ body.offline-mode .install-fab {
 body.offline-mode .admin-header {
     top: 0; /* marad sticky, de a banner alatta van fixed-ként */
 }
+
+/* ======================================================
+   === TOPLISTA ÉS PUBLIKUS PROFILOK ===
+   ====================================================== */
+
+.leaderboard-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.lb-refresh-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.lb-refresh-btn:hover {
+    background: rgba(138, 115, 255, 0.25);
+    border-color: #8a73ff;
+    transform: rotate(180deg);
+}
+
+.leaderboard-privacy-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(243, 156, 18, 0.12);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    border-left: 4px solid #f39c12;
+    color: #ffd98a;
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* --- Dobogó (Top 3) --- */
+.leaderboard-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+    align-items: end;
+}
+
+.podium-spot {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 18px 10px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.podium-spot:hover {
+    transform: translateY(-5px);
+    border-color: #8a73ff;
+    box-shadow: 0 10px 30px rgba(138, 115, 255, 0.25);
+}
+
+.podium-rank-1 {
+    order: 2;
+    border-color: rgba(255, 215, 0, 0.5);
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.12), rgba(255, 255, 255, 0.04));
+    padding-top: 26px;
+    padding-bottom: 22px;
+}
+
+.podium-rank-1:hover {
+    border-color: #ffd700;
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.25);
+}
+
+.podium-rank-2 {
+    order: 1;
+    border-color: rgba(192, 192, 192, 0.45);
+    background: linear-gradient(180deg, rgba(192, 192, 192, 0.10), rgba(255, 255, 255, 0.04));
+}
+
+.podium-rank-3 {
+    order: 3;
+    border-color: rgba(205, 127, 50, 0.45);
+    background: linear-gradient(180deg, rgba(205, 127, 50, 0.10), rgba(255, 255, 255, 0.04));
+}
+
+.podium-medal {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+}
+
+.podium-rank-1 .podium-medal {
+    font-size: 2.3rem;
+}
+
+.podium-avatar,
+.lb-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8a73ff, #6c5ce7);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(138, 115, 255, 0.35);
+    flex-shrink: 0;
+}
+
+.podium-name {
+    margin-top: 8px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.podium-badge {
+    color: #c3aaff;
+    font-size: 0.78rem;
+    margin-top: 3px;
+}
+
+.podium-metric {
+    margin-top: 8px;
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* --- Lista (4. helytől) --- */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.lb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lb-row:hover {
+    background: rgba(138, 115, 255, 0.12);
+    border-color: rgba(138, 115, 255, 0.5);
+    transform: translateX(4px);
+}
+
+.lb-row .lb-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+.lb-rank {
+    color: #b0b0b0;
+    font-weight: 700;
+    min-width: 32px;
+    text-align: right;
+}
+
+.lb-name {
+    flex: 1;
+    color: #fff;
+    font-weight: 600;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.lb-badge {
+    color: #c3aaff;
+    font-size: 0.78rem;
+    font-weight: 500;
+    margin-left: 6px;
+}
+
+.lb-me-tag {
+    background: linear-gradient(135deg, #8a73ff, #6c5ce7);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.lb-metric {
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.lb-metric small {
+    color: #b0b0b0;
+    font-weight: 400;
+}
+
+.lb-row.is-me,
+.podium-spot.is-me {
+    border-color: #8a73ff;
+    box-shadow: 0 0 14px rgba(138, 115, 255, 0.3);
+}
+
+.lb-empty {
+    text-align: center;
+    color: #b0b0b0;
+    padding: 25px 10px;
+    font-size: 0.95rem;
+}
+
+.leaderboard-hint {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 18px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* --- Publikus profil modal --- */
+.public-profile-content {
+    max-width: 540px;
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8a73ff, #6c5ce7);
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    box-shadow: 0 6px 20px rgba(138, 115, 255, 0.4);
+}
+
+.profile-badge-line {
+    color: #c3aaff;
+    font-weight: 600;
+    min-height: 1.2em;
+}
+
+.public-profile-body {
+    padding: 20px;
+}
+
+.pp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.pp-stat {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pp-stat-val {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.pp-stat-label {
+    color: #b0b0b0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pp-fact {
+    color: #ccc;
+    font-size: 0.9rem;
+    margin: 6px 0;
+}
+
+.pp-fact strong {
+    color: #c3aaff;
+}
+
+.pp-section-title {
+    color: #fff;
+    margin: 18px 0 10px;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(138, 115, 255, 0.3);
+    padding-bottom: 6px;
+}
+
+.pp-top-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+}
+
+.pp-top-rank {
+    width: 26px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.pp-top-name {
+    flex: 1;
+    color: #fff;
+    font-weight: 600;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.pp-top-type {
+    color: #b0b0b0;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.pp-top-score {
+    color: #ffd700;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.pp-empty {
+    color: #888;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 8px;
+}
+
+/* --- Egyéni téma kompatibilitás --- */
+body.custom-theme .podium-spot:hover,
+body.custom-theme .lb-row:hover,
+body.custom-theme .lb-row.is-me,
+body.custom-theme .podium-spot.is-me {
+    border-color: var(--accent-color);
+}
+
+body.custom-theme .podium-avatar,
+body.custom-theme .lb-avatar,
+body.custom-theme .profile-avatar,
+body.custom-theme .lb-me-tag {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color));
+}
+
+/* --- Mobil nézet --- */
+@media (max-width: 768px) {
+    .leaderboard-podium {
+        gap: 8px;
+    }
+
+    .podium-spot {
+        padding: 12px 6px 10px;
+    }
+
+    .podium-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .podium-name {
+        font-size: 0.8rem;
+    }
+
+    .podium-metric {
+        font-size: 0.78rem;
+    }
+
+    .pp-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lb-row {
+        padding: 9px 10px;
+        gap: 8px;
+    }
+
+    .lb-metric {
+        font-size: 0.8rem;
+    }
+}
