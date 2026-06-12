@@ -5789,3 +5789,217 @@ body.custom-theme .lb-me-tag {
         font-size: 0.8rem;
     }
 }
+
+/* ======================================================
+   === ÚJ FUNKCIÓ BEJELENTŐ (TOPLISTA ANNOUNCEMENT) ===
+   ====================================================== */
+
+.lb-note-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.lb-note-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+.feature-announce-content {
+    max-width: 480px;
+    text-align: center;
+    background: linear-gradient(160deg, #2a1458 0%, #12042e 55%, #000 100%);
+    border: 2px solid rgba(255, 215, 0, 0.45);
+    border-radius: 24px;
+    padding: 34px 26px 28px;
+    position: relative;
+    overflow: hidden;
+    animation: faGlowPulse 3s ease-in-out infinite;
+}
+
+.modal-overlay.active .feature-announce-content {
+    animation: faPopIn 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both, faGlowPulse 3s ease-in-out 0.65s infinite;
+}
+
+@keyframes faPopIn {
+    0%   { transform: scale(0.4) translateY(60px); opacity: 0; }
+    60%  { transform: scale(1.06) translateY(-6px); opacity: 1; }
+    80%  { transform: scale(0.97) translateY(2px); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes faGlowPulse {
+    0%, 100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.18), 0 0 80px rgba(138, 115, 255, 0.25); }
+    50%      { box-shadow: 0 0 55px rgba(255, 215, 0, 0.38), 0 0 110px rgba(138, 115, 255, 0.4); }
+}
+
+.fa-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #8a73ff, #6c5ce7);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 30px;
+    margin-bottom: 14px;
+    animation: faBadgePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes faBadgePulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.07); }
+}
+
+.fa-trophy {
+    font-size: 4.2rem;
+    line-height: 1;
+    margin: 6px 0 10px;
+    display: inline-block;
+    animation: faTrophyBounce 2.2s ease-in-out infinite;
+    filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.55));
+}
+
+@keyframes faTrophyBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    20%      { transform: translateY(-12px) rotate(-6deg); }
+    40%      { transform: translateY(0) rotate(0deg); }
+    55%      { transform: translateY(-5px) rotate(4deg); }
+    70%      { transform: translateY(0) rotate(0deg); }
+}
+
+.fa-title {
+    color: #fff;
+    font-size: 1.4rem;
+    margin: 0 0 10px;
+    text-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
+}
+
+.fa-desc {
+    color: #cfc6f5;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 16px;
+}
+
+.fa-privacy {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(138, 115, 255, 0.35);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #b8b0d8;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.fa-privacy strong {
+    color: #ffd700;
+}
+
+.fa-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fa-btn-primary {
+    background: linear-gradient(135deg, #ffd700, #f39c12);
+    border: none;
+    color: #2a1458;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    padding: 14px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.fa-btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+}
+
+.fa-btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #b0b0b0;
+    font-size: 0.88rem;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.fa-btn-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+}
+
+/* Lebegő csillogás a modal belsejében */
+.fa-sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.fa-sparkles span {
+    position: absolute;
+    color: #ffd700;
+    opacity: 0;
+    animation: faSparkle 2.6s ease-in-out infinite;
+    font-size: 1rem;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+.fa-sparkles span:nth-child(1) { top: 12%; left: 8%;  animation-delay: 0s; }
+.fa-sparkles span:nth-child(2) { top: 22%; right: 10%; animation-delay: 0.4s; font-size: 0.7rem; }
+.fa-sparkles span:nth-child(3) { top: 45%; left: 5%;  animation-delay: 0.8s; font-size: 1.2rem; }
+.fa-sparkles span:nth-child(4) { top: 58%; right: 6%;  animation-delay: 1.2s; }
+.fa-sparkles span:nth-child(5) { top: 78%; left: 12%; animation-delay: 1.6s; font-size: 0.7rem; }
+.fa-sparkles span:nth-child(6) { top: 85%; right: 14%; animation-delay: 2.0s; }
+.fa-sparkles span:nth-child(7) { top: 8%;  left: 45%; animation-delay: 1.0s; font-size: 0.8rem; }
+.fa-sparkles span:nth-child(8) { top: 90%; left: 48%; animation-delay: 0.6s; font-size: 0.9rem; }
+
+@keyframes faSparkle {
+    0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+    50%      { opacity: 1; transform: scale(1.15) rotate(180deg); }
+}
+
+@media (max-width: 768px) {
+    .feature-announce-content {
+        max-width: 92vw;
+        padding: 26px 18px 22px;
+    }
+
+    .fa-trophy {
+        font-size: 3.4rem;
+    }
+
+    .fa-title {
+        font-size: 1.2rem;
+    }
+
+    .leaderboard-privacy-note {
+        flex-wrap: wrap;
+    }
+
+    .lb-note-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}
