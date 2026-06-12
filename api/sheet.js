@@ -139,8 +139,9 @@ const parseUserSettings = (raw) => {
     try { return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
 };
 
-// Alapértelmezés: a profil publikus, a Fiókom fülön kapcsolható ki (opt-out)
-const isProfilePublic = (settings) => settings.publicProfile !== false && settings.publicProfile !== 'false';
+// OPT-IN: a profil csak akkor publikus, ha a felhasználó kifejezetten bekapcsolta a Fiókom fülön.
+// Szándékosan új kulcs (publicProfileOptIn), hogy a korábbi automatikus settings-szinkron értékei ne számítsanak.
+const isProfilePublic = (settings) => settings.publicProfileOptIn === true || settings.publicProfileOptIn === 'true';
 
 // Magyar formátumú szám (pl. "8,33") biztonságos parse-olása
 const parseHuFloat = (val) => parseFloat(String(val ?? '').replace(',', '.')) || 0;
@@ -2486,3 +2487,44 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
