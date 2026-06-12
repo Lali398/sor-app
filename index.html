@@ -246,6 +246,10 @@
                     <span class="icon">🏆</span>
                     <span class="label">Eredmények</span>
                 </button>
+                <button class="nav-item" data-tab-content="user-leaderboard-content">
+                    <span class="icon">🏅</span>
+                    <span class="label">Toplista</span>
+                </button>
                 <button class="nav-item" data-tab-content="user-account-content">
                     <span class="icon">👤</span>
                     <span class="label">Fiókom</span>
@@ -688,6 +692,39 @@
 </div>
 
                 <!-- FIÓKOM TAB -->
+                <!-- TOPLISTA TAB -->
+                <div class="main-tab-pane" id="user-leaderboard-content">
+                    <section class="card">
+                        <header class="card-header">
+                            <h3>🏅 Közösségi Toplista</h3>
+                            <div class="leaderboard-controls">
+                                <select id="leaderboardSortSelector" class="badge-dropdown">
+                                    <option value="total">🍻 Legtöbb értékelés</option>
+                                    <option value="avg">⭐ Legjobb átlag</option>
+                                    <option value="streak">🔥 Leghosszabb streak</option>
+                                    <option value="achievements">🏆 Legtöbb eredmény</option>
+                                </select>
+                                <button id="refreshLeaderboardBtn" class="lb-refresh-btn" title="Frissítés">🔄</button>
+                            </div>
+                        </header>
+
+                        <div id="leaderboardPrivacyNote" class="leaderboard-privacy-note" style="display: none;">
+                            <span>🔒</span>
+                            <span>A publikus profilod ki van kapcsolva, ezért nem szerepelsz a toplistán. A <strong>Fiókom</strong> fülön kapcsolhatod vissza.</span>
+                        </div>
+
+                        <div id="leaderboardPodium" class="leaderboard-podium"></div>
+                        <div id="leaderboardList" class="leaderboard-list">
+                            <div class="recap-spinner"></div>
+                        </div>
+
+                        <p class="leaderboard-hint">
+                            Kattints egy felhasználóra a publikus profiljához! ⭐ Átlag szerinti rendezésnél a legalább 3 értékeléssel rendelkezők kerülnek előre.
+                            A toplistán való megjelenés a <strong>Fiókom</strong> fülön bármikor kikapcsolható.
+                        </p>
+                    </section>
+                </div>
+
                 <div class="main-tab-pane" id="user-account-content">
                     <section class="card">
                         <header class="card-header">
@@ -720,6 +757,19 @@
                                 </span>
                             </button>
                         </form>
+
+                        <h4 style="margin-top: 30px; margin-bottom: 15px; color: #fff;">Adatvédelem</h4>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Publikus profil és Toplista 🏅</h4>
+                                <p>Ha be van kapcsolva, a felhasználóneved, rangod és értékelési statisztikáid megjelennek a közösségi toplistán, és más bejelentkezett felhasználók megtekinthetik a publikus profilodat. <strong>Az e-mail címed soha nem nyilvános.</strong></p>
+                                <p><small>Részletek: <a href="adatvedelem.html" target="_blank" style="color: #8a73ff;">Adatvédelmi tájékoztató</a></small></p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="publicProfileToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
 
                         <p style="margin-top: 30px; color: #aaa; font-size: 14px;">
                             Ha véglegesen törölni szeretnéd a fiókodat, kattints az alábbi gombra. Ez a művelet nem visszavonható.
@@ -2731,6 +2781,21 @@
         </div>
     </div>
 </div>
+    <!-- PUBLIKUS PROFIL MODAL -->
+    <div class="modal-overlay" id="publicProfileModal">
+        <div class="modal-content public-profile-content">
+            <div class="modal-hero-header">
+                <div class="profile-avatar" id="publicProfileAvatar">🍺</div>
+                <h3 id="publicProfileName">Betöltés...</h3>
+                <p id="publicProfileBadge" class="profile-badge-line"></p>
+                <button class="modal-close-abs" onclick="closePublicProfileModal()">✕</button>
+            </div>
+            <div id="publicProfileBody" class="public-profile-body">
+                <div class="recap-spinner"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Offline támogatás (sw.js-el együtt működik) -->
     <script src="offline.js"></script>
     <script src="js.js"></script>
