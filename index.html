@@ -710,7 +710,8 @@
 
                         <div id="leaderboardPrivacyNote" class="leaderboard-privacy-note" style="display: none;">
                             <span>🔒</span>
-                            <span>A publikus profilod ki van kapcsolva, ezért nem szerepelsz a toplistán. A <strong>Fiókom</strong> fülön kapcsolhatod vissza.</span>
+                            <span>Jelenleg nem szerepelsz a toplistán, mert a publikus profilod ki van kapcsolva.</span>
+                            <button id="enablePublicProfileBtn" class="lb-note-btn">Bekapcsolom 🏅</button>
                         </div>
 
                         <div id="leaderboardPodium" class="leaderboard-podium"></div>
@@ -720,7 +721,7 @@
 
                         <p class="leaderboard-hint">
                             Kattints egy felhasználóra a publikus profiljához! ⭐ Átlag szerinti rendezésnél a legalább 3 értékeléssel rendelkezők kerülnek előre.
-                            A toplistán való megjelenés a <strong>Fiókom</strong> fülön bármikor kikapcsolható.
+                            A toplistán csak az szerepel, aki ezt a <strong>Fiókom</strong> fülön bekapcsolta — ugyanott bármikor ki is kapcsolhatod.
                         </p>
                     </section>
                 </div>
@@ -762,11 +763,11 @@
                         <div class="setting-item">
                             <div class="setting-info">
                                 <h4>Publikus profil és Toplista 🏅</h4>
-                                <p>Ha be van kapcsolva, a felhasználóneved, rangod és értékelési statisztikáid megjelennek a közösségi toplistán, és más bejelentkezett felhasználók megtekinthetik a publikus profilodat. <strong>Az e-mail címed soha nem nyilvános.</strong></p>
+                                <p>Ha bekapcsolod, a felhasználóneved, rangod és értékelési statisztikáid megjelennek a közösségi toplistán, és más bejelentkezett felhasználók megtekinthetik a publikus profilodat. <strong>Alapértelmezetten kikapcsolva. Az e-mail címed soha nem nyilvános.</strong></p>
                                 <p><small>Részletek: <a href="adatvedelem.html" target="_blank" style="color: #8a73ff;">Adatvédelmi tájékoztató</a></small></p>
                             </div>
                             <label class="switch">
-                                <input type="checkbox" id="publicProfileToggle" checked>
+                                <input type="checkbox" id="publicProfileToggle">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -2792,6 +2793,31 @@
             </div>
             <div id="publicProfileBody" class="public-profile-body">
                 <div class="recap-spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÚJ FUNKCIÓ BEJELENTŐ MODAL (TOPLISTA) -->
+    <div class="modal-overlay" id="featureAnnouncementModal" style="z-index: 10010;">
+        <div class="modal-content feature-announce-content">
+            <div class="fa-sparkles" aria-hidden="true">
+                <span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span><span>✧</span>
+            </div>
+            <div class="fa-badge">✨ ÚJ FUNKCIÓ ✨</div>
+            <div class="fa-trophy">🏅</div>
+            <h3 class="fa-title">Megérkezett a Közösségi Toplista!</h3>
+            <p class="fa-desc">
+                Mérd össze magad a többiekkel: dobogó, helyezések, publikus profilok —
+                értékelések, átlagok, streakek és eredmények alapján! 🍻
+            </p>
+            <div class="fa-privacy">
+                🔒 A megjelenés <strong>alapból ki van kapcsolva</strong>. Ha bekapcsolod, a neved, rangod és
+                statisztikáid láthatóvá válnak a többi felhasználónak — <strong>az e-mail címed soha</strong>.
+                A Fiókom fülön bármikor ki-/bekapcsolhatod.
+            </div>
+            <div class="fa-actions">
+                <button class="fa-btn-primary" onclick="acceptLeaderboardFeature()">Bekapcsolom! 🏅</button>
+                <button class="fa-btn-secondary" onclick="dismissLeaderboardFeature()">Majd később</button>
             </div>
         </div>
     </div>
