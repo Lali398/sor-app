@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import { OAuth2Client } from 'google-auth-library';
+import crypto from 'crypto';
 
 // === KONFIGURÁCIÓ ===
 const ADMIN_BEERS_SHEET = "'Sör táblázat'!A4:V";
@@ -123,7 +124,68 @@ async function updateUserStreak(sheets, spreadsheetId, userEmail) {
         return null;
     }
 }
-  
+
+// === PUBLIKUS PROFIL / TOPLISTA SEGÉDFÜGGVÉNYEK ===
+
+// Publikus azonosító az e-mail címből (HMAC) - így az e-mail cím SOHA nem kerül ki a kliensekhez
+const getPublicId = (email, secret) => {
+    return crypto.createHmac('sha256', secret)
+        .update(String(email).trim().toLowerCase())
+        .digest('hex')
+        .substring(0, 12);
+};
+
+const parseUserSettings = (raw) => {
+    try { return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+};
+
+// Alapértelmezés: a profil publikus, a Fiókom fülön kapcsolható ki (opt-out)
+const isProfilePublic = (settings) => settings.publicProfile !== false && settings.publicProfile !== 'false';
+
+// Magyar formátumú szám (pl. "8,33") biztonságos parse-olása
+const parseHuFloat = (val) => parseFloat(String(val ?? '').replace(',', '.')) || 0;
+
+// Sör- és italértékelések összesítése e-mail címenként (toplistához és publikus profilhoz)
+const buildRatingStats = (beerRows, drinkRows) => {
+    const stats = {};
+    const ensure = (email) => {
+        if (!stats[email]) {
+            stats[email] = { beerCount: 0, drinkCount: 0, sumAvg: 0, beers: [], drinks: [], types: {}, locations: {}, firstDate: null };
+        }
+        return stats[email];
+    };
+
+    // Vendég Sör Teszt: A=dátum, C=név, D=hely, E=típus, K=átlag, N=email
+    beerRows.forEach(row => {
+        const email = row[13];
+        const name = row[2];
+        if (!email || !email.includes('@') || !name) return;
+        const s = ensure(email);
+        const avg = parseHuFloat(row[10]);
+        s.beerCount++;
+        s.sumAvg += avg;
+        s.beers.push({ name, type: row[4] || 'N/A', avg });
+        if (row[4]) s.types[row[4]] = (s.types[row[4]] || 0) + 1;
+        if (row[3]) s.locations[row[3]] = (s.locations[row[3]] || 0) + 1;
+        if (row[0] && (!s.firstDate || row[0] < s.firstDate)) s.firstDate = row[0];
+    });
+
+    // Vendég ital teszt: A=dátum, C=név, E=típus, L=átlag, N=email
+    drinkRows.forEach(row => {
+        const email = row[13];
+        const name = row[2];
+        if (!email || !email.includes('@') || !name) return;
+        const s = ensure(email);
+        const avg = parseHuFloat(row[11]);
+        s.drinkCount++;
+        s.sumAvg += avg;
+        s.drinks.push({ name, type: row[4] || row[3] || 'N/A', avg });
+        if (row[0] && (!s.firstDate || row[0] < s.firstDate)) s.firstDate = row[0];
+    });
+
+    return stats;
+};
+
 
 // === FŐ HANDLER FÜGGVÉNY ===
 export default async function handler(req, res) {
@@ -2299,6 +2361,122 @@ case 'EDIT_USER_DRINK': {
                 return res.status(200).json({ message: "Google fiók kapcsolat sikeresen bontva! 🔌" });
             }
 
+            // === TOPLISTA (csak a publikus profilú felhasználók, e-mail cím nélkül) ===
+            case 'GET_LEADERBOARD': {
+                const userData = verifyUser(req);
+
+                const [usersRes, beersRes, drinksRes] = await Promise.all([
+                    sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${USERS_SHEET}!A:O` }),
+                    sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET }),
+                    sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET })
+                ]);
+
+                const ratingStats = buildRatingStats(beersRes.data.values || [], drinksRes.data.values || []);
+
+                const leaderboard = [];
+                (usersRes.data.values || []).forEach(row => {
+                    const name = row[0];
+                    const email = row[1];
+                    if (!name || !email || !email.includes('@')) return; // fejléc / hibás sor kihagyása
+                    if (row[13] === 'TRUE') return; // kitiltott felhasználó nem szerepel
+
+                    const settings = parseUserSettings(row[14]);
+                    if (!isProfilePublic(settings)) return; // a felhasználó kikapcsolta a megjelenést
+
+                    const s = ratingStats[email];
+                    const totalCount = s ? s.beerCount + s.drinkCount : 0;
+                    if (totalCount === 0) return; // értékelés nélkül nincs helyezés
+
+                    let achievementCount = 0;
+                    try { achievementCount = (JSON.parse(row[5] || '{}').unlocked || []).length; } catch (e) {}
+
+                    leaderboard.push({
+                        publicId: getPublicId(email, JWT_SECRET),
+                        name,
+                        badge: row[6] || '',
+                        beerCount: s.beerCount,
+                        drinkCount: s.drinkCount,
+                        totalCount,
+                        avgScore: parseFloat((s.sumAvg / totalCount).toFixed(2)),
+                        currentStreak: parseInt(row[9]) || 0,
+                        longestStreak: parseInt(row[10]) || 0,
+                        achievementCount,
+                        isMe: email === userData.email
+                    });
+                });
+
+                leaderboard.sort((a, b) => b.totalCount - a.totalCount || b.avgScore - a.avgScore);
+                return res.status(200).json({ leaderboard });
+            }
+
+            // === PUBLIKUS PROFIL MEGTEKINTÉSE (publicId alapján, e-mail cím nélkül) ===
+            case 'GET_PUBLIC_PROFILE': {
+                const userData = verifyUser(req);
+                const { publicId } = req.body;
+                if (!publicId) return res.status(400).json({ error: "Hiányzó profil azonosító." });
+
+                const usersRes = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${USERS_SHEET}!A:O`
+                });
+                const rows = usersRes.data.values || [];
+                const userRow = rows.find(row =>
+                    row[1] && row[1].includes('@') && getPublicId(row[1], JWT_SECRET) === publicId
+                );
+
+                if (!userRow || userRow[13] === 'TRUE') {
+                    return res.status(404).json({ error: "A profil nem található." });
+                }
+
+                const email = userRow[1];
+                const isMe = email === userData.email;
+                const settings = parseUserSettings(userRow[14]);
+
+                // Privát profilt csak a tulajdonosa nézheti meg (előnézetként)
+                if (!isProfilePublic(settings) && !isMe) {
+                    return res.status(403).json({ error: "Ez a profil privát. 🔒" });
+                }
+
+                const [beersRes, drinksRes] = await Promise.all([
+                    sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET }),
+                    sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET })
+                ]);
+
+                const allStats = buildRatingStats(beersRes.data.values || [], drinksRes.data.values || []);
+                const stats = allStats[email] || { beerCount: 0, drinkCount: 0, sumAvg: 0, beers: [], drinks: [], types: {}, locations: {}, firstDate: null };
+
+                const totalCount = stats.beerCount + stats.drinkCount;
+                const topOf = (list) => [...list].sort((a, b) => b.avg - a.avg).slice(0, 3);
+                const favOf = (counts) => {
+                    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+                    return top ? top[0] : null;
+                };
+
+                let achievements = [];
+                try { achievements = JSON.parse(userRow[5] || '{}').unlocked || []; } catch (e) {}
+
+                return res.status(200).json({
+                    name: userRow[0],
+                    badge: userRow[6] || '',
+                    isMe,
+                    isPublic: isProfilePublic(settings),
+                    stats: {
+                        beerCount: stats.beerCount,
+                        drinkCount: stats.drinkCount,
+                        totalCount,
+                        avgScore: totalCount > 0 ? parseFloat((stats.sumAvg / totalCount).toFixed(2)) : 0,
+                        favType: favOf(stats.types),
+                        favLocation: favOf(stats.locations),
+                        currentStreak: parseInt(userRow[9]) || 0,
+                        longestStreak: parseInt(userRow[10]) || 0,
+                        achievementCount: achievements.length,
+                        firstDate: stats.firstDate ? String(stats.firstDate).substring(0, 10) : null
+                    },
+                    topBeers: topOf(stats.beers),
+                    topDrinks: topOf(stats.drinks)
+                });
+            }
+
             default:
                 return res.status(400).json({ error: "Ismeretlen művelet." });
         } // Switch vége
@@ -2308,44 +2486,3 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
