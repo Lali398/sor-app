@@ -1122,9 +1122,237 @@ async function markIdeaAsDone(index) {
             if(targetPaneId === 'admin-beers-content') loadAdminData();
             // 5.
             if (targetPaneId === 'user-consumption-content') loadConsBeerList();
+            // 6. Toplista betöltése
+            if (targetPaneId === 'user-leaderboard-content') loadLeaderboard();
         });
     });
 }
+
+// ======================================================
+// === TOPLISTA ÉS PUBLIKUS PROFILOK ===
+// ======================================================
+
+let leaderboardData = [];
+
+// A saját publikus profil kapcsoló állapota (alapértelmezés: bekapcsolva)
+function isMyProfilePublic() {
+    const ud = JSON.parse(localStorage.getItem('userData') || 'null');
+    if (!ud) return true;
+    return localStorage.getItem(`public_profile_${ud.email}`) !== 'false';
+}
+
+async function loadLeaderboard() {
+    const listEl = document.getElementById('leaderboardList');
+    const podiumEl = document.getElementById('leaderboardPodium');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="recap-spinner"></div>';
+    if (podiumEl) podiumEl.innerHTML = '';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_LEADERBOARD' })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Nem sikerült betölteni a toplistát.');
+
+        leaderboardData = result.leaderboard || [];
+        renderLeaderboard();
+    } catch (error) {
+        console.error('Toplista betöltési hiba:', error);
+        listEl.innerHTML = `<p class="lb-empty">⚠️ ${escapeHtml(error.message)}</p>`;
+    }
+}
+
+function renderLeaderboard() {
+    const listEl = document.getElementById('leaderboardList');
+    const podiumEl = document.getElementById('leaderboardPodium');
+    const noteEl = document.getElementById('leaderboardPrivacyNote');
+    if (!listEl) return;
+
+    // Figyelmeztető sáv, ha a saját profilunk rejtett
+    if (noteEl) noteEl.style.display = isMyProfilePublic() ? 'none' : 'flex';
+
+    const sortSelector = document.getElementById('leaderboardSortSelector');
+    const sortBy = sortSelector ? sortSelector.value : 'total';
+    const MIN_RATINGS_FOR_AVG = 3;
+
+    const sorted = [...leaderboardData];
+    if (sortBy === 'avg') {
+        // Átlagnál a kevés értékeléssel rendelkezők hátra kerülnek, hogy 1 db 10-es ne vigye a listát
+        sorted.sort((a, b) => {
+            const aQ = a.totalCount >= MIN_RATINGS_FOR_AVG ? 1 : 0;
+            const bQ = b.totalCount >= MIN_RATINGS_FOR_AVG ? 1 : 0;
+            if (aQ !== bQ) return bQ - aQ;
+            return b.avgScore - a.avgScore || b.totalCount - a.totalCount;
+        });
+    } else if (sortBy === 'streak') {
+        sorted.sort((a, b) => b.longestStreak - a.longestStreak || b.currentStreak - a.currentStreak || b.totalCount - a.totalCount);
+    } else if (sortBy === 'achievements') {
+        sorted.sort((a, b) => b.achievementCount - a.achievementCount || b.totalCount - a.totalCount);
+    } else {
+        sorted.sort((a, b) => b.totalCount - a.totalCount || b.avgScore - a.avgScore);
+    }
+
+    if (sorted.length === 0) {
+        if (podiumEl) podiumEl.innerHTML = '';
+        listEl.innerHTML = '<p class="lb-empty">Még senki sem szerepel a toplistán. Értékelj egy sört, és tiéd lehet az első hely! 🍺</p>';
+        return;
+    }
+
+    const metricOf = (u) => {
+        if (sortBy === 'avg') return `⭐ ${Number(u.avgScore).toFixed(2)} <small>(${u.totalCount} db)</small>`;
+        if (sortBy === 'streak') return `🔥 ${u.longestStreak} hét`;
+        if (sortBy === 'achievements') return `🏆 ${u.achievementCount} db`;
+        return `🍻 ${u.totalCount} db`;
+    };
+
+    const medals = ['🥇', '🥈', '🥉'];
+
+    // Dobogó (top 3)
+    if (podiumEl) {
+        podiumEl.innerHTML = sorted.slice(0, 3).map((u, i) => `
+            <div class="podium-spot podium-rank-${i + 1} ${u.isMe ? 'is-me' : ''}" onclick="openPublicProfile('${escapeHtml(u.publicId)}')" title="Profil megtekintése">
+                <div class="podium-medal">${medals[i]}</div>
+                <div class="podium-avatar">${escapeHtml((u.name || '?').charAt(0).toUpperCase())}</div>
+                <div class="podium-name">${escapeHtml(u.name)}${u.isMe ? ' <span class="lb-me-tag">Te</span>' : ''}</div>
+                ${u.badge ? `<div class="podium-badge">${escapeHtml(u.badge)}</div>` : ''}
+                <div class="podium-metric">${metricOf(u)}</div>
+            </div>
+        `).join('');
+    }
+
+    // Lista a 4. helytől
+    const rest = sorted.slice(3);
+    if (rest.length === 0) {
+        listEl.innerHTML = '';
+        return;
+    }
+
+    listEl.innerHTML = rest.map((u, i) => `
+        <div class="lb-row ${u.isMe ? 'is-me' : ''}" onclick="openPublicProfile('${escapeHtml(u.publicId)}')" title="Profil megtekintése">
+            <span class="lb-rank">${i + 4}.</span>
+            <span class="lb-avatar">${escapeHtml((u.name || '?').charAt(0).toUpperCase())}</span>
+            <span class="lb-name">
+                ${escapeHtml(u.name)}${u.isMe ? ' <span class="lb-me-tag">Te</span>' : ''}
+                ${u.badge ? `<span class="lb-badge">${escapeHtml(u.badge)}</span>` : ''}
+            </span>
+            <span class="lb-metric">${metricOf(u)}</span>
+        </div>
+    `).join('');
+}
+
+// Publikus profil modal megnyitása
+window.openPublicProfile = async function(publicId) {
+    const modal = document.getElementById('publicProfileModal');
+    const body = document.getElementById('publicProfileBody');
+    const nameEl = document.getElementById('publicProfileName');
+    const badgeEl = document.getElementById('publicProfileBadge');
+    const avatarEl = document.getElementById('publicProfileAvatar');
+    if (!modal || !body) return;
+
+    nameEl.textContent = 'Betöltés...';
+    badgeEl.textContent = '';
+    avatarEl.textContent = '🍺';
+    body.innerHTML = '<div class="recap-spinner"></div>';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    try {
+        const response = await fetch('/api/sheet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ action: 'GET_PUBLIC_PROFILE', publicId })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'A profil nem érhető el.');
+
+        nameEl.textContent = result.name + (result.isMe ? ' (Te)' : '');
+        badgeEl.textContent = result.badge || '';
+        avatarEl.textContent = (result.name || '?').charAt(0).toUpperCase();
+
+        const s = result.stats;
+        const topList = (items, emptyText) => (items && items.length)
+            ? items.map((b, i) => `
+                <div class="pp-top-item">
+                    <span class="pp-top-rank">${['🥇', '🥈', '🥉'][i] || ''}</span>
+                    <span class="pp-top-name">${escapeHtml(b.name)}</span>
+                    <span class="pp-top-type">${escapeHtml(b.type)}</span>
+                    <span class="pp-top-score">${Number(b.avg).toFixed(2)}</span>
+                </div>`).join('')
+            : `<p class="pp-empty">${emptyText}</p>`;
+
+        body.innerHTML = `
+            ${result.isMe && !result.isPublic ? '<div class="leaderboard-privacy-note" style="margin-bottom: 15px;"><span>🔒</span><span>A profilod jelenleg privát — ezt az előnézetet csak te látod.</span></div>' : ''}
+            <div class="pp-stats-grid">
+                <div class="pp-stat"><span class="pp-stat-val">${s.totalCount}</span><span class="pp-stat-label">Értékelés</span></div>
+                <div class="pp-stat"><span class="pp-stat-val">⭐ ${Number(s.avgScore).toFixed(2)}</span><span class="pp-stat-label">Átlagpontszám</span></div>
+                <div class="pp-stat"><span class="pp-stat-val">🔥 ${s.currentStreak}</span><span class="pp-stat-label">Aktuális streak</span></div>
+                <div class="pp-stat"><span class="pp-stat-val">🏆 ${s.achievementCount}</span><span class="pp-stat-label">Eredmény</span></div>
+                <div class="pp-stat"><span class="pp-stat-val">🍺 ${s.beerCount}</span><span class="pp-stat-label">Sör</span></div>
+                <div class="pp-stat"><span class="pp-stat-val">🍹 ${s.drinkCount}</span><span class="pp-stat-label">Ital</span></div>
+            </div>
+            ${s.favType ? `<p class="pp-fact">Kedvenc típus: <strong>${escapeHtml(s.favType)}</strong></p>` : ''}
+            ${s.favLocation ? `<p class="pp-fact">Kedvenc hely: <strong>${escapeHtml(s.favLocation)}</strong></p>` : ''}
+            ${s.firstDate ? `<p class="pp-fact">Első értékelés: <strong>${escapeHtml(s.firstDate)}</strong></p>` : ''}
+            <h4 class="pp-section-title">🍺 Top sörök</h4>
+            ${topList(result.topBeers, 'Még nincs értékelt sör.')}
+            <h4 class="pp-section-title">🍹 Top italok</h4>
+            ${topList(result.topDrinks, 'Még nincs értékelt ital.')}
+        `;
+    } catch (error) {
+        nameEl.textContent = 'Hoppá!';
+        body.innerHTML = `<p class="lb-empty">⚠️ ${escapeHtml(error.message)}</p>`;
+    }
+};
+
+window.closePublicProfileModal = function() {
+    const modal = document.getElementById('publicProfileModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+};
+
+// Toplista vezérlők bekötése
+(function initLeaderboardControls() {
+    const sortSelector = document.getElementById('leaderboardSortSelector');
+    if (sortSelector) sortSelector.addEventListener('change', renderLeaderboard);
+
+    const refreshBtn = document.getElementById('refreshLeaderboardBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadLeaderboard);
+
+    const ppModal = document.getElementById('publicProfileModal');
+    if (ppModal) {
+        ppModal.addEventListener('click', (e) => {
+            if (e.target === ppModal) closePublicProfileModal();
+        });
+    }
+
+    // Publikus profil kapcsoló (Fiókom fül)
+    const ppToggle = document.getElementById('publicProfileToggle');
+    if (ppToggle) {
+        ppToggle.addEventListener('change', (e) => {
+            const ud = JSON.parse(localStorage.getItem('userData') || 'null');
+            if (!ud) return;
+            localStorage.setItem(`public_profile_${ud.email}`, e.target.checked);
+            syncSettingsToCloud();
+            showNotification(
+                e.target.checked
+                    ? 'Publikus profil bekapcsolva! Mostantól szerepelsz a toplistán. 🏅'
+                    : 'Publikus profil kikapcsolva. Lekerültél a toplistáról. 🔒',
+                'success'
+            );
+            renderLeaderboard();
+        });
+    }
+})();
 
 // 1. Modal megnyitása (JAVÍTVA: function deklarációval, hogy működjön a hívás)
 function handleDeleteUser() { 
@@ -2934,6 +3162,12 @@ function updateSettingsUI() {
         const aToggle = document.getElementById('adminCursorToggle');
         if (uToggle) uToggle.checked = isCursorActive;
         if (aToggle) aToggle.checked = isCursorActive;
+    }
+
+    // --- 4. Publikus profil kapcsoló (Toplista) ---
+    const ppToggle = document.getElementById('publicProfileToggle');
+    if (userData && ppToggle) {
+        ppToggle.checked = localStorage.getItem(`public_profile_${userData.email}`) !== 'false';
     }
 }
     // Eseménykezelő az ötlet űrlaphoz
@@ -6803,7 +7037,8 @@ async function syncSettingsToCloud() {
         theme: JSON.parse(localStorage.getItem('userTheme') || '{}'),
         viewMode: localStorage.getItem('preferredViewMode') || 'auto',
         listLimit: localStorage.getItem('preferredListLimit') || '50',
-        headerCollapsed: localStorage.getItem('headerCollapsedPreference') === 'true'
+        headerCollapsed: localStorage.getItem('headerCollapsedPreference') === 'true',
+        publicProfile: localStorage.getItem(`public_profile_${userEmail}`) !== 'false'
     };
 
     // 2. Elküldjük a szervernek (háttérben)
@@ -6873,6 +7108,15 @@ function applyCloudSettings(settings, userEmail) {
             if(settings.headerCollapsed) header.classList.add('manual-collapsed');
             else header.classList.remove('manual-collapsed');
         }
+    }
+
+    // 6. Publikus profil (Toplista láthatóság)
+    if (settings.publicProfile !== undefined) {
+        const isPublic = settings.publicProfile !== false && settings.publicProfile !== 'false';
+        localStorage.setItem(`public_profile_${userEmail}`, isPublic);
+        syncSettingsToCloud();
+        const ppToggle = document.getElementById('publicProfileToggle');
+        if (ppToggle) ppToggle.checked = isPublic;
     }
 }
     
