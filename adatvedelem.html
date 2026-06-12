@@ -118,7 +118,7 @@
         <ul>
             <li><strong>Más bejelentkezett felhasználók számára látható adatok:</strong> felhasználónév, kiválasztott rang (Badge), a megszerzett eredmények (achievementek) száma, az értékelések darabszáma és átlagpontszáma, heti sorozat (streak) adatok, a legjobbra értékelt sörök/italok (név, típus, pontszám), kedvenc sörtípus és kedvenc helyszín, valamint az első értékelés dátuma.</li>
             <li><strong>SOHA nem nyilvános:</strong> az e-mail cím, a jelszó és egyéb biztonsági adatok (2FA, helyreállító kód), a szöveges jegyzetek, valamint a fogyasztásnapló adatai. A profilok megjelenítése egy technikai azonosítóval történik, amelyből az e-mail cím nem fejthető vissza.</li>
-            <li><strong>Kikapcsolás (Opt-out):</strong> A publikus profil és a toplistán való megjelenés <strong>alapértelmezetten be van kapcsolva</strong>, de a <strong>"Fiókom"</strong> menüpontban található kapcsolóval bármikor, azonnali hatállyal kikapcsolható. Kikapcsolás után Ön nem jelenik meg a toplistán, és a profilja más felhasználók számára nem érhető el.</li>
+            <li><strong>Hozzájárulás (Opt-in):</strong> A publikus profil és a toplistán való megjelenés <strong>alapértelmezetten KI van kapcsolva</strong>. Az adatok más felhasználók számára kizárólag akkor válnak láthatóvá, ha Ön a funkciót a <strong>"Fiókom"</strong> menüpontban (vagy az erről szóló alkalmazáson belüli értesítésben) kifejezetten bekapcsolja. A hozzájárulás bármikor, azonnali hatállyal visszavonható ugyanezen kapcsolóval — ezt követően Ön nem jelenik meg a toplistán, és a profilja más felhasználók számára nem érhető el.</li>
             <li>A toplista és a publikus profilok kizárólag <strong>bejelentkezett (regisztrált) felhasználók</strong> számára érhetők el, a nyílt internet felől nem.</li>
             <li>A kitiltott (banned) fiókok automatikusan nem jelennek meg a toplistán és profiljuk nem elérhető.</li>
         </ul>
@@ -135,7 +135,7 @@
             <li><strong>Azonosítás és Biztonság:</strong> Belépés biztosítása, fiók védelme (jelszó, 2FA, helyreállító kód), jogosulatlan hozzáférés megakadályozása.</li>
             <li><strong>Szolgáltatás nyújtása:</strong> Értékelések, ajánlások és ötletek tárolása, rendszerezése, megjelenítése és visszakereshetősége.</li>
             <li><strong>Gamifikáció:</strong> A felhasználói élmény növelése eredmények (achievementek) és rangok kiosztásával az aktivitás alapján.</li>
-            <li><strong>Közösségi funkciók (Toplista és Publikus Profil):</strong> A közösségi élmény erősítése a felhasználók aktivitási statisztikáinak összehasonlíthatóvá tételével. Ez a funkció a 2.3. pontban leírtak szerint bármikor kikapcsolható.</li>
+            <li><strong>Közösségi funkciók (Toplista és Publikus Profil):</strong> A közösségi élmény erősítése a felhasználók aktivitási statisztikáinak összehasonlíthatóvá tételével. Ez a funkció kizárólag az Ön kifejezett hozzájárulásával (bekapcsolásával) működik, a 2.3. pontban leírtak szerint, és a hozzájárulás bármikor visszavonható.</li>
             <li><strong>Nyereményjáték:</strong> A "Leggyorsabb tesztelők" nyereményjáték lebonyolítása és a nyertesek nyilvántartása.</li>
             <li><strong>Kapcsolattartás:</strong> Válaszadás a beküldött hibajelentésekre.</li>
             <li><strong>Közösségi biztonság és Moderáció:</strong> A közösségi irányelvek betartatása, a szabályszegő tartalmak kiszűrése, panaszkezelés és a felhasználók védelme a zaklatástól vagy sértő tartalmaktól.</li>
@@ -148,7 +148,8 @@
             <li><code>userData</code>: A profil alapvető adatai, eredményei, 2FA státusza és Google kapcsolat státusza.</li>
             <li><code>ageVerified</code>: A 18. életév betöltésének egyszeri ellenőrzése.</li>
             <li><code>cursor_pref_EMAIL</code>: A "Sörös kurzor" beállítási preferenciája.</li>
-            <li><code>public_profile_EMAIL</code>: A publikus profil és toplista-megjelenés be/ki állapota.</li>
+            <li><code>public_profile_optin_EMAIL</code>: A publikus profil és toplista-megjelenés be/ki állapota (hozzájárulás).</li>
+            <li><code>seen_leaderboard_announce_EMAIL</code>: A Toplista funkciót bemutató egyszeri értesítés megjelenítésének ténye.</li>
             <li><code>headerCollapsedPreference</code>: A fejléc megjelenítési állapota (nyitva/csukva).</li>
             <li><code>preferredViewMode</code>: Megjelenítési mód (Kártyák vagy Táblázat).</li>
             <li><code>cookieConsentSeen</code>: Süti tájékoztató elfogadásának ténye.</li>
