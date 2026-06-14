@@ -614,7 +614,7 @@ async function loadUserIdeas() {
 
         ideas.forEach(item => {
             const isDone = (item.status === 'Megcsinálva');
-            const isOwner = (item.email === currentUserEmail);
+            const isOwner = item.isMine;
             
             const badgeHtml = item.badge 
                     ? `<span class="fame-badge">${escapeHtml(item.badge)}</span>` 
@@ -722,7 +722,7 @@ async function loadAllIdeasForAdmin() {
             const row = `
             <tr>
                 <td>${item.date}</td>
-                <td>${escapeHtml(item.submitter)} <br><small style="color:#aaa;">${item.email}</small></td>
+                <td>${escapeHtml(item.submitter)} <br><small style="color:#aaa;">${item.email || ''}</small></td>
                 <td>${escapeHtml(item.idea)}</td>
                 <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                 <td>${actionBtn}</td>
