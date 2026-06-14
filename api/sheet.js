@@ -401,7 +401,7 @@ export default async function handler(req, res) {
             // === MODERÁCIÓS LISTA LEKÉRÉSE (ADMIN) ===
             case 'GET_MODERATION_TASKS': {
                 const userData = verifyUser(req);
-                // (Itt érdemes lenne ellenőrizni, hogy admin-e)
+                if (!userData.isAdmin) return res.status(403).json({ error: "Nincs jogosultságod ehhez a művelethez. 🚫" });
 
                 const reportsRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `Jelentések!A:G` });
                 const reports = (reportsRes.data.values || []).map((row, i) => {
@@ -424,6 +424,7 @@ export default async function handler(req, res) {
             // === FIGYELMEZTETÉS / KITILTÁS (ADMIN) ===
             case 'WARN_USER': {
                 const userData = verifyUser(req);
+                if (!userData.isAdmin) return res.status(403).json({ error: "Nincs jogosultságod ehhez a művelethez. 🚫" });
                 const { targetEmail, reportIndex } = req.body; // reportIndex: hogy lezárjuk a jelentést
 
                 // 1. Felhasználó megkeresése
@@ -1156,6 +1157,7 @@ case 'EDIT_USER_DRINK': {
 
             case 'GET_SUPPORT_TICKETS': {
                 const userData = verifyUser(req);
+                if (!userData.isAdmin) return res.status(403).json({ error: "Nincs jogosultságod ehhez a művelethez. 🚫" });
                 // Csak admin férhet hozzá!
                 // (Feltételezzük, hogy az admin tokenben benne van az isAdmin: true, 
                 // vagy az email alapján ellenőrzöd, mint a többi helyen)
@@ -1188,6 +1190,7 @@ case 'EDIT_USER_DRINK': {
 
             case 'UPDATE_TICKET_STATUS': {
                 const userData = verifyUser(req);
+                if (!userData.isAdmin) return res.status(403).json({ error: "Nincs jogosultságod ehhez a művelethez. 🚫" });
                 const { originalIndex, newStatus } = req.body;
 
                 if (originalIndex === undefined || !newStatus) {
@@ -1236,11 +1239,7 @@ case 'EDIT_USER_DRINK': {
 
                     const storedEmail = row[5] || '';
                     const submitterName = row[0] || 'Névtelen';
-                    
-                    let emailForFrontend = storedEmail;
-                    if (submitterName === 'Anonymous' && storedEmail !== userData.email) {
-                        emailForFrontend = 'rejtett@anonymous.hu';
-                    }
+                    const isMine = storedEmail === userData.email;
 
                     let badge = '';
                     if (submitterName !== 'Anonymous' && userBadges[storedEmail]) {
@@ -1260,7 +1259,8 @@ case 'EDIT_USER_DRINK': {
                         timestamp: row[2] || '',
                         status: row[3] || 'Megcsinálásra vár',
                         date: row[4] || '',
-                        email: emailForFrontend,
+                        email: userData.isAdmin ? storedEmail : undefined,
+                        isMine: isMine,
                         badge: badge,
                         voteCount: voteCount, // ÚJ
                         hasVoted: hasVoted    // ÚJ
@@ -1275,6 +1275,7 @@ case 'EDIT_USER_DRINK': {
             
             case 'UPDATE_IDEA_STATUS': {
                 const userData = verifyUser(req);
+                if (!userData.isAdmin) return res.status(403).json({ error: "Nincs jogosultságod ehhez a művelethez. 🚫" });
                 const { index, newStatus } = req.body;
                 
                 // Biztonsági ellenőrzés
@@ -1373,7 +1374,6 @@ case 'EDIT_USER_DRINK': {
                         originalIndex: index,
                         date: row[0] ? row[0].substring(0, 10) : '',
                         submitter: displayName,
-                        email: email,
                         badge: displayBadge,
                         itemName: row[3],
                         type: row[4],
@@ -2182,6 +2182,35 @@ case 'EDIT_USER_DRINK': {
                     });
                     
 
+                    // --- 6. TOVÁBBI MUNKALAPOK TISZTÍTÁSA (teljes GDPR törlés) ---
+                    // A felhasználó e-mail címét tartalmazó sorok eltávolítása a fogyasztásnaplóból,
+                    // a hibajelentésekből, a moderációs jelentésekből és a nyertesek közül is.
+                    const purgeSheetByEmail = async (sheetName, emailColIndexes) => {
+                        try {
+                            const getRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: sheetName });
+                            const rows = getRes.data.values || [];
+                            if (rows.length === 0) return;
+                            const cleanRows = rows.filter(row => !emailColIndexes.some(ci => row[ci] === userEmail));
+                            if (cleanRows.length === rows.length) return; // nincs törölnivaló
+                            await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: sheetName });
+                            if (cleanRows.length > 0) {
+                                await sheets.spreadsheets.values.update({
+                                    spreadsheetId: SPREADSHEET_ID,
+                                    range: sheetName,
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: { values: cleanRows }
+                                });
+                            }
+                        } catch (e) {
+                            console.error(`Purge hiba (${sheetName}):`, e);
+                        }
+                    };
+
+                    await purgeSheetByEmail('Fogyasztás napló', [1]); // B oszlop: e-mail
+                    await purgeSheetByEmail(SUPPORT_SHEET, [2]);       // Hibajelentések – C oszlop: e-mail
+                    await purgeSheetByEmail('Jelentések', [1, 4]);     // B: bejelentő, E: panaszolt fél
+                    await purgeSheetByEmail(WINNERS_SHEET, [2]);       // Nyertesek – C oszlop: e-mail
+
                     return res.status(200).json({ message: "Fiók, adatok, ajánlások és leadott szavazatok sikeresen törölve." });
                 } catch (error) {
                     console.error("Törlési hiba:", error);
@@ -2487,44 +2516,3 @@ case 'EDIT_USER_DRINK': {
         return res.status(500).json({ error: "Kritikus szerverhiba: " + error.message });
     }
 } // Handler vége
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
