@@ -63,14 +63,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 12.</span></h1>
-        <p><strong>Hatálybalépés dátuma:</strong> 2026. június 12.</p>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 14.</span></h1>
+        <p><strong>Hatálybalépés dátuma:</strong> 2026. június 14.</p>
 
         <h2>1. Az Adatkezelők</h2>
         <p>
             <strong>Név:</strong> Korsós Lajos<br>
             <strong>Név:</strong> Benkő Gábor István<br>
-            <strong>Elérhetőség:</strong> A "Segítség kérése" menüponton keresztül.
+            <strong>E-mail (kapcsolat és adatkezelési kérelmek):</strong> [KAPCSOLATI_EMAIL_IDE]<br>
+            <strong>Elérhetőség:</strong> A fenti e-mail címen, vagy az alkalmazás "Segítség kérése" menüpontján keresztül.
         </p>
         <p>A továbbiakban: "Adatkezelő".</p>
 
@@ -168,7 +169,8 @@
             <li><strong>Google LLC. (Google Sheets):</strong> Az adatok fizikai tárolása felhőalapú táblázatkezelőben, biztonságos Google szervereken történik.</li>
             <li><strong>Google LLC (Google Auth):</strong> Hitelesítési szolgáltató. A Google bejelentkezés használatakor az Ön azonosítása a Google szerverein történik, alkalmazásunk csak egy megerősítést (token) kap az eredményről. <a href="https://policies.google.com/privacy" target="_blank">Google Adatvédelmi Irányelvek</a>.</li>
             <li><strong>Vercel Inc.:</strong> Az alkalmazás szerveroldali kódjának futtatása és hosztolása.</li>
-            <li><strong>Kliens oldali könyvtárak:</strong> Az alkalmazás a böngészőben való megjelenítéshez külső könyvtárakat használ (Chart.js - grafikonok, html2canvas - képgenerálás, SheetJS - Excel kezelés). Ezek a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, nem továbbítják külső szerverre.</li>
+            <li><strong>Kliens oldali könyvtárak (CDN):</strong> Az alkalmazás a megjelenítéshez külső könyvtárakat tölt be tartalomkézbesítő hálózatokról (CDN): Chart.js és canvas-confetti (jsDelivr), html2canvas (Cloudflare cdnjs), SheetJS/xlsx (SheetJS CDN). Maguk a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, és nem küldik külső szerverre; a betöltésükkor azonban a CDN szolgáltató – technikai szükségszerűségből – megkapja a felhasználó IP-címét. A könyvtárak rögzített verziójúak és integritás-ellenőrzéssel (SRI) védettek.</li>
+            <li><strong>Betűtípus:</strong> A "Poppins" betűtípust az alkalmazás a saját szerveréről (önhosztolva) szolgálja ki, így annak betöltése nem továbbít adatot harmadik fél (pl. Google Fonts) felé.</li>
         </ul>
 
         <h2>7. Az Ön Jogai és Fiók Törlése</h2>
@@ -178,14 +180,23 @@
         <p>Az alkalmazás "Fiókom" menüpontjában található törlés gomb segítségével Ön önállóan, azonnali hatállyal törölheti teljes profilját. <strong>Figyelem: Ez a művelet végleges és nem visszavonható!</strong></p>
         <p>A törlés eltávolítja a rendszerből:</p>
         <ul>
-            <li>A regisztrációs adatait (beleértve a 2FA kulcsokat és Google kapcsolatot).</li>
-            <li>Az összes rögzített sör- és italértékelését.</li>
-            <li>A beküldött ötleteit és ajánlásait.</li>
+            <li>A regisztrációs adatait (beleértve a 2FA kulcsokat, a helyreállító kódot és a Google fiók kapcsolatot).</li>
+            <li>Az összes rögzített sör- és italértékelését, valamint a fogyasztásnaplóját.</li>
+            <li>A beküldött ötleteit és ajánlásait, valamint az Ön által leadott szavazatokat.</li>
             <li>A megszerzett eredményeit és rangjait.</li>
+            <li>Az Ön által beküldött hibajelentéseket, valamint azokat a moderációs jelentéseket, amelyekben Ön bejelentőként vagy érintettként szerepel.</li>
+            <li>A nyereményjáték nyertes-nyilvántartásából az Ön adatait.</li>
         </ul>
 
-        <h2>8. Jogorvoslat</h2>
-        <p>Panaszával a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH) fordulhat.</p>
+        <h2>8. Az Ön jogai gyakorlása és Jogorvoslat</h2>
+        <p>Ön bármikor kérheti a személyes adataihoz való hozzáférést, azok helyesbítését, törlését, kezelésük korlátozását, illetve tiltakozhat az adatkezelés ellen. Kérelmét az 1. pontban megadott e-mail címen jelezheti; a kérelmeket indokolatlan késedelem nélkül, a jogszabályban előírt határidőn belül teljesítjük.</p>
+        <p>Amennyiben úgy ítéli meg, hogy adatkezelésünk jogszabályt sért, panaszt tehet a Nemzeti Adatvédelmi és Információszabadság Hatóságnál (NAIH):</p>
+        <ul>
+            <li><strong>Cím:</strong> 1055 Budapest, Falk Miksa utca 9-11.</li>
+            <li><strong>Postacím:</strong> 1363 Budapest, Pf.: 9.</li>
+            <li><strong>Web:</strong> <a href="https://naih.hu" target="_blank">naih.hu</a></li>
+        </ul>
+        <p>Jogainak megsértése esetén bírósághoz is fordulhat.</p>
     </div>
 </body>
 </html>
