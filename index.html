@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.className += ' has-js';</script>
     <title>Sör És Ital Alkalmazás</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="fonts/poppins.css">
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png"> <meta property="og:image" content="https://xn--srapp-jua.hu/logo.png">
@@ -26,9 +28,15 @@
 
     <div id="beerCursor" class="beer-cursor-img"></div>
     
-    <!-- VENDÉG NÉZET -->
-    <div class="guest-view" id="guestView">
-        <div class="container">
+    <!-- VENDÉG NÉZET — 3D görgetős landing -->
+    <div class="guest-view landing-mode" id="guestView">
+
+        <!-- Görgetéssel mozgó 3D háttér -->
+        <div class="landing-bg" aria-hidden="true">
+            <div class="landing-bg-grid"></div>
+            <div class="landing-orb landing-orb-1"></div>
+            <div class="landing-orb landing-orb-2"></div>
+            <div class="landing-orb landing-orb-3"></div>
             <div class="animated-bg">
                 <div class="bubble"></div>
                 <div class="bubble"></div>
@@ -36,14 +44,169 @@
                 <div class="bubble"></div>
                 <div class="bubble"></div>
             </div>
+        </div>
 
-            <div class="main-content">
-                <div class="logo-section">
-                    <div class="beer-icon" id="secretAdminTrigger" style="cursor: pointer;">🍺🍹</div>
-                    <h1 class="app-title">Sör és Ital értékelő alkalmazás</h1>
-                    <p class="app-subtitle">Szeretnél bármilyen italt letesztelni és rögzíteni? Itt megteheted.</p>
-                    <p class="mystery-text">És még ennél is többet?</p>
+        <!-- Fix felső navigáció (jobb fent: belépés + regisztráció) -->
+        <nav class="landing-nav" id="landingNav">
+            <div class="landing-nav-brand">
+                <span class="landing-nav-logo">🍺</span> Sörapp
+            </div>
+            <div class="landing-nav-actions">
+                <button type="button" class="lnav-btn lnav-btn-ghost" data-auth-open="login">Bejelentkezés</button>
+                <button type="button" class="lnav-btn lnav-btn-primary" data-auth-open="register">Regisztráció</button>
+            </div>
+        </nav>
+
+        <!-- Görgethető tartalom -->
+        <main class="landing-scroll">
+
+            <!-- HERO -->
+            <section class="landing-section landing-hero" id="landingHero">
+                <div class="hero-3d">
+                    <div class="beer-icon hero-emoji" id="secretAdminTrigger" style="cursor: pointer;">🍺🍹</div>
+                    <h1 class="hero-title">Sör &amp; Ital értékelő</h1>
+                    <p class="hero-subtitle">Tesztelj, pontozz és rögzíts bármilyen italt — gyűjtsd egy helyre az élményeidet, és nézd, ahogy épül a saját italnaplód.</p>
+                    <div class="hero-cta">
+                        <button type="button" class="cta-btn cta-primary" data-auth-open="register">Csatlakozom 🚀</button>
+                        <button type="button" class="cta-btn cta-ghost" data-auth-open="login">Már van fiókom</button>
+                    </div>
                 </div>
+                <button type="button" class="scroll-indicator" aria-label="Görgess lejjebb">
+                    <span>Görgess</span>
+                    <span class="scroll-arrow">⌄</span>
+                </button>
+            </section>
+
+            <!-- MI EZ? -->
+            <section class="landing-section">
+                <div class="section-inner split">
+                    <div class="reveal reveal-left">
+                        <span class="section-kicker">Mi ez?</span>
+                        <h2>Az italnaplód, felturbózva</h2>
+                        <p class="lead">Akár sör, akár koktél, bor vagy bármi más — pontozd íz, illat és összhatás szerint, írj hozzá jegyzetet, és mentsd el. Minden korty egy helyen, kereshetően, statisztikákkal.</p>
+                    </div>
+                    <div class="reveal reveal-right">
+                        <div class="showcase-card">
+                            <span class="showcase-emoji">🍺</span>
+                            <div class="showcase-row">
+                                <span>IPA — Helyi főzde</span>
+                                <span class="showcase-stars">★★★★☆</span>
+                            </div>
+                            <div class="showcase-row">
+                                <span>Mojito</span>
+                                <span class="showcase-stars">★★★★★</span>
+                            </div>
+                            <div class="showcase-row">
+                                <span>Vörösbor — Cuvée</span>
+                                <span class="showcase-stars">★★★☆☆</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FUNKCIÓK -->
+            <section class="landing-section">
+                <div class="section-inner section-center">
+                    <span class="section-kicker reveal reveal-up">Funkciók</span>
+                    <h2 class="reveal reveal-up">Minden, amire egy ital-rajongónak szüksége van</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card reveal reveal-3d stagger-1">
+                            <span class="feature-icon">🍻</span>
+                            <h3>Értékelés &amp; rögzítés</h3>
+                            <p>Pontozz több szempont szerint, írj jegyzetet, és építsd fel a saját ital-gyűjteményed.</p>
+                        </div>
+                        <div class="feature-card reveal reveal-3d stagger-2">
+                            <span class="feature-icon">📊</span>
+                            <h3>Statisztikák</h3>
+                            <p>Látványos grafikonok és KPI-k: kedvenc stílusok, átlagpontok, fogyasztási trendek.</p>
+                        </div>
+                        <div class="feature-card reveal reveal-3d stagger-3">
+                            <span class="feature-icon">🏆</span>
+                            <h3>Közösségi toplista</h3>
+                            <p>Mérd össze magad másokkal, és kapaszkodj fel a nyilvános ranglistán — ha szeretnéd.</p>
+                        </div>
+                        <div class="feature-card reveal reveal-3d stagger-4">
+                            <span class="feature-icon">🏅</span>
+                            <h3>Kihívások &amp; rangok</h3>
+                            <p>Teljesíts kihívásokat, oldj fel jelvényeket és lépj egyre feljebb a ranglétrán.</p>
+                        </div>
+                        <div class="feature-card reveal reveal-3d stagger-5">
+                            <span class="feature-icon">📱</span>
+                            <h3>Telepíthető PWA</h3>
+                            <p>Feltelepíthető a telefonodra, és offline is működik — az adataid később szinkronizálódnak.</p>
+                        </div>
+                        <div class="feature-card reveal reveal-3d stagger-6">
+                            <span class="feature-icon">🔒</span>
+                            <h3>Biztonság</h3>
+                            <p>Kétlépcsős azonosítás (2FA) és helyreállító kód óvja a fiókodat és az adataidat.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MIÉRT REGISZTRÁLJ? -->
+            <section class="landing-section">
+                <div class="section-inner section-center">
+                    <span class="section-kicker reveal reveal-up">Miért regisztrálj?</span>
+                    <h2 class="reveal reveal-up">3 ok, amiért megéri</h2>
+                    <div class="why-list">
+                        <div class="why-row reveal reveal-left">
+                            <div class="why-num">1</div>
+                            <div>
+                                <h3>Felhőben, bármikor elérhető</h3>
+                                <p>Az italjaid és statisztikáid biztonságban a felhőben — bármelyik eszközről folytathatod, ahol abbahagytad.</p>
+                            </div>
+                        </div>
+                        <div class="why-row alt reveal reveal-right">
+                            <div class="why-num">2</div>
+                            <div>
+                                <h3>Személyre szabott élmény</h3>
+                                <p>Saját profil, rangok és jelvények, valamint a fejlődésed nyomon követése — csak neked.</p>
+                            </div>
+                        </div>
+                        <div class="why-row reveal reveal-left">
+                            <div class="why-num">3</div>
+                            <div>
+                                <h3>Ingyenes és pillanatok alatt kész</h3>
+                                <p>A regisztráció pár másodperc, és máris kezdheted rögzíteni az első kortyod.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ZÁRÓ CTA -->
+            <section class="landing-section landing-cta-section">
+                <div class="cta-final reveal reveal-zoom">
+                    <div class="hero-emoji">🍻</div>
+                    <h2>Készen állsz az első kortyra?</h2>
+                    <p>Csatlakozz, és kezdd el építeni a saját italnaplódat még ma.</p>
+                    <div class="hero-cta">
+                        <button type="button" class="cta-btn cta-primary" data-auth-open="register">Regisztráció</button>
+                        <button type="button" class="cta-btn cta-ghost" data-auth-open="login">Bejelentkezés</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="landing-footer">
+                <div class="landing-footer-links">
+                    <a href="adatvedelem.html" target="_blank">Adatvédelmi Tájékoztató</a>
+                    <a href="aszf.html" target="_blank">ÁSZF</a>
+                    <button class="support-btn" id="guestSupportBtn">
+                        <span class="support-icon">❓</span>
+                        <span class="support-text">Segítség kérése</span>
+                    </button>
+                </div>
+                <p class="landing-footer-copy">© 2026 Sörapp · Csak 18 éven felülieknek 🔞</p>
+            </footer>
+        </main>
+
+        <!-- ===== AUTH MODAL (a meglévő login/register kártyák burka) ===== -->
+        <div class="auth-modal-overlay" id="authModal" aria-hidden="true">
+            <div class="auth-modal-content">
+                <button type="button" class="auth-modal-close" onclick="closeAuthModal()" aria-label="Bezárás">&times;</button>
 
                 <div class="auth-container">
                     <div class="auth-card login-card active" id="loginCard">
@@ -134,16 +297,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-     <div class="support-section" style="margin-top: 0px;">
-            <button class="support-btn" id="guestSupportBtn">
-                <span class="support-icon">❓</span>
-                <span class="support-text">Segítség kérése</span>
-            </button>
-        </div>
-    </div>
-</div>
+            </div><!-- /.auth-modal-content -->
+        </div><!-- /#authModal -->
+    </div><!-- /#guestView -->
     <!-- FELHASZNÁLÓI NÉZET -->
 <div class="admin-view" id="userView" style="display: none;">
 
@@ -2825,6 +2981,7 @@
     <!-- Offline támogatás (sw.js-el együtt működik) -->
     <script src="offline.js"></script>
     <script src="js.js"></script>
+    <script src="landing.js"></script>
     <script src="easter_egg.js"></script>
 </body>
 </html>
