@@ -41,6 +41,7 @@
         setActiveCard(mode === 'register' ? 'register' : 'login');
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('landing-no-scroll');
         document.body.classList.add('landing-no-scroll');
     };
 
@@ -49,6 +50,7 @@
         if (!modal) return;
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('landing-no-scroll');
         document.body.classList.remove('landing-no-scroll');
     };
 
@@ -84,6 +86,7 @@
         if (guestView && 'MutationObserver' in window) {
             var mo = new MutationObserver(function () {
                 if (guestView.style.display === 'none') {
+                    document.documentElement.classList.remove('landing-no-scroll');
                     document.body.classList.remove('landing-no-scroll');
                     if (modal) {
                         modal.classList.remove('active');
