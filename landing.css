@@ -441,9 +441,20 @@
 }
 .auth-modal-overlay.active .auth-modal-content { transform: none; }
 
-/* A sliding kártyák túlnyúlását levágjuk, így a modal mindig a LÁTHATÓ
-   kártya magasságára méreteződik (nincs „kísértet" görgetés). */
-#authModal .auth-container { overflow: hidden; border-radius: 20px; margin-bottom: 0; }
+#authModal .auth-container { border-radius: 20px; margin-bottom: 0; }
+
+/* A modalon belül a NEM aktív kártya teljesen kikerül a layoutból, így a
+   modal MINDIG pontosan az aktív kártya magasságára méreteződik. Ez szünteti
+   meg a „kísértet" görgetést (a magasabb, rejtett regisztrációs kártya miatt). */
+#authModal .auth-card {
+    position: relative;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+}
+#authModal .auth-card:not(.active) {
+    display: none;
+}
 
 .auth-modal-close {
     position: absolute;
@@ -462,7 +473,7 @@
 .auth-modal-close:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); }
 
 /* Görgetés-zár, amíg a modal nyitva van */
-body.landing-no-scroll { overflow: hidden; }
+html.landing-no-scroll, body.landing-no-scroll { overflow: hidden; }
 
 /* ============================================================
    11. RESPONZÍV
