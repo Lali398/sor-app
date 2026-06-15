@@ -1,0 +1,496 @@
+/* ============================================================
+   LANDING.CSS — 3D görgetős vendég/landing felület
+   A #guestView "landing-mode" állapotát stílusozza.
+   Nem nyúl a meglévő app-stílusokhoz; minden szabály a
+   .landing-* osztályokra és a #guestView.landing-mode-ra szól.
+   ============================================================ */
+
+/* ---- 1. Alap: a vendég nézet görgethető 3D színpaddá válik ---- */
+#guestView.landing-mode {
+    display: block;
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* A meglévő .container flex-közepezést itt nem használjuk */
+}
+
+/* A teljes oldal alatt fekvő, görgetéssel mozgó 3D háttér */
+.landing-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(138,115,255,0.22), transparent 60%),
+        radial-gradient(900px 500px at 0% 110%, rgba(0,255,136,0.10), transparent 55%);
+}
+
+/* Finom perspektivikus rács, ami mélységérzetet ad */
+.landing-bg-grid {
+    position: absolute;
+    inset: -50% 0 0 0;
+    height: 200%;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: perspective(600px) rotateX(60deg) translateY(var(--grid-shift, 0px));
+    transform-origin: center top;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 70%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 70%);
+    opacity: 0.6;
+}
+
+/* Lebegő, elmosott fény-gömbök (parallax) */
+.landing-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+    will-change: transform;
+}
+.landing-orb-1 { width: 420px; height: 420px; top: -80px; left: -60px;  background: radial-gradient(circle, #8a73ff, transparent 70%); }
+.landing-orb-2 { width: 360px; height: 360px; top: 40%;  right: -80px; background: radial-gradient(circle, #ff5e9a, transparent 70%); }
+.landing-orb-3 { width: 300px; height: 300px; bottom: -60px; left: 30%; background: radial-gradient(circle, #00d2ff, transparent 70%); }
+
+/* A meglévő buborék-animáció a háttérben marad */
+.landing-bg .animated-bg { position: absolute; inset: 0; z-index: 1; }
+
+/* ============================================================
+   2. FIX FELSŐ NAVIGÁCIÓ  (jobb fent: belépés + regisztráció)
+   ============================================================ */
+.landing-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 8000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 22px;
+    transition: background .3s ease, backdrop-filter .3s ease, padding .3s ease, box-shadow .3s ease;
+}
+.landing-nav.scrolled {
+    background: rgba(16, 0, 43, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+    padding: 10px 22px;
+}
+.landing-nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 1.15rem; color: #fff;
+    letter-spacing: .3px;
+    text-shadow: 0 2px 10px rgba(0,0,0,.4);
+}
+.landing-nav-logo { font-size: 1.6rem; line-height: 1; }
+.landing-nav-actions { display: flex; gap: 10px; }
+
+/* Pill gombok a navban */
+.lnav-btn {
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease;
+    white-space: nowrap;
+}
+.lnav-btn-ghost {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.3);
+    color: #fff;
+}
+.lnav-btn-ghost:hover { background: rgba(255,255,255,0.14); transform: translateY(-2px); }
+.lnav-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(102,126,234,0.4);
+}
+.lnav-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(102,126,234,0.55); }
+
+/* ============================================================
+   3. GÖRGETHETŐ TARTALOM + SZEKCIÓK
+   ============================================================ */
+.landing-scroll { position: relative; z-index: 2; }
+
+.landing-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 110px 22px 90px;
+    perspective: 1200px; /* 3D mélység a beúszó elemeknek */
+}
+.section-inner { width: 100%; max-width: 1080px; margin: 0 auto; }
+.section-inner.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.section-kicker {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c3aaff;
+    margin-bottom: 14px;
+}
+.landing-section h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 18px;
+    text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+}
+.landing-section p.lead {
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    color: rgba(255,255,255,0.82);
+    line-height: 1.7;
+    max-width: 560px;
+}
+.section-center { text-align: center; }
+.section-center .lead { margin-left: auto; margin-right: auto; }
+
+/* ============================================================
+   4. HERO
+   ============================================================ */
+.landing-hero { text-align: center; }
+.hero-3d {
+    transform-style: preserve-3d;
+    transition: transform .2s ease-out;
+    will-change: transform;
+}
+.hero-emoji {
+    font-size: clamp(3.5rem, 9vw, 6rem);
+    line-height: 1;
+    margin-bottom: 18px;
+    display: inline-block;
+    filter: drop-shadow(0 14px 30px rgba(0,0,0,0.45));
+    animation: heroFloat 5s ease-in-out infinite;
+}
+@keyframes heroFloat {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-16px) rotate(2deg); }
+}
+.hero-title {
+    font-size: clamp(2.4rem, 7vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 18px;
+    background: linear-gradient(120deg, #ffffff 0%, #c3aaff 55%, #8a73ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 10px 40px rgba(138,115,255,0.25);
+}
+.hero-subtitle {
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    color: rgba(255,255,255,0.85);
+    max-width: 620px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* CTA gomb-csoport (hero + záró szekció) */
+.hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.cta-btn {
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 16px 34px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.cta-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(102,126,234,0.45);
+}
+.cta-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 16px 40px rgba(102,126,234,0.6); }
+.cta-ghost {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+    backdrop-filter: blur(6px);
+}
+.cta-ghost:hover { background: rgba(255,255,255,0.16); transform: translateY(-3px); }
+
+/* Görgetés-jelző a hero alján */
+.scroll-indicator {
+    position: absolute;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8rem; letter-spacing: 1px;
+    animation: bob 2s ease-in-out infinite;
+}
+.scroll-indicator .scroll-arrow { font-size: 1.6rem; line-height: 1; }
+@keyframes bob { 0%,100% { transform: translate(-50%,0); } 50% { transform: translate(-50%,8px); } }
+
+/* ============================================================
+   5. "MI EZ?" — kétoszlopos showcase
+   ============================================================ */
+.showcase-card {
+    position: relative;
+    border-radius: 24px;
+    padding: 40px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    text-align: center;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform .15s ease-out;
+}
+.showcase-emoji { font-size: 5rem; display: block; margin-bottom: 10px; filter: drop-shadow(0 10px 22px rgba(0,0,0,.4)); }
+.showcase-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px 16px; margin-top: 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    color: #fff; font-weight: 500;
+}
+.showcase-stars { color: #ffd700; letter-spacing: 2px; }
+
+/* ============================================================
+   6. FUNKCIÓ KÁRTYÁK (3D pop-in)
+   ============================================================ */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 44px;
+}
+.feature-card {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 20px;
+    padding: 30px 26px;
+    text-align: left;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+.feature-card:hover {
+    background: rgba(255,255,255,0.11);
+    border-color: rgba(138,115,255,0.5);
+    box-shadow: 0 22px 50px rgba(0,0,0,0.45);
+}
+.feature-icon {
+    font-size: 2.6rem;
+    line-height: 1;
+    margin-bottom: 16px;
+    display: inline-block;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+}
+.feature-card h3 { color: #fff; font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
+.feature-card p { color: rgba(255,255,255,0.72); font-size: 0.95rem; line-height: 1.55; }
+
+/* ============================================================
+   7. "MIÉRT REGISZTRÁLJ?" — váltakozó sorok számokkal
+   ============================================================ */
+.why-list { margin-top: 44px; display: flex; flex-direction: column; gap: 26px; }
+.why-row {
+    display: flex; align-items: center; gap: 24px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 26px 30px;
+}
+.why-row.alt { flex-direction: row-reverse; text-align: right; }
+.why-num {
+    flex: 0 0 auto;
+    width: 64px; height: 64px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    font-size: 1.6rem; font-weight: 800; color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 10px 24px rgba(102,126,234,0.45);
+}
+.why-row h3 { color: #fff; font-size: 1.25rem; margin-bottom: 6px; }
+.why-row p { color: rgba(255,255,255,0.75); line-height: 1.55; }
+
+/* ============================================================
+   8. ZÁRÓ CTA + FOOTER
+   ============================================================ */
+.landing-cta-section .cta-final {
+    text-align: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 28px;
+    padding: 60px 40px;
+    max-width: 760px;
+    margin: 0 auto;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+}
+.landing-cta-section .cta-final h2 { margin-bottom: 14px; }
+.landing-cta-section .cta-final p { color: rgba(255,255,255,0.82); margin-bottom: 30px; font-size: 1.1rem; }
+
+.landing-footer {
+    position: relative; z-index: 2;
+    text-align: center;
+    padding: 40px 22px 60px;
+    color: rgba(255,255,255,0.6);
+}
+.landing-footer-links {
+    display: flex; align-items: center; justify-content: center;
+    gap: 22px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.landing-footer-links a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color .25s ease;
+}
+.landing-footer-links a:hover { color: #c3aaff; }
+.landing-footer .support-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; cursor: pointer;
+    padding: 8px 16px; border-radius: 50px;
+    font-family: inherit; font-size: 0.9rem;
+    transition: background .25s ease;
+}
+.landing-footer .support-btn:hover { background: rgba(255,255,255,0.16); }
+.landing-footer-copy { font-size: 0.85rem; }
+
+/* ============================================================
+   9. SCROLL-REVEAL ANIMÁCIÓK (IntersectionObserver állítja a .in-view-t)
+   ============================================================ */
+/* Az elrejtett kiindulóállapot CSAK akkor él, ha van JS (has-js).
+   Így ha a landing.js nem töltődne be, minden tartalom látható marad. */
+.reveal {
+    transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+    will-change: transform, opacity;
+}
+.has-js .reveal       { opacity: 0; }
+.has-js .reveal-left  { transform: translateX(-70px); }
+.has-js .reveal-right { transform: translateX(70px); }
+.has-js .reveal-up    { transform: translateY(70px); }
+.has-js .reveal-down  { transform: translateY(-70px); }
+.has-js .reveal-3d    { transform: rotateX(-35deg) translateY(60px); transform-origin: center bottom; }
+.has-js .reveal-zoom  { transform: scale(.82); }
+.has-js .reveal.in-view {
+    opacity: 1;
+    transform: none;
+}
+/* Lépcsőzetes késleltetés (funkció-kártyák, why-sorok) */
+.stagger-1 { transition-delay: .08s; }
+.stagger-2 { transition-delay: .16s; }
+.stagger-3 { transition-delay: .24s; }
+.stagger-4 { transition-delay: .32s; }
+.stagger-5 { transition-delay: .40s; }
+.stagger-6 { transition-delay: .48s; }
+
+/* ============================================================
+   10. AUTH MODAL  (a meglévő login/register kártyák burka)
+   z-index 9000 → a rendszer-modalok (recovery/2FA, z-index 10000)
+   fölénk nyílnak, ahogy a régi flow elvárja.
+   ============================================================ */
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(8, 0, 24, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .35s ease, visibility .35s ease;
+}
+.auth-modal-overlay.active { opacity: 1; visibility: visible; }
+
+.auth-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transform: translateY(24px) scale(.96);
+    transition: transform .4s cubic-bezier(.16,1,.3,1);
+    padding-top: 6px;
+}
+.auth-modal-overlay.active .auth-modal-content { transform: none; }
+
+/* A sliding kártyák vízszintes túlnyúlását levágjuk a modalon belül */
+#authModal .auth-container { overflow: hidden; border-radius: 20px; }
+
+.auth-modal-close {
+    position: absolute;
+    top: 8px; right: 8px;
+    z-index: 5;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 24px; line-height: 1;
+    cursor: pointer;
+    transition: background .25s ease, transform .25s ease;
+}
+.auth-modal-close:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); }
+
+/* Görgetés-zár, amíg a modal nyitva van */
+body.landing-no-scroll { overflow: hidden; }
+
+/* ============================================================
+   11. RESPONZÍV
+   ============================================================ */
+@media (max-width: 860px) {
+    .section-inner.split { grid-template-columns: 1fr; gap: 30px; }
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .landing-nav { padding: 12px 14px; }
+    .landing-nav.scrolled { padding: 8px 14px; }
+    .landing-nav-brand { font-size: 1rem; }
+    .landing-nav-logo { font-size: 1.3rem; }
+    .lnav-btn { padding: 9px 14px; font-size: 0.85rem; }
+    /* Mobilon csak az elsődleges (Regisztráció) marad a navban,
+       a belépés a hero/záró gombokból és a navból is elérhető */
+    .lnav-btn-ghost { display: none; }
+
+    .landing-section { padding: 96px 16px 72px; min-height: auto; }
+    .landing-hero { min-height: 100vh; }
+    .feature-grid { grid-template-columns: 1fr; gap: 16px; }
+    .why-row, .why-row.alt { flex-direction: column; text-align: center; gap: 14px; }
+    .hero-cta { flex-direction: column; align-items: stretch; }
+    .cta-btn { width: 100%; }
+    .landing-cta-section .cta-final { padding: 40px 22px; }
+}
+
+/* ============================================================
+   12. CSÖKKENTETT MOZGÁS — minden azonnal látszik, animációk ki
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .hero-emoji, .scroll-indicator, .landing-orb { animation: none !important; }
+    .hero-3d, .showcase-card, .feature-card { transition: none !important; }
+}
