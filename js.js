@@ -6827,6 +6827,10 @@ document.addEventListener('keydown', function(e) {
     }
 
     // --- NORMÁL VÉGREHAJTÁSI MÓD ---
+    // Vendég (nem bejelentkezett) nézetben NE működjenek a hotkeyek
+    const guestViewEl = document.getElementById('guestView');
+    if (guestViewEl && getComputedStyle(guestViewEl).display !== 'none') return;
+
     // Input mezőkben ne aktiválódjon
     const tag = document.activeElement?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
