@@ -276,6 +276,8 @@ function setSafeText(elementId, text, allowLineBreaks = false) {
     let currentConsMap = {}; // { beerId: { count, totalDl } }
     let currentConsEntries = [];
     let currentUserDrinks = [];
+    let currentRecapScope = 'beer';
+    let currentRecapPeriod = null;
     let temp2FASecret = ''; // Ideiglenes tároló a setup közben
     let tempLoginEmail = ''; // Ideiglenes tároló login közben
 
@@ -2171,6 +2173,8 @@ function updateStreakDisplay() {
     changePasswordForm.addEventListener('submit', handleChangePassword);
     deleteUserBtn.addEventListener('click', handleDeleteUser);
     recapControls.addEventListener('click', handleRecapPeriodClick);
+    const recapScopeEl = document.getElementById('recapScope');
+    if (recapScopeEl) recapScopeEl.addEventListener('click', handleRecapScopeClick);
 
 
     // === TITKOS ADMIN BELÉPÉS (5 KATTINTÁS A SÖRRE) ===
@@ -2253,17 +2257,27 @@ async function handleRecapPeriodClick(e) {
     const container = document.getElementById('recapResultsContainer');
     container.innerHTML = '<div class="recap-spinner"></div>';
 
+    currentRecapPeriod = period;
+    const __ctrl = button.closest('.recap-controls');
+    if (__ctrl) __ctrl.querySelectorAll('.recap-btn').forEach(b => b.classList.toggle('active', b === button));
+    const recapScope = currentRecapScope || 'beer';
+    const recapSource = recapScope === 'drink' ? (currentUserDrinks || [])
+        : recapScope === 'all' ? [...(currentUserBeers || []), ...(currentUserDrinks || [])]
+        : (currentUserBeers || []);
+    const scopeLabels = { beer: 'SÖR VISSZATEKINTŐ', drink: 'ITAL VISSZATEKINTŐ', all: 'SÖR + ITAL VISSZATEKINTŐ' };
+
     setTimeout(() => {
         try {
             const startDate = getStartDateForPeriod(period);
             const now = new Date();
 
-            if (!currentUserBeers || currentUserBeers.length === 0) {
-                container.innerHTML = `<p class="recap-no-results">Még nem értékeltél söröket. 🍺</p>`;
+            if (!recapSource || recapSource.length === 0) {
+                const __emptyMsg = { beer: 'Még nem értékeltél söröket. 🍺', drink: 'Még nem értékeltél italokat. 🍹', all: 'Még nincs egyetlen értékelésed sem. 🍻' };
+                container.innerHTML = `<p class="recap-no-results">${__emptyMsg[recapScope] || __emptyMsg.beer}</p>`;
                 return;
             }
 
-            const filtered = currentUserBeers.filter(beer => {
+            const filtered = recapSource.filter(beer => {
                 const d = parseBeerDate(beer.date);
                 return d && d >= startDate && d <= now;
             });
@@ -2276,13 +2290,24 @@ async function handleRecapPeriodClick(e) {
             // (a részletes dashboard közvetlenül a nyers tételekből számol)
             const recapTitle = getPeriodName(period);
             
-            renderRecapDashboard(filtered, container, recapTitle);
+            renderRecapDashboard(filtered, container, recapTitle, scopeLabels[recapScope]);
 
         } catch (err) {
             console.error(err);
             container.innerHTML = `<p class="recap-no-results">Hiba történt. :(</p>`;
         }
     }, 500);
+}
+
+// Hatókör-választó (Sör / Ital / Mind) — újrarendereli az aktív időszakot
+function handleRecapScopeClick(e) {
+    const btn = e.target.closest('.recap-scope-btn');
+    if (!btn) return;
+    currentRecapScope = btn.dataset.scope || 'beer';
+    const wrap = btn.closest('.recap-scope');
+    if (wrap) wrap.querySelectorAll('.recap-scope-btn').forEach(b => b.classList.toggle('active', b === btn));
+    const active = document.querySelector('#recapControls .recap-btn.active');
+    if (active) active.click();
 }
 
 // === 2. ADMIN OLDALI KEZELŐ ===
@@ -2712,8 +2737,8 @@ function buildRecapData(beers) {
         .sort((a, b) => b.count - a.count);
 
     // Pontszám-eloszlás (0..10, kerekítve)
-    const scoreBins = new Array(11).fill(0);
-    items.forEach(i => { scoreBins[Math.max(0, Math.min(10, Math.round(i.avg)))]++; });
+    const scoreBins = new Array(10).fill(0); // 1..10 pontskála
+    items.forEach(i => { scoreBins[Math.max(1, Math.min(10, Math.round(i.avg))) - 1]++; });
 
     // Napok (hétfőtől) + órák + hétvége/hétköznap
     const dow = new Array(7).fill(0);
@@ -2823,7 +2848,7 @@ function buildRecapData(beers) {
 }
 
 // === DASHBOARD RENDERELŐ ===
-function renderRecapDashboard(beers, container, periodName) {
+function renderRecapDashboard(beers, container, periodName, scopeLabel) {
     ensureRecapCss();
     const R = buildRecapData(beers);
     window._lastRecapBeers = beers;
@@ -2836,7 +2861,7 @@ function renderRecapDashboard(beers, container, periodName) {
     const rangeTxt = (R.firstDate && R.lastDate) ? `${dr(R.firstDate)} – ${dr(R.lastDate)}` : '';
     const fmtDay = k => { if (!k) return ''; const p = k.split('-'); return `${parseInt(p[1], 10)}.${parseInt(p[2], 10)}`; };
 
-    const kpi = (ico, val, lbl) => `<div class="sfm-kpi"><div class="sfm-kpi-ico">${ico}</div><div class="sfm-kpi-val">${val}</div><div class="sfm-kpi-lbl">${lbl}</div></div>`;
+    const kpi = (ico, val, lbl) => `<div class="sfm-kpi"><div class="sfm-kpi-ico">${ico}</div><div class="sfm-kpi-val sfm-num">${val}</div><div class="sfm-kpi-lbl">${lbl}</div></div>`;
     const empty = '<p class="sfm-empty">Nincs adat.</p>';
     const medal = ['🥇', '🥈', '🥉'];
 
@@ -2923,11 +2948,11 @@ function renderRecapDashboard(beers, container, periodName) {
     <div class="sfm-recap" id="sfmRecap">
         <div class="sfm-hero">
             <div class="sfm-hero-left">
-                <div class="sfm-hero-eyebrow">SÖR VISSZATEKINTŐ</div>
+                <div class="sfm-hero-eyebrow">${esc(scopeLabel || 'SÖR VISSZATEKINTŐ')}</div>
                 <h2 class="sfm-hero-title">${esc(periodName)}</h2>
                 ${rangeTxt ? `<div class="sfm-hero-sub">${rangeTxt}</div>` : ''}
             </div>
-            <div class="sfm-hero-badge"><span class="sfm-hero-num">${R.count}</span><span class="sfm-hero-num-lbl">tétel</span></div>
+            <div class="sfm-hero-badge"><span class="sfm-hero-num sfm-num">${R.count}</span><span class="sfm-hero-num-lbl">tétel</span></div>
         </div>
 
         <div class="sfm-kpis">
@@ -2987,39 +3012,46 @@ function renderRecapDashboard(beers, container, periodName) {
         ${shareCardHtml}
     </div>`;
 
-    if (window.requestAnimationFrame) requestAnimationFrame(() => renderRecapCharts(R));
-    else setTimeout(() => renderRecapCharts(R), 50);
+    setupRecapReveal(container, R);
 }
 
 // === GRAFIKONOK (Chart.js) ===
-function renderRecapCharts(R) {
-    if (typeof Chart === 'undefined') return;
+function recapChartTheme() {
     const css = getComputedStyle(document.documentElement);
     const pick = (n, fb) => { const v = (css.getPropertyValue(n) || '').trim(); return v || fb; };
     const accent = pick('--accent-color', pick('--accent', '#8a73ff'));
-    const gold = pick('--gold', '#fcd34d');
-    const grid = 'rgba(255,255,255,0.08)';
-    const tick = '#b9b9cc';
-    const palette = ['#8a73ff', '#22d3ee', '#f472b6', '#fcd34d', '#34d399', '#fb923c', '#60a5fa', '#f87171'];
-
-    const hexA = (hex, a) => {
-        hex = (hex || '').trim();
-        if (hex.charAt(0) === '#') {
-            let h = hex.slice(1);
-            if (h.length === 3) h = h.split('').map(c => c + c).join('');
-            const n = parseInt(h, 16);
-            return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+    return {
+        accent,
+        gold: pick('--gold', '#fcd34d'),
+        grid: 'rgba(255,255,255,0.08)',
+        tick: '#b9b9cc',
+        palette: ['#8a73ff', '#22d3ee', '#f472b6', '#fcd34d', '#34d399', '#fb923c', '#60a5fa', '#f87171'],
+        hexA(hex, a) {
+            hex = (hex || '').trim();
+            if (hex.charAt(0) === '#') {
+                let h = hex.slice(1);
+                if (h.length === 3) h = h.split('').map(c => c + c).join('');
+                const n = parseInt(h, 16);
+                return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+            }
+            return hex;
         }
-        return hex;
     };
-    try { Chart.defaults.color = tick; Chart.defaults.font.family = "'Poppins', sans-serif"; } catch (e) {}
+}
 
-    const destroy = id => { if (window._recapCharts[id]) { try { window._recapCharts[id].destroy(); } catch (e) {} delete window._recapCharts[id]; } };
-    const mk = (id, cfg) => { const el = document.getElementById(id); if (!el) return; destroy(id); window._recapCharts[id] = new Chart(el.getContext('2d'), cfg); };
+// Egyetlen grafikon megépítése id alapján (lazy: csak amikor a felhasználó odagörget)
+function buildRecapChart(id, R) {
+    if (typeof Chart === 'undefined') return;
+    const el = document.getElementById(id);
+    if (!el || window._recapCharts[id]) return;
+    const T = recapChartTheme();
+    const { accent, gold, grid, tick, palette } = T;
+    try { Chart.defaults.color = tick; Chart.defaults.font.family = "'Poppins', sans-serif"; } catch (e) {}
     const baseOpts = o => {
         o = o || {};
         return {
             responsive: true, maintainAspectRatio: false,
+            animation: { duration: 1100, easing: 'easeOutQuart' },
             plugins: { legend: o.legend === false ? { display: false } : { labels: { color: tick } }, tooltip: { enabled: true } },
             scales: {
                 y: { beginAtZero: true, ticks: { color: tick, precision: 0 }, grid: { color: grid } },
@@ -3027,41 +3059,128 @@ function renderRecapCharts(R) {
             }
         };
     };
+    let cfg;
+    switch (id) {
+        case 'recapChartTimeline':
+            cfg = { type: 'line', data: { labels: R.timeline.map(t => t.label), datasets: [{ label: 'Kóstolások', data: R.timeline.map(t => t.count), borderColor: accent, backgroundColor: ctx => { const c = ctx.chart.ctx; const g = c.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, T.hexA(accent, 0.45)); g.addColorStop(1, T.hexA(accent, 0)); return g; }, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: accent }] }, options: baseOpts({ legend: false }) };
+            break;
+        case 'recapChartScores':
+            cfg = { type: 'bar', data: { labels: R.scoreBins.map((_, i) => i + 1), datasets: [{ data: R.scoreBins, backgroundColor: R.scoreBins.map((_, i) => T.hexA(gold, 0.32 + i * 0.06)), borderRadius: 5 }] }, options: baseOpts({ legend: false }) };
+            break;
+        case 'recapChartTypes': {
+            const tt = R.topTypes.slice(0, 7);
+            const other = R.topTypes.slice(7).reduce((a, t) => a + t.count, 0);
+            const tL = tt.map(t => t.name), tV = tt.map(t => t.count);
+            if (other > 0) { tL.push('Egyéb'); tV.push(other); }
+            cfg = { type: 'doughnut', data: { labels: tL, datasets: [{ data: tV, backgroundColor: palette, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '60%', animation: { animateRotate: true, animateScale: true, duration: 1100 }, plugins: { legend: { position: 'right', labels: { color: tick, boxWidth: 12, padding: 8, font: { size: 11 } } } } } };
+            break;
+        }
+        case 'recapChartDow':
+            cfg = { type: 'bar', data: { labels: ['Hét', 'Kedd', 'Sze', 'Csü', 'Pén', 'Szo', 'Vas'], datasets: [{ data: R.dow, backgroundColor: T.hexA(accent, 0.6), borderRadius: 5 }] }, options: baseOpts({ legend: false }) };
+            break;
+        case 'recapChartHours':
+            cfg = { type: 'bar', data: { labels: R.hours.map((_, i) => i), datasets: [{ data: R.hours, backgroundColor: T.hexA('#22d3ee', 0.55), borderRadius: 3 }] }, options: baseOpts({ legend: false }) };
+            break;
+        case 'recapChartSensory':
+            cfg = { type: 'radar', data: { labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅'], datasets: [{ data: [R.sensory.look, R.sensory.smell, R.sensory.taste], backgroundColor: T.hexA(accent, 0.2), borderColor: accent, pointBackgroundColor: '#fff', pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1100 }, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, color: tick, backdropColor: 'transparent' }, grid: { color: grid }, angleLines: { color: grid }, pointLabels: { color: tick, font: { size: 12 } } } } } };
+            break;
+        default: return;
+    }
+    window._recapCharts[id] = new Chart(el.getContext('2d'), cfg);
+}
 
-    mk('recapChartTimeline', {
-        type: 'line',
-        data: { labels: R.timeline.map(t => t.label), datasets: [{ label: 'Kóstolások', data: R.timeline.map(t => t.count), borderColor: accent, backgroundColor: ctx => { const c = ctx.chart.ctx; const g = c.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, hexA(accent, 0.45)); g.addColorStop(1, hexA(accent, 0)); return g; }, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: accent }] },
-        options: baseOpts({ legend: false })
+// Minden hátralévő grafikon megépítése (fallback / reduced-motion eset)
+function renderRecapCharts(R) {
+    ['recapChartTimeline', 'recapChartScores', 'recapChartTypes', 'recapChartDow', 'recapChartHours', 'recapChartSensory']
+        .forEach(id => buildRecapChart(id, R));
+}
+
+// Görgetésre megjelenő animáció + szám-felpörgetés + lazy grafikonépítés
+function setupRecapReveal(container, R) {
+    const root = container.querySelector('.sfm-recap') || container;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Korábbi observer leállítása (időszak-/hatókörváltáskor)
+    if (window._recapObserver) { try { window._recapObserver.disconnect(); } catch (e) {} window._recapObserver = null; }
+
+    // Grafikon-kártyák összekötése a vászon azonosítójával
+    root.querySelectorAll('.sfm-chart-card').forEach(card => {
+        const cv = card.querySelector('canvas');
+        if (cv) card.dataset.recapChart = cv.id;
     });
-    mk('recapChartScores', {
-        type: 'bar',
-        data: { labels: R.scoreBins.map((_, i) => i), datasets: [{ data: R.scoreBins, backgroundColor: R.scoreBins.map((_, i) => hexA(gold, 0.3 + i * 0.06)), borderRadius: 5 }] },
-        options: baseOpts({ legend: false })
-    });
-    const tt = R.topTypes.slice(0, 7);
-    const other = R.topTypes.slice(7).reduce((a, t) => a + t.count, 0);
-    const tL = tt.map(t => t.name), tV = tt.map(t => t.count);
-    if (other > 0) { tL.push('Egyéb'); tV.push(other); }
-    mk('recapChartTypes', {
-        type: 'doughnut',
-        data: { labels: tL, datasets: [{ data: tV, backgroundColor: palette, borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: tick, boxWidth: 12, padding: 8, font: { size: 11 } } } } }
-    });
-    mk('recapChartDow', {
-        type: 'bar',
-        data: { labels: ['Hét', 'Kedd', 'Sze', 'Csü', 'Pén', 'Szo', 'Vas'], datasets: [{ data: R.dow, backgroundColor: hexA(accent, 0.6), borderRadius: 5 }] },
-        options: baseOpts({ legend: false })
-    });
-    mk('recapChartHours', {
-        type: 'bar',
-        data: { labels: R.hours.map((_, i) => i), datasets: [{ data: R.hours, backgroundColor: hexA('#22d3ee', 0.55), borderRadius: 3 }] },
-        options: baseOpts({ legend: false })
-    });
-    mk('recapChartSensory', {
-        type: 'radar',
-        data: { labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅'], datasets: [{ data: [R.sensory.look, R.sensory.smell, R.sensory.taste], backgroundColor: hexA(accent, 0.2), borderColor: accent, pointBackgroundColor: '#fff', pointRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, color: tick, backdropColor: 'transparent' }, grid: { color: grid }, angleLines: { color: grid }, pointLabels: { color: tick, font: { size: 12 } } } } }
-    });
+
+    // Reveal-célok kijelölése
+    const targets = [];
+    const hero = root.querySelector('.sfm-hero'); if (hero) targets.push(hero);
+    root.querySelectorAll('.sfm-kpi').forEach(el => targets.push(el));
+    root.querySelectorAll('.sfm-section').forEach(sec => { if (!sec.querySelector('.sfm-charts')) targets.push(sec); });
+    root.querySelectorAll('.sfm-chart-card').forEach(el => targets.push(el));
+    root.querySelectorAll('.sfm-insight').forEach(el => targets.push(el));
+
+    const revealNow = el => {
+        el.classList.add('in');
+        if (el.querySelectorAll) el.querySelectorAll('.sfm-num').forEach(countUpRecap);
+        const cid = el.dataset && el.dataset.recapChart;
+        if (cid) buildRecapChart(cid, R);
+    };
+
+    if (reduce || !('IntersectionObserver' in window)) {
+        targets.forEach(revealNow);
+        renderRecapCharts(R);
+        return;
+    }
+
+    // Kezdő (rejtett) állapot + lépcsőzetes késleltetés a KPI-knál
+    targets.forEach(el => el.classList.add('sfm-reveal'));
+    let k = 0;
+    root.querySelectorAll('.sfm-kpi').forEach(el => { el.style.transitionDelay = (k++ * 55) + 'ms'; });
+
+    const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(en => {
+            if (!en.isIntersecting) return;
+            const el = en.target;
+            el.classList.add('in');
+            if (el.querySelectorAll) el.querySelectorAll('.sfm-num').forEach(countUpRecap);
+            const cid = el.dataset && el.dataset.recapChart;
+            if (cid) setTimeout(() => buildRecapChart(cid, R), 140);
+            obs.unobserve(el);
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+    targets.forEach(el => io.observe(el));
+    window._recapObserver = io;
+
+    // Biztonsági háló: 2,8 mp után minden jelenjen meg
+    setTimeout(() => {
+        targets.forEach(el => { if (!el.classList.contains('in')) revealNow(el); });
+    }, 2800);
+}
+
+// Szám felpörgetése 0-ról a végértékre (a szövegből parse-olva a formátumot)
+function countUpRecap(el) {
+    if (el._recapCounted) return;
+    el._recapCounted = true;
+    const raw = (el.textContent || '').trim();
+    const m = raw.match(/^(\D*?)(-?\d+(?:[.,]\d+)?)(.*)$/);
+    if (!m) return;
+    const prefix = m[1] || '';
+    const numStr = m[2];
+    const suffix = m[3] || '';
+    const useComma = numStr.indexOf(',') !== -1;
+    const to = parseFloat(numStr.replace(',', '.'));
+    const dec = (numStr.split(/[.,]/)[1] || '').length;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || isNaN(to)) return;
+    const fmt = v => { let s = v.toFixed(dec); if (useComma) s = s.replace('.', ','); return prefix + s + suffix; };
+    const dur = 900, t0 = performance.now();
+    const ease = x => 1 - Math.pow(1 - x, 3);
+    const step = now => {
+        const p = Math.min(1, (now - t0) / dur);
+        el.textContent = fmt(to * ease(p));
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = raw;
+    };
+    requestAnimationFrame(step);
 }
 
 // === MEGOSZTHATÓ KÉP MENTÉSE ===
