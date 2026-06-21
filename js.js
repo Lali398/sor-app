@@ -2401,7 +2401,7 @@ function calculateRecapStats(beers) {
 
     // 3. Kategória / Típus elemzés
     const typeCounts = validItems.reduce((acc, item) => {
-        const t = item.type || item.category || 'Egyéb';
+        const t = recapItemStyle(item);
         acc[t] = (acc[t] || 0) + 1;
         return acc;
     }, {});
@@ -2679,6 +2679,16 @@ function recapNum(v) {
     return isNaN(n) ? 0 : n;
 }
 
+// A tétel "stílusa" a Stílusok statisztikához és a grafikonhoz.
+// Sörnél a "type" mező a stílus (pl. IPA). Italnál viszont a "type" csak a
+// jelleg (Alkoholos / Nem alkoholos), a tényleges fajtát a "category" tárolja
+// (pl. Energia ital, Bor, Whisky) — ezért italnál a kategóriát részesítjük előnyben.
+function recapItemStyle(b) {
+    const isDrink = !b.beerName && (b.drinkName != null || b.category != null);
+    const style = isDrink ? (b.category || b.type) : (b.type || b.category);
+    return (style && String(style).trim()) || 'Egyéb';
+}
+
 function ensureRecapCss() {
     if (document.getElementById('recap-css-link')) return;
     if (document.querySelector('link[href$="recap.css"]')) return;
@@ -2693,7 +2703,7 @@ function ensureRecapCss() {
 function buildRecapData(beers) {
     const items = (beers || []).map(b => ({
         name: b.beerName || b.drinkName || 'Ismeretlen',
-        type: (b.type || b.category || 'Egyéb') || 'Egyéb',
+        type: recapItemStyle(b),
         location: (b.location || 'Ismeretlen') || 'Ismeretlen',
         abv: recapNum(b.beerPercentage || b.drinkPercentage),
         look: recapNum(b.look),
@@ -2850,6 +2860,18 @@ function buildRecapData(beers) {
 // === DASHBOARD RENDERELŐ ===
 function renderRecapDashboard(beers, container, periodName, scopeLabel) {
     ensureRecapCss();
+
+    // A korábbi grafikonok megsemmisítése + registry nullázása. A container.innerHTML
+    // lecserélésekor a régi canvasok eltűnnek, de a Chart-példányok a window._recapCharts
+    // registryben maradnának — emiatt a buildRecapChart() early-returnölne, és nézet-/
+    // időszakváltáskor (pl. söritalok) az új grafikonok nem rajzolódnának ki.
+    if (window._recapCharts) {
+        Object.keys(window._recapCharts).forEach(k => {
+            try { window._recapCharts[k].destroy(); } catch (e) {}
+        });
+    }
+    window._recapCharts = {};
+
     const R = buildRecapData(beers);
     window._lastRecapBeers = beers;
     window._lastRecapTitle = periodName || 'Visszatekintő';
@@ -2955,6 +2977,11 @@ function renderRecapDashboard(beers, container, periodName, scopeLabel) {
             <div class="sfm-hero-badge"><span class="sfm-hero-num sfm-num">${R.count}</span><span class="sfm-hero-num-lbl">tétel</span></div>
         </div>
 
+        <div class="sfm-actions">
+            <button class="sfm-btn primary" type="button" onclick="openRecapStory()">📲 Story mód</button>
+            <button class="sfm-btn" type="button" onclick="downloadRecapCard()">📥 Kép mentése</button>
+        </div>
+
         <div class="sfm-kpis">
             ${kpi('🍺', R.count, 'Kóstolás')}
             ${kpi('⭐', f2(R.avgScore), 'Átlagpont')}
@@ -3003,11 +3030,6 @@ function renderRecapDashboard(beers, container, periodName, scopeLabel) {
         </div>
 
         ${insightsHtml}
-
-        <div class="sfm-actions">
-            <button class="sfm-btn primary" type="button" onclick="openRecapStory()">📲 Story mód</button>
-            <button class="sfm-btn" type="button" onclick="downloadRecapCard()">📥 Kép mentése</button>
-        </div>
 
         ${shareCardHtml}
     </div>`;
