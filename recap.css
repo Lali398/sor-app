@@ -1,0 +1,317 @@
+/* ============================================================
+   RECAP.CSS — "stats.fm"-stílusú részletes Sör Visszatekintő
+   A js.js renderRecapDashboard() függvénye használja.
+   Önállóan is működik: a téma-tokeneket fallbackkel olvassa,
+   így akkor is jól néz ki, ha a theme.css még nem töltött be.
+   ============================================================ */
+
+.sfm-recap {
+    --sfm-accent: var(--accent-color, var(--accent, #8a73ff));
+    --sfm-accent-2: #22d3ee;
+    --sfm-gold: var(--gold, #fcd34d);
+    --sfm-glass: var(--glass-strong, rgba(255, 255, 255, 0.06));
+    --sfm-stroke: var(--stroke, rgba(255, 255, 255, 0.10));
+    --sfm-stroke-bright: var(--stroke-bright, rgba(255, 255, 255, 0.22));
+    --sfm-text: #ececf5;
+    --sfm-muted: #9a9ab0;
+    --sfm-radius: 18px;
+    color: var(--sfm-text);
+    font-family: 'Poppins', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    animation: sfmUp .5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sfmUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- HERO ---------- */
+.sfm-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 26px 28px;
+    border-radius: var(--sfm-radius);
+    background:
+        radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--sfm-accent) 38%, transparent) 0%, transparent 55%),
+        linear-gradient(135deg, rgba(31, 0, 92, 0.55), rgba(16, 0, 43, 0.55));
+    border: 1px solid var(--sfm-stroke-bright);
+    box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.65);
+    position: relative;
+    overflow: hidden;
+}
+.sfm-hero-eyebrow {
+    font-size: .72rem;
+    letter-spacing: .22em;
+    color: var(--sfm-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.sfm-hero-title {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.05;
+    background: linear-gradient(120deg, #fff, color-mix(in srgb, var(--sfm-accent) 70%, #fff));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.sfm-hero-sub { color: var(--sfm-muted); font-size: .92rem; margin-top: 6px; }
+.sfm-hero-badge {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: conic-gradient(from 210deg, var(--sfm-accent), var(--sfm-accent-2), var(--sfm-gold), var(--sfm-accent));
+    box-shadow: 0 0 30px -6px var(--sfm-accent);
+    position: relative;
+}
+.sfm-hero-badge::before {
+    content: ""; position: absolute; inset: 4px; border-radius: 50%;
+    background: #140a2b;
+}
+.sfm-hero-num { position: relative; font-size: 1.9rem; font-weight: 800; line-height: 1; }
+.sfm-hero-num-lbl { position: relative; font-size: .66rem; letter-spacing: .12em; color: var(--sfm-muted); text-transform: uppercase; }
+
+/* ---------- KPI CSEMPÉK ---------- */
+.sfm-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+.sfm-kpi {
+    background: var(--sfm-glass);
+    border: 1px solid var(--sfm-stroke);
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+    transition: transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.sfm-kpi:hover {
+    transform: translateY(-3px);
+    border-color: var(--sfm-stroke-bright);
+    background: color-mix(in srgb, var(--sfm-accent) 12%, var(--sfm-glass));
+}
+.sfm-kpi-ico { font-size: 1.5rem; line-height: 1; margin-bottom: 8px; }
+.sfm-kpi-val { font-size: 1.55rem; font-weight: 800; color: #fff; word-break: break-word; }
+.sfm-kpi-lbl { font-size: .76rem; color: var(--sfm-muted); margin-top: 3px; letter-spacing: .03em; }
+
+/* ---------- SZEKCIÓK ---------- */
+.sfm-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+.sfm-section {
+    background: var(--sfm-glass);
+    border: 1px solid var(--sfm-stroke);
+    border-radius: var(--sfm-radius);
+    padding: 20px;
+}
+.sfm-section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; margin-bottom: 16px;
+}
+.sfm-section-head h4 { font-size: 1.06rem; font-weight: 700; color: #fff; margin: 0; }
+.sfm-section-sub { font-size: .76rem; color: var(--sfm-muted); }
+
+/* ---------- RANGSOROLT LISTA (top sörök / helyek) ---------- */
+.sfm-list { display: flex; flex-direction: column; gap: 8px; }
+.sfm-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid transparent;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.sfm-item:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--sfm-stroke); transform: translateX(2px); }
+.sfm-rank {
+    flex-shrink: 0;
+    width: 30px; text-align: center;
+    font-size: 1.15rem; font-weight: 800; color: var(--sfm-muted);
+}
+.sfm-rank.small { font-size: .95rem; width: 24px; }
+.sfm-item-main { flex: 1; min-width: 0; }
+.sfm-item-name {
+    font-weight: 600; color: #fff; font-size: .98rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sfm-item-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+.sfm-item-loc { font-size: .74rem; color: var(--sfm-muted); }
+.sfm-chip {
+    font-size: .7rem; font-weight: 600;
+    padding: 2px 9px; border-radius: 999px;
+    background: color-mix(in srgb, var(--sfm-accent) 26%, transparent);
+    color: #e9e4ff; border: 1px solid color-mix(in srgb, var(--sfm-accent) 40%, transparent);
+}
+.sfm-chip.ghost { background: rgba(255, 255, 255, 0.06); border-color: var(--sfm-stroke); color: #cfd0e0; }
+.sfm-score {
+    flex-shrink: 0; font-size: 1.25rem; font-weight: 800; color: var(--sfm-gold);
+}
+.sfm-score span { font-size: .72rem; font-weight: 600; color: var(--sfm-muted); }
+.sfm-count { flex-shrink: 0; font-size: 1.2rem; font-weight: 800; color: #fff; text-align: right; }
+.sfm-count span { display: block; font-size: .66rem; font-weight: 600; color: var(--sfm-muted); }
+
+/* ---------- STÍLUS-SÁVOK (mint a műfajok) ---------- */
+.sfm-genres { display: flex; flex-direction: column; gap: 14px; }
+.sfm-genre-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.sfm-genre-name { font-weight: 600; color: #fff; font-size: .92rem; }
+.sfm-genre-val { font-size: .76rem; color: var(--sfm-muted); white-space: nowrap; }
+.sfm-bar { height: 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+.sfm-bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--sfm-accent), var(--sfm-accent-2));
+    box-shadow: 0 0 12px -2px var(--sfm-accent);
+    animation: sfmGrow 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes sfmGrow { from { width: 0 !important; } }
+
+/* ---------- REKORDOK ---------- */
+.sfm-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.sfm-record {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--sfm-stroke);
+}
+.sfm-record.wide { grid-column: 1 / -1; }
+.sfm-record-ico { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+.sfm-record-body { flex: 1; min-width: 0; }
+.sfm-record-lbl { font-size: .72rem; color: var(--sfm-muted); }
+.sfm-record-name { font-weight: 600; color: #fff; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sfm-record-val { font-weight: 800; color: var(--sfm-gold); font-size: 1.05rem; flex-shrink: 0; }
+
+/* ---------- ÉRTÉKELŐK (admin) ---------- */
+.sfm-raters { display: flex; flex-wrap: wrap; gap: 12px; }
+.sfm-rater {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 12px 18px; border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--sfm-stroke);
+}
+.sfm-rater-name { font-weight: 600; color: #fff; }
+.sfm-rater-count { font-size: .8rem; color: var(--sfm-muted); }
+
+/* ---------- GRAFIKONOK ---------- */
+.sfm-charts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.sfm-chart-card {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--sfm-stroke);
+    border-radius: 14px;
+    padding: 16px;
+}
+.sfm-chart-card.wide { grid-column: 1 / -1; }
+.sfm-chart-title { font-size: .9rem; font-weight: 600; color: #dcdcec; margin-bottom: 12px; }
+.sfm-canvas-wrap { position: relative; height: 240px; width: 100%; }
+.sfm-canvas-wrap canvas { position: absolute; inset: 0; }
+
+/* ---------- FELISMERÉSEK / SZEMÉLYISÉG ---------- */
+.sfm-insights { display: flex; flex-wrap: wrap; gap: 10px; }
+.sfm-insight {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 15px; border-radius: 999px;
+    background: color-mix(in srgb, var(--sfm-accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--sfm-accent) 30%, transparent);
+    font-size: .85rem; color: #efeefb;
+}
+.sfm-insight span { font-size: 1.05rem; }
+
+/* ---------- AKCIÓGOMBOK ---------- */
+.sfm-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 4px; }
+.sfm-btn {
+    padding: 13px 26px; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: .95rem; font-weight: 600;
+    color: #fff; background: rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--sfm-stroke-bright);
+    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.sfm-btn:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.12); }
+.sfm-btn.primary {
+    background: linear-gradient(120deg, var(--sfm-accent), var(--sfm-accent-2));
+    border-color: transparent;
+    box-shadow: 0 10px 26px -10px var(--sfm-accent);
+}
+.sfm-btn.primary:hover { box-shadow: 0 14px 30px -8px var(--sfm-accent); }
+
+.sfm-empty { color: var(--sfm-muted); font-style: italic; text-align: center; padding: 20px; }
+
+/* ---------- MEGOSZTHATÓ KÉP (képernyőn kívül, html2canvas) ---------- */
+.sfm-share-card {
+    position: absolute; left: -99999px; top: 0;
+    width: 560px; box-sizing: border-box;
+    padding: 34px;
+    border-radius: 26px;
+    background: linear-gradient(160deg, #2a0a5e 0%, #14062e 60%, #0a0418 100%);
+    color: #fff; font-family: 'Poppins', sans-serif;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.sfm-share-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 26px; }
+.sfm-share-brand { font-size: 1.3rem; font-weight: 800; }
+.sfm-share-period { font-size: .82rem; color: #b9b3e0; text-align: right; }
+.sfm-share-big { display: flex; justify-content: space-between; gap: 14px; margin-bottom: 26px; }
+.sfm-share-big > div { flex: 1; text-align: center; }
+.sfm-share-num {
+    font-size: 2.3rem; font-weight: 800; line-height: 1;
+    background: linear-gradient(120deg, #fff, #c9b6ff);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sfm-share-lbl { font-size: .76rem; color: #b9b3e0; margin-top: 6px; letter-spacing: .04em; }
+.sfm-share-rows { display: flex; flex-direction: column; gap: 12px; }
+.sfm-share-row {
+    display: flex; justify-content: space-between; gap: 14px;
+    padding: 13px 18px; border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+}
+.sfm-share-row span { color: #c8c2ec; font-size: .92rem; }
+.sfm-share-row b { color: #fff; font-size: .96rem; text-align: right; max-width: 60%; }
+.sfm-share-foot { margin-top: 24px; text-align: center; color: #8f8ab8; font-size: .8rem; }
+
+/* ---------- STORY OVERLAY (a régi 10-slide-os nézet) ---------- */
+.sfm-story-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(6, 2, 20, 0.86);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    animation: sfmUp .3s ease both;
+}
+.sfm-story-stage {
+    width: min(440px, 100%);
+    height: min(840px, 92vh);
+    position: relative;
+}
+.sfm-story-stage .recap-story-container { height: 100% !important; }
+.sfm-story-close {
+    position: absolute; top: 18px; right: 18px; z-index: 10001;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5); color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 1.1rem; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s ease, transform .2s ease;
+}
+.sfm-story-close:hover { background: rgba(231, 76, 60, 0.8); transform: scale(1.08); }
+
+/* ---------- RESZPONZÍV ---------- */
+@media (max-width: 760px) {
+    .sfm-charts { grid-template-columns: 1fr; }
+    .sfm-hero { flex-direction: column; align-items: flex-start; padding: 22px; }
+    .sfm-hero-badge { align-self: flex-end; width: 78px; height: 78px; }
+    .sfm-hero-num { font-size: 1.6rem; }
+    .sfm-section { padding: 16px; }
+    .sfm-canvas-wrap { height: 220px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sfm-recap, .sfm-bar-fill, .sfm-story-overlay { animation: none; }
+    .sfm-kpi, .sfm-item, .sfm-btn { transition: none; }
+}
