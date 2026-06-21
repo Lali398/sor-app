@@ -1,10 +1,7 @@
 # ── Függőségek ───────────────────────────────
 node_modules/
 
-# ── Környezeti változók (SOHA ne kerüljön valódi kulcs a repóba!) ──
-# Az éles titkok (GOOGLE_PRIVATE_KEY, JWT_SECRET, ADMIN_PIN, SPREADSHEET_ID stb.)
-# a Vercel → Project → Settings → Environment Variables alatt vannak – ez a helyes hely.
-# Az alábbi sorok megvédenek attól, hogy egy helyi .env fájl véletlenül commitba kerüljön.
+
 .env
 .env.*
 !.env.example
