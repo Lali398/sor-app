@@ -59,12 +59,31 @@
             color: #ffcc80;
             font-family: monospace;
         }
+        table.legal {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        table.legal th, table.legal td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.legal th {
+            background-color: #2a2a33;
+            color: #b39ddb;
+        }
+        table.legal td {
+            color: #e0e0e0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 14.</span></h1>
-        <p><strong>Hatálybalépés dátuma:</strong> 2026. június 14.</p>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 21.</span></h1>
+        <p><strong>Hatálybalépés dátuma:</strong> 2026. június 21.</p>
 
         <h2>1. Az Adatkezelők</h2>
         <p>
@@ -142,6 +161,70 @@
             <li><strong>Közösségi biztonság és Moderáció:</strong> A közösségi irányelvek betartatása, a szabályszegő tartalmak kiszűrése, panaszkezelés és a felhasználók védelme a zaklatástól vagy sértő tartalmaktól.</li>
         </ul>
 
+        <h3>3.1. Az adatkezelés jogalapjai és a megőrzési idők</h3>
+        <p>Az egyes adatkezelési tevékenységekhez tartozó jogalapot (az Európai Általános Adatvédelmi Rendelet – GDPR – 6. cikke szerint) és az adatok megőrzési idejét az alábbi táblázat foglalja össze:</p>
+        <table class="legal">
+            <thead>
+                <tr>
+                    <th>Adatkezelés célja</th>
+                    <th>Érintett adatok</th>
+                    <th>Jogalap (GDPR 6. cikk (1))</th>
+                    <th>Megőrzési idő</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fiók létrehozása, működtetése és a belépés biztosítása</td>
+                    <td>Név, e-mail cím, jelszó (hash), helyreállító kód, 2FA titkos kulcs</td>
+                    <td>Szerződés teljesítése – b) pont</td>
+                    <td>A fiók törléséig</td>
+                </tr>
+                <tr>
+                    <td>Értékelések, ajánlások, ötletek és a fogyasztásnapló tárolása, megjelenítése</td>
+                    <td>A felhasználó által megadott tartalmak</td>
+                    <td>Szerződés teljesítése – b) pont</td>
+                    <td>A fiók törléséig, illetve amíg a felhasználó az adott bejegyzést nem törli</td>
+                </tr>
+                <tr>
+                    <td>Gamifikáció (eredmények, rangok, aktivitási statisztikák)</td>
+                    <td>Aktivitásból származtatott adatok</td>
+                    <td>Szerződés teljesítése – b) pont</td>
+                    <td>A fiók törléséig</td>
+                </tr>
+                <tr>
+                    <td>Publikus profil és toplista megjelenítése</td>
+                    <td>Profil-statisztikák (a 2.3. pont szerint)</td>
+                    <td>Hozzájárulás – a) pont</td>
+                    <td>A hozzájárulás visszavonásáig vagy a fiók törléséig</td>
+                </tr>
+                <tr>
+                    <td>Biztonsági naplózás, visszaélés-megelőzés</td>
+                    <td>IP-cím, böngésző típusa (User-Agent), belépés ideje</td>
+                    <td>Jogos érdek – f) pont</td>
+                    <td>Legfeljebb 12 hónap</td>
+                </tr>
+                <tr>
+                    <td>Hibajelentések és segítségkérések kezelése</td>
+                    <td>Név, e-mail cím, üzenet tartalma</td>
+                    <td>Jogos érdek – f) pont, illetve szerződés – b) pont</td>
+                    <td>Az ügy lezárását követő legfeljebb 2 év</td>
+                </tr>
+                <tr>
+                    <td>Moderáció, figyelmeztetések és kitiltás kezelése</td>
+                    <td>Jelentések adatai, figyelmeztetések, „Banned" státusz</td>
+                    <td>Jogos érdek – f) pont</td>
+                    <td>Figyelmeztetések: 6 hónap; a kitiltás ténye: a fiók fennállásáig</td>
+                </tr>
+                <tr>
+                    <td>Nyereményjáték lebonyolítása</td>
+                    <td>Nyertes státusz, választott nyeremény típusa</td>
+                    <td>Hozzájárulás – a) pont, illetve szerződés – b) pont</td>
+                    <td>A játék lezárását és a nyeremény átadását követően törölve</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>A megőrzési idő leteltével, illetve a fiók törlésekor az adatokat véglegesen töröljük. Amennyiben jogszabály kötelező megőrzést ír elő (például számviteli bizonylatok esetében), úgy az érintett adatokat a jogszabályban meghatározott ideig őrizzük meg.</p>
+
         <h2>4. Helyi Tárolás (Local Storage)</h2>
         <p>Az alkalmazás a jobb felhasználói élmény érdekében adatokat tárol az Ön böngészőjében (LocalStorage). Ezek az adatok nem kerülnek továbbításra harmadik félnek:</p>
         <ul>
@@ -172,6 +255,9 @@
             <li><strong>Kliens oldali könyvtárak (CDN):</strong> Az alkalmazás a megjelenítéshez külső könyvtárakat tölt be tartalomkézbesítő hálózatokról (CDN): Chart.js és canvas-confetti (jsDelivr), html2canvas (Cloudflare cdnjs), SheetJS/xlsx (SheetJS CDN). Maguk a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, és nem küldik külső szerverre; a betöltésükkor azonban a CDN szolgáltató – technikai szükségszerűségből – megkapja a felhasználó IP-címét. A könyvtárak rögzített verziójúak és integritás-ellenőrzéssel (SRI) védettek.</li>
             <li><strong>Betűtípus:</strong> A "Poppins" betűtípust az alkalmazás a saját szerveréről (önhosztolva) szolgálja ki, így annak betöltése nem továbbít adatot harmadik fél (pl. Google Fonts) felé.</li>
         </ul>
+
+        <h3>6.1. Adattovábbítás az Európai Unión kívülre</h3>
+        <p>A fent megnevezett egyes adatfeldolgozók (különösen a Google LLC és a Vercel Inc.) az Egyesült Államokban, azaz az Európai Gazdasági Térségen (EGT) kívüli harmadik országban is kezelhetnek adatokat. Az ilyen adattovábbítás minden esetben a GDPR V. fejezete szerinti megfelelő garanciák mellett történik, így különösen az Európai Bizottság által elfogadott Általános Szerződési Feltételek (Standard Contractual Clauses, SCC), illetve – ahol az adott szolgáltató tanúsított – az EU–USA Adatvédelmi Keret (EU–U.S. Data Privacy Framework) alapján. Az alkalmazott garanciák másolata, illetve további tájékoztatás az 1. pontban megadott e-mail címen kérhető.</p>
 
         <h2>7. Az Ön Jogai és Fiók Törlése</h2>
         <p>Ön bármikor kérheti adatai törlését, módosítását, vagy letöltheti azokat Excel/JSON formátumban az "Export" funkcióval.</p>
