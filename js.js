@@ -2273,10 +2273,10 @@ async function handleRecapPeriodClick(e) {
                 return;
             }
 
-            const data = calculateRecapStats(filtered);
-            data.periodName = getPeriodName(period);
+            // (a részletes dashboard közvetlenül a nyers tételekből számol)
+            const recapTitle = getPeriodName(period);
             
-            renderStoryMode(data, container);
+            renderRecapDashboard(filtered, container, recapTitle);
 
         } catch (err) {
             console.error(err);
@@ -2321,13 +2321,13 @@ async function handleAdminRecapGenerate(period, button) {
                 return;
             }
 
-            const data = calculateRecapStats(filtered);
+            // (a részletes dashboard közvetlenül a nyers tételekből számol)
             // Cím módosítása, hogy látszódjon kiről van szó
             const userLabels = { 'common': 'Közös', 'gabz': 'Gabz', 'lajos': 'Lajos' };
-            data.periodName = `${userLabels[currentAdminRecapView]} - ${getPeriodName(period)}`;
+            const recapTitle = `${userLabels[currentAdminRecapView]} - ${getPeriodName(period)}`;
 
             // UGYANAZT a Story módot hívjuk meg!
-            renderStoryMode(data, resultsContainer);
+            renderRecapDashboard(filtered, resultsContainer, recapTitle);
 
         } catch (error) {
             console.error("Admin recap hiba:", error);
@@ -2637,6 +2637,472 @@ function renderStoryMode(data, container) {
     window.totalSlides = 10; // Most már 10 slide van!
     startStory(0);
 }
+
+/* ============================================================
+   STATS.FM-STÍLUSÚ RÉSZLETES VISSZATEKINTŐ (DASHBOARD)
+   Új, adatgazdag recap nézet. A régi 10-slide-os story
+   "Story mód" gombbal továbbra is elérhető (renderStoryMode).
+   ============================================================ */
+
+window._recapCharts = window._recapCharts || {};
+window._lastRecapBeers = null;
+window._lastRecapTitle = '';
+
+function recapNum(v) {
+    if (v === null || v === undefined) return 0;
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+}
+
+function ensureRecapCss() {
+    if (document.getElementById('recap-css-link')) return;
+    if (document.querySelector('link[href$="recap.css"]')) return;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'recap.css';
+    l.id = 'recap-css-link';
+    document.head.appendChild(l);
+}
+
+// === ADATMOTOR: minden statisztika kiszámítása a nyers tételekből ===
+function buildRecapData(beers) {
+    const items = (beers || []).map(b => ({
+        name: b.beerName || b.drinkName || 'Ismeretlen',
+        type: (b.type || b.category || 'Egyéb') || 'Egyéb',
+        location: (b.location || 'Ismeretlen') || 'Ismeretlen',
+        abv: recapNum(b.beerPercentage || b.drinkPercentage),
+        look: recapNum(b.look),
+        smell: recapNum(b.smell),
+        taste: recapNum(b.taste),
+        total: recapNum(b.totalScore),
+        avg: recapNum(b.avg),
+        ratedBy: b.ratedBy || null,
+        date: parseBeerDate(b.date)
+    }));
+
+    const count = items.length;
+    const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
+    const withDate = items.filter(i => i.date);
+
+    const avgScore = count ? sum(items, i => i.avg) / count : 0;
+    const abvList = items.filter(i => i.abv > 0);
+    const avgAbv = abvList.length ? sum(abvList, i => i.abv) / abvList.length : 0;
+
+    const byAvg = [...items].sort((a, b) => (b.avg - a.avg) || (b.total - a.total));
+    const byAbv = [...abvList].sort((a, b) => b.abv - a.abv);
+
+    // Stílusok aggregálása
+    const typeAgg = {};
+    items.forEach(i => {
+        const t = typeAgg[i.type] || (typeAgg[i.type] = { name: i.type, count: 0, s: 0 });
+        t.count++; t.s += i.avg;
+    });
+    const topTypes = Object.values(typeAgg)
+        .map(t => ({ name: t.name, count: t.count, avg: t.count ? t.s / t.count : 0, pct: count ? (t.count / count) * 100 : 0 }))
+        .sort((a, b) => b.count - a.count);
+
+    // Helyszínek aggregálása
+    const locAgg = {};
+    items.forEach(i => {
+        const l = locAgg[i.location] || (locAgg[i.location] = { name: i.location, count: 0, s: 0 });
+        l.count++; l.s += i.avg;
+    });
+    const topLocations = Object.values(locAgg)
+        .map(l => ({ name: l.name, count: l.count, avg: l.count ? l.s / l.count : 0, pct: count ? (l.count / count) * 100 : 0 }))
+        .sort((a, b) => b.count - a.count);
+
+    // Pontszám-eloszlás (0..10, kerekítve)
+    const scoreBins = new Array(11).fill(0);
+    items.forEach(i => { scoreBins[Math.max(0, Math.min(10, Math.round(i.avg)))]++; });
+
+    // Napok (hétfőtől) + órák + hétvége/hétköznap
+    const dow = new Array(7).fill(0);
+    const hours = new Array(24).fill(0);
+    let weekend = 0, weekday = 0;
+    withDate.forEach(i => {
+        const jsDay = i.date.getDay();          // 0 = vasárnap
+        dow[(jsDay + 6) % 7]++;                  // 0 = hétfő
+        hours[i.date.getHours()]++;
+        if (jsDay === 0 || jsDay === 5 || jsDay === 6) weekend++; else weekday++;
+    });
+    const avgHour = withDate.length ? Math.round(sum(withDate, i => i.date.getHours()) / withDate.length) : 18;
+
+    // Idővonal — granularitás a tartam alapján (nap / hét / hónap)
+    const times = withDate.map(i => i.date.getTime());
+    const firstDate = times.length ? new Date(Math.min.apply(null, times)) : null;
+    const lastDate = times.length ? new Date(Math.max.apply(null, times)) : null;
+    const spanDays = (firstDate && lastDate) ? Math.round((lastDate - firstDate) / 86400000) : 0;
+    let granularity = 'month';
+    if (spanDays <= 31) granularity = 'day';
+    else if (spanDays <= 130) granularity = 'week';
+    const mn = ['jan', 'feb', 'már', 'ápr', 'máj', 'jún', 'júl', 'aug', 'sze', 'okt', 'nov', 'dec'];
+    const tlMap = {};
+    withDate.forEach(i => {
+        const d = i.date; let key, label;
+        if (granularity === 'day') {
+            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            label = `${d.getMonth() + 1}.${d.getDate()}`;
+        } else if (granularity === 'week') {
+            const oj = new Date(d.getFullYear(), 0, 1);
+            const wk = Math.ceil((((d - oj) / 86400000) + oj.getDay() + 1) / 7);
+            key = `${d.getFullYear()}-W${String(wk).padStart(2, '0')}`;
+            label = `${wk}. hét`;
+        } else {
+            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            label = `${mn[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+        }
+        (tlMap[key] || (tlMap[key] = { key, label, count: 0 })).count++;
+    });
+    const timeline = Object.values(tlMap).sort((a, b) => (a.key < b.key ? -1 : 1));
+
+    // Aktív napok, legaktívabb nap, leghosszabb sorozat
+    const dayMap = {};
+    withDate.forEach(i => {
+        const k = `${i.date.getFullYear()}-${String(i.date.getMonth() + 1).padStart(2, '0')}-${String(i.date.getDate()).padStart(2, '0')}`;
+        dayMap[k] = (dayMap[k] || 0) + 1;
+    });
+    const dayKeys = Object.keys(dayMap).sort();
+    let biggestDay = { date: null, count: 0 };
+    dayKeys.forEach(k => { if (dayMap[k] > biggestDay.count) biggestDay = { date: k, count: dayMap[k] }; });
+    const dayIdx = k => Math.floor(Date.parse(k + 'T00:00:00Z') / 86400000);
+    let longest = 0, cur = 0, prev = null;
+    dayKeys.forEach(k => {
+        const idx = dayIdx(k);
+        cur = (prev !== null && idx - prev === 1) ? cur + 1 : 1;
+        if (cur > longest) longest = cur;
+        prev = idx;
+    });
+
+    // Érzékszervi átlagok + rekordok
+    const sensory = {
+        look: count ? sum(items, i => i.look) / count : 0,
+        smell: count ? sum(items, i => i.smell) / count : 0,
+        taste: count ? sum(items, i => i.taste) / count : 0
+    };
+    const maxBy = f => items.reduce((m, i) => (!m || f(i) > f(m) ? i : m), null);
+    const records = {
+        best: byAvg[0] || null,
+        worst: byAvg.length ? byAvg[byAvg.length - 1] : null,
+        strongest: byAbv[0] || null,
+        weakest: byAbv.length ? byAbv[byAbv.length - 1] : null,
+        bestLook: maxBy(i => i.look),
+        bestSmell: maxBy(i => i.smell),
+        bestTaste: maxBy(i => i.taste),
+        biggestDay
+    };
+
+    // Értékelők (admin közös nézet)
+    const raters = {};
+    items.forEach(i => { if (i.ratedBy) raters[i.ratedBy] = (raters[i.ratedBy] || 0) + 1; });
+
+    // Felismerések / "személyiség"
+    const insights = [];
+    if (avgScore >= 8) insights.push({ icon: '🧐', text: 'Igazi ínyenc — magas az átlagpontod.' });
+    else if (avgScore > 0 && avgScore <= 4 && count >= 3) insights.push({ icon: '🧪', text: 'Szigorú kritikus vagy.' });
+    if (weekend > weekday) insights.push({ icon: '🎉', text: 'Hétvégi harcos.' });
+    else if (weekday > weekend && withDate.length) insights.push({ icon: '👔', text: 'A hétköznapok sem állítanak meg.' });
+    if (withDate.length) {
+        if (avgHour >= 22 || avgHour < 4) insights.push({ icon: '🦉', text: 'Éjszakai bagoly.' });
+        else if (avgHour < 12) insights.push({ icon: '🍳', text: 'Reggeli korhely.' });
+        else if (avgHour >= 18) insights.push({ icon: '🌙', text: 'Esti ínyenc.' });
+    }
+    if (topTypes.length >= 5) insights.push({ icon: '🌍', text: `Felfedező — ${topTypes.length} különböző stílus.` });
+    else if (topTypes[0] && topTypes[0].pct >= 60) insights.push({ icon: '❤️', text: `Hűséges: ${topTypes[0].name} a kedvenc stílusod.` });
+    if (longest >= 3) insights.push({ icon: '🔥', text: `${longest} napos sorozat!` });
+    if (records.strongest && records.strongest.abv >= 8) insights.push({ icon: '🥊', text: `Nem félsz az erőstől (${Math.round(records.strongest.abv * 10) / 10}%).` });
+
+    return {
+        count, avgScore, avgAbv, estLiters: count * 0.5,
+        uniqueTypes: topTypes.length, uniqueLocations: topLocations.length,
+        activeDays: dayKeys.length, longestStreak: longest,
+        topBeers: byAvg.slice(0, 8), topTypes, topLocations,
+        scoreBins, dow, hours, avgHour, weekend, weekday,
+        timeline, granularity, sensory, records, raters, insights,
+        firstDate, lastDate, spanDays, maxAbv: byAbv[0] ? byAbv[0].abv : 0
+    };
+}
+
+// === DASHBOARD RENDERELŐ ===
+function renderRecapDashboard(beers, container, periodName) {
+    ensureRecapCss();
+    const R = buildRecapData(beers);
+    window._lastRecapBeers = beers;
+    window._lastRecapTitle = periodName || 'Visszatekintő';
+
+    const f1 = n => (Math.round(n * 10) / 10).toFixed(1);
+    const f2 = n => (Math.round(n * 100) / 100).toFixed(2);
+    const esc = t => escapeHtml(String(t == null ? '' : t));
+    const dr = d => d ? `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}` : '';
+    const rangeTxt = (R.firstDate && R.lastDate) ? `${dr(R.firstDate)} – ${dr(R.lastDate)}` : '';
+    const fmtDay = k => { if (!k) return ''; const p = k.split('-'); return `${parseInt(p[1], 10)}.${parseInt(p[2], 10)}`; };
+
+    const kpi = (ico, val, lbl) => `<div class="sfm-kpi"><div class="sfm-kpi-ico">${ico}</div><div class="sfm-kpi-val">${val}</div><div class="sfm-kpi-lbl">${lbl}</div></div>`;
+    const empty = '<p class="sfm-empty">Nincs adat.</p>';
+    const medal = ['🥇', '🥈', '🥉'];
+
+    const topBeersHtml = R.topBeers.map((b, i) => `
+        <div class="sfm-item">
+            <div class="sfm-rank">${i < 3 ? medal[i] : (i + 1)}</div>
+            <div class="sfm-item-main">
+                <div class="sfm-item-name">${esc(b.name)}</div>
+                <div class="sfm-item-meta">
+                    <span class="sfm-chip">${esc(b.type)}</span>
+                    ${b.abv > 0 ? `<span class="sfm-chip ghost">${f1(b.abv)}%</span>` : ''}
+                    <span class="sfm-item-loc">📍 ${esc(b.location)}</span>
+                </div>
+            </div>
+            <div class="sfm-score">${f1(b.avg)}<span>/10</span></div>
+        </div>`).join('');
+
+    const maxTypeCount = R.topTypes.length ? R.topTypes[0].count : 1;
+    const typesHtml = R.topTypes.slice(0, 8).map(t => `
+        <div class="sfm-genre">
+            <div class="sfm-genre-top"><span class="sfm-genre-name">${esc(t.name)}</span><span class="sfm-genre-val">${t.count} db · ⌀ ${f1(t.avg)}</span></div>
+            <div class="sfm-bar"><div class="sfm-bar-fill" style="width:${(t.count / maxTypeCount) * 100}%"></div></div>
+        </div>`).join('');
+
+    const locHtml = R.topLocations.slice(0, 6).map((l, i) => `
+        <div class="sfm-item compact">
+            <div class="sfm-rank small">${i + 1}</div>
+            <div class="sfm-item-main"><div class="sfm-item-name">${esc(l.name)}</div><div class="sfm-item-meta"><span class="sfm-item-loc">⌀ ${f1(l.avg)} pont</span></div></div>
+            <div class="sfm-count">${l.count}<span>db</span></div>
+        </div>`).join('');
+
+    const rec = R.records;
+    const recCard = (ico, lbl, item, valTxt) => item ? `
+        <div class="sfm-record">
+            <div class="sfm-record-ico">${ico}</div>
+            <div class="sfm-record-body"><div class="sfm-record-lbl">${lbl}</div><div class="sfm-record-name">${esc(item.name)}</div></div>
+            <div class="sfm-record-val">${valTxt}</div>
+        </div>` : '';
+    const recordsHtml = [
+        recCard('👑', 'Legjobb', rec.best, rec.best ? f1(rec.best.avg) : ''),
+        recCard('💀', 'Leggyengébb', rec.worst, rec.worst ? f1(rec.worst.avg) : ''),
+        recCard('🥊', 'Legerősebb', rec.strongest, rec.strongest ? f1(rec.strongest.abv) + '%' : ''),
+        recCard('🪶', 'Leglágyabb', rec.weakest, rec.weakest ? f1(rec.weakest.abv) + '%' : ''),
+        recCard('👀', 'Legszebb', rec.bestLook, rec.bestLook ? f1(rec.bestLook.look) : ''),
+        recCard('👅', 'Legízletesebb', rec.bestTaste, rec.bestTaste ? f1(rec.bestTaste.taste) : '')
+    ].join('');
+    const bigDayHtml = (rec.biggestDay && rec.biggestDay.date)
+        ? `<div class="sfm-record wide"><div class="sfm-record-ico">📆</div><div class="sfm-record-body"><div class="sfm-record-lbl">Legaktívabb nap</div><div class="sfm-record-name">${fmtDay(rec.biggestDay.date)}</div></div><div class="sfm-record-val">${rec.biggestDay.count} db</div></div>`
+        : '';
+
+    let ratersHtml = '';
+    const rk = Object.keys(R.raters);
+    if (rk.length > 1) {
+        const lbl = { admin1: 'Gabz', admin2: 'Lajos' };
+        ratersHtml = `<div class="sfm-section"><div class="sfm-section-head"><h4>👥 Ki értékelte?</h4></div><div class="sfm-raters">${rk.map(k => `<div class="sfm-rater"><span class="sfm-rater-name">${esc(lbl[k] || k)}</span><span class="sfm-rater-count">${R.raters[k]} db</span></div>`).join('')}</div></div>`;
+    }
+
+    const insightsHtml = R.insights.length
+        ? `<div class="sfm-section"><div class="sfm-section-head"><h4>✨ Rólad árulkodik</h4></div><div class="sfm-insights">${R.insights.map(i => `<div class="sfm-insight"><span>${i.icon}</span>${esc(i.text)}</div>`).join('')}</div></div>`
+        : '';
+
+    const top = R.topBeers[0], topType = R.topTypes[0], topLoc = R.topLocations[0];
+    const shareCardHtml = `
+        <div class="sfm-share-card" id="recapShareCard">
+            <div class="sfm-share-head">
+                <div class="sfm-share-brand">🍺 Sör Visszatekintő</div>
+                <div class="sfm-share-period">${esc(periodName)}${rangeTxt ? ` · ${rangeTxt}` : ''}</div>
+            </div>
+            <div class="sfm-share-big">
+                <div><div class="sfm-share-num">${R.count}</div><div class="sfm-share-lbl">kóstolás</div></div>
+                <div><div class="sfm-share-num">${f2(R.avgScore)}</div><div class="sfm-share-lbl">átlagpont</div></div>
+                <div><div class="sfm-share-num">${f1(R.estLiters)}L</div><div class="sfm-share-lbl">becsült</div></div>
+            </div>
+            <div class="sfm-share-rows">
+                ${top ? `<div class="sfm-share-row"><span>👑 Kedvenc</span><b>${esc(top.name)} · ${f1(top.avg)}</b></div>` : ''}
+                ${topType ? `<div class="sfm-share-row"><span>🧬 Top stílus</span><b>${esc(topType.name)}</b></div>` : ''}
+                ${topLoc ? `<div class="sfm-share-row"><span>📍 Törzshely</span><b>${esc(topLoc.name)}</b></div>` : ''}
+                ${rec.strongest ? `<div class="sfm-share-row"><span>🥊 Legerősebb</span><b>${f1(rec.strongest.abv)}%</b></div>` : ''}
+            </div>
+            <div class="sfm-share-foot">${R.uniqueTypes} stílus · ${R.uniqueLocations} helyszín · ${R.activeDays} aktív nap</div>
+        </div>`;
+
+    container.innerHTML = `
+    <div class="sfm-recap" id="sfmRecap">
+        <div class="sfm-hero">
+            <div class="sfm-hero-left">
+                <div class="sfm-hero-eyebrow">SÖR VISSZATEKINTŐ</div>
+                <h2 class="sfm-hero-title">${esc(periodName)}</h2>
+                ${rangeTxt ? `<div class="sfm-hero-sub">${rangeTxt}</div>` : ''}
+            </div>
+            <div class="sfm-hero-badge"><span class="sfm-hero-num">${R.count}</span><span class="sfm-hero-num-lbl">tétel</span></div>
+        </div>
+
+        <div class="sfm-kpis">
+            ${kpi('🍺', R.count, 'Kóstolás')}
+            ${kpi('⭐', f2(R.avgScore), 'Átlagpont')}
+            ${kpi('🌊', f1(R.estLiters) + ' L', 'Becsült mennyiség')}
+            ${kpi('🧬', R.uniqueTypes, 'Stílus')}
+            ${kpi('📍', R.uniqueLocations, 'Helyszín')}
+            ${kpi('🥃', f1(R.avgAbv) + '%', 'Átlag alkohol')}
+            ${kpi('📅', R.activeDays, 'Aktív nap')}
+            ${kpi('🔥', R.longestStreak, 'Sorozat')}
+        </div>
+
+        <div class="sfm-grid-2">
+            <div class="sfm-section">
+                <div class="sfm-section-head"><h4>🏆 Legjobb tételeid</h4><span class="sfm-section-sub">pont szerint</span></div>
+                <div class="sfm-list">${topBeersHtml || empty}</div>
+            </div>
+            <div class="sfm-section">
+                <div class="sfm-section-head"><h4>🧬 Stílusok</h4><span class="sfm-section-sub">top ${Math.min(R.topTypes.length, 8)}</span></div>
+                <div class="sfm-genres">${typesHtml || empty}</div>
+            </div>
+        </div>
+
+        <div class="sfm-grid-2">
+            <div class="sfm-section">
+                <div class="sfm-section-head"><h4>📍 Törzshelyeid</h4></div>
+                <div class="sfm-list">${locHtml || empty}</div>
+            </div>
+            <div class="sfm-section">
+                <div class="sfm-section-head"><h4>🎖️ Rekordok</h4></div>
+                <div class="sfm-records">${(recordsHtml + bigDayHtml) || empty}</div>
+            </div>
+        </div>
+
+        ${ratersHtml}
+
+        <div class="sfm-section">
+            <div class="sfm-section-head"><h4>📈 Részletes grafikonok</h4></div>
+            <div class="sfm-charts">
+                <div class="sfm-chart-card wide"><div class="sfm-chart-title">Aktivitás az időszakban</div><div class="sfm-canvas-wrap"><canvas id="recapChartTimeline"></canvas></div></div>
+                <div class="sfm-chart-card"><div class="sfm-chart-title">Pontszám-eloszlás</div><div class="sfm-canvas-wrap"><canvas id="recapChartScores"></canvas></div></div>
+                <div class="sfm-chart-card"><div class="sfm-chart-title">Stílus-megoszlás</div><div class="sfm-canvas-wrap"><canvas id="recapChartTypes"></canvas></div></div>
+                <div class="sfm-chart-card"><div class="sfm-chart-title">Mely napokon?</div><div class="sfm-canvas-wrap"><canvas id="recapChartDow"></canvas></div></div>
+                <div class="sfm-chart-card"><div class="sfm-chart-title">Mely órákban?</div><div class="sfm-canvas-wrap"><canvas id="recapChartHours"></canvas></div></div>
+                <div class="sfm-chart-card"><div class="sfm-chart-title">Érzékszervi profil</div><div class="sfm-canvas-wrap"><canvas id="recapChartSensory"></canvas></div></div>
+            </div>
+        </div>
+
+        ${insightsHtml}
+
+        <div class="sfm-actions">
+            <button class="sfm-btn primary" type="button" onclick="openRecapStory()">📲 Story mód</button>
+            <button class="sfm-btn" type="button" onclick="downloadRecapCard()">📥 Kép mentése</button>
+        </div>
+
+        ${shareCardHtml}
+    </div>`;
+
+    if (window.requestAnimationFrame) requestAnimationFrame(() => renderRecapCharts(R));
+    else setTimeout(() => renderRecapCharts(R), 50);
+}
+
+// === GRAFIKONOK (Chart.js) ===
+function renderRecapCharts(R) {
+    if (typeof Chart === 'undefined') return;
+    const css = getComputedStyle(document.documentElement);
+    const pick = (n, fb) => { const v = (css.getPropertyValue(n) || '').trim(); return v || fb; };
+    const accent = pick('--accent-color', pick('--accent', '#8a73ff'));
+    const gold = pick('--gold', '#fcd34d');
+    const grid = 'rgba(255,255,255,0.08)';
+    const tick = '#b9b9cc';
+    const palette = ['#8a73ff', '#22d3ee', '#f472b6', '#fcd34d', '#34d399', '#fb923c', '#60a5fa', '#f87171'];
+
+    const hexA = (hex, a) => {
+        hex = (hex || '').trim();
+        if (hex.charAt(0) === '#') {
+            let h = hex.slice(1);
+            if (h.length === 3) h = h.split('').map(c => c + c).join('');
+            const n = parseInt(h, 16);
+            return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+        }
+        return hex;
+    };
+    try { Chart.defaults.color = tick; Chart.defaults.font.family = "'Poppins', sans-serif"; } catch (e) {}
+
+    const destroy = id => { if (window._recapCharts[id]) { try { window._recapCharts[id].destroy(); } catch (e) {} delete window._recapCharts[id]; } };
+    const mk = (id, cfg) => { const el = document.getElementById(id); if (!el) return; destroy(id); window._recapCharts[id] = new Chart(el.getContext('2d'), cfg); };
+    const baseOpts = o => {
+        o = o || {};
+        return {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: o.legend === false ? { display: false } : { labels: { color: tick } }, tooltip: { enabled: true } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: tick, precision: 0 }, grid: { color: grid } },
+                x: { ticks: { color: tick, maxRotation: 0, autoSkip: true }, grid: { display: false } }
+            }
+        };
+    };
+
+    mk('recapChartTimeline', {
+        type: 'line',
+        data: { labels: R.timeline.map(t => t.label), datasets: [{ label: 'Kóstolások', data: R.timeline.map(t => t.count), borderColor: accent, backgroundColor: ctx => { const c = ctx.chart.ctx; const g = c.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, hexA(accent, 0.45)); g.addColorStop(1, hexA(accent, 0)); return g; }, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: accent }] },
+        options: baseOpts({ legend: false })
+    });
+    mk('recapChartScores', {
+        type: 'bar',
+        data: { labels: R.scoreBins.map((_, i) => i), datasets: [{ data: R.scoreBins, backgroundColor: R.scoreBins.map((_, i) => hexA(gold, 0.3 + i * 0.06)), borderRadius: 5 }] },
+        options: baseOpts({ legend: false })
+    });
+    const tt = R.topTypes.slice(0, 7);
+    const other = R.topTypes.slice(7).reduce((a, t) => a + t.count, 0);
+    const tL = tt.map(t => t.name), tV = tt.map(t => t.count);
+    if (other > 0) { tL.push('Egyéb'); tV.push(other); }
+    mk('recapChartTypes', {
+        type: 'doughnut',
+        data: { labels: tL, datasets: [{ data: tV, backgroundColor: palette, borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: tick, boxWidth: 12, padding: 8, font: { size: 11 } } } } }
+    });
+    mk('recapChartDow', {
+        type: 'bar',
+        data: { labels: ['Hét', 'Kedd', 'Sze', 'Csü', 'Pén', 'Szo', 'Vas'], datasets: [{ data: R.dow, backgroundColor: hexA(accent, 0.6), borderRadius: 5 }] },
+        options: baseOpts({ legend: false })
+    });
+    mk('recapChartHours', {
+        type: 'bar',
+        data: { labels: R.hours.map((_, i) => i), datasets: [{ data: R.hours, backgroundColor: hexA('#22d3ee', 0.55), borderRadius: 3 }] },
+        options: baseOpts({ legend: false })
+    });
+    mk('recapChartSensory', {
+        type: 'radar',
+        data: { labels: ['Külalak 👀', 'Illat 👃', 'Íz 👅'], datasets: [{ data: [R.sensory.look, R.sensory.smell, R.sensory.taste], backgroundColor: hexA(accent, 0.2), borderColor: accent, pointBackgroundColor: '#fff', pointRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, color: tick, backdropColor: 'transparent' }, grid: { color: grid }, angleLines: { color: grid }, pointLabels: { color: tick, font: { size: 12 } } } } }
+    });
+}
+
+// === MEGOSZTHATÓ KÉP MENTÉSE ===
+window.downloadRecapCard = function () {
+    const el = document.getElementById('recapShareCard');
+    if (!el) return;
+    if (typeof html2canvas === 'undefined') { if (typeof showError === 'function') showError('A képmentő könyvtár nem töltött be.'); return; }
+    html2canvas(el, { backgroundColor: null, scale: 2, useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'sor-visszatekinto.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        if (typeof showSuccess === 'function') showSuccess('Kép elmentve! 📸');
+    }).catch(err => {
+        console.error(err);
+        if (typeof showError === 'function') showError('Nem sikerült a kép mentése.');
+    });
+};
+
+// === STORY MÓD (a régi 10-slide-os nézet overlay-ben) ===
+window.openRecapStory = function () {
+    const beers = window._lastRecapBeers;
+    if (!beers || !beers.length) { if (typeof showError === 'function') showError('Nincs adat a story módhoz.'); return; }
+    const old = document.getElementById('recapStoryOverlay');
+    if (old) old.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'recapStoryOverlay';
+    overlay.className = 'sfm-story-overlay';
+    const stage = document.createElement('div');
+    stage.className = 'sfm-story-stage';
+    overlay.appendChild(stage);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'sfm-story-close';
+    close.innerHTML = '✕';
+    close.onclick = () => overlay.remove();
+    overlay.appendChild(close);
+    document.body.appendChild(overlay);
+    const data = calculateRecapStats(beers);
+    if (data) { data.periodName = window._lastRecapTitle || 'Visszatekintő'; renderStoryMode(data, stage); }
+};
 
 // Globális függvények (hogy a HTML gombok elérjék őket)
 window.startStory = function(slideIndex) {
