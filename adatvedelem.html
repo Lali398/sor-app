@@ -106,7 +106,7 @@
         <h3>b) Technikai adatok:</h3>
         <ul>
             <li><strong>Kétlépcsős azonosítás (2FA) titkos kulcs:</strong> Ha bekapcsolja a védelmet, a hitelesítő alkalmazás szinkronizálásához szükséges kulcsot titkosítva tároljuk.</li>
-            <li><strong>Naplózás:</strong> IP cím, böngésző típusa (User Agent), bejelentkezés ideje biztonsági okokból.</li>
+            <li><strong>Szervernaplók:</strong> Maga az alkalmazás nem gyűjt és nem tárol IP-címet, böngésződ típusát (User Agent) vagy belépési naplót. A működéshez igénybe vett tárhelyszolgáltató (Vercel) és a Google azonban – minden internetes szolgáltatáshoz hasonlóan, technikai szükségszerűségből – automatikus szervernaplót készíthet (pl. IP-cím, a kérés időpontja). Ezek kezelése és megőrzési ideje az adott szolgáltató saját adatkezelési szabályzatának hatálya alá tartozik (lásd a 6. pontot).</li>
             <li><strong>Technikai jelszó:</strong> Google bejelentkezés esetén rendszerünk a kompatibilitás érdekében egy véletlenszerűen generált, titkosított jelszót hoz létre a háttérben, amelyet a felhasználónak nem kell ismernie vagy használnia.</li>
         </ul>
         
@@ -199,7 +199,7 @@
                     <td>Biztonsági naplózás, visszaélés-megelőzés</td>
                     <td>IP-cím, böngésző típusa (User-Agent), belépés ideje</td>
                     <td>Jogos érdek – f) pont</td>
-                    <td>Legfeljebb 12 hónap</td>
+                    <td>Maga az alkalmazás nem gyűjt és nem tárol IP-címet, böngésződ típusát (User Agent) vagy belépési naplót.Ezek kezelése és megőrzési ideje az adott szolgáltató saját adatkezelési szabályzatának hatálya alá tartozik (lásd a 6. pontot).</td>
                 </tr>
                 <tr>
                     <td>Hibajelentések és segítségkérések kezelése</td>
