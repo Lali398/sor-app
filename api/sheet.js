@@ -51,6 +51,43 @@ const verifyUser = (req) => {
     const token = authHeader.split(' ')[1];
     return jwt.verify(token, process.env.JWT_SECRET);
 };
+
+// === 2FA TITKOS KULCS TITKOSÍTÁSA (nyugalmi állapotban, AES-256-GCM) ===
+// A TOTP-kulcsot nem lehet egyirányúan hashelni (a kódellenőrzéshez vissza kell tudni fejteni),
+// ezért a táblázatba írás előtt AES-256-GCM-mel titkosítjuk. A kulcs a TWOFA_ENC_KEY env-ből jön;
+// ha az nincs beállítva, a JWT_SECRET-re esik vissza, hogy a meglévő deploy ne törjön el.
+const TWOFA_ENC_PREFIX = 'enc:v1:';
+const get2FAKey = () => crypto.createHash('sha256')
+    .update(String(process.env.TWOFA_ENC_KEY || process.env.JWT_SECRET || ''))
+    .digest(); // 32 bájtos kulcs
+
+const encrypt2FASecret = (plain) => {
+    if (!plain) return '';
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', get2FAKey(), iv);
+    const enc = Buffer.concat([cipher.update(String(plain), 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return TWOFA_ENC_PREFIX + Buffer.concat([iv, tag, enc]).toString('base64');
+};
+
+const decrypt2FASecret = (stored) => {
+    if (!stored) return '';
+    // Visszafelé kompatibilitás: a korábbi, még titkosítatlan kulcsokat változatlanul visszaadjuk.
+    if (!String(stored).startsWith(TWOFA_ENC_PREFIX)) return stored;
+    try {
+        const data = Buffer.from(String(stored).slice(TWOFA_ENC_PREFIX.length), 'base64');
+        const iv = data.subarray(0, 12);
+        const tag = data.subarray(12, 28);
+        const enc = data.subarray(28);
+        const decipher = crypto.createDecipheriv('aes-256-gcm', get2FAKey(), iv);
+        decipher.setAuthTag(tag);
+        return Buffer.concat([decipher.update(enc), decipher.final()]).toString('utf8');
+    } catch (e) {
+        console.error('2FA decrypt error:', e);
+        return ''; // ne dőljön el a kérés; a megadott kód egyszerűen érvénytelennek számít majd
+    }
+};
+
 // === STREAK SEGÉDFÜGGVÉNYEK ===
 
 // Dátum konvertálása Év-Hét formátumra (pl. "2024-W05")
@@ -558,7 +595,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: "A fiókod fel lett függesztve. 🚫" });
     }
 
-    const secret = userRow[3];
+    const secret = decrypt2FASecret(userRow[3]);
     const isValid = authenticator.check(inputToken, secret);
 
     if (!isValid) return res.status(401).json({ error: "Érvénytelen 2FA kód!" });
@@ -628,7 +665,7 @@ const user = {
                         spreadsheetId: SPREADSHEET_ID,
                         range: range,
                         valueInputOption: 'USER_ENTERED',
-                        resource: { values: [[secret, 'TRUE']] }
+                        resource: { values: [[encrypt2FASecret(secret), 'TRUE']] }
                     });
 
                     return res.status(200).json({ message: "2FA sikeresen bekapcsolva!" });
@@ -1739,58 +1776,6 @@ case 'EDIT_USER_DRINK': {
       
           return res.status(200).json({ map: consMap, entries });
       }
-            case 'CLAIM_REWARD': {
-                const userData = verifyUser(req);
-                const { selectedPrize } = req.body;
-
-                if (!['Sör', 'Cola', 'Energia Ital'].includes(selectedPrize)) {
-                    return res.status(400).json({ error: "Érvénytelen nyeremény választás!" });
-                }
-
-                // 1. Ellenőrizzük, hány nyertes van eddig
-                const winnersRes = await sheets.spreadsheets.values.get({ 
-                    spreadsheetId: SPREADSHEET_ID, 
-                    range: `${WINNERS_SHEET}!A:A` 
-                });
-                const winnerCount = (winnersRes.data.values || []).length - 1; // Fejléc levonása
-
-                if (winnerCount >= 5) {
-                    return res.status(400).json({ error: "Sajnos lemaradtál! Már megvan az első 5 nyertes. 😔" });
-                }
-
-                // 2. Ellenőrizzük, hogy ez a user nyert-e már (duplikáció szűrés)
-                const winnersFullRes = await sheets.spreadsheets.values.get({ 
-                    spreadsheetId: SPREADSHEET_ID, 
-                    range: `${WINNERS_SHEET}!C:C` // Email oszlop
-                });
-                const winnersEmails = (winnersFullRes.data.values || []).flat();
-                if (winnersEmails.includes(userData.email)) {
-                    return res.status(400).json({ error: "Te már beváltottad a nyereményedet! 🎉" });
-                }
-
-                // 3. Ellenőrizzük, hogy töltött-e fel legalább 1 sört VAGY italt
-                const beersRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_BEERS_SHEET });
-                const drinksRes = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: GUEST_DRINKS_SHEET });
-
-                const hasBeer = (beersRes.data.values || []).some(row => row[13] === userData.email); // 13-as index az email
-                const hasDrink = (drinksRes.data.values || []).some(row => row[13] === userData.email);
-
-                if (!hasBeer && !hasDrink) {
-                    return res.status(400).json({ error: "Előbb tölts fel legalább egy Sör vagy Ital tesztet! 📝" });
-                }
-
-                // 4. Ha minden oké, mentsük el
-                const timestamp = new Date().toLocaleString('hu-HU');
-                await sheets.spreadsheets.values.append({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: WINNERS_SHEET,
-                    valueInputOption: 'USER_ENTERED',
-                    resource: { values: [[timestamp, userData.name, userData.email, selectedPrize]] }
-                });
-
-                return res.status(200).json({ message: "GRATULÁLUNK! Nyereményed rögzítve! Keresni fogunk. 🎁" });
-            }
-
                       case 'IMPORT_USER_DATA': {
     const userData = verifyUser(req);
     const { beers, drinks } = req.body;
