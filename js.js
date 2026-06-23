@@ -6390,93 +6390,13 @@ if (typeof switchToUserView === 'function') {
         setTimeout(fixSidebarHeight, 100);
     };
 }
-    // === NYEREMÉNYJÁTÉK LOGIKA ===
-
-window.openPrizeModal = function() {
-        const modal = document.getElementById('prizeModal');
-        if (modal) {
-            modal.classList.add('active');
-        } else {
-            console.error("Nem található a 'prizeModal' elem!");
-        }
-    }
-
-    // 2. Modal bezárása - GLOBÁLISAN elérhetővé téve
-    window.closePrizeModal = function() {
-        const modal = document.getElementById('prizeModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-    }
-
-    // 3. Nyeremény igénylése beküldés - GLOBÁLISAN elérhetővé téve
-    window.submitPrizeClaim = async function() {
-        // Megkeressük a kiválasztott rádiógombot
-        const selectedOption = document.querySelector('input[name="prizeSelect"]:checked');
-        
-        if (!selectedOption) {
-            showError("Kérlek válassz egy nyereményt! 🍺🥤⚡");
-            return;
-        }
-
-        const prize = selectedOption.value;
-        
-        // Megkeressük a gombot a modalon belül a töltés animációhoz
-        const btn = document.querySelector('#prizeModal .auth-btn'); 
-
-        // Loading állapot bekapcsolása
-        const originalText = btn ? btn.innerText : "KÉREM A NYEREMÉNYT!";
-        if(btn) {
-            btn.innerText = "Ellenőrzés...";
-            btn.disabled = true;
-        }
-
-        try {
-            const response = await fetch('/api/sheet', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                },
-                body: JSON.stringify({ 
-                    action: 'CLAIM_REWARD', 
-                    selectedPrize: prize 
-                })
-            });
-            
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || "Hiba történt.");
-            }
-
-            // Siker esetén
-            showSuccess(result.message);
-            window.closePrizeModal();
-            
-            // Eltüntetjük a lebegő ajándék gombot, mert már nyert
-            const floatBtn = document.getElementById('prizeFloatingBtn');
-            if(floatBtn) floatBtn.style.display = 'none';
-
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            // Loading állapot visszaállítása
-            if(btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        }
-    }
-
-    // Gomb láthatóságának kezelése nézetváltáskor
-    // (Ez biztosítja, hogy a gomb csak akkor látszódjon, ha be vagy lépve)
+    // === NÉZETVÁLTÁS UTÁNI TEENDŐK ===
+    // Felhasználói nézetbe váltáskor jelezzük a CSS-nek (user-view-active),
+    // és ellenőrizzük, van-e elfogadandó szabályzat-frissítés.
     const originalSwitchToUserViewPrize = typeof switchToUserView === 'function' ? switchToUserView : function(){};
-    
+
     switchToUserView = function() {
-        originalSwitchToUserViewPrize(); // Lefuttatjuk az eredeti nézetváltót
-        
-        // Jelezzük a CSS-nek, hogy user nézetben vagyunk, így megjelenik a gomb
+        originalSwitchToUserViewPrize();
         document.body.classList.add('user-view-active');
         setTimeout(checkPolicyUpdate, 1000);
     };
