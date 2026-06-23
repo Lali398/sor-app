@@ -82,7 +82,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 21.</span></h1>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 23.</span></h1>
         <p><strong>Hatálybalépés dátuma:</strong> 2026. június 21.</p>
 
         <h2>1. Az Adatkezelők</h2>
@@ -228,6 +228,10 @@
             <li><code>seen_leaderboard_announce_EMAIL</code>: A Toplista funkciót bemutató egyszeri értesítés megjelenítésének ténye.</li>
             <li><code>headerCollapsedPreference</code>: A fejléc megjelenítési állapota (nyitva/csukva).</li>
             <li><code>preferredViewMode</code>: Megjelenítési mód (Kártyák vagy Táblázat).</li>
+            <li><code>preferredListLimit</code>: A listában egyszerre megjelenített elemek számának preferenciája.</li>
+            <li><code>userTheme</code>: A kiválasztott megjelenési téma (szín/megjelenés) beállítása.</li>
+            <li><code>fabHotkeys</code>: A gyorsműveleti (lebegő) gomb megjelenítési preferenciája.</li>
+            <li><code>policy_accepted_2025_google_login</code>: Annak jelzése, hogy Ön az ÁSZF/Adatvédelmi Tájékoztató adott verzióját elfogadta (az ismételt értesítés elkerülésére).</li>
             <li><code>cookieConsentSeen</code>: Süti tájékoztató elfogadásának ténye.</li>
         </ul>
 
@@ -235,6 +239,7 @@
         <p>Kiemelt figyelmet fordítunk a biztonságra:</p>
         <ul>
             <li>A jelszavakat és a helyreállító kódokat erős, egyirányú titkosítással (bcrypt) tároljuk, így azokat még az Adatkezelők sem ismerik.</li>
+            <li>A kétlépcsős azonosítás (2FA) titkos kulcsát – mivel az a kódok ellenőrzéséhez nem hashelhető – nyugalmi állapotban erős, szimmetrikus titkosítással (AES-256-GCM) titkosítva tároljuk.</li>
             <li>Az adatkommunikáció titkosított csatornán (HTTPS) zajlik.</li>
             <li>A kétlépcsős azonosítás (2FA) lehetőséget biztosít a fiók extra védelmére.</li>
         </ul>
@@ -242,7 +247,7 @@
         <h2>6. Adatfeldolgozók és Harmadik felek</h2>
         <ul>
             <li><strong>Google LLC. (Google Sheets):</strong> Az adatok fizikai tárolása felhőalapú táblázatkezelőben, biztonságos Google szervereken történik.</li>
-            <li><strong>Google LLC (Google Auth):</strong> Hitelesítési szolgáltató. A Google bejelentkezés használatakor az Ön azonosítása a Google szerverein történik, alkalmazásunk csak egy megerősítést (token) kap az eredményről. <a href="https://policies.google.com/privacy" target="_blank">Google Adatvédelmi Irányelvek</a>.</li>
+            <li><strong>Google LLC (Google Auth):</strong> Hitelesítési szolgáltató. A Google bejelentkezés használatakor az Ön azonosítása a Google szerverein történik, alkalmazásunk csak egy megerősítést (token) kap az eredményről. A Google bejelentkezést kiszolgáló kliensoldali szkript (Google Identity Services) az alkalmazás minden oldalbetöltésekor betöltődik a Google szervereiről, ezért – a CDN-ekhez hasonlóan, technikai szükségszerűségből – a Google ekkor megkaphatja az Ön IP-címét akkor is, ha Ön végül nem a Google bejelentkezést használja. <a href="https://policies.google.com/privacy" target="_blank">Google Adatvédelmi Irányelvek</a>.</li>
             <li><strong>Vercel Inc.:</strong> Az alkalmazás szerveroldali kódjának futtatása és hosztolása.</li>
             <li><strong>Kliens oldali könyvtárak (CDN):</strong> Az alkalmazás a megjelenítéshez külső könyvtárakat tölt be tartalomkézbesítő hálózatokról (CDN): Chart.js és canvas-confetti (jsDelivr), html2canvas (Cloudflare cdnjs), SheetJS/xlsx (SheetJS CDN). Maguk a könyvtárak az adatokat helyben, a felhasználó eszközén dolgozzák fel, és nem küldik külső szerverre; a betöltésükkor azonban a CDN szolgáltató – technikai szükségszerűségből – megkapja a felhasználó IP-címét. A könyvtárak rögzített verziójúak és integritás-ellenőrzéssel (SRI) védettek.</li>
             <li><strong>Betűtípus:</strong> A "Poppins" betűtípust az alkalmazás a saját szerveréről (önhosztolva) szolgálja ki, így annak betöltése nem továbbít adatot harmadik fél (pl. Google Fonts) felé.</li>
