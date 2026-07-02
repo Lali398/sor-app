@@ -1,4 +1,4 @@
-const CACHE_NAME        = 'beer-app-v21';
+const CACHE_NAME        = 'beer-app-v23';
 const API_CACHE_NAME    = 'beer-api-cache-v3';
 const SYNC_QUEUE_DB     = 'beer-sync-queue';
 const SYNC_TAG          = 'beer-sync-offline';
