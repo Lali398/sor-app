@@ -12,7 +12,7 @@ const STATIC_ASSETS = [
   '/recap.css',
   'login3d.css',
   '/js.js',
-  'login3d.js'
+  'login3d.js',
   '/fx.js',
   '/landing.js',
   '/offline.js',
