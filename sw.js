@@ -1,4 +1,4 @@
-const CACHE_NAME        = 'beer-app-v20';
+const CACHE_NAME        = 'beer-app-v21';
 const API_CACHE_NAME    = 'beer-api-cache-v3';
 const SYNC_QUEUE_DB     = 'beer-sync-queue';
 const SYNC_TAG          = 'beer-sync-offline';
@@ -10,7 +10,9 @@ const STATIC_ASSETS = [
   '/landing.css',
   '/theme.css',
   '/recap.css',
+  'login3d.css',
   '/js.js',
+  'login3d.js'
   '/fx.js',
   '/landing.js',
   '/offline.js',
