@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="recap.css">
+    <link rel="stylesheet" href="beerpong.css">
     <link rel="stylesheet" href="fonts/poppins.css">
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png"> <meta property="og:image" content="https://xn--srapp-jua.hu/logo.png">
@@ -406,6 +407,10 @@
                 <button class="nav-item" data-tab-content="user-leaderboard-content">
                     <span class="icon">🏅</span>
                     <span class="label">Toplista</span>
+                </button>
+                <button class="nav-item" data-tab-content="user-beerpong-content">
+                    <span class="icon">🏓</span>
+                    <span class="label">Sörpong</span>
                 </button>
                 <button class="nav-item" data-tab-content="user-account-content">
                     <span class="icon">👤</span>
@@ -886,6 +891,11 @@
                             A toplistán csak az szerepel, aki ezt a <strong>Fiókom</strong> fülön bekapcsolta — ugyanott bármikor ki is kapcsolhatod.
                         </p>
                     </section>
+                </div>
+
+                <!-- SÖRPONG ARÉNA TAB - a tartalmat a beerpong.js építi fel -->
+                <div class="main-tab-pane" id="user-beerpong-content">
+                    <div id="beerpong-root"></div>
                 </div>
 
                 <div class="main-tab-pane" id="user-account-content">
@@ -2942,6 +2952,7 @@
     <!-- Offline támogatás (sw.js-el együtt működik) -->
     <script src="offline.js"></script>
     <script src="js.js"></script>
+    <script src="beerpong.js"></script>
     <script src="landing.js"></script>
     <script src="easter_egg.js"></script>
 </body>
