@@ -16,6 +16,7 @@ const IDEAS_SHEET = 'Vendég ötletek';
 const RECOMMENDATIONS_SHEET = 'Vendég sör ajánló';
 const SUPPORT_SHEET = 'Hibajelentések';
 const WINNERS_SHEET = 'Nyertesek';
+const BEERPONG_SHEET = 'Sörpong';
 
 const COL_INDEXES = {
   admin1: { beerName: 0, location: 1, type: 2, look: 3, smell: 4, taste: 5, score: 6, avg: 7, beerPercentage: 8, date: 9 },
@@ -2490,6 +2491,140 @@ case 'EDIT_USER_DRINK': {
                     topBeers: topOf(stats.beers),
                     topDrinks: topOf(stats.drinks)
                 });
+            }
+
+            // ======================================================
+            // === SÖRPONG JÁTÉK API ===
+            // A 'Sörpong' munkalap oszlopai:
+            // A: Email | B: Típus (roster/game/tournament) | C: ID | D: Dátum | E: Adat (JSON)
+            // Minden sor csak a saját tulajdonosának (email) érhető el,
+            // így a játékokat/toplistákat csak az látja, akinek a profilján indultak.
+            // ======================================================
+
+            case 'BEERPONG_GET': {
+                const userData = verifyUser(req);
+
+                let rows = [];
+                try {
+                    const resp = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${BEERPONG_SHEET}!A:E`
+                    });
+                    rows = resp.data.values || [];
+                } catch (e) {
+                    // Ha a munkalap még nem létezik, érthető üzenetet adunk vissza
+                    return res.status(500).json({
+                        error: `A(z) '${BEERPONG_SHEET}' munkalap nem található! Hozd létre a Google Táblázatban (üresen is elég).`,
+                        missingSheet: true
+                    });
+                }
+
+                const result = { roster: null, games: [], tournaments: [] };
+                rows.forEach(row => {
+                    if (!row || row[0] !== userData.email) return;
+                    let data = null;
+                    try { data = JSON.parse(row[4] || 'null'); } catch (e) { return; }
+                    if (!data) return;
+                    if (row[1] === 'roster') result.roster = data;
+                    else if (row[1] === 'game') result.games.push(data);
+                    else if (row[1] === 'tournament') result.tournaments.push(data);
+                });
+
+                return res.status(200).json(result);
+            }
+
+            case 'BEERPONG_SAVE': {
+                const userData = verifyUser(req);
+                const { type, id, data } = req.body;
+
+                if (!['roster', 'game', 'tournament'].includes(type)) {
+                    return res.status(400).json({ error: "Ismeretlen sörpong adattípus!" });
+                }
+                if (!data || typeof data !== 'object') {
+                    return res.status(400).json({ error: "Hiányzó vagy hibás adat!" });
+                }
+
+                const json = JSON.stringify(data);
+                // A Google Sheets cellánként max ~50.000 karaktert enged
+                if (json.length > 45000) {
+                    return res.status(400).json({ error: "Túl nagy adat, nem menthető!" });
+                }
+
+                const recordId = String(id || (type === 'roster' ? 'roster' : Date.now()));
+                const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                const newRow = [userData.email, type, recordId, dateStr, json];
+
+                let rows = [];
+                try {
+                    const resp = await sheets.spreadsheets.values.get({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${BEERPONG_SHEET}!A:E`
+                    });
+                    rows = resp.data.values || [];
+                } catch (e) {
+                    return res.status(500).json({
+                        error: `A(z) '${BEERPONG_SHEET}' munkalap nem található! Hozd létre a Google Táblázatban (üresen is elég).`,
+                        missingSheet: true
+                    });
+                }
+
+                // UPSERT: ha már létezik ilyen sor (email + típus + id), frissítjük.
+                // Így az offline queue esetleges ismételt beküldése sem duplikál.
+                const rowIndex = rows.findIndex(row =>
+                    row && row[0] === userData.email && row[1] === type && String(row[2]) === recordId
+                );
+
+                if (rowIndex >= 0) {
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${BEERPONG_SHEET}!A${rowIndex + 1}:E${rowIndex + 1}`,
+                        valueInputOption: 'RAW',
+                        resource: { values: [newRow] }
+                    });
+                } else {
+                    await sheets.spreadsheets.values.append({
+                        spreadsheetId: SPREADSHEET_ID,
+                        range: `${BEERPONG_SHEET}!A:E`,
+                        valueInputOption: 'RAW',
+                        resource: { values: [newRow] }
+                    });
+                }
+
+                return res.status(200).json({ message: "Sörpong adat mentve! 🏓", id: recordId });
+            }
+
+            case 'BEERPONG_DELETE': {
+                const userData = verifyUser(req);
+                const { type, id } = req.body;
+
+                if (!['game', 'tournament'].includes(type) || !id) {
+                    return res.status(400).json({ error: "Hiányzó vagy hibás törlési adatok!" });
+                }
+
+                const resp = await sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${BEERPONG_SHEET}!A:E`
+                });
+                const rows = resp.data.values || [];
+
+                const rowIndex = rows.findIndex(row =>
+                    row && row[0] === userData.email && row[1] === type && String(row[2]) === String(id)
+                );
+
+                if (rowIndex === -1) {
+                    return res.status(404).json({ error: "A törlendő elem nem található." });
+                }
+
+                // A sort nem töröljük fizikailag (ahhoz sheetId kellene),
+                // csak kiürítjük - az üres sorokat a lekérés átugorja.
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `${BEERPONG_SHEET}!A${rowIndex + 1}:E${rowIndex + 1}`,
+                    valueInputOption: 'RAW',
+                    resource: { values: [['', '', '', '', '']] }
+                });
+
+                return res.status(200).json({ message: "Sikeresen törölve! 🗑️" });
             }
 
             default:
