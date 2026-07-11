@@ -128,7 +128,8 @@ const BP = {
     activeTournamentId: null,
     tourForm: null,
     timerInt: null,
-    charts: {}
+    charts: {},
+    fullscreen: false
 };
 
 // ---------- TOAST ----------
@@ -444,6 +445,7 @@ function renderShell() {
                         <p class="bp-hero-sub">Sorsolt csapatok · élő meccsek · bajnokságok · toplisták</p>
                     </div>
                     <div class="bp-hero-cup">🍺</div>
+                    <button class="bp-help-btn" data-bp="help" title="Útmutató">❓</button>
                 </div>
             </div>
             <nav class="bp-subnav" id="bp-subnav"></nav>
@@ -939,6 +941,10 @@ function renderGame(el) {
                     <span>⏱️ <span id="bp-timer">0:00</span></span>
                     <span>🏀 <span id="bp-throwcount">${throwsCount}</span> dobás</span>
                 </div>
+                <div class="bp-game-tools">
+                    <button class="bp-icon-btn" data-bp="help" title="Útmutató">❓</button>
+                    <button class="bp-icon-btn" data-bp="toggle-fs" title="Teljes képernyő">${BP.fullscreen ? '✕ Kilépés' : '⛶ Teljes képernyő'}</button>
+                </div>
             </div>
 
             <div class="bp-tables">
@@ -1185,6 +1191,7 @@ function undoThrow() {
 
 function abortGame() {
     if (!confirm('Biztosan megszakítod a meccset? Az állás elveszik!')) return;
+    exitGameFullscreen();
     const g = BP.game;
     BP.game = null;
     BP.thrower = null;
@@ -1203,6 +1210,7 @@ function abortGame() {
 function finishGame(winnerTeam) {
     const g = BP.game;
     if (!g) return;
+    exitGameFullscreen();
     g.winner = winnerTeam;
     g.durationSec = Math.round((Date.now() - g.startTs) / 1000);
     delete g.startTs;
@@ -2063,6 +2071,85 @@ function closeOverlay() {
     if (ov) ov.remove();
 }
 
+// ---------- ÚTMUTATÓ (❓) ----------
+
+function showHelpOverlay() {
+    closeOverlay();
+    const ov = document.createElement('div');
+    ov.className = 'bp-overlay';
+    ov.id = 'bp-overlay';
+    ov.innerHTML = `
+        <div class="bp-overlay-box bp-help-box">
+            <button class="bp-help-close" data-bp="close-overlay" title="Bezárás">✕</button>
+            <h3 class="bp-draw-title">❓ Sörpong útmutató</h3>
+
+            <h4>👥 1. Játékosok</h4>
+            <p>Először add hozzá a játékosokat a <b>Játékosok</b> fülön. Emoji avatart kapnak – az avatarra kattintva újat sorsolhatsz.</p>
+
+            <h4>🎯 2. Új meccs</h4>
+            <p>Állítsd be a poharak számát (<b>1–20</b>, gyorsgombokkal vagy a −/+ léptetővel), jelöld ki, kik játszanak, majd nyomd meg a <b>🎲 Csapatok kisorsolása</b> gombot. A fénycsík végigfut a neveken, és kisorsolja a két csapatot. A végén <b>saját csapatnevet</b> is beírhattok (vagy 🎲 új véletlen név).</p>
+
+            <h4>🏓 3. A meccs</h4>
+            <ul>
+                <li>Csak a <b>kezdő dobót</b> kell kiválasztani – utána a sorrend automatikus: mindig az ellenfél jön, csapaton belül felváltva dobtok. Bármikor átválaszthatsz másik játékosra.</li>
+                <li><b>Találat:</b> kattints az ellenfél eltalált poharára. 🍺</li>
+                <li><b>✌️ Pattintott:</b> kapcsold be dobás előtt – a pattintott találat 2 poharat ér!</li>
+                <li><b>❌ Mellé:</b> ha nem talált. <b>↩️ Vissza:</b> az utolsó dobás visszavonása.</li>
+                <li><b>⛶ Teljes képernyő:</b> csak a játék látszik, semmi más.</li>
+                <li>Az nyer, aki előbb kilövi az ellenfél összes poharát. 🏆</li>
+            </ul>
+
+            <h4>🏆 4. Bajnokság</h4>
+            <p>Válassz <b>egyéni</b> vagy <b>csapat</b> módot (a csapatokat a gép sorsolja), és <b>kieséses ágrajzot</b> vagy <b>körmérkőzést</b>. A meccseket az ágrajzból / a fordulókból indítod a ▶️ gombbal, az eredmény magától kerül vissza.</p>
+
+            <h4>🥇 5. Toplista és statisztika</h4>
+            <p>Minden meccs után részletes statisztika készül (MVP, pontosság, sorozatok, grafikon), és épül az <b>egyéni</b> és <b>csapat toplista</b>. Mindezt csak te látod, a saját profilodon. 🔒</p>
+
+            <h4>📶 Offline</h4>
+            <p>Nincs net? Nem gond – a mentések sorba állnak, és automatikusan szinkronizálódnak, amint visszajön a kapcsolat.</p>
+
+            <div class="bp-draw-actions">
+                <button class="bp-btn bp-btn-primary" data-bp="close-overlay">Értem! 👍</button>
+            </div>
+        </div>
+    `;
+    // Teljes képernyős módban a body-ra tett overlay nem látszana
+    (document.fullscreenElement || document.body).appendChild(ov);
+    requestAnimationFrame(() => ov.classList.add('show'));
+}
+
+// ---------- TELJES KÉPERNYŐS JÁTÉK (⛶) ----------
+
+function toggleGameFullscreen() {
+    if (BP.fullscreen) { exitGameFullscreen(); return; }
+    BP.fullscreen = true;
+    document.body.classList.add('bp-game-fs');
+    // Natív fullscreen a stabil #bp-view elemre (a meccs újrarenderelése nem dobja ki);
+    // ha a böngésző nem támogatja, a CSS fallback (body osztály) akkor is teljes képernyőt ad
+    const view = document.getElementById('bp-view');
+    if (view && view.requestFullscreen) view.requestFullscreen().catch(() => {});
+    renderView();
+}
+
+function exitGameFullscreen() {
+    if (!BP.fullscreen) return;
+    BP.fullscreen = false;
+    document.body.classList.remove('bp-game-fs');
+    if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    }
+    renderView();
+}
+
+// Ha Esc-kel lép ki a natív fullscreenből, az állapotot szinkronban tartjuk
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && BP.fullscreen) {
+        BP.fullscreen = false;
+        document.body.classList.remove('bp-game-fs');
+        renderView();
+    }
+});
+
 // Az overlay-ek a body-ra kerülnek, ezért ott is figyeljük a kattintásokat.
 // A __bpHandled flag védi ki a dupla feldolgozást: a root handler fut előbb
 // (bubbling), és ha újrarenderel, a gomb már nincs a DOM-ban - a closest()
@@ -2094,6 +2181,9 @@ function handleAction(btn, e) {
         case 'reload':
             loadData();
             break;
+        case 'help': showHelpOverlay(); break;
+        case 'close-overlay': closeOverlay(); break;
+        case 'toggle-fs': toggleGameFullscreen(); break;
 
         // Játékosok
         case 'add-player': addPlayer(); break;
