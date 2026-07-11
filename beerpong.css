@@ -1,0 +1,1311 @@
+/* ======================================================
+   🏓🍺 SÖRPONG ARÉNA - STÍLUSOK ÉS ANIMÁCIÓK
+   A meglévő téma --accent változóira épül (theme.css)
+====================================================== */
+
+:root {
+    --bp-accent: var(--accent, #8a73ff);
+    --bp-accent-2: var(--accent-2, #22d3ee);
+    --bp-pink: #f472b6;
+    --bp-red: #e74c3c;
+    --bp-cup: #d63031;
+    --bp-cup-dark: #a02020;
+    --bp-beer: #f6c101;
+    --bp-glass: rgba(255, 255, 255, 0.06);
+    --bp-glass-border: rgba(255, 255, 255, 0.12);
+}
+
+#beerpong-root { color: #eee; }
+
+.bp-shell { display: flex; flex-direction: column; gap: 18px; }
+
+/* ---------- HERO ---------- */
+
+.bp-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 26px 24px;
+    background: linear-gradient(120deg,
+        color-mix(in srgb, var(--bp-accent) 35%, #14002e),
+        color-mix(in srgb, var(--bp-accent-2, #22d3ee) 22%, #10002b));
+    border: 1px solid var(--bp-glass-border);
+    box-shadow: 0 14px 40px -18px color-mix(in srgb, var(--bp-accent) 60%, transparent);
+}
+
+.bp-hero-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.bp-hero-title {
+    margin: 0;
+    font-size: 1.7rem;
+    background: linear-gradient(110deg, #fff 30%, var(--bp-accent-2) 60%, #fff 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: bpShine 4s linear infinite;
+}
+
+@keyframes bpShine { to { background-position: 200% center; } }
+
+.bp-hero-sub { margin: 4px 0 0; color: rgba(255,255,255,.75); font-size: .9rem; }
+
+.bp-hero-ball, .bp-hero-cup { font-size: 2.4rem; }
+.bp-hero-ball { animation: bpFloat 3s ease-in-out infinite; }
+.bp-hero-cup { margin-left: auto; animation: bpFloat 3.4s ease-in-out infinite reverse; }
+
+@keyframes bpFloat {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50% { transform: translateY(-10px) rotate(8deg); }
+}
+
+/* Emelkedő buborékok */
+.bp-bubbles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.bp-bubble {
+    position: absolute;
+    bottom: -20px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.7), rgba(255,255,255,.08));
+    animation: bpBubbleUp 6s linear infinite;
+    opacity: 0;
+}
+.bp-bubble:nth-child(1)  { left: 4%;  animation-delay: 0s;    transform: scale(.7); }
+.bp-bubble:nth-child(2)  { left: 12%; animation-delay: 1.4s;  transform: scale(1.1); }
+.bp-bubble:nth-child(3)  { left: 21%; animation-delay: 2.8s;  transform: scale(.5); }
+.bp-bubble:nth-child(4)  { left: 30%; animation-delay: .8s;   transform: scale(.9); }
+.bp-bubble:nth-child(5)  { left: 39%; animation-delay: 3.6s;  transform: scale(.6); }
+.bp-bubble:nth-child(6)  { left: 48%; animation-delay: 2s;    transform: scale(1.2); }
+.bp-bubble:nth-child(7)  { left: 57%; animation-delay: 4.4s;  transform: scale(.8); }
+.bp-bubble:nth-child(8)  { left: 66%; animation-delay: 1s;    transform: scale(.5); }
+.bp-bubble:nth-child(9)  { left: 75%; animation-delay: 3s;    transform: scale(1); }
+.bp-bubble:nth-child(10) { left: 84%; animation-delay: .4s;   transform: scale(.7); }
+.bp-bubble:nth-child(11) { left: 91%; animation-delay: 2.4s;  transform: scale(.9); }
+.bp-bubble:nth-child(12) { left: 96%; animation-delay: 5s;    transform: scale(.6); }
+
+@keyframes bpBubbleUp {
+    0% { transform: translateY(0); opacity: 0; }
+    12% { opacity: .8; }
+    100% { transform: translateY(-140px); opacity: 0; }
+}
+
+/* ---------- AL-NAVIGÁCIÓ ---------- */
+
+.bp-subnav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+}
+.bp-subnav::-webkit-scrollbar { display: none; }
+
+.bp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--bp-glass-border);
+    background: var(--bp-glass);
+    color: #ccc;
+    font-family: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .25s ease;
+}
+.bp-pill:hover { transform: translateY(-2px); border-color: var(--bp-accent); color: #fff; }
+.bp-pill.active {
+    background: linear-gradient(120deg, var(--bp-accent), color-mix(in srgb, var(--bp-accent) 60%, var(--bp-pink)));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--bp-accent) 80%, transparent);
+}
+
+.bp-pill-live { border-color: #e74c3c; color: #ff9b90; }
+.bp-pill-live.active { background: linear-gradient(120deg, #e74c3c, #c0392b); color: #fff; }
+.bp-live-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #ff5544;
+    animation: bpPulseDot 1.2s ease-in-out infinite;
+}
+@keyframes bpPulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 85, 68, .6); }
+    50% { box-shadow: 0 0 0 6px rgba(255, 85, 68, 0); }
+}
+
+/* ---------- ÁLTALÁNOS ELEMEK ---------- */
+
+.bp-section { display: flex; flex-direction: column; gap: 14px; }
+.bp-section-title { margin: 0; font-size: 1.25rem; color: #fff; }
+.bp-sub-title { margin: 12px 0 0; color: #ddd; }
+.bp-muted { color: rgba(255,255,255,.55); font-size: .85rem; }
+.bp-center { text-align: center; }
+.bp-win { color: #7bed9f; }
+
+.bp-card {
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    backdrop-filter: blur(8px);
+}
+.bp-card-title { margin: 0 0 12px; color: #fff; font-size: 1rem; }
+
+.bp-empty {
+    text-align: center;
+    padding: 26px !important;
+    border-radius: 14px;
+    background: var(--bp-glass);
+    border: 1px dashed var(--bp-glass-border);
+}
+
+.bp-input {
+    background: rgba(0,0,0,.3);
+    border: 1px solid var(--bp-glass-border);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: .95rem;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.bp-input:focus {
+    border-color: var(--bp-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bp-accent) 25%, transparent);
+}
+
+.bp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 11px;
+    border: 1px solid var(--bp-glass-border);
+    background: var(--bp-glass);
+    color: #eee;
+    font-family: inherit;
+    font-size: .92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.bp-btn:hover { transform: translateY(-2px); }
+.bp-btn:active { transform: translateY(0) scale(.97); }
+.bp-btn.disabled, .bp-btn:disabled { opacity: .45; pointer-events: none; }
+
+.bp-btn-primary {
+    background: linear-gradient(120deg, var(--bp-accent), color-mix(in srgb, var(--bp-accent) 60%, var(--bp-pink)));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 8px 22px -8px color-mix(in srgb, var(--bp-accent) 80%, transparent);
+}
+.bp-btn-primary:hover { box-shadow: 0 12px 30px -8px color-mix(in srgb, var(--bp-accent) 90%, transparent); }
+
+.bp-btn-ghost { background: transparent; }
+.bp-btn-sm { padding: 6px 12px; font-size: .8rem; }
+.bp-btn-big { padding: 15px 26px; font-size: 1.05rem; width: 100%; }
+
+.bp-btn-danger-ghost { background: transparent; border-color: rgba(231, 76, 60, .5); color: #ff9b90; }
+.bp-btn-danger-ghost:hover { background: rgba(231, 76, 60, .15); }
+
+.bp-btn-miss { background: rgba(231, 76, 60, .18); border-color: rgba(231, 76, 60, .5); color: #ffb3ab; }
+.bp-btn-bounce { border-color: rgba(246, 193, 1, .5); color: #ffe08a; }
+.bp-btn-bounce.active {
+    background: linear-gradient(120deg, #f6c101, #e67e22);
+    color: #2c1b00;
+    animation: bpBouncePulse 1s ease-in-out infinite;
+}
+@keyframes bpBouncePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(246, 193, 1, .5); }
+    50% { box-shadow: 0 0 0 8px rgba(246, 193, 1, 0); }
+}
+
+.bp-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    background: color-mix(in srgb, var(--bp-accent) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bp-accent) 45%, transparent);
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* Szegmens gombok */
+.bp-seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.bp-seg-inline { display: inline-flex; }
+.bp-seg-btn {
+    flex: 1;
+    min-width: 110px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.25);
+    color: #ccc;
+    font-family: inherit;
+    font-size: .92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: center;
+}
+.bp-seg-btn small { font-weight: 400; opacity: .65; }
+.bp-seg-btn:hover { border-color: var(--bp-accent); color: #fff; }
+.bp-seg-btn.active {
+    background: linear-gradient(120deg, color-mix(in srgb, var(--bp-accent) 80%, #000), var(--bp-accent));
+    border-color: var(--bp-accent);
+    color: #fff;
+    box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--bp-accent) 80%, transparent);
+    transform: scale(1.02);
+}
+.bp-seg-inline .bp-seg-btn { min-width: 70px; padding: 8px 14px; flex: none; }
+
+.bp-form-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: #ddd; }
+.bp-form-actions { display: flex; gap: 10px; }
+.bp-form-actions .bp-btn-big { flex: 1; }
+
+/* Chip választó */
+.bp-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.bp-chip {
+    padding: 9px 15px;
+    border-radius: 999px;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.25);
+    color: #ccc;
+    font-family: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+.bp-chip:hover { border-color: var(--bp-accent); color: #fff; transform: translateY(-2px); }
+.bp-chip.selected {
+    background: linear-gradient(120deg, var(--bp-accent), color-mix(in srgb, var(--bp-accent) 55%, var(--bp-accent-2)));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--bp-accent) 80%, transparent);
+    animation: bpChipPop .25s ease;
+}
+@keyframes bpChipPop { 50% { transform: scale(1.12); } }
+
+/* Belépő animáció */
+.bp-anim-in {
+    opacity: 0;
+    animation: bpFadeUp .5s ease forwards;
+    animation-delay: calc(var(--d, 0) * 70ms);
+}
+@keyframes bpFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- BETÖLTÉS ---------- */
+
+.bp-loading { text-align: center; padding: 50px 0; color: #ccc; }
+.bp-loading-cups span {
+    display: inline-block;
+    font-size: 2rem;
+    margin: 0 5px;
+    animation: bpLoadBounce 1s ease-in-out infinite;
+}
+.bp-loading-cups span:nth-child(2) { animation-delay: .15s; }
+.bp-loading-cups span:nth-child(3) { animation-delay: .3s; }
+@keyframes bpLoadBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+}
+
+/* ---------- KEZDŐLAP ---------- */
+
+.bp-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+.bp-stat-card {
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    transition: transform .2s ease, border-color .2s ease;
+}
+.bp-stat-card:hover { transform: translateY(-4px); border-color: var(--bp-accent); }
+.bp-stat-icon { font-size: 1.6rem; }
+.bp-stat-value { font-size: 1.7rem; font-weight: 700; color: #fff; margin-top: 4px; }
+.bp-stat-value-sm { font-size: 1.15rem; }
+.bp-stat-label { color: rgba(255,255,255,.55); font-size: .78rem; margin-top: 2px; }
+
+.bp-cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bp-cta {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 22px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--bp-glass-border);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: #fff;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.bp-cta:hover { transform: translateY(-4px) scale(1.01); }
+.bp-cta-match { background: linear-gradient(130deg, color-mix(in srgb, var(--bp-accent) 55%, #1a0530), color-mix(in srgb, var(--bp-accent) 25%, #10002b)); }
+.bp-cta-tour { background: linear-gradient(130deg, color-mix(in srgb, #f6c101 40%, #241000), color-mix(in srgb, #e67e22 25%, #180a00)); }
+.bp-cta-icon { font-size: 2rem; }
+.bp-cta-title { font-size: 1.2rem; font-weight: 700; }
+.bp-cta-sub { font-size: .82rem; opacity: .7; }
+.bp-cta::after {
+    content: '';
+    position: absolute;
+    top: -60%; left: -30%;
+    width: 40%; height: 220%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.14), transparent);
+    transform: rotate(20deg);
+    transition: left .5s ease;
+}
+.bp-cta:hover::after { left: 120%; }
+
+.bp-resume-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, rgba(246, 193, 1, .16), rgba(230, 126, 34, .1));
+    border: 1px solid rgba(246, 193, 1, .4);
+    animation: bpFadeUp .4s ease;
+}
+.bp-resume-actions { display: flex; gap: 8px; }
+
+.bp-recent-list, .bp-tour-mini-list { display: flex; flex-direction: column; gap: 8px; }
+.bp-recent, .bp-tour-mini {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--bp-glass-border);
+    background: var(--bp-glass);
+    color: #eee;
+    font-family: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: left;
+}
+.bp-recent:hover, .bp-tour-mini:hover { border-color: var(--bp-accent); transform: translateX(4px); }
+.bp-recent-teams { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bp-recent-score {
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.35);
+}
+.bp-tour-mini { flex-direction: column; align-items: stretch; gap: 6px; }
+.bp-tour-mini-name { font-weight: 600; }
+
+.bp-progress {
+    display: block;
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(0,0,0,.35);
+    overflow: hidden;
+}
+.bp-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--bp-accent), var(--bp-accent-2));
+    transition: width .6s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ---------- JÁTÉKOSOK ---------- */
+
+.bp-add-player { display: flex; gap: 10px; }
+.bp-add-player .bp-input { flex: 1; }
+
+.bp-player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+}
+.bp-player-card {
+    position: relative;
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 18px 14px 14px;
+    text-align: center;
+    transition: transform .2s ease, border-color .2s ease;
+}
+.bp-player-card:hover { transform: translateY(-4px); border-color: var(--bp-accent); }
+.bp-player-avatar {
+    font-size: 2.2rem;
+    background: rgba(0,0,0,.3);
+    border: 1px solid var(--bp-glass-border);
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform .2s ease;
+}
+.bp-player-avatar:hover { transform: rotate(12deg) scale(1.1); }
+.bp-player-name { font-weight: 700; color: #fff; margin-top: 8px; word-break: break-word; }
+.bp-player-mini { color: rgba(255,255,255,.55); font-size: .78rem; margin-top: 4px; }
+.bp-player-del {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(231, 76, 60, .18);
+    color: #ff9b90;
+    cursor: pointer;
+    font-size: .8rem;
+    transition: background .2s;
+}
+.bp-player-del:hover { background: rgba(231, 76, 60, .5); color: #fff; }
+
+/* ---------- SORSOLÁS OVERLAY ---------- */
+
+.bp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(5, 0, 20, .8);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity .3s ease;
+    overflow-y: auto;
+}
+.bp-overlay.show { opacity: 1; }
+
+.bp-overlay-box {
+    background: linear-gradient(160deg, #1c0a3a, #0e0322);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 20px;
+    padding: 26px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.8);
+    transform: translateY(24px) scale(.96);
+    transition: transform .35s cubic-bezier(.2, .9, .3, 1.2);
+}
+.bp-overlay.show .bp-overlay-box { transform: translateY(0) scale(1); }
+
+.bp-draw-title { text-align: center; margin: 0 0 18px; color: #fff; font-size: 1.3rem; }
+.bp-draw-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.bp-draw-team {
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 14px;
+}
+.bp-draw-team[data-team="0"] { border-top: 3px solid var(--bp-accent); }
+.bp-draw-team[data-team="1"] { border-top: 3px solid var(--bp-pink); }
+.bp-draw-team-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.bp-draw-emoji { font-size: 1.5rem; }
+.bp-draw-team-name { font-weight: 700; color: #fff; }
+.bp-draw-slots { display: flex; flex-direction: column; gap: 8px; }
+.bp-draw-slot {
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.3);
+    border: 1px dashed rgba(255,255,255,.2);
+    color: #aaa;
+    text-align: center;
+    font-size: .92rem;
+    min-height: 20px;
+}
+.bp-slot-spin { display: inline-block; filter: blur(.6px); opacity: .7; }
+.bp-draw-slot.locked {
+    border-style: solid;
+    border-color: var(--bp-accent);
+    background: color-mix(in srgb, var(--bp-accent) 18%, rgba(0,0,0,.3));
+    color: #fff;
+    font-weight: 600;
+    animation: bpSlotLock .4s cubic-bezier(.2, .9, .3, 1.4);
+}
+.bp-draw-slot.locked .bp-slot-spin { filter: none; opacity: 1; }
+@keyframes bpSlotLock {
+    0% { transform: scale(.8); }
+    60% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+.bp-draw-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.bp-team-name-input { text-align: center; font-weight: 700; }
+
+/* ---------- MECCS KÉPERNYŐ ---------- */
+
+.bp-game { position: relative; display: flex; flex-direction: column; gap: 14px; }
+
+.bp-game-topbar {
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+.bp-game-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.bp-game-team-label { font-weight: 700; color: #fff; font-size: .95rem; }
+.bp-game-cups-big {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--bp-beer);
+    min-width: 40px;
+    text-align: center;
+    text-shadow: 0 0 18px rgba(246, 193, 1, .4);
+    transition: transform .2s ease;
+}
+.bp-game-cups-big.bp-pop { animation: bpScorePop .4s ease; }
+@keyframes bpScorePop {
+    40% { transform: scale(1.5); color: #fff; }
+}
+.bp-game-vs {
+    font-weight: 800;
+    color: rgba(255,255,255,.45);
+    font-size: .85rem;
+    letter-spacing: 1px;
+}
+.bp-game-meta { display: flex; gap: 18px; color: rgba(255,255,255,.6); font-size: .82rem; }
+
+.bp-tables {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: stretch;
+}
+.bp-net {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 10px 0;
+}
+.bp-net span {
+    width: 3px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(180deg,
+        rgba(255,255,255,.25) 0 8px, transparent 8px 16px);
+}
+
+.bp-table-side {
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color .25s ease, box-shadow .25s ease;
+}
+.bp-table-side.is-target {
+    border-color: color-mix(in srgb, var(--bp-beer) 60%, transparent);
+    box-shadow: 0 0 24px -6px rgba(246, 193, 1, .35);
+}
+.bp-table-side.bp-shake { animation: bpShake .45s ease; }
+@keyframes bpShake {
+    20% { transform: translateX(-6px) rotate(-.5deg); }
+    45% { transform: translateX(5px) rotate(.5deg); }
+    70% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+}
+
+.bp-team-head { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.bp-team-emoji { font-size: 1.3rem; }
+.bp-team-name { font-weight: 700; color: #fff; }
+
+/* Pohár piramis */
+.bp-rack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+}
+.bp-cup-row { display: flex; gap: 6px; justify-content: center; }
+
+.bp-cup {
+    position: relative;
+    width: 44px;
+    height: 52px;
+    background: transparent;
+    border: none;
+    cursor: default;
+    padding: 0;
+    transition: transform .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.bp-cup-body {
+    position: absolute;
+    inset: 6px 4px 0;
+    background: linear-gradient(160deg, #ff6b5e 0%, var(--bp-cup) 40%, var(--bp-cup-dark) 100%);
+    clip-path: polygon(8% 0, 92% 0, 78% 100%, 22% 100%);
+    border-radius: 3px;
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,.35);
+}
+.bp-cup-foam {
+    position: absolute;
+    top: 2px; left: 8px; right: 8px;
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 40%, #ffe9a8 0%, var(--bp-beer) 65%, #c79a01 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.bp-cup.targetable { cursor: pointer; }
+.bp-cup.targetable .bp-cup-body { animation: bpCupGlow 1.4s ease-in-out infinite; }
+.bp-cup.targetable:hover { transform: translateY(-4px) scale(1.08); }
+@keyframes bpCupGlow {
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(246, 193, 1, .25)); }
+    50% { filter: drop-shadow(0 0 10px rgba(246, 193, 1, .7)); }
+}
+
+.bp-cup.gone { pointer-events: none; }
+.bp-cup.gone .bp-cup-body { opacity: .1; filter: grayscale(1); }
+.bp-cup.gone .bp-cup-foam { opacity: 0; }
+
+.bp-cup.splash { animation: bpCupSink .55s ease forwards; }
+@keyframes bpCupSink {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.18) rotate(-6deg); }
+    100% { transform: scale(.4) rotate(14deg) translateY(16px); opacity: .12; }
+}
+
+/* Fröccsenő cseppek */
+.bp-droplet {
+    position: absolute;
+    left: 50%; top: 18%;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe9a8, var(--bp-beer));
+    pointer-events: none;
+    z-index: 5;
+    transform: rotate(var(--ang)) translateX(0);
+    animation: bpDroplet .65s ease-out forwards;
+}
+@keyframes bpDroplet {
+    to { transform: rotate(var(--ang)) translateX(var(--dist)); opacity: 0; }
+}
+
+/* Labda röppálya (külső: X, belső: Y ív) */
+.bp-ball-x {
+    position: absolute;
+    z-index: 60;
+    pointer-events: none;
+    animation: bpBallX .5s linear forwards;
+}
+@keyframes bpBallX { to { transform: translateX(var(--dx)); } }
+
+.bp-ball-y {
+    font-size: 15px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+}
+.bp-arc-hit { animation: bpBallYHit .5s linear forwards; }
+@keyframes bpBallYHit {
+    0% { transform: translateY(0); }
+    45% { transform: translateY(calc(var(--dy) * .35 - 90px)); }
+    100% { transform: translateY(var(--dy)); opacity: 1; }
+}
+.bp-arc-miss { animation: bpBallYMiss .8s linear forwards; }
+@keyframes bpBallYMiss {
+    0% { transform: translateY(0) rotate(0); }
+    40% { transform: translateY(calc(var(--dy) * .3 - 80px)) rotate(180deg); }
+    70% { transform: translateY(var(--dy)) rotate(360deg); }
+    100% { transform: translateY(calc(var(--dy) + 70px)) rotate(520deg); opacity: 0; }
+}
+
+/* Dobó játékos chipek */
+.bp-team-players { display: flex; flex-direction: column; gap: 7px; }
+.bp-thrower-chip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: 11px;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.25);
+    color: #ddd;
+    font-family: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: left;
+}
+.bp-thrower-chip:hover { border-color: var(--bp-accent); transform: translateX(3px); }
+.bp-thrower-chip.active {
+    background: linear-gradient(120deg, color-mix(in srgb, var(--bp-accent) 70%, #000), color-mix(in srgb, var(--bp-accent) 40%, #000));
+    border-color: var(--bp-accent);
+    color: #fff;
+    box-shadow: 0 0 18px -4px color-mix(in srgb, var(--bp-accent) 70%, transparent);
+}
+.bp-thrower-emoji { font-size: 1.15rem; }
+.bp-thrower-name { font-weight: 600; flex: 1; word-break: break-word; }
+.bp-thrower-stat { font-size: .74rem; opacity: .7; white-space: nowrap; }
+.bp-streak {
+    position: absolute;
+    top: -8px; right: -6px;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: linear-gradient(120deg, #ff5f2e, #e73827);
+    color: #fff;
+    animation: bpStreakPulse .8s ease-in-out infinite;
+}
+@keyframes bpStreakPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* Akciósáv */
+.bp-actionbar {
+    position: sticky;
+    bottom: 10px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(12, 2, 30, .92);
+    border: 1px solid var(--bp-glass-border);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 -6px 30px rgba(0,0,0,.4);
+}
+.bp-actionbar-info { color: #eee; font-size: .92rem; }
+.bp-actionbar-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.bp-game-hint { text-align: center; color: rgba(255,255,255,.5); font-size: .82rem; margin: 0; }
+
+/* ---------- GYŐZELEM OVERLAY ---------- */
+
+.bp-victory-box { text-align: center; max-width: 480px; }
+.bp-trophy {
+    font-size: 4.2rem;
+    animation: bpTrophyDrop .9s cubic-bezier(.2, .9, .3, 1.3);
+    display: inline-block;
+}
+@keyframes bpTrophyDrop {
+    0% { transform: translateY(-120px) scale(.4) rotate(-20deg); opacity: 0; }
+    55% { transform: translateY(8px) scale(1.1) rotate(6deg); opacity: 1; }
+    75% { transform: translateY(-6px) scale(.98); }
+    100% { transform: translateY(0) scale(1) rotate(0); }
+}
+.bp-victory-title {
+    margin: 8px 0 0;
+    font-size: 1.7rem;
+    background: linear-gradient(110deg, #ffe9a8, #f6c101, #fff, #f6c101);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: bpShine 3s linear infinite;
+}
+.bp-victory-sub { color: rgba(255,255,255,.7); margin: 4px 0 14px; }
+.bp-victory-score { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 14px; }
+.bp-mvp-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(246, 193, 1, .14);
+    border: 1px solid rgba(246, 193, 1, .45);
+    color: #ffe08a;
+    margin-bottom: 12px;
+}
+.bp-champion-note {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: linear-gradient(120deg, rgba(246, 193, 1, .2), rgba(230, 126, 34, .12));
+    border: 1px solid rgba(246, 193, 1, .5);
+    color: #ffe08a;
+    margin-bottom: 12px;
+    animation: bpFadeUp .6s ease .4s both;
+}
+.bp-victory-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ---------- STATISZTIKA ---------- */
+
+.bp-stats-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 18px;
+    border-radius: 16px;
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    margin-bottom: 12px;
+}
+.bp-stats-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #ccc;
+    font-size: 1.05rem;
+}
+.bp-stats-team.winner { color: #7bed9f; }
+.bp-stats-emoji { font-size: 1.5rem; }
+.bp-crown { animation: bpFloat 2.4s ease-in-out infinite; display: inline-block; }
+.bp-stats-score { font-size: 2rem; font-weight: 800; color: var(--bp-beer); }
+.bp-stats-meta {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    color: rgba(255,255,255,.55);
+    font-size: .82rem;
+    margin-bottom: 14px;
+}
+
+.bp-mvp-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, rgba(246, 193, 1, .14), rgba(230, 126, 34, .06));
+    border: 1px solid rgba(246, 193, 1, .4);
+    margin-bottom: 14px;
+}
+.bp-mvp-star { font-size: 2.2rem; animation: bpFloat 2.6s ease-in-out infinite; }
+.bp-mvp-title { color: #ffe08a; font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; }
+.bp-mvp-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+
+.bp-card + .bp-card { margin-top: 14px; }
+#bp-stats-container .bp-card { margin-bottom: 14px; }
+
+/* Csapat összehasonlító sávok */
+.bp-vs-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.bp-vs-val { min-width: 44px; text-align: center; font-weight: 700; color: #fff; }
+.bp-vs-bars { flex: 1; display: flex; align-items: center; gap: 8px; }
+.bp-vs-label {
+    color: rgba(255,255,255,.6);
+    font-size: .78rem;
+    white-space: nowrap;
+    min-width: 130px;
+    text-align: center;
+}
+.bp-vs-bar {
+    flex: 1;
+    height: 12px;
+    border-radius: 99px;
+    background: rgba(0,0,0,.35);
+    overflow: hidden;
+    display: flex;
+}
+.bp-vs-bar.left { justify-content: flex-end; }
+.bp-vs-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    animation: bpBarGrow .8s cubic-bezier(.2, .8, .3, 1);
+}
+.bp-vs-bar.left span { background: linear-gradient(90deg, color-mix(in srgb, var(--bp-accent) 40%, transparent), var(--bp-accent)); }
+.bp-vs-bar.right span { background: linear-gradient(90deg, var(--bp-pink), color-mix(in srgb, var(--bp-pink) 40%, transparent)); }
+@keyframes bpBarGrow { from { width: 0 !important; } }
+
+/* Táblázatok */
+.bp-table-scroll { overflow-x: auto; }
+.bp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+}
+.bp-table th, .bp-table td {
+    padding: 9px 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+.bp-table th {
+    color: rgba(255,255,255,.6);
+    font-weight: 600;
+    border-bottom: 1px solid var(--bp-glass-border);
+    font-size: .76rem;
+}
+.bp-table td { border-bottom: 1px solid rgba(255,255,255,.05); color: #ddd; }
+.bp-table tr:hover td { background: rgba(255,255,255,.04); }
+.bp-table td:first-child, .bp-table th:first-child { text-align: left; }
+.bp-table td:nth-child(2), .bp-table th:nth-child(2) { text-align: left; }
+.bp-row-mvp td { background: rgba(246, 193, 1, .08); }
+.bp-sortable { cursor: pointer; user-select: none; }
+.bp-sortable:hover { color: #fff; }
+.bp-sortable.sorted { color: var(--bp-accent-2); }
+
+.bp-chart-wrap { position: relative; height: 260px; }
+
+/* Dobás idővonal */
+.bp-timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 0;
+}
+.bp-tl-dot {
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: .8rem;
+    background: rgba(0,0,0,.3);
+    cursor: default;
+    transition: transform .15s ease;
+}
+.bp-tl-dot:hover { transform: scale(1.3); }
+.bp-tl-dot.team-0 { color: var(--bp-accent); border: 1px solid color-mix(in srgb, var(--bp-accent) 50%, transparent); }
+.bp-tl-dot.team-1 { color: var(--bp-pink); border: 1px solid color-mix(in srgb, var(--bp-pink) 50%, transparent); }
+.bp-tl-dot.miss { opacity: .4; }
+.bp-tl-legend { margin-top: 8px; }
+.bp-tl-team0 { color: var(--bp-accent); }
+.bp-tl-team1 { color: var(--bp-pink); }
+
+/* ---------- ELŐZMÉNYEK ---------- */
+
+.bp-history-list { display: flex; flex-direction: column; gap: 10px; }
+.bp-history-item {
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    background: var(--bp-glass);
+    overflow: hidden;
+    transition: border-color .2s ease;
+}
+.bp-history-item.open { border-color: var(--bp-accent); }
+.bp-history-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 13px 16px;
+    background: transparent;
+    border: none;
+    color: #eee;
+    font-family: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    text-align: left;
+}
+.bp-history-head:hover { background: rgba(255,255,255,.04); }
+.bp-history-teams { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bp-history-score {
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.35);
+    color: var(--bp-beer);
+}
+.bp-history-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bp-chevron { color: rgba(255,255,255,.4); font-size: .7rem; }
+.bp-history-body {
+    padding: 4px 16px 16px;
+    animation: bpFadeUp .3s ease;
+}
+
+/* ---------- LEADERBOARD ---------- */
+
+.bp-lb-seg { max-width: 380px; }
+
+.bp-podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px 0 4px;
+}
+.bp-podium-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    max-width: 150px;
+}
+.bp-podium-avatar { font-size: 2rem; }
+.bp-podium-name {
+    font-weight: 700;
+    color: #fff;
+    font-size: .88rem;
+    text-align: center;
+    word-break: break-word;
+}
+.bp-podium-medal { font-size: 1.4rem; }
+.bp-podium-block {
+    width: 100%;
+    text-align: center;
+    border-radius: 12px 12px 0 0;
+    padding: 12px 6px;
+    animation: bpPodiumRise .7s cubic-bezier(.2, .8, .3, 1.1) both;
+    transform-origin: bottom;
+}
+.bp-podium-wins { font-weight: 800; color: #fff; }
+.rank-1 .bp-podium-block {
+    height: 84px;
+    background: linear-gradient(180deg, rgba(246, 193, 1, .5), rgba(246, 193, 1, .12));
+    border: 1px solid rgba(246, 193, 1, .55);
+    animation-delay: .25s;
+}
+.rank-2 .bp-podium-block {
+    height: 58px;
+    background: linear-gradient(180deg, rgba(200, 200, 210, .4), rgba(200, 200, 210, .1));
+    border: 1px solid rgba(200, 200, 210, .45);
+    animation-delay: .1s;
+}
+.rank-3 .bp-podium-block {
+    height: 40px;
+    background: linear-gradient(180deg, rgba(205, 127, 50, .45), rgba(205, 127, 50, .1));
+    border: 1px solid rgba(205, 127, 50, .5);
+    animation-delay: .4s;
+}
+@keyframes bpPodiumRise {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+}
+.bp-lb-top td { font-weight: 600; }
+.bp-lb-name { min-width: 140px; }
+.bp-lb-members { font-size: .72rem; white-space: normal; }
+
+/* ---------- TOURNAMENT ---------- */
+
+.bp-tour-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+.bp-tour-card {
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform .2s ease, border-color .2s ease;
+}
+.bp-tour-card:hover { transform: translateY(-3px); border-color: var(--bp-accent); }
+.bp-tour-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.bp-tour-card-name { font-weight: 700; color: #fff; }
+.bp-tour-champ { color: #ffe08a; }
+.bp-tour-card-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+.bp-tour-detail-head { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.bp-tour-detail-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.bp-champion-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 20px;
+    border-radius: 16px;
+    background: linear-gradient(120deg, rgba(246, 193, 1, .18), rgba(230, 126, 34, .1));
+    border: 1px solid rgba(246, 193, 1, .5);
+    text-align: center;
+    animation: bpFadeUp .5s ease;
+}
+.bp-champion-crown { font-size: 2.4rem; animation: bpFloat 2.5s ease-in-out infinite; }
+.bp-champion-name { font-size: 1.4rem; font-weight: 800; color: #ffe08a; }
+
+/* Ágrajz */
+.bp-bracket-scroll { overflow-x: auto; padding-bottom: 8px; }
+.bp-bracket { display: flex; gap: 22px; min-width: min-content; }
+.bp-bracket-round {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 14px;
+    min-width: 210px;
+}
+.bp-bracket-round-title {
+    text-align: center;
+    color: rgba(255,255,255,.6);
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.bp-bracket-match {
+    position: relative;
+    background: var(--bp-glass);
+    border: 1px solid var(--bp-glass-border);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+    animation: bpFadeUp .4s ease both;
+}
+.bp-bracket-match.playable { border-color: color-mix(in srgb, var(--bp-accent) 65%, transparent); }
+.bp-bracket-match.playable:hover { box-shadow: 0 0 20px -6px var(--bp-accent); }
+.bp-bracket-match.done { opacity: .92; }
+.bp-bracket-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.28);
+    color: #ccc;
+    font-size: .85rem;
+}
+.bp-bracket-slot.empty { color: rgba(255,255,255,.25); font-style: italic; }
+.bp-bracket-slot.winner {
+    background: color-mix(in srgb, var(--bp-accent) 22%, rgba(0,0,0,.28));
+    color: #fff;
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-accent) 50%, transparent);
+}
+.bp-bracket-slot-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-bracket-cups {
+    font-weight: 800;
+    color: var(--bp-beer);
+    min-width: 18px;
+    text-align: right;
+}
+.bp-bracket-check { color: #7bed9f; font-weight: 800; }
+.bp-bracket-play { width: 100%; }
+.bp-bracket-bye {
+    text-align: center;
+    color: rgba(255,255,255,.4);
+    font-size: .74rem;
+    font-style: italic;
+}
+.bp-bracket-statlink {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.5);
+    font-size: .74rem;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 2px;
+}
+.bp-bracket-statlink:hover { color: var(--bp-accent-2); }
+
+/* Körmérkőzés */
+.bp-rr-matches { display: flex; flex-direction: column; gap: 8px; }
+.bp-rr-match {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid var(--bp-glass-border);
+    font-size: .88rem;
+    flex-wrap: wrap;
+}
+.bp-rr-match.done { opacity: .85; }
+.bp-rr-side { flex: 1; color: #ccc; min-width: 110px; }
+.bp-rr-side.right { text-align: right; }
+.bp-rr-side.winner { color: #7bed9f; font-weight: 700; }
+.bp-rr-mid {
+    font-weight: 800;
+    color: var(--bp-beer);
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.35);
+    white-space: nowrap;
+}
+
+/* ---------- TOAST ---------- */
+
+.bp-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10060;
+    padding: 14px 20px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 500;
+    font-family: inherit;
+    max-width: 320px;
+    transform: translateX(420px);
+    transition: transform .35s cubic-bezier(.2, .8, .3, 1.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.bp-toast.show { transform: translateX(0); }
+
+/* ---------- RESZPONZÍV ---------- */
+
+@media (max-width: 860px) {
+    .bp-tables { grid-template-columns: 1fr; }
+    .bp-net { display: none; }
+    .bp-cta-grid { grid-template-columns: 1fr; }
+    .bp-draw-teams { grid-template-columns: 1fr; }
+    .bp-vs-label { min-width: 90px; font-size: .7rem; }
+    .bp-cup { width: 38px; height: 46px; }
+    .bp-hero { padding: 20px 16px; }
+    .bp-hero-title { font-size: 1.35rem; }
+    .bp-actionbar { bottom: 92px; } /* hely a mobil alsó menünek */
+    .bp-stats-score { font-size: 1.5rem; }
+    .bp-pill-label { display: none; }
+    .bp-pill { padding: 9px 13px; font-size: 1rem; }
+    .bp-pill-live .bp-pill-label { display: inline; font-size: .8rem; }
+}
+
+@media (max-width: 480px) {
+    .bp-cup { width: 32px; height: 40px; }
+    .bp-cup-row { gap: 4px; }
+    .bp-game-team-label { font-size: .8rem; }
+    .bp-podium-col { max-width: 110px; }
+    .bp-add-player { flex-direction: column; }
+}
+
+/* Csökkentett mozgás preferencia tisztelete */
+@media (prefers-reduced-motion: reduce) {
+    .bp-bubble, .bp-hero-ball, .bp-hero-cup, .bp-hero-title,
+    .bp-victory-title, .bp-crown, .bp-mvp-star, .bp-champion-crown,
+    .bp-cup.targetable .bp-cup-body, .bp-streak, .bp-live-dot {
+        animation: none !important;
+    }
+}
