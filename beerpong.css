@@ -277,6 +277,56 @@
 .bp-seg-inline .bp-seg-btn { min-width: 70px; padding: 8px 14px; flex: none; }
 
 .bp-form-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: #ddd; }
+
+/* Pohárszám választó: gyorsgombok + léptető + mini piramis előnézet */
+.bp-cups-picker { display: flex; flex-direction: column; gap: 12px; }
+.bp-seg-cup { min-width: 54px; flex: none; padding: 10px 0; }
+.bp-stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.bp-step-btn {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.3);
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+    line-height: 1;
+}
+.bp-step-btn:hover { border-color: var(--bp-accent); transform: scale(1.08); }
+.bp-step-btn:active { transform: scale(.94); }
+.bp-step-btn:disabled { opacity: .3; pointer-events: none; }
+.bp-step-val {
+    min-width: 92px;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--bp-beer);
+}
+.bp-cup-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.22);
+    border: 1px dashed var(--bp-glass-border);
+}
+.bp-cup-preview-row { display: flex; gap: 4px; }
+.bp-cup-preview span {
+    width: 14px; height: 16px;
+    background: linear-gradient(160deg, #ff8a7a 0%, var(--bp-cup) 55%, var(--bp-cup-dark) 100%);
+    clip-path: polygon(8% 0, 92% 0, 78% 100%, 22% 100%);
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(214, 48, 49, .5);
+    animation: bpFadeUp .3s ease both;
+}
 .bp-form-actions { display: flex; gap: 10px; }
 .bp-form-actions .bp-btn-big { flex: 1; }
 
@@ -523,6 +573,56 @@
 .bp-overlay.show .bp-overlay-box { transform: translateY(0) scale(1); }
 
 .bp-draw-title { text-align: center; margin: 0 0 18px; color: #fff; font-size: 1.3rem; }
+
+/* Sorsolási névsor (rulett) - a fénycsík a .spin-focus osztállyal ugrál a neveken */
+.bp-draw-pool {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,.3);
+    border: 1px solid var(--bp-glass-border);
+}
+.bp-pool-chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 2px solid var(--bp-glass-border);
+    background: rgba(255,255,255,.05);
+    color: #ddd;
+    font-size: .9rem;
+    font-weight: 600;
+    transition: all .12s ease;
+    position: relative;
+}
+.bp-pool-chip.spin-focus {
+    border-color: var(--bp-beer);
+    background: color-mix(in srgb, var(--bp-beer) 22%, rgba(0,0,0,.3));
+    color: #fff;
+    transform: scale(1.12);
+    box-shadow: 0 0 18px -2px rgba(246, 193, 1, .7), 0 0 0 3px rgba(246, 193, 1, .25);
+    z-index: 2;
+}
+.bp-pool-chip.chosen {
+    border-color: var(--bp-accent);
+    background: linear-gradient(120deg, var(--bp-accent), color-mix(in srgb, var(--bp-accent) 55%, var(--bp-accent-2)));
+    color: #fff;
+    animation: bpChosenPop .45s cubic-bezier(.2, .9, .3, 1.4);
+    box-shadow: 0 0 24px -2px color-mix(in srgb, var(--bp-accent) 85%, transparent);
+}
+@keyframes bpChosenPop {
+    0% { transform: scale(1.12); }
+    50% { transform: scale(1.35) rotate(-3deg); }
+    100% { transform: scale(1.12); }
+}
+.bp-pool-chip.assigned {
+    opacity: .22;
+    transform: scale(.92);
+    filter: grayscale(1);
+}
+
 .bp-draw-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .bp-draw-team {
     background: rgba(255,255,255,.05);
@@ -546,7 +646,6 @@
     font-size: .92rem;
     min-height: 20px;
 }
-.bp-slot-spin { display: inline-block; filter: blur(.6px); opacity: .7; }
 .bp-draw-slot.locked {
     border-style: solid;
     border-color: var(--bp-accent);
@@ -555,13 +654,26 @@
     font-weight: 600;
     animation: bpSlotLock .4s cubic-bezier(.2, .9, .3, 1.4);
 }
-.bp-draw-slot.locked .bp-slot-spin { filter: none; opacity: 1; }
 @keyframes bpSlotLock {
     0% { transform: scale(.8); }
     60% { transform: scale(1.12); }
     100% { transform: scale(1); }
 }
-.bp-draw-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.bp-draw-actions { display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.bp-draw-hint {
+    text-align: center;
+    color: #ffe08a;
+    font-size: .85rem;
+    margin: 14px 0 0;
+    animation: bpFadeUp .4s ease;
+}
+.bp-teamname-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.bp-teamname-edit .bp-btn { flex-shrink: 0; padding: 8px 10px; }
 .bp-team-name-input { text-align: center; font-weight: 700; }
 
 /* ---------- MECCS KÉPERNYŐ ---------- */
