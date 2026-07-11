@@ -66,14 +66,43 @@ const emojiForName = (name) => {
     return PLAYER_EMOJI[h % PLAYER_EMOJI.length];
 };
 
-// Pohár piramis sorai: 6 pohár -> [3,2,1], 10 pohár -> [4,3,2,1]
-const pyramidRows = (n) => {
-    const rows = [];
+// Pohár elrendezés tetszőleges darabszámra (1-20): piramis-szerű sorok,
+// pl. 6 -> [3,2,1], 10 -> [4,3,2,1], 7 -> [4,3], 20 -> [6,5,4,3,2]
+const MIN_CUPS = 1, MAX_CUPS = 20;
+const clampCups = (n) => Math.max(MIN_CUPS, Math.min(MAX_CUPS, Math.round(Number(n) || 6)));
+
+const cupRows = (n) => {
+    n = clampCups(n);
     let k = 1;
     while ((k * (k + 1)) / 2 < n) k++;
-    for (let r = k; r >= 1; r--) rows.push(r);
+    const rows = [];
+    let remaining = n;
+    for (let size = k; size >= 1 && remaining > 0; size--) {
+        const take = Math.min(remaining, size);
+        rows.push(take);
+        remaining -= take;
+    }
     return rows;
 };
+
+// Pohárszám választó (gyorsgombok + léptető + mini előnézet)
+const CUP_PRESETS = [3, 6, 10, 15, 20];
+function cupsPickerHtml(value, prefix) {
+    return `
+    <div class="bp-cups-picker">
+        <div class="bp-seg">
+            ${CUP_PRESETS.map(v => `<button class="bp-seg-btn bp-seg-cup ${value === v ? 'active' : ''}" data-bp="${prefix}-set" data-val="${v}">${v}</button>`).join('')}
+        </div>
+        <div class="bp-stepper">
+            <button class="bp-step-btn" data-bp="${prefix}-adj" data-delta="-1" ${value <= MIN_CUPS ? 'disabled' : ''}>−</button>
+            <span class="bp-step-val">${value} pohár</span>
+            <button class="bp-step-btn" data-bp="${prefix}-adj" data-delta="1" ${value >= MAX_CUPS ? 'disabled' : ''}>+</button>
+        </div>
+        <div class="bp-cup-preview">
+            ${cupRows(value).map(r => `<div class="bp-cup-preview-row">${'<span></span>'.repeat(r)}</div>`).join('')}
+        </div>
+    </div>`;
+}
 
 // ---------- ÁLLAPOT ----------
 
@@ -654,11 +683,8 @@ function renderSetup(el) {
             <h3 class="bp-section-title">🎯 Új meccs indítása</h3>
 
             <div class="bp-card">
-                <h4 class="bp-card-title">1️⃣ Poharak csapatonként</h4>
-                <div class="bp-seg">
-                    <button class="bp-seg-btn ${s.cups === 6 ? 'active' : ''}" data-bp="set-cups" data-cups="6">6 pohár<br><small>3·2·1</small></button>
-                    <button class="bp-seg-btn ${s.cups === 10 ? 'active' : ''}" data-bp="set-cups" data-cups="10">10 pohár<br><small>4·3·2·1</small></button>
-                </div>
+                <h4 class="bp-card-title">1️⃣ Poharak csapatonként <span class="bp-muted">(1–${MAX_CUPS}, te döntöd el)</span></h4>
+                ${cupsPickerHtml(s.cups, 'cups')}
             </div>
 
             <div class="bp-card">
@@ -681,7 +707,10 @@ function renderSetup(el) {
     `;
 }
 
-// Sorsolás: overlay pörgő nevekkel, majd csapatok felfedése
+// Sorsolás: rulett-effekt - a teljes névsor látszik, egy fénycsík ugrál
+// a nevek között, lassulva megáll a kisorsolt játékoson, aki bekerül a csapatába
+let activeDrawCancel = null;
+
 function drawTeams() {
     const s = BP.setup;
     if (!s || s.selected.length < 2) {
@@ -697,35 +726,45 @@ function drawTeams() {
         teams: [
             { name: randTeamName(), emoji: randTeamEmoji(), players: teamA },
             { name: randTeamName(), emoji: randTeamEmoji(), players: teamB }
-        ]
+        ],
+        order: shuffled // a sorsolás sorrendje: felváltva A, B, A, B...
     };
 
-    showDrawOverlay(s.drawn.teams, s.selected, () => {
-        // A felfedés után a nevek szerkeszthetők az overlay-en
-    });
+    showDrawOverlay(s.drawn);
 }
 
-function showDrawOverlay(teams, allPlayers, onDone) {
+function showDrawOverlay(drawn) {
     closeOverlay();
+    const teams = drawn.teams;
     const ov = document.createElement('div');
     ov.className = 'bp-overlay';
     ov.id = 'bp-overlay';
     ov.innerHTML = `
         <div class="bp-overlay-box bp-draw-box">
-            <h3 class="bp-draw-title">🎲 Sorsolás...</h3>
+            <h3 class="bp-draw-title" id="bp-draw-title">🎲 Sorsolás...</h3>
+            <div class="bp-draw-pool" id="bp-draw-pool">
+                ${drawn.order.map(p => `<span class="bp-pool-chip" data-pool="${esc(p)}">${emojiForName(p)} ${esc(p)}</span>`).join('')}
+            </div>
             <div class="bp-draw-teams">
                 ${[0, 1].map(ti => `
                     <div class="bp-draw-team" data-team="${ti}">
                         <div class="bp-draw-team-head">
                             <span class="bp-draw-emoji">${teams[ti].emoji}</span>
+                            <span class="bp-draw-team-name" id="bp-draw-name-${ti}">${esc(teams[ti].name)}</span>
+                        </div>
+                        <div class="bp-teamname-edit" id="bp-name-edit-${ti}" style="display:none">
                             <input type="text" class="bp-input bp-team-name-input" id="bp-team-name-${ti}"
-                                   value="${esc(teams[ti].name)}" maxlength="30" style="display:none">
-                            <span class="bp-draw-team-name" id="bp-draw-name-${ti}">???</span>
+                                   value="${esc(teams[ti].name)}" maxlength="30" title="Saját csapatnév">
+                            <button class="bp-btn bp-btn-ghost bp-btn-sm" data-bp="reroll-teamname" data-team="${ti}" title="Új véletlen név">🎲</button>
                         </div>
                         <div class="bp-draw-slots" id="bp-draw-slots-${ti}">
-                            ${teams[ti].players.map(() => '<div class="bp-draw-slot"><span class="bp-slot-spin">?</span></div>').join('')}
+                            ${teams[ti].players.map(() => '<div class="bp-draw-slot">&nbsp;</div>').join('')}
                         </div>
                     </div>`).join('')}
+            </div>
+            <p class="bp-draw-hint" id="bp-draw-hint" style="display:none">✏️ Írd át a csapatneveket, ha sajátot szeretnétek!</p>
+            <div class="bp-draw-actions">
+                <button class="bp-btn bp-btn-ghost bp-btn-sm" id="bp-draw-skip">⏩ Ugorj a végére</button>
             </div>
             <div class="bp-draw-actions" id="bp-draw-actions" style="visibility:hidden">
                 <button class="bp-btn bp-btn-ghost" data-bp="redraw">🔁 Újrasorsolás</button>
@@ -735,49 +774,109 @@ function showDrawOverlay(teams, allPlayers, onDone) {
     `;
     document.body.appendChild(ov);
     requestAnimationFrame(() => ov.classList.add('show'));
+    runDrawAnimation(ov, drawn);
+}
 
-    // Pörgő nevek animáció
-    const spinEls = ov.querySelectorAll('.bp-slot-spin');
-    const spinInt = setInterval(() => {
-        spinEls.forEach(sp => {
-            if (!sp.dataset.locked) sp.textContent = allPlayers[Math.floor(Math.random() * allPlayers.length)];
-        });
-    }, 70);
+function runDrawAnimation(ov, drawn) {
+    const order = drawn.order;
+    let remaining = [...order];
+    let finished = false;
+    let cancelled = false;
+    const timers = [];
+    const later = (fn, ms) => { timers.push(setTimeout(fn, ms)); };
 
-    // Nevek fokozatos "beégetése"
-    const reveals = [];
-    teams.forEach((t, ti) => {
-        t.players.forEach((p, pi) => reveals.push({ ti, pi, p }));
-    });
-    shuffle(reveals).forEach((r, i) => {
-        setTimeout(() => {
-            const slot = ov.querySelectorAll(`#bp-draw-slots-${r.ti} .bp-draw-slot`)[r.pi];
-            if (!slot) return;
-            const sp = slot.querySelector('.bp-slot-spin');
-            sp.dataset.locked = '1';
-            sp.textContent = r.p;
+    const chipEl = (name) => {
+        return [...ov.querySelectorAll('.bp-pool-chip')].find(el => el.dataset.pool === name) || null;
+    };
+
+    const clearFocus = () => ov.querySelectorAll('.bp-pool-chip.spin-focus').forEach(el => el.classList.remove('spin-focus'));
+
+    // A kisorsolt játékos átkerül a csapata következő üres helyére
+    const placeChip = (name, k) => {
+        const chip = chipEl(name);
+        if (chip) { chip.classList.remove('spin-focus', 'chosen'); chip.classList.add('assigned'); }
+        const ti = k % 2;
+        const slot = ov.querySelectorAll(`#bp-draw-slots-${ti} .bp-draw-slot`)[Math.floor(k / 2)];
+        if (slot) {
+            slot.innerHTML = `${emojiForName(name)} ${esc(name)}`;
             slot.classList.add('locked');
-            if (typeof confetti === 'function' && i === reveals.length - 1) {
-                confetti({ particleCount: 40, spread: 60, origin: { y: 0.4 }, zIndex: 10050 });
-            }
-        }, 900 + i * 450);
-    });
+        }
+    };
 
-    // Csapatnevek felfedése + szerkeszthetőség
-    setTimeout(() => {
-        clearInterval(spinInt);
+    const finishDraw = () => {
+        if (finished) return;
+        finished = true;
+        const title = ov.querySelector('#bp-draw-title');
+        if (title) title.textContent = '⚔️ A csapatok készen állnak!';
         [0, 1].forEach(ti => {
             const nameEl = ov.querySelector(`#bp-draw-name-${ti}`);
-            const inputEl = ov.querySelector(`#bp-team-name-${ti}`);
+            const edit = ov.querySelector(`#bp-name-edit-${ti}`);
             if (nameEl) nameEl.style.display = 'none';
-            if (inputEl) inputEl.style.display = '';
+            if (edit) edit.style.display = '';
         });
-        const title = ov.querySelector('.bp-draw-title');
-        if (title) title.textContent = '⚔️ A csapatok készen állnak!';
+        const hint = ov.querySelector('#bp-draw-hint');
+        if (hint) hint.style.display = '';
+        const skip = ov.querySelector('#bp-draw-skip');
+        if (skip) skip.style.display = 'none';
         const actions = ov.querySelector('#bp-draw-actions');
         if (actions) actions.style.visibility = 'visible';
-        if (onDone) onDone();
-    }, 900 + reveals.length * 450 + 400);
+        if (typeof confetti === 'function' && !cancelled) {
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.4 }, zIndex: 10050 });
+        }
+    };
+
+    // Egy játékos kisorsolása: a fénycsík körbejár a még bent lévő neveken,
+    // egyre lassul, és pontosan a kisorsolt néven áll meg
+    const spinPick = (k) => {
+        if (cancelled) return;
+        if (k >= order.length) { later(finishDraw, 200); return; }
+
+        const target = order[k];
+        const len = remaining.length;
+        const targetIdx = remaining.indexOf(target);
+        // legalább 2 teljes kör, aztán pont a célon áll meg
+        const steps = len <= 1 ? 1 : len * 2 + targetIdx;
+        const speed = len > 6 ? 0.65 : 1; // sok játékosnál kicsit gyorsabb
+        let i = 0;
+
+        const step = () => {
+            if (cancelled) return;
+            clearFocus();
+            const el = chipEl(remaining[i % len]);
+            if (el) el.classList.add('spin-focus');
+            i++;
+            if (i <= steps) {
+                const t = i / steps;
+                later(step, (45 + 190 * t * t) * speed); // fokozatos lassulás
+            } else {
+                const chosen = chipEl(target);
+                if (chosen) chosen.classList.add('chosen');
+                later(() => {
+                    placeChip(target, k);
+                    remaining = remaining.filter(n => n !== target);
+                    later(() => spinPick(k + 1), 260);
+                }, 420);
+            }
+        };
+        step();
+    };
+
+    // ⏩ átugrás: azonnal a végeredmény
+    const skipBtn = ov.querySelector('#bp-draw-skip');
+    if (skipBtn) skipBtn.addEventListener('click', () => {
+        timers.forEach(clearTimeout);
+        clearFocus();
+        order.forEach((p, i) => placeChip(p, i));
+        remaining = [];
+        finishDraw();
+    });
+
+    activeDrawCancel = () => {
+        cancelled = true;
+        timers.forEach(clearTimeout);
+    };
+
+    later(() => spinPick(0), 650);
 }
 
 function startGameFromDraw() {
@@ -848,7 +947,9 @@ function renderGame(el) {
 
             <div class="bp-actionbar">
                 <div class="bp-actionbar-info" id="bp-thrower-info">
-                    ${BP.thrower ? `🎯 <b>${esc(BP.thrower.player)}</b> dob` : '👆 Válassz dobó játékost!'}
+                    ${BP.thrower
+                        ? `🎯 <b>${esc(BP.thrower.player)}</b> dob <span class="bp-muted">(${esc(g.teams[BP.thrower.team].name)})</span>`
+                        : (throwsCount === 0 ? '👆 Válaszd ki, ki kezdi a meccset!' : '👆 Válassz dobó játékost!')}
                 </div>
                 <div class="bp-actionbar-btns">
                     <button class="bp-btn bp-btn-bounce ${BP.bounceMode ? 'active' : ''}" data-bp="toggle-bounce" title="Pattintott dobás: 2 pohár!">✌️ Pattintott</button>
@@ -858,15 +959,15 @@ function renderGame(el) {
                 </div>
             </div>
             <p class="bp-game-hint" id="bp-game-hint">${BP.thrower
-                ? `Kattints a(z) <b>${esc(g.teams[1 - BP.thrower.team].name)}</b> egyik poharára, ha talált – vagy nyomd a „Mellé” gombot.`
-                : 'Előbb válassz játékost a csapatoknál, aztán jelöld a dobás eredményét.'}</p>
+                ? `Kattints a(z) <b>${esc(g.teams[1 - BP.thrower.team].name)}</b> egyik poharára, ha talált – vagy nyomd a „Mellé” gombot. A sorrend magától pörög, de bármikor átválaszthatsz másik dobóra.`
+                : 'Kattints egy játékosra a kezdéshez – utána a sorrend automatikus: mindig az ellenfél jön, csapaton belül pedig felváltva dobtok.'}</p>
         </div>
     `;
     startTimer();
 }
 
 function renderTeamPanel(g, ti) {
-    const rows = pyramidRows(g.cupsPerSide);
+    const rows = cupRows(g.cupsPerSide);
     let idx = 0;
     const targetable = BP.thrower && BP.thrower.team !== ti;
     const rackHtml = rows.map(rowCount => {
@@ -924,6 +1025,29 @@ function pickThrower(team, name) {
     renderSubnav();
 }
 
+// Automatikus dobási sorrend: minden dobás után az ellenfél következik,
+// csapaton belül pedig körbejárnak a játékosok (aki legutóbb dobott a
+// csapatból, az utáni játékos jön). A dobásnaplóból vezetjük le, így az
+// visszavonás és a kézi felülbírálás után is helyes marad.
+function deriveNextThrower(g) {
+    if (!g || !g.throws.length) return null;
+    const last = g.throws[g.throws.length - 1];
+    const nextTeam = 1 - last.team;
+    const players = g.teams[nextTeam].players || [];
+    if (!players.length) return null;
+
+    let lastOfTeam = null;
+    for (let i = g.throws.length - 1; i >= 0; i--) {
+        if (g.throws[i].team === nextTeam) { lastOfTeam = g.throws[i].p; break; }
+    }
+    let idx = 0;
+    if (lastOfTeam != null) {
+        const li = players.indexOf(lastOfTeam);
+        idx = li === -1 ? 0 : (li + 1) % players.length;
+    }
+    return { team: nextTeam, player: players[idx] };
+}
+
 // Dobás rögzítése. cupIdx: eltalált pohár indexe (miss esetén null)
 function recordThrow(result, targetTeam, cupIdx) {
     const g = BP.game;
@@ -948,14 +1072,19 @@ function recordThrow(result, targetTeam, cupIdx) {
     g.throws.push({ p: BP.thrower.player, team: BP.thrower.team, r: result, cups: removed, t });
     saveDraft();
 
+    const throwerTeam = BP.thrower.team;
+    const won = result !== 'miss' && cupsLeft(g, targetTeam) === 0;
+
+    // Automatikus sorrend: ha nincs vége, az ellenfél következő játékosa jön
+    if (!won) BP.thrower = deriveNextThrower(g);
+
     if (result === 'miss') {
         animateMiss(targetTeam);
         setTimeout(() => { renderView(); }, 650);
     } else {
         animateHit(targetTeam, removed);
-        const won = cupsLeft(g, targetTeam) === 0;
         setTimeout(() => {
-            if (won) finishGame(BP.thrower.team);
+            if (won) finishGame(throwerTeam);
             else renderView();
         }, 800);
     }
@@ -1047,6 +1176,8 @@ function undoThrow() {
     if (!g || g.throws.length === 0) return;
     const last = g.throws.pop();
     (last.cups || []).forEach(idx => { g.cups[1 - last.team][idx] = true; });
+    // A visszavont dobás gazdája jön újra
+    BP.thrower = { team: last.team, player: last.p };
     saveDraft();
     renderView();
     bpToast('Utolsó dobás visszavonva. ↩️');
@@ -1541,11 +1672,8 @@ function renderTournamentForm(el) {
             </div>
 
             <div class="bp-card">
-                <h4 class="bp-card-title">Poharak csapatonként</h4>
-                <div class="bp-seg">
-                    <button class="bp-seg-btn ${f.cups === 6 ? 'active' : ''}" data-bp="tf-cups" data-val="6">6 pohár</button>
-                    <button class="bp-seg-btn ${f.cups === 10 ? 'active' : ''}" data-bp="tf-cups" data-val="10">10 pohár</button>
-                </div>
+                <h4 class="bp-card-title">Poharak csapatonként <span class="bp-muted">(1–${MAX_CUPS})</span></h4>
+                ${cupsPickerHtml(f.cups, 'tfcups')}
             </div>
 
             <div class="bp-card">
@@ -1930,6 +2058,7 @@ function deleteTournament(id) {
 // ---------- OVERLAY ----------
 
 function closeOverlay() {
+    if (activeDrawCancel) { activeDrawCancel(); activeDrawCancel = null; }
     const ov = document.getElementById('bp-overlay');
     if (ov) ov.remove();
 }
@@ -1988,8 +2117,12 @@ function handleAction(btn, e) {
         }
 
         // Új meccs setup
-        case 'set-cups':
-            BP.setup.cups = Number(btn.dataset.cups);
+        case 'cups-set':
+            BP.setup.cups = clampCups(btn.dataset.val);
+            renderView();
+            break;
+        case 'cups-adj':
+            BP.setup.cups = clampCups(BP.setup.cups + Number(btn.dataset.delta));
             renderView();
             break;
         case 'toggle-select': {
@@ -2004,6 +2137,11 @@ function handleAction(btn, e) {
             drawTeams();
             break;
         case 'redraw': drawTeams(); break;
+        case 'reroll-teamname': {
+            const inp = document.getElementById(`bp-team-name-${btn.dataset.team}`);
+            if (inp) inp.value = randTeamName();
+            break;
+        }
         case 'start-game': startGameFromDraw(); break;
 
         // Félbehagyott meccs
@@ -2012,7 +2150,7 @@ function handleAction(btn, e) {
             if (d) {
                 if (!d.startTs) d.startTs = Date.now() - ((d.throws.length ? d.throws[d.throws.length - 1].t : 0) * 1000);
                 BP.game = d;
-                BP.thrower = null;
+                BP.thrower = deriveNextThrower(d);
                 setView('game');
             }
             break;
@@ -2094,7 +2232,8 @@ function handleAction(btn, e) {
             break;
         case 'tf-mode': BP.tourForm.mode = btn.dataset.val; renderView(); break;
         case 'tf-format': BP.tourForm.format = btn.dataset.val; renderView(); break;
-        case 'tf-cups': BP.tourForm.cups = Number(btn.dataset.val); renderView(); break;
+        case 'tfcups-set': BP.tourForm.cups = clampCups(btn.dataset.val); renderView(); break;
+        case 'tfcups-adj': BP.tourForm.cups = clampCups(BP.tourForm.cups + Number(btn.dataset.delta)); renderView(); break;
         case 'tf-teamsize': BP.tourForm.teamSize = Number(btn.dataset.val); renderView(); break;
         case 'tf-toggle': {
             const name = btn.dataset.name;
