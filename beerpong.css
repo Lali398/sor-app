@@ -1421,3 +1421,73 @@
         animation: none !important;
     }
 }
+
+/* ---------- ÚTMUTATÓ (❓) ÉS TELJES KÉPERNYŐ (⛶) ---------- */
+
+.bp-help-btn {
+    margin-left: 6px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.25);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    flex-shrink: 0;
+}
+.bp-help-btn:hover { border-color: var(--bp-accent); transform: scale(1.12) rotate(8deg); box-shadow: 0 0 16px -2px var(--bp-accent); }
+
+.bp-game-tools { display: flex; gap: 8px; margin-top: 4px; }
+.bp-icon-btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.25);
+    color: #ddd;
+    font-family: inherit;
+    font-size: .78rem;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+.bp-icon-btn:hover { border-color: var(--bp-accent); color: #fff; transform: translateY(-1px); }
+
+.bp-help-box { max-width: 560px; position: relative; text-align: left; }
+.bp-help-box h4 { color: var(--bp-accent-2); margin: 18px 0 6px; font-size: .98rem; }
+.bp-help-box p, .bp-help-box li { color: #ccc; font-size: .88rem; line-height: 1.55; margin: 4px 0; }
+.bp-help-box ul { margin: 6px 0; padding-left: 20px; }
+.bp-help-box b { color: #fff; }
+.bp-help-close {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--bp-glass-border);
+    background: rgba(0,0,0,.3);
+    color: #ccc;
+    cursor: pointer;
+    font-size: .9rem;
+    transition: all .2s ease;
+}
+.bp-help-close:hover { background: rgba(231, 76, 60, .4); color: #fff; }
+
+/* Teljes képernyős játék - natív fullscreen a #bp-view elemen */
+#bp-view:fullscreen {
+    background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
+    overflow-y: auto;
+    padding: 16px;
+}
+/* Fallback, ha a böngésző nem támogatja a natív fullscreent (pl. iPhone Safari) */
+body.bp-game-fs #bp-view {
+    position: fixed;
+    inset: 0;
+    z-index: 9800;
+    background: linear-gradient(135deg, #1f005c 0%, #10002b 50%, #000 100%);
+    overflow-y: auto;
+    padding: 16px;
+}
+/* Fullscreenben nincs alsó mobil menü - az akciósáv mehet le az aljára */
+body.bp-game-fs .bp-actionbar,
+#bp-view:fullscreen .bp-actionbar { bottom: 10px !important; }
+/* Az overlay-ek (útmutató) fullscreen elemben is teljes felületet kapjanak */
+#bp-view:fullscreen .bp-overlay { position: fixed; }
