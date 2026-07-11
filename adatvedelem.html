@@ -82,7 +82,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 06. 23.</span></h1>
+        <h1>Adatvédelmi Tájékoztató <span class="update-badge">Frissítve: 2026. 07. 11.</span></h1>
         <p><strong>Hatálybalépés dátuma:</strong> 2026. június 21.</p>
 
         <h2>1. Az Adatkezelők</h2>
@@ -149,12 +149,22 @@
             <li><strong>Tiltólista:</strong> Súlyos vagy ismételt szabályszegés esetén a rendszer tárolja a kitiltás tényét ("Banned" státusz).</li>
         </ul>
 
+        <h3>2.5. Sörpong Aréna adatok</h3>
+        <p>A „Sörpong Aréna" funkció használata során az alábbi adatok kerülnek rögzítésre és tárolásra, kizárólag az Ön profiljához (e-mail-cím alapján) kötötten:</p>
+        <ul>
+            <li><strong>Játékoslista (Roster):</strong> Az Ön által megadott játékosnevek és az azokhoz tartozó, véletlenszerűen hozzárendelt emoji azonosítók. Ezek a nevek valódi, harmadik személyeket azonosíthatnak; megadásukért kizárólag a Felhasználó felel (lásd az ÁSZF 10.2. pontját).</li>
+            <li><strong>Meccsadatok:</strong> Csapatok összetétele és neve, dobássorozatok (dobó neve, találat / tévesztés / pattintás típusa, érintett pohárpozíció), a meccs dátuma, időtartama és végeredménye.</li>
+            <li><strong>Bajnoksági adatok:</strong> Torna neve, formátuma (kieséses vagy körmérkőzéses), a résztvevők köre, a mérkőzések eredményei és az ágrajz állapota.</li>
+        </ul>
+        <p><strong>Fontos:</strong> A fenti adatok kizárólag az Ön fiókjához kötötten kerülnek tárolásra és érhetők el. Más felhasználók – a toplista opt-in rendszerétől eltérően – ezeket az adatokat nem láthatják és nem érhetik el.</p>
+
         <h2>3. Az Adatkezelés Célja</h2>
         <ul>
             <li><strong>Azonosítás és Biztonság:</strong> Belépés biztosítása, fiók védelme (jelszó, 2FA, helyreállító kód), jogosulatlan hozzáférés megakadályozása.</li>
             <li><strong>Szolgáltatás nyújtása:</strong> Értékelések, ajánlások és ötletek tárolása, rendszerezése, megjelenítése és visszakereshetősége.</li>
             <li><strong>Gamifikáció:</strong> A felhasználói élmény növelése eredmények (achievementek) és rangok kiosztásával az aktivitás alapján.</li>
             <li><strong>Közösségi funkciók (Toplista és Publikus Profil):</strong> A közösségi élmény erősítése a felhasználók aktivitási statisztikáinak összehasonlíthatóvá tételével. Ez a funkció kizárólag az Ön kifejezett hozzájárulásával (bekapcsolásával) működik, a 2.3. pontban leírtak szerint, és a hozzájárulás bármikor visszavonható.</li>
+            <li><strong>Sörpong Aréna:</strong> A meccsek, bajnokságok és egyéni/csapat statisztikák nyilvántartása, valamint a játékos-lista (roster) kezelése a funkció rendeltetésszerű működéséhez.</li>
             <li><strong>Kapcsolattartás:</strong> Válaszadás a beküldött hibajelentésekre.</li>
             <li><strong>Közösségi biztonság és Moderáció:</strong> A közösségi irányelvek betartatása, a szabályszegő tartalmak kiszűrése, panaszkezelés és a felhasználók védelme a zaklatástól vagy sértő tartalmaktól.</li>
         </ul>
@@ -202,6 +212,12 @@
                     <td>Maga az alkalmazás nem gyűjt és nem tárol IP-címet, böngésződ típusát (User Agent) vagy belépési naplót. Ezek kezelése és megőrzési ideje az adott szolgáltató saját adatkezelési szabályzatának hatálya alá tartozik (lásd a 6. pontot).</td>
                 </tr>
                 <tr>
+                    <td>Sörpong Aréna adatok tárolása és megjelenítése (játékoslista, meccsek, bajnokságok)</td>
+                    <td>Játékosnevek, meccsadatok (csapatok, dobások, eredmény, dátum, időtartam), bajnoksági adatok</td>
+                    <td>Szerződés teljesítése – b) pont</td>
+                    <td>A fiók törléséig, illetve amíg a Felhasználó az adott bejegyzést manuálisan nem törli</td>
+                </tr>
+                <tr>
                     <td>Hibajelentések és segítségkérések kezelése</td>
                     <td>Név, e-mail cím, üzenet tartalma</td>
                     <td>Jogos érdek – f) pont, illetve szerződés – b) pont</td>
@@ -233,6 +249,8 @@
             <li><code>fabHotkeys</code>: A gyorsműveleti (lebegő) gomb megjelenítési preferenciája.</li>
             <li><code>policy_accepted_2025_google_login</code>: Annak jelzése, hogy Ön az ÁSZF/Adatvédelmi Tájékoztató adott verzióját elfogadta (az ismételt értesítés elkerülésére).</li>
             <li><code>cookieConsentSeen</code>: Süti tájékoztató elfogadásának ténye.</li>
+            <li><code>bp_cache_EMAIL</code>: A Sörpong Aréna adatainak (játékoslista, meccsek, bajnokságok) offline gyorsítótára, amely internetkapcsolat hiányában is biztosítja a hozzáférést a legutóbb szinkronizált adatokhoz. Az „EMAIL" tag az aktuálisan bejelentkezett felhasználó e-mail-címét jelöli.</li>
+            <li><code>bp_active_EMAIL</code>: Egy folyamatban lévő, de még be nem fejezett sörpong meccs ideiglenes mentése, az oldalbetöltések közötti állapotmegőrzés érdekében. Meccs befejezésekor vagy elvetésekor automatikusan törlődik.</li>
         </ul>
 
         <h2>5. Adatbiztonság</h2>
@@ -268,6 +286,7 @@
             <li>A beküldött ötleteit és ajánlásait, valamint az Ön által leadott szavazatokat.</li>
             <li>A megszerzett eredményeit és rangjait.</li>
             <li>Az Ön által beküldött hibajelentéseket, valamint azokat a moderációs jelentéseket, amelyekben Ön bejelentőként vagy érintettként szerepel.</li>
+            <li>A Sörpong Aréna összes adatát: a játékoslistát (roster), az összes rögzített meccset és bajnokságot.</li>
         </ul>
 
         <h2>8. Az Ön jogai gyakorlása és Jogorvoslat</h2>
