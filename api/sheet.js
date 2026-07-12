@@ -2196,6 +2196,8 @@ case 'EDIT_USER_DRINK': {
                     await purgeSheetByEmail(SUPPORT_SHEET, [2]);       // Hibajelentések – C oszlop: e-mail
                     await purgeSheetByEmail('Jelentések', [1, 4]);     // B: bejelentő, E: panaszolt fél
                     await purgeSheetByEmail(WINNERS_SHEET, [2]);       // Nyertesek – C oszlop: e-mail
+                    await purgeSheetByEmail(WINNERS_SHEET, [2]);       // Nyertesek – C oszlop: e-mail
+                    await purgeSheetByEmail(BEERPONG_SHEET, [0];
 
                     return res.status(200).json({ message: "Fiók, adatok, ajánlások és leadott szavazatok sikeresen törölve." });
                 } catch (error) {
